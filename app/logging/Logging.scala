@@ -14,28 +14,12 @@
  * limitations under the License.
  */
 
-package controllers
+package logging
 
-import base.SpecBase
-import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import org.slf4j.{Logger, LoggerFactory}
 
-class IndexControllerSpec extends SpecBase {
+trait Logging {
 
-  "Index Controller" - { // TODO
-
-    "must return OK and the correct view for a GET" in {
-
-      val application = applicationBuilder(userAnswers = None).build()
-
-      running(application) {
-        val request = FakeRequest(GET, routes.IndexController.onPageLoad.url)
-
-        val result = route(application, request).value
-
-        status(result) mustEqual OK
-
-      }
-    }
-  }
+  protected val logger: Logger =
+    LoggerFactory.getLogger("application." + getClass.getCanonicalName)
 }

@@ -14,28 +14,13 @@
  * limitations under the License.
  */
 
-package controllers
+package models.etmp
 
-import base.SpecBase
-import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.libs.json.{Json, OFormat}
 
-class IndexControllerSpec extends SpecBase {
+case class EtmpTradingName(tradingName: String)
 
-  "Index Controller" - { // TODO
+object EtmpTradingName {
 
-    "must return OK and the correct view for a GET" in {
-
-      val application = applicationBuilder(userAnswers = None).build()
-
-      running(application) {
-        val request = FakeRequest(GET, routes.IndexController.onPageLoad.url)
-
-        val result = route(application, request).value
-
-        status(result) mustEqual OK
-
-      }
-    }
-  }
+  implicit val format: OFormat[EtmpTradingName] = Json.format[EtmpTradingName]
 }

@@ -14,20 +14,22 @@
  * limitations under the License.
  */
 
-package controllers
+package controllers.actions
 
-import controllers.actions.IdentifierAction
+import play.api.mvc._
+import uk.gov.hmrc.domain.Vrn
+
 import javax.inject.Inject
-import play.api.i18n.I18nSupport
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import scala.concurrent.{ExecutionContext, Future}
 
-class IndexController @Inject()(
-                                 val controllerComponents: MessagesControllerComponents,
-                                 identify: IdentifierAction,
-                               ) extends FrontendBaseController with I18nSupport {
+class FakeAuthAction @Inject()(bodyParsers: PlayBodyParsers) extends AuthAction {
 
-  def onPageLoad: Action[AnyContent] = identify { implicit request =>
-    Ok("TODO")
-  }
+  override def invokeBlock[A](request: Request[A], block: AuthorisedRequest[A] => Future[Result]): Future[Result] =
+    block(AuthorisedRequest(request, "id", Some(Vrn("123456789")), Some("IM9001234567")))
+
+  override def parser: BodyParser[AnyContent] =
+    bodyParsers.default
+
+  override protected def executionContext: ExecutionContext =
+    scala.concurrent.ExecutionContext.Implicits.global
 }

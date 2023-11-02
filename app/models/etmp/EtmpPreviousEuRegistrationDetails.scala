@@ -14,28 +14,19 @@
  * limitations under the License.
  */
 
-package controllers
+package models.etmp
 
-import base.SpecBase
-import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.libs.json.{Json, OFormat}
 
-class IndexControllerSpec extends SpecBase {
+case class EtmpPreviousEuRegistrationDetails(
+                                              issuedBy: String,
+                                              registrationNumber: String,
+                                              schemeType: SchemeType,
+                                              intermediaryNumber: Option[String] = None
+                                            )
 
-  "Index Controller" - { // TODO
+object EtmpPreviousEuRegistrationDetails {
 
-    "must return OK and the correct view for a GET" in {
-
-      val application = applicationBuilder(userAnswers = None).build()
-
-      running(application) {
-        val request = FakeRequest(GET, routes.IndexController.onPageLoad.url)
-
-        val result = route(application, request).value
-
-        status(result) mustEqual OK
-
-      }
-    }
-  }
+  implicit val format: OFormat[EtmpPreviousEuRegistrationDetails] = Json.format[EtmpPreviousEuRegistrationDetails]
 }
+

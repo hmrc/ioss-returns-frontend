@@ -16,18 +16,30 @@
 
 package controllers
 
-import controllers.actions.IdentifierAction
-import javax.inject.Inject
+import controllers.actions.AuthenticatedControllerComponents
+import logging.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import views.html.YourAccountView
 
-class IndexController @Inject()(
-                                 val controllerComponents: MessagesControllerComponents,
-                                 identify: IdentifierAction,
-                               ) extends FrontendBaseController with I18nSupport {
+import javax.inject.Inject
+import scala.concurrent.ExecutionContext
 
-  def onPageLoad: Action[AnyContent] = identify { implicit request =>
-    Ok("TODO")
+class YourAccountController @Inject()(
+                                       cc: AuthenticatedControllerComponents,
+                                       view: YourAccountView,
+                                     )(implicit ec: ExecutionContext)
+
+  extends FrontendBaseController with I18nSupport with Logging {
+
+  protected val controllerComponents: MessagesControllerComponents = cc
+
+  def onPageLoad: Action[AnyContent] = cc.authAndGetRegistration {
+    implicit request =>
+
+      Ok(view("TODO ", request.iossNumber, "TODO")) // TODO
   }
+
+
 }
