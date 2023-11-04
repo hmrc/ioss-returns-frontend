@@ -16,6 +16,7 @@
 
 package models
 
+import models.IbanError.{InvalidChecksum, InvalidFormat}
 import play.api.libs.json._
 
 sealed trait IbanError

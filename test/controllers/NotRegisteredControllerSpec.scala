@@ -19,22 +19,25 @@ package controllers
 import base.SpecBase
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import views.html.NotRegisteredView
 
-class IndexControllerSpec extends SpecBase {
+class NotRegisteredControllerSpec extends SpecBase {
 
-  "Index Controller" - {
+  "NotRegistered Controller" - {
 
     "must return OK and the correct view for a GET" in {
 
-      val application = applicationBuilder(userAnswers = None).build()
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
       running(application) {
-        val request = FakeRequest(GET, routes.IndexController.onPageLoad.url)
+        val request = FakeRequest(GET, routes.NotRegisteredController.onPageLoad().url)
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
+        val view = application.injector.instanceOf[NotRegisteredView]
 
+        status(result) mustEqual OK
+        contentAsString(result) mustEqual view()(request, messages(application)).toString
       }
     }
   }

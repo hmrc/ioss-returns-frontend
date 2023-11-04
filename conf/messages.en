@@ -59,3 +59,9 @@ signedOut.guidance = We did not save your answers.
 
 unauthorised.title = You can’t access this service with this account
 unauthorised.heading = You can’t access this service with this account
+
+notRegistered.title = You cannot use this service
+notRegistered.heading = You cannot use this service
+notRegistered.label = To submit a return, you must sign in with the same Government Gateway user ID you used when you registered for the VAT Import One Stop Shop.
+notRegistered.subHeading = If you have not registered
+notRegistered.registerLink = You can egister for the VAT Import One Stop Shop.

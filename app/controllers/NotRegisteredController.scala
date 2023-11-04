@@ -14,32 +14,22 @@
  * limitations under the License.
  */
 
-package controllers.auth
+package controllers
 
-import config.FrontendAppConfig
-import controllers.actions.AuthenticatedControllerComponents
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import views.html.NotRegisteredView
 
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
 
+class NotRegisteredController @Inject()(
+                                       val controllerComponents: MessagesControllerComponents,
+                                       view: NotRegisteredView
+                                     ) extends FrontendBaseController with I18nSupport {
 
-class AuthController @Inject()(
-                                cc: AuthenticatedControllerComponents,
-                                config: FrontendAppConfig,
-                              )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
-
-  protected val controllerComponents: MessagesControllerComponents = cc
-
-  def signOut(): Action[AnyContent] = Action {
-    _ =>
-      Redirect(config.signOutUrl, Map("continue" -> Seq(config.exitSurveyUrl)))
-  }
-
-  def signOutNoSurvey(): Action[AnyContent] = Action {
-    _ =>
-      Redirect(config.signOutUrl, Map("continue" -> Seq(routes.SignedOutController.onPageLoad.url)))
+  def onPageLoad: Action[AnyContent] = Action {
+    implicit request =>
+      Ok(view())
   }
 }

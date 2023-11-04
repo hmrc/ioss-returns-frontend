@@ -1,4 +1,4 @@
-/*
+@*
  * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,30 +12,22 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ *@
 
-package controllers
+@this(
+        layout: templates.Layout,
+        govukButton: GovukButton
+)
 
-import base.SpecBase
-import play.api.test.FakeRequest
-import play.api.test.Helpers._
+@()(implicit request: Request[_], messages: Messages)
 
-class IndexControllerSpec extends SpecBase {
+@layout(pageTitle = titleNoForm(messages("notRegistered.title"))) {
 
-  "Index Controller" - {
+    <h1 class="govuk-heading-xl">@messages("notRegistered.heading")</h1>
 
-    "must return OK and the correct view for a GET" in {
+    <p class="govuk-body">@messages("notRegistered.label")</p>
 
-      val application = applicationBuilder(userAnswers = None).build()
+    <h2 class="govuk-heading-m">@messages("notRegistered.subHeading")</h2>
 
-      running(application) {
-        val request = FakeRequest(GET, routes.IndexController.onPageLoad.url)
-
-        val result = route(application, request).value
-
-        status(result) mustEqual SEE_OTHER
-
-      }
-    }
-  }
+    <p class="govuk-body">@Html(messages("notRegistered.registerLink"))</p>
 }

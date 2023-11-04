@@ -29,7 +29,11 @@ case class VatCustomerInfo(
                             singleMarketIndicator: Boolean,
                             deregistrationDecisionDate: Option[LocalDate],
                             overseasIndicator: Boolean
-                          )
+                          ) {
+  def getName: String = {
+    organisationName.getOrElse(individualName.getOrElse(""))
+  }
+}
 
 object VatCustomerInfo {
 

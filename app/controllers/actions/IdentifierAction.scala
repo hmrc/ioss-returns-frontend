@@ -19,56 +19,107 @@ package controllers.actions
 import com.google.inject.Inject
 import config.FrontendAppConfig
 import controllers.routes
+import logging.Logging
 import models.requests.IdentifierRequest
-import play.api.mvc.Results._
 import play.api.mvc._
+import play.api.mvc.Results._
 import uk.gov.hmrc.auth.core._
+import uk.gov.hmrc.auth.core.AffinityGroup.{Individual, Organisation}
+import uk.gov.hmrc.auth.core.retrieve._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
+import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.{HeaderCarrier, UnauthorizedException}
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
+import utils.FutureSyntax.FutureOps
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait IdentifierAction extends ActionBuilder[IdentifierRequest, AnyContent] with ActionFunction[Request, IdentifierRequest]
 
-class AuthenticatedIdentifierAction @Inject()(
-                                               override val authConnector: AuthConnector,
-                                               config: FrontendAppConfig,
-                                               val parser: BodyParsers.Default
-                                             )
-                                             (implicit val executionContext: ExecutionContext) extends IdentifierAction with AuthorisedFunctions {
+class IdentifierAction @Inject()(
+                                  override val authConnector: AuthConnector,
+                                  config: FrontendAppConfig
+                                )
+                                (implicit val executionContext: ExecutionContext)
+  extends ActionRefiner[Request, IdentifierRequest]
+    with AuthorisedFunctions with Logging {
 
-  override def invokeBlock[A](request: Request[A], block: IdentifierRequest[A] => Future[Result]): Future[Result] = {
+  //noinspection ScalaStyle
+  override def refine[A](request: Request[A]): Future[Either[Result, IdentifierRequest[A]]] = {
 
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
 
-    authorised().retrieve(Retrievals.internalId) {
-      _.map {
-        internalId => block(IdentifierRequest(request, internalId))
-      }.getOrElse(throw new UnauthorizedException("Unable to retrieve internal Id"))
-    } recover {
+    authorised(
+      AuthProviders(AuthProvider.GovernmentGateway) and
+        (AffinityGroup.Individual or AffinityGroup.Organisation) and
+        CredentialStrength(CredentialStrength.strong)
+    ).retrieve( Retrievals.credentials and
+      Retrievals.allEnrolments and
+      Retrievals.affinityGroup and
+      Retrievals.groupIdentifier and
+      Retrievals.confidenceLevel and
+      Retrievals.credentialRole ) {
+
+      case Some(credentials) ~ enrolments ~ Some(Organisation) ~ Some(groupId) ~ _ ~ Some(credentialRole) if credentialRole == User =>
+        (findVrnFromEnrolments(enrolments), findIossNumberFromEnrolments(enrolments), hasIossEnrolment(enrolments)) match {
+          case (Some(vrn), Some(iossNumber), true) =>
+            getSuccessfulResponse(request, credentials, vrn, groupId, iossNumber)
+          case _ => throw InsufficientEnrolments()
+        }
+
+      case _ ~ _ ~ Some(Organisation) ~ _ ~ _ ~ Some(credentialRole) if credentialRole == Assistant =>
+        throw UnsupportedCredentialRole()
+
+      case Some(credentials) ~ enrolments ~ Some(Individual) ~ Some(groupId) ~ confidence ~ _ =>
+        (findVrnFromEnrolments(enrolments), findIossNumberFromEnrolments(enrolments), hasIossEnrolment(enrolments)) match {
+          case (Some(vrn), Some(iossNumber), true) =>
+            checkConfidenceAndGetResponse(request, credentials, vrn, iossNumber, groupId, confidence)
+          case _ =>
+            throw InsufficientEnrolments()
+        }
+
+      case _ =>
+        throw new UnauthorizedException("Unable to retrieve authorisation data")
+
+    } recoverWith {
       case _: NoActiveSession =>
-        Redirect(config.loginUrl, Map("continue" -> Seq(config.loginContinueUrl)))
+        Left(Redirect(config.loginUrl, Map("continue" -> Seq(config.loginContinueUrl)))).toFuture
       case _: AuthorisationException =>
-        Redirect(routes.UnauthorisedController.onPageLoad)
+        Left(Redirect(routes.NotRegisteredController.onPageLoad())).toFuture
     }
   }
-}
 
-class SessionIdentifierAction @Inject()(
-                                         val parser: BodyParsers.Default
-                                       )
-                                       (implicit val executionContext: ExecutionContext) extends IdentifierAction {
+  private def getSuccessfulResponse[A](request: Request[A], credentials: Credentials, vrn: Vrn, iossNumber: String, groupId: String)
+                                      (implicit hc: HeaderCarrier): Future[Either[Result, IdentifierRequest[A]]] = {
+    val identifierRequest = IdentifierRequest(request, credentials, vrn, iossNumber)
+    Right(identifierRequest).toFuture
+  }
 
-  override def invokeBlock[A](request: Request[A], block: IdentifierRequest[A] => Future[Result]): Future[Result] = {
-
-    implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
-
-    hc.sessionId match {
-      case Some(session) =>
-        block(IdentifierRequest(request, session.value))
-      case None =>
-        Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
+  private def checkConfidenceAndGetResponse[A](
+                                                request: Request[A],
+                                                credentials: Credentials,
+                                                vrn: Vrn,
+                                                iossNumber: String,
+                                                groupId: String,
+                                                confidence: ConfidenceLevel
+                                              )(implicit hc: HeaderCarrier): Future[Either[Result, IdentifierRequest[A]]] = {
+    if (confidence >= ConfidenceLevel.L200) {
+      getSuccessfulResponse(request, credentials, vrn, iossNumber, groupId)
+    } else {
+      throw InsufficientConfidenceLevel()
     }
   }
+
+  private def hasIossEnrolment(enrolments: Enrolments): Boolean = {
+    enrolments.enrolments.exists(_.key == config.iossEnrolment)
+  }
+
+  private def findVrnFromEnrolments(enrolments: Enrolments): Option[Vrn] =
+    enrolments.enrolments.find(_.key == "HMRC-MTD-VAT")
+      .flatMap { enrolment => enrolment.identifiers.find(_.key == "VRN").map(e => Vrn(e.value))
+      } orElse enrolments.enrolments.find(_.key == "HMCE-VATDEC-ORG")
+      .flatMap { enrolment => enrolment.identifiers.find(_.key == "VATRegNo").map(e => Vrn(e.value)) }
+
+  private def findIossNumberFromEnrolments(enrolments: Enrolments): Option[String] =
+    enrolments.enrolments.find(_.key == config.iossEnrolment).flatMap(_.identifiers.find(_.key == "IOSSNumber").map(_.value))
+
 }

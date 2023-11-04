@@ -16,12 +16,9 @@
 
 package controllers.actions
 
-import config.FrontendAppConfig
 import connectors.RegistrationConnector
-import controllers.routes
 import models.requests.{IdentifierRequest, RegistrationRequest}
 import play.api.mvc.{ActionRefiner, Result}
-import play.api.mvc.Results.Redirect
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
 
@@ -35,11 +32,8 @@ class GetRegistrationAction @Inject()(
 
   override protected def refine[A](request: IdentifierRequest[A]): Future[Either[Result, RegistrationRequest[A]]] = {
     val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request.request, request.request.session)
-    registrationConnector.get()(hc) flatMap {
-      case Some(registration) =>
-        Right(RegistrationRequest(request.request, request.credentials, request.vrn, registration))
-      case None =>
-        Left(Redirect(routes.NotRegisteredController.onPageLoad())).toFuture
+    registrationConnector.get()(hc).map { registration =>
+      Right(RegistrationRequest(request.request, request.credentials, request.vrn, request.iossNumber, registration))
     }
   }
 

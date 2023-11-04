@@ -19,7 +19,7 @@ package connectors
 import config.Service
 import models.RegistrationWrapper
 import play.api.Configuration
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions, HttpResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions}
 import uk.gov.hmrc.http.HttpReads.Implicits._
 
 import javax.inject.Inject
@@ -30,7 +30,7 @@ class RegistrationConnector @Inject()(config: Configuration, httpClient: HttpCli
 
   private val baseUrl = config.get[Service]("microservice.services.ioss-registration")
 
-  def get()(implicit hc: HeaderCarrier): Future[Option[RegistrationWrapper]] =
-    httpClient.GET[Option[RegistrationWrapper]](s"$baseUrl/registration")
+  def get()(implicit hc: HeaderCarrier): Future[RegistrationWrapper] =
+    httpClient.GET[RegistrationWrapper](s"$baseUrl/registration")
 
 }

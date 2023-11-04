@@ -16,27 +16,19 @@
 
 package controllers.actions
 
-import config.FrontendAppConfig
-import models.requests.IdentifierRequest
+import connectors.RegistrationConnector
+import models.requests.{IdentifierRequest, RegistrationRequest}
+import models.RegistrationWrapper
 import org.scalatestplus.mockito.MockitoSugar.mock
-import play.api.mvc._
-import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.auth.core.retrieve.Credentials
-import uk.gov.hmrc.domain.Vrn
-import utils.FutureSyntax.FutureOps
+import play.api.mvc.Result
+import utils.FutureSyntax._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
-class FakeIdentifierAction extends IdentifierAction(
-  mock[AuthConnector],
-  mock[FrontendAppConfig]
-)(ExecutionContext.Implicits.global) {
+class FakeGetRegistrationAction(registration: RegistrationWrapper)
+  extends GetRegistrationAction(mock[RegistrationConnector]) {
 
-  override def refine[A](request: Request[A]): Future[Either[Result, IdentifierRequest[A]]] =
-    Right(IdentifierRequest(
-      request,
-      Credentials("12345-credId", "GGW"),
-      Vrn("123456789"),
-      "IM9001234567"
-    )).toFuture
+  override protected def refine[A](request: IdentifierRequest[A]): Future[Either[Result, RegistrationRequest[A]]] =
+    Right(RegistrationRequest(request.request, request.credentials, request.vrn, request.iossNumber, registration)).toFuture
 }

@@ -16,7 +16,7 @@
 
 package models.etmp
 
-import uk.gov.hmrc.iossregistration.models.{Enumerable, WithName}
+import models.{Enumerable, WithName}
 
 sealed trait SchemeType
 

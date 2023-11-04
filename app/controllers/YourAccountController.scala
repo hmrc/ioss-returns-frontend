@@ -16,6 +16,7 @@
 
 package controllers
 
+import config.FrontendAppConfig
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
 import play.api.i18n.I18nSupport
@@ -29,6 +30,7 @@ import scala.concurrent.ExecutionContext
 class YourAccountController @Inject()(
                                        cc: AuthenticatedControllerComponents,
                                        view: YourAccountView,
+                                       appConfig: FrontendAppConfig
                                      )(implicit ec: ExecutionContext)
 
   extends FrontendBaseController with I18nSupport with Logging {
@@ -38,7 +40,7 @@ class YourAccountController @Inject()(
   def onPageLoad: Action[AnyContent] = cc.authAndGetRegistration {
     implicit request =>
 
-      Ok(view("TODO ", request.iossNumber, "TODO")) // TODO
+      Ok(view(request.registrationWrapper.vatInfo.getName, request.iossNumber, appConfig.amendRegistrationUrl))
   }
 
 
