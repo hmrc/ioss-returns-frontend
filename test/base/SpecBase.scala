@@ -18,7 +18,7 @@ package base
 
 import controllers.actions._
 import generators.Generators
-import models.{RegistrationWrapper, UserAnswers}
+import models.{Period, RegistrationWrapper, UserAnswers}
 import org.scalacheck.Arbitrary
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
@@ -32,7 +32,7 @@ import play.api.test.FakeRequest
 import uk.gov.hmrc.auth.core.retrieve.Credentials
 import uk.gov.hmrc.domain.Vrn
 
-import java.time.{Clock, Instant, LocalDate, ZoneId}
+import java.time.{Clock, Instant, LocalDate, Month, ZoneId}
 
 trait SpecBase
   extends AnyFreeSpec
@@ -48,6 +48,7 @@ trait SpecBase
   val testCredentials: Credentials = Credentials(userAnswersId, "GGW")
   val vrn: Vrn = Vrn("123456789")
   val iossNumber: String = "IM9001234567"
+  val period: Period = Period(2024, Month.MARCH)
 
   val arbitraryDate: LocalDate = datesBetween(LocalDate.of(2023, 3, 1), LocalDate.of(2025, 12, 31)).sample.value
   val arbitraryInstant: Instant = arbitraryDate.atStartOfDay(ZoneId.systemDefault).toInstant

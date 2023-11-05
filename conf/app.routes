@@ -23,3 +23,8 @@ GET        /unauthorised                     controllers.UnauthorisedController.
 GET        /cannot-use-not-registered        controllers.NotRegisteredController.onPageLoad()
 
 GET        /your-account                     controllers.YourAccountController.onPageLoad
+
+GET        /startReturn/:period                        controllers.StartReturnController.onPageLoad(mode: Mode = NormalMode, period: Period)
+POST       /startReturn/:period                        controllers.StartReturnController.onSubmit(mode: Mode = NormalMode, period: Period)
+GET        /changeStartReturn/:period                  controllers.StartReturnController.onPageLoad(mode: Mode = CheckMode, period: Period)
+POST       /changeStartReturn/:period                  controllers.StartReturnController.onSubmit(mode: Mode = CheckMode, period: Period)

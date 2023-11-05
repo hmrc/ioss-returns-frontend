@@ -65,3 +65,9 @@ notRegistered.heading = You cannot use this service
 notRegistered.label = To submit a return, you must sign in with the same Government Gateway user ID you used when you registered for the VAT Import One Stop Shop.
 notRegistered.subHeading = If you have not registered
 notRegistered.registerLink = You can egister for the VAT Import One Stop Shop.
+
+startReturn.title = Do you want to start your return for {0}?
+startReturn.heading = Do you want to start your return for {0}?
+startReturn.checkYourAnswersLabel = startReturn
+startReturn.error.required = Select yes if you want to start your return
+startReturn.change.hidden = Start return

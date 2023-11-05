@@ -28,21 +28,23 @@ import scala.util.Try
 case class Period(year: Int, month: Month) {
   def displayText: String =
     s"${month.toString} ${year}"
+
+  override def toString: String = s"$year-M${month.getValue}"
 }
 
 object Period {
-  private val pattern: Regex = """^(\d{4})-(M(1[1,2]|[1-9]))$""".r.anchored
+  private val pattern: Regex = """(\d{4})-M(1[0-2]|[1-9])""".r.anchored
 
-  def apply(yearString: String, quarterString: String): Try[Period] =
+  def apply(yearString: String, monthString: String): Try[Period] =
     for {
       year <- Try(yearString.toInt)
-      month <- Try(Month.valueOf(quarterString))
+      month <- Try(Month.of(monthString.toInt))
     } yield Period(year, month)
 
   def fromString(string: String): Option[Period] =
     string match {
-      case pattern(yearString, quarterString) =>
-        Period(yearString, quarterString).toOption
+      case pattern(yearString, monthString) =>
+        Period(yearString, monthString).toOption
       case _ =>
         None
     }
