@@ -1,7 +1,7 @@
 package viewmodels.checkAnswers
 
 import controllers.routes
-import models.{CheckMode, UserAnswers}
+import models.{CheckMode, Period, UserAnswers}
 import pages.$className$Page
 import play.api.i18n.Messages
 import play.twirl.api.HtmlFormat
