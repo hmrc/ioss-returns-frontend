@@ -100,3 +100,11 @@ salesToCountry.error.required = Enter your sales excluding VAT
 salesToCountry.error.wholeNumber = Enter your sales excluding VAT using whole numbers
 salesToCountry.error.outOfRange = Sales excluding VAT must be between {0} and {1}
 salesToCountry.change.hidden = sales excluding VAT
+
+vatOnSales.title = How much VAT did you charge on sales of {0} at {1} VAT rate?
+vatOnSales.heading = How much VAT did you charge on sales of {0} at {1} VAT rate?
+vatOnSales.option1 = Option 1
+vatOnSales.option2 = Option 2
+vatOnSales.checkYourAnswersLabel = VAT charged
+vatOnSales.error.required = Select VAT charged
+vatOnSales.change.hidden = VAT charged
