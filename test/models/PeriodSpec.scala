@@ -18,15 +18,11 @@ package models
 
 import generators.Generators
 import org.scalacheck.Arbitrary.arbitrary
-import org.scalacheck.Gen
 import org.scalatest.EitherValues
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.mvc.{PathBindable, QueryStringBindable}
-
-import java.time.{Clock, Instant, LocalDate, Month, ZoneId}
-import java.time.Month._
 
 class PeriodSpec
   extends AnyFreeSpec

@@ -28,3 +28,8 @@ GET        /startReturn/:period                        controllers.StartReturnCo
 POST       /startReturn/:period                        controllers.StartReturnController.onSubmit(mode: Mode = NormalMode, period: Period)
 GET        /changeStartReturn/:period                  controllers.StartReturnController.onPageLoad(mode: Mode = CheckMode, period: Period)
 POST       /changeStartReturn/:period                  controllers.StartReturnController.onSubmit(mode: Mode = CheckMode, period: Period)
+
+GET        /soldGoods/:period                        controllers.SoldGoodsController.onPageLoad(mode: Mode = NormalMode, period: Period)
+POST       /soldGoods/:period                        controllers.SoldGoodsController.onSubmit(mode: Mode = NormalMode, period: Period)
+GET        /changeSoldGoods/:period                  controllers.SoldGoodsController.onPageLoad(mode: Mode = CheckMode, period: Period)
+POST       /changeSoldGoods/:period                  controllers.SoldGoodsController.onSubmit(mode: Mode = CheckMode, period: Period)

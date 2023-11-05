@@ -71,3 +71,9 @@ startReturn.heading = Do you want to start your return for {0}?
 startReturn.checkYourAnswersLabel = startReturn
 startReturn.error.required = Select yes if you want to start your return
 startReturn.change.hidden = Start return
+
+soldGoods.title = Did you make eligible sales into the EU or Northern Ireland in {0}?
+soldGoods.heading = Did you make eligible sales into the EU or Northern Ireland in {0}?
+soldGoods.checkYourAnswersLabel = Sales made
+soldGoods.error.required = Select yes if eligible sales into the EU or Northern Ireland
+soldGoods.change.hidden = Sold Goods
