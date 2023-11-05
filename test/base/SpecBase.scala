@@ -32,6 +32,8 @@ import play.api.test.FakeRequest
 import uk.gov.hmrc.auth.core.retrieve.Credentials
 import uk.gov.hmrc.domain.Vrn
 
+import java.time.{Clock, Instant, LocalDate, ZoneId}
+
 trait SpecBase
   extends AnyFreeSpec
     with Matchers
@@ -47,16 +49,28 @@ trait SpecBase
   val vrn: Vrn = Vrn("123456789")
   val iossNumber: String = "IM9001234567"
 
-  def emptyUserAnswers : UserAnswers = UserAnswers(userAnswersId)
+  val arbitraryDate: LocalDate = datesBetween(LocalDate.of(2023, 3, 1), LocalDate.of(2025, 12, 31)).sample.value
+  val arbitraryInstant: Instant = arbitraryDate.atStartOfDay(ZoneId.systemDefault).toInstant
+  val stubClockAtArbitraryDate: Clock = Clock.fixed(arbitraryInstant, ZoneId.systemDefault)
+
+  def emptyUserAnswers: UserAnswers = UserAnswers(userAnswersId, lastUpdated = arbitraryInstant)
 
   def messages(app: Application): Messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
 
-  protected def applicationBuilder(userAnswers: Option[UserAnswers] = None, registration: RegistrationWrapper = Arbitrary.arbitrary[RegistrationWrapper].sample.value): GuiceApplicationBuilder =
+  protected def applicationBuilder(
+                                    userAnswers: Option[UserAnswers] = None,
+                                    clock: Option[Clock] = None,
+                                    registration: RegistrationWrapper = Arbitrary.arbitrary[RegistrationWrapper].sample.value
+                                  ): GuiceApplicationBuilder = {
+    val clockToBind = clock.getOrElse(stubClockAtArbitraryDate)
+
     new GuiceApplicationBuilder()
       .overrides(
         bind[DataRequiredAction].to[DataRequiredActionImpl],
         bind[IdentifierAction].to[FakeIdentifierAction],
+        bind[Clock].toInstance(clockToBind),
         bind[DataRetrievalAction].toInstance(new FakeDataRetrievalAction(userAnswers)),
         bind[GetRegistrationAction].toInstance(new FakeGetRegistrationAction(registration))
       )
+  }
 }
