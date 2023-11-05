@@ -83,3 +83,11 @@ soldToCountry.heading = Which country did you sell to?
 soldToCountry.checkYourAnswersLabel = soldToCountry
 soldToCountry.error.required = Enter a country you sold to
 soldToCountry.change.hidden = which country you sold to
+
+vatRatesFromCountry.title = Which VAT rates did you sell goods at?
+vatRatesFromCountry.heading = Which VAT rates did you sell goods at?
+vatRatesFromCountry.twelvePercent = 12%
+vatRatesFromCountry.twentyPercent = 20%
+vatRatesFromCountry.checkYourAnswersLabel = vatRatesFromCountry
+vatRatesFromCountry.error.required = Select vatRatesFromCountry
+vatRatesFromCountry.change.hidden = VatRatesFromCountry
