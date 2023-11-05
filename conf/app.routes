@@ -43,3 +43,8 @@ GET        /vatRatesFromCountry/:period                        controllers.VatRa
 POST       /vatRatesFromCountry/:period                        controllers.VatRatesFromCountryController.onSubmit(mode: Mode = NormalMode, period: Period)
 GET        /changeVatRatesFromCountry/:period                  controllers.VatRatesFromCountryController.onPageLoad(mode: Mode = CheckMode, period: Period)
 POST       /changeVatRatesFromCountry/:period                  controllers.VatRatesFromCountryController.onSubmit(mode: Mode = CheckMode, period: Period)
+
+GET        /salesToCountry/:period                  controllers.SalesToCountryController.onPageLoad(mode: Mode = NormalMode, period: Period)
+POST       /salesToCountry/:period                  controllers.SalesToCountryController.onSubmit(mode: Mode = NormalMode, period: Period)
+GET        /changeSalesToCountry/:period                        controllers.SalesToCountryController.onPageLoad(mode: Mode = CheckMode, period: Period)
+POST       /changeSalesToCountry/:period                        controllers.SalesToCountryController.onSubmit(mode: Mode = CheckMode, period: Period)
