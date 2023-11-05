@@ -77,3 +77,9 @@ soldGoods.heading = Did you make eligible sales into the EU or Northern Ireland 
 soldGoods.checkYourAnswersLabel = Sales made
 soldGoods.error.required = Select yes if eligible sales into the EU or Northern Ireland
 soldGoods.change.hidden = Sold Goods
+
+soldToCountry.title = Which country did you sell to?
+soldToCountry.heading = Which country did you sell to?
+soldToCountry.checkYourAnswersLabel = soldToCountry
+soldToCountry.error.required = Enter a country you sold to
+soldToCountry.change.hidden = which country you sold to
