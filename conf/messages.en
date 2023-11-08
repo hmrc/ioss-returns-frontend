@@ -35,9 +35,13 @@ error.number = Please enter a valid number
 error.required = Please enter a value
 error.summary.title = There is a problem
 
-index.title = ioss-returns-frontend
-index.heading = ioss-returns-frontend
-index.guidance = Welcome to your new frontend. Please see the README file for a guide to getting started.
+yourAccount.title = Your Import One Stop Shop Account
+yourAccount.heading = Your Import One Stop Shop Account
+yourAccount.iossNumber = VAT registration number: {0}
+yourAccount.yourReturns.heading = Your returns
+yourAccount.payment.heading = Payments
+yourAccount.details.heading = Details
+yourAccount.details.changeYourRegistration = Change your registration
 
 checkYourAnswers.title = Check Your Answers
 checkYourAnswers.heading = Check Your Answers
@@ -55,3 +59,9 @@ signedOut.guidance = We did not save your answers.
 
 unauthorised.title = You can’t access this service with this account
 unauthorised.heading = You can’t access this service with this account
+
+notRegistered.title = You cannot use this service
+notRegistered.heading = You cannot use this service
+notRegistered.label = To submit a return, you must sign in with the same Government Gateway user ID you used when you registered for the VAT Import One Stop Shop.
+notRegistered.subHeading = If you have not registered
+notRegistered.registerLink = You can egister for the VAT Import One Stop Shop.

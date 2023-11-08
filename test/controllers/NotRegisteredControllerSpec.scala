@@ -17,40 +17,28 @@
 package controllers
 
 import base.SpecBase
-import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.{times, verify, when}
-import org.scalatestplus.mockito.MockitoSugar
-import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import repositories.SessionRepository
+import views.html.NotRegisteredView
 
-import scala.concurrent.Future
+class NotRegisteredControllerSpec extends SpecBase {
 
-class KeepAliveControllerSpec extends SpecBase with MockitoSugar {
+  "NotRegistered Controller" - {
 
-  "keepAlive" - {
+    "must return OK and the correct view for a GET" in {
 
-    "must keep the answers alive and return OK" in {
-
-      val mockSessionRepository = mock[SessionRepository]
-      when(mockSessionRepository.keepAlive(any())) thenReturn Future.successful(true)
-
-      val application =
-        applicationBuilder(Some(emptyUserAnswers))
-          .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
-          .build()
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
       running(application) {
-
-        val request = FakeRequest(GET, routes.KeepAliveController.keepAlive.url)
+        val request = FakeRequest(GET, routes.NotRegisteredController.onPageLoad().url)
 
         val result = route(application, request).value
 
+        val view = application.injector.instanceOf[NotRegisteredView]
+
         status(result) mustEqual OK
-        verify(mockSessionRepository, times(1)).keepAlive(emptyUserAnswers.id)
+        contentAsString(result) mustEqual view()(request, messages(application)).toString
       }
     }
   }
-
 }

@@ -14,22 +14,15 @@
  * limitations under the License.
  */
 
-package config
+package models.etmp
 
-import com.google.inject.AbstractModule
-import controllers.actions._
+import play.api.libs.json.{Json, OFormat}
 
-import java.time.{Clock, ZoneOffset}
+import java.time.LocalDateTime
 
-class Module extends AbstractModule {
+case class EtmpAdminUse(changeDate: Option[LocalDateTime])
 
-  override def configure(): Unit = {
+object EtmpAdminUse {
 
-    bind(classOf[DataRetrievalAction]).to(classOf[DataRetrievalActionImpl]).asEagerSingleton()
-    bind(classOf[DataRequiredAction]).to(classOf[DataRequiredActionImpl]).asEagerSingleton()
-
-    bind(classOf[AuthenticatedControllerComponents]).to(classOf[DefaultAuthenticatedControllerComponents]).asEagerSingleton()
-
-    bind(classOf[Clock]).toInstance(Clock.systemDefaultZone.withZone(ZoneOffset.UTC))
-  }
+  implicit val format: OFormat[EtmpAdminUse] = Json.format[EtmpAdminUse]
 }

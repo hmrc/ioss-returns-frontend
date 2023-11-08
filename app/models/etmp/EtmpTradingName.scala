@@ -14,22 +14,13 @@
  * limitations under the License.
  */
 
-package config
+package models.etmp
 
-import com.google.inject.AbstractModule
-import controllers.actions._
+import play.api.libs.json.{Json, OFormat}
 
-import java.time.{Clock, ZoneOffset}
+case class EtmpTradingName(tradingName: String)
 
-class Module extends AbstractModule {
+object EtmpTradingName {
 
-  override def configure(): Unit = {
-
-    bind(classOf[DataRetrievalAction]).to(classOf[DataRetrievalActionImpl]).asEagerSingleton()
-    bind(classOf[DataRequiredAction]).to(classOf[DataRequiredActionImpl]).asEagerSingleton()
-
-    bind(classOf[AuthenticatedControllerComponents]).to(classOf[DefaultAuthenticatedControllerComponents]).asEagerSingleton()
-
-    bind(classOf[Clock]).toInstance(Clock.systemDefaultZone.withZone(ZoneOffset.UTC))
-  }
+  implicit val format: OFormat[EtmpTradingName] = Json.format[EtmpTradingName]
 }

@@ -14,32 +14,34 @@
  * limitations under the License.
  */
 
-package controllers.auth
+package controllers
 
 import config.FrontendAppConfig
 import controllers.actions.AuthenticatedControllerComponents
+import logging.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import views.html.YourAccountView
 
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
+class YourAccountController @Inject()(
+                                       cc: AuthenticatedControllerComponents,
+                                       view: YourAccountView,
+                                       appConfig: FrontendAppConfig
+                                     )(implicit ec: ExecutionContext)
 
-class AuthController @Inject()(
-                                cc: AuthenticatedControllerComponents,
-                                config: FrontendAppConfig,
-                              )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+  extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def signOut(): Action[AnyContent] = Action {
-    _ =>
-      Redirect(config.signOutUrl, Map("continue" -> Seq(config.exitSurveyUrl)))
+  def onPageLoad: Action[AnyContent] = cc.authAndGetRegistration {
+    implicit request =>
+
+      Ok(view(request.registrationWrapper.vatInfo.getName, request.iossNumber, appConfig.amendRegistrationUrl))
   }
 
-  def signOutNoSurvey(): Action[AnyContent] = Action {
-    _ =>
-      Redirect(config.signOutUrl, Map("continue" -> Seq(routes.SignedOutController.onPageLoad.url)))
-  }
+
 }

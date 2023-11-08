@@ -15,17 +15,19 @@
  *@
 
 @this(
-    layout: templates.Layout
+        layout: templates.Layout,
+        govukButton: GovukButton
 )
 
 @()(implicit request: Request[_], messages: Messages)
 
-@layout(
-    pageTitle    = titleNoForm(messages("index.title")),
-    showBackLink = false
-) {
+@layout(pageTitle = titleNoForm(messages("notRegistered.title"))) {
 
-    <h1 class="govuk-heading-xl">@messages("index.heading")</h1>
+    <h1 class="govuk-heading-xl">@messages("notRegistered.heading")</h1>
 
-    <p class="govuk-body">@messages("index.guidance")</p>
+    <p class="govuk-body">@messages("notRegistered.label")</p>
+
+    <h2 class="govuk-heading-m">@messages("notRegistered.subHeading")</h2>
+
+    <p class="govuk-body">@Html(messages("notRegistered.registerLink"))</p>
 }

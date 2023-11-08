@@ -17,7 +17,9 @@
 package base
 
 import controllers.actions._
-import models.UserAnswers
+import generators.Generators
+import models.{RegistrationWrapper, UserAnswers}
+import org.scalacheck.Arbitrary
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
@@ -27,6 +29,8 @@ import play.api.i18n.{Messages, MessagesApi}
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
+import uk.gov.hmrc.auth.core.retrieve.Credentials
+import uk.gov.hmrc.domain.Vrn
 
 trait SpecBase
   extends AnyFreeSpec
@@ -34,19 +38,25 @@ trait SpecBase
     with TryValues
     with OptionValues
     with ScalaFutures
-    with IntegrationPatience {
+    with IntegrationPatience
+    with Generators {
 
-  val userAnswersId: String = "id"
+  val userAnswersId: String = "12345-credId"
+
+  val testCredentials: Credentials = Credentials(userAnswersId, "GGW")
+  val vrn: Vrn = Vrn("123456789")
+  val iossNumber: String = "IM9001234567"
 
   def emptyUserAnswers : UserAnswers = UserAnswers(userAnswersId)
 
   def messages(app: Application): Messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
 
-  protected def applicationBuilder(userAnswers: Option[UserAnswers] = None): GuiceApplicationBuilder =
+  protected def applicationBuilder(userAnswers: Option[UserAnswers] = None, registration: RegistrationWrapper = Arbitrary.arbitrary[RegistrationWrapper].sample.value): GuiceApplicationBuilder =
     new GuiceApplicationBuilder()
       .overrides(
         bind[DataRequiredAction].to[DataRequiredActionImpl],
         bind[IdentifierAction].to[FakeIdentifierAction],
-        bind[DataRetrievalAction].toInstance(new FakeDataRetrievalAction(userAnswers))
+        bind[DataRetrievalAction].toInstance(new FakeDataRetrievalAction(userAnswers)),
+        bind[GetRegistrationAction].toInstance(new FakeGetRegistrationAction(registration))
       )
 }
