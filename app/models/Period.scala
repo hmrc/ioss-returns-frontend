@@ -22,12 +22,14 @@ import uk.gov.hmrc.govukfrontend.views.viewmodels.radios.RadioItem
 import uk.gov.hmrc.govukfrontend.views.Aliases.Text
 
 import java.time.Month
+import java.time.format.TextStyle
+import java.util.Locale
 import scala.util.matching.Regex
 import scala.util.Try
 
 case class Period(year: Int, month: Month) {
   def displayText: String =
-    s"${month.toString} ${year}"
+    s"${month.getDisplayName(TextStyle.FULL, Locale.ENGLISH)} ${year}"
 
   override def toString: String = s"$year-M${month.getValue}"
 }

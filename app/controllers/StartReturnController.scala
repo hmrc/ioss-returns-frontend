@@ -28,7 +28,7 @@ import views.html.StartReturnView
 
 import java.time.{Clock, Instant}
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class StartReturnController @Inject()(
                                        override val messagesApi: MessagesApi,
@@ -66,7 +66,10 @@ class StartReturnController @Inject()(
             lastUpdated = Instant.now(clock)
           ))
 
-          Redirect(StartReturnPage(period).navigate(waypoints, answers, answers).route).toFuture
+          for {
+            updatedAnswers <- Future.fromTry(answers.set(StartReturnPage(period), value))
+            _ <- cc.sessionRepository.set(updatedAnswers)
+          } yield Redirect(StartReturnPage(period).navigate(waypoints, answers, answers).route)
         }
       )
   }

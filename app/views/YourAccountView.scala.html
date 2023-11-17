@@ -14,6 +14,8 @@
  * limitations under the License.
  *@
 
+@import java.time.Month
+
 @this(
     layout: templates.Layout
 )
@@ -40,6 +42,11 @@
     <div class="tile tile-no-border">
       <div id="next-return" class="tile-body">
         <h2 class="govuk-heading-m">@messages("yourAccount.yourReturns.heading")</h2>
+        <p class="govuk-body">
+          <a class="govuk-link" href="@routes.StartReturnController.onPageLoad(period = Period(2023, Month.OCTOBER))" id="start-return">
+            @messages("yourAccount.yourReturns.startReturn", "October 2023")
+          </a>
+        </p>
       </div>
     </div>
 

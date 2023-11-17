@@ -55,11 +55,12 @@ class SessionRepository @Inject()(
 
   private def byId(id: String): Bson = Filters.equal("_id", id)
 
-  private def byUserIdAndPeriod(userId: String, period: Period): Bson =
+  private def byUserIdAndPeriod(userId: String, period: Period): Bson = {
     Filters.and(
-      Filters.equal("userId", userId),
+      Filters.equal("_id", userId),
       Filters.equal("period", period.toBson(legacyNumbers = false))
     )
+  }
 
   def keepAlive(id: String): Future[Boolean] =
     collection

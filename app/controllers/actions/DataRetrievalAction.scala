@@ -29,8 +29,8 @@ class DataRetrievalAction(period: Period, repository: SessionRepository)
   extends ActionTransformer[RegistrationRequest, OptionalDataRequest] {
 
   override protected def transform[A](request: RegistrationRequest[A]): Future[OptionalDataRequest[A]] =
-    repository.get(request.userId, period).map {
-      OptionalDataRequest(request.request, request.credentials, request.vrn, request.iossNumber, request.registrationWrapper, _)
+    repository.get(request.userId, period).map { x =>
+      OptionalDataRequest(request.request, request.credentials, request.vrn, request.iossNumber, request.registrationWrapper, x)
     }
 }
 
