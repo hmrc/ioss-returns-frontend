@@ -17,8 +17,8 @@
 package viewmodels.checkAnswers
 
 import controllers.routes
-import models.{CheckMode, Period, UserAnswers}
-import pages.SalesToCountryPage
+import models.{Index, Period, UserAnswers}
+import pages.{SalesToCountryPage, Waypoints}
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
 import viewmodels.govuk.summarylist._
@@ -26,15 +26,15 @@ import viewmodels.implicits._
 
 object SalesToCountrySummary  {
 
-  def row(answers: UserAnswers, period: Period)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(SalesToCountryPage).map {
+  def row(answers: UserAnswers, waypoints: Waypoints, period: Period, index: Index)(implicit messages: Messages): Option[SummaryListRow] =
+    answers.get(SalesToCountryPage(period, index)).map {
       answer =>
 
         SummaryListRowViewModel(
           key     = "salesToCountry.checkYourAnswersLabel",
           value   = ValueViewModel(answer.toString),
           actions = Seq(
-            ActionItemViewModel("site.change", routes.SalesToCountryController.onPageLoad(CheckMode, period).url)
+            ActionItemViewModel("site.change", routes.SalesToCountryController.onPageLoad(waypoints, period, index).url)
               .withVisuallyHiddenText(messages("salesToCountry.change.hidden"))
           )
         )

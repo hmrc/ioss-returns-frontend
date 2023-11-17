@@ -18,21 +18,19 @@ package controllers
 
 import controllers.actions._
 import forms.VatOnSalesFormProvider
-import javax.inject.Inject
-import models.{Mode, Period}
-import navigation.Navigator
-import pages.VatOnSalesPage
+import models.{Index, Period}
+import pages.{VatOnSalesPage, Waypoints}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.VatOnSalesView
 
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class VatOnSalesController @Inject()(
                                        override val messagesApi: MessagesApi,
                                        cc: AuthenticatedControllerComponents,
-                                       navigator: Navigator,
                                        formProvider: VatOnSalesFormProvider,
                                        view: VatOnSalesView
                                      )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
@@ -41,29 +39,29 @@ class VatOnSalesController @Inject()(
 
   val form = formProvider()
 
-  def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndRequireData(period) {
+  def onPageLoad(waypoints: Waypoints, period: Period, index: Index): Action[AnyContent] = cc.authAndRequireData(period) {
     implicit request =>
 
-      val preparedForm = request.userAnswers.get(VatOnSalesPage) match {
+      val preparedForm = request.userAnswers.get(VatOnSalesPage(period, index)) match {
         case None => form
         case Some(value) => form.fill(value)
       }
 
-      Ok(view(preparedForm, mode, period))
+      Ok(view(preparedForm, waypoints, period, index))
   }
 
-  def onSubmit(mode: Mode, period: Period): Action[AnyContent] = cc.authAndRequireData(period).async {
+  def onSubmit(waypoints: Waypoints, period: Period, index: Index): Action[AnyContent] = cc.authAndRequireData(period).async {
     implicit request =>
 
       form.bindFromRequest().fold(
         formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, mode, period))),
+          Future.successful(BadRequest(view(formWithErrors, waypoints, period, index))),
 
         value =>
           for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(VatOnSalesPage, value))
+            updatedAnswers <- Future.fromTry(request.userAnswers.set(VatOnSalesPage(period, index), value))
             _              <- cc.sessionRepository.set(updatedAnswers)
-          } yield Redirect(navigator.nextPage(VatOnSalesPage, mode, updatedAnswers))
+          } yield Redirect(VatOnSalesPage(period, index).navigate(waypoints, request.userAnswers, updatedAnswers).route)
       )
   }
 }

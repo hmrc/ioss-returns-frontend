@@ -18,14 +18,11 @@ package controllers
 
 import base.SpecBase
 import forms.SoldGoodsFormProvider
-import models.{NormalMode, UserAnswers}
-import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
 import pages.SoldGoodsPage
 import play.api.inject.bind
-import play.api.mvc.Call
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
@@ -35,12 +32,10 @@ import scala.concurrent.Future
 
 class SoldGoodsControllerSpec extends SpecBase with MockitoSugar {
 
-  def onwardRoute = Call("GET", "/foo")
-
   val formProvider = new SoldGoodsFormProvider()
   val form = formProvider()
 
-  lazy val soldGoodsRoute = routes.SoldGoodsController.onPageLoad(NormalMode, period).url
+  lazy val soldGoodsRoute = routes.SoldGoodsController.onPageLoad(waypoints, period).url
 
   "SoldGoods Controller" - {
 
@@ -56,13 +51,13 @@ class SoldGoodsControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[SoldGoodsView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, waypoints, period)(request, messages(application)).toString
       }
     }
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = emptyUserAnswers.set(SoldGoodsPage, true).success.value
+      val userAnswers = emptyUserAnswers.set(SoldGoodsPage(period), true).success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -74,7 +69,7 @@ class SoldGoodsControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(true), NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form.fill(true), waypoints, period)(request, messages(application)).toString
       }
     }
 
@@ -87,7 +82,6 @@ class SoldGoodsControllerSpec extends SpecBase with MockitoSugar {
       val application =
         applicationBuilder(userAnswers = Some(emptyUserAnswers))
           .overrides(
-            bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
             bind[SessionRepository].toInstance(mockSessionRepository)
           )
           .build()
@@ -100,7 +94,7 @@ class SoldGoodsControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual onwardRoute.url
+        redirectLocation(result).value mustEqual routes.SoldToCountryController.onPageLoad(waypoints, period, index).url
       }
     }
 
@@ -120,7 +114,7 @@ class SoldGoodsControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, waypoints, period)(request, messages(application)).toString
       }
     }
   }

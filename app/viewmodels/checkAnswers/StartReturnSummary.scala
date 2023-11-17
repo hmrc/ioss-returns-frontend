@@ -17,8 +17,8 @@
 package viewmodels.checkAnswers
 
 import controllers.routes
-import models.{CheckMode, Period, UserAnswers}
-import pages.StartReturnPage
+import models.{Period, UserAnswers}
+import pages.{StartReturnPage, Waypoints}
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
 import viewmodels.govuk.summarylist._
@@ -26,8 +26,8 @@ import viewmodels.implicits._
 
 object StartReturnSummary  {
 
-  def row(answers: UserAnswers, period: Period)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(StartReturnPage).map {
+  def row(answers: UserAnswers, waypoints: Waypoints, period: Period)(implicit messages: Messages): Option[SummaryListRow] =
+    answers.get(StartReturnPage(period)).map {
       answer =>
 
         val value = if (answer) "site.yes" else "site.no"
@@ -36,7 +36,7 @@ object StartReturnSummary  {
           key     = "startReturn.checkYourAnswersLabel",
           value   = ValueViewModel(value),
           actions = Seq(
-            ActionItemViewModel("site.change", routes.StartReturnController.onPageLoad(CheckMode, period).url)
+            ActionItemViewModel("site.change", routes.StartReturnController.onPageLoad(waypoints, period).url)
               .withVisuallyHiddenText(messages("startReturn.change.hidden"))
           )
         )

@@ -16,12 +16,19 @@
 
 package pages
 
-import models.VatRatesFromCountry
+import controllers.routes
+import models.{Index, Period, UserAnswers, VatRatesFromCountry}
 import play.api.libs.json.JsPath
+import play.api.mvc.Call
 
-case object VatRatesFromCountryPage extends QuestionPage[Set[VatRatesFromCountry]] {
+case class VatRatesFromCountryPage(period: Period, index: Index) extends QuestionPage[Set[VatRatesFromCountry]] {
 
   override def path: JsPath = JsPath \ toString
 
   override def toString: String = "vatRatesFromCountry"
+
+  override def route(waypoints: Waypoints): Call = routes.VatRatesFromCountryController.onPageLoad(waypoints, period, index)
+
+  override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
+    SalesToCountryPage(period, index)
 }

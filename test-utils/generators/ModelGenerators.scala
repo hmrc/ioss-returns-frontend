@@ -25,6 +25,11 @@ import java.time.{LocalDate, LocalDateTime, Month}
 
 trait ModelGenerators {
 
+  implicit lazy val arbitraryCountry: Arbitrary[Country] =
+    Arbitrary {
+      Gen.oneOf(Country.euCountries)
+    }
+
   implicit lazy val arbitraryVatOnSales: Arbitrary[VatOnSales] =
     Arbitrary {
       Gen.oneOf(VatOnSales.values.toSeq)

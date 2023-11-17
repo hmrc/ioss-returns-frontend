@@ -14,29 +14,17 @@
  * limitations under the License.
  */
 
-package queries
+package pages
 
-import models.UserAnswers
-import play.api.libs.json.JsPath
+import org.scalatest.OptionValues
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.must.Matchers
 
-import scala.util.{Success, Try}
+class WaypointSpec extends AnyFreeSpec with Matchers with OptionValues {
 
-sealed trait Query {
-
-  def path: JsPath
-}
-
-trait Gettable[A] extends Query
-
-trait Settable[A] extends Query {
-
-  def cleanup(value: Option[A], previousAnswers: UserAnswers, currentAnswers: UserAnswers): Try[UserAnswers] =
-    cleanup(value, currentAnswers)
-
-  def cleanup(value: Option[A], userAnswers: UserAnswers): Try[UserAnswers] =
-    Success(userAnswers)
-}
-
-trait Derivable[A, B] extends Query {
-  val derive: A => B
+  "fromString" - {
+    "must return Check Your Answers when given its waypoint" in {
+      Waypoint.fromString("check-your-answers").value mustBe CheckYourAnswersPage.waypoint
+    }
+  }
 }

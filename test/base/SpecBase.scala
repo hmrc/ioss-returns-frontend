@@ -18,12 +18,13 @@ package base
 
 import controllers.actions._
 import generators.Generators
-import models.{Period, RegistrationWrapper, UserAnswers}
+import models.{Index, Period, RegistrationWrapper, UserAnswers}
 import org.scalacheck.Arbitrary
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.{OptionValues, TryValues}
+import pages.{EmptyWaypoints, Waypoints}
 import play.api.Application
 import play.api.i18n.{Messages, MessagesApi}
 import play.api.inject.bind
@@ -49,6 +50,8 @@ trait SpecBase
   val vrn: Vrn = Vrn("123456789")
   val iossNumber: String = "IM9001234567"
   val period: Period = Period(2024, Month.MARCH)
+  val waypoints: Waypoints = EmptyWaypoints
+  val index: Index = Index(0)
 
   val arbitraryDate: LocalDate = datesBetween(LocalDate.of(2023, 3, 1), LocalDate.of(2025, 12, 31)).sample.value
   val arbitraryInstant: Instant = arbitraryDate.atStartOfDay(ZoneId.systemDefault).toInstant

@@ -24,11 +24,11 @@
     govukButton: GovukButton
 )
 
-@(form: Form[_], mode: Mode, period: Period)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, period: Period, index: Index)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, messages("soldToCountry.title"))) {
 
-    @formHelper(action = routes.SoldToCountryController.onSubmit(mode, period)) {
+    @formHelper(action = routes.SoldToCountryController.onSubmit(waypoints, period, index)) {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))

@@ -16,12 +16,19 @@
 
 package pages
 
+import controllers.routes
+import models.{Period, UserAnswers}
 import play.api.libs.json.JsPath
+import play.api.mvc.Call
 
-case object StartReturnPage extends QuestionPage[Boolean] {
+case class StartReturnPage(period: Period) extends QuestionPage[Boolean] {
 
   override def path: JsPath = JsPath \ toString
 
   override def toString: String = "startReturn"
 
+  override def route(waypoints: Waypoints): Call = routes.StartReturnController.onPageLoad(waypoints, period)
+
+  override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
+    SoldGoodsPage(period)
 }

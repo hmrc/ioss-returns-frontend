@@ -18,14 +18,12 @@ package controllers
 
 import base.SpecBase
 import forms.VatOnSalesFormProvider
-import models.{NormalMode, VatOnSales, UserAnswers}
-import navigation.{FakeNavigator, Navigator}
+import models.VatOnSales
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
 import pages.VatOnSalesPage
 import play.api.inject.bind
-import play.api.mvc.Call
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
@@ -35,9 +33,7 @@ import scala.concurrent.Future
 
 class VatOnSalesControllerSpec extends SpecBase with MockitoSugar {
 
-  def onwardRoute = Call("GET", "/foo")
-
-  lazy val vatOnSalesRoute = routes.VatOnSalesController.onPageLoad(NormalMode, period).url
+  lazy val vatOnSalesRoute = routes.VatOnSalesController.onPageLoad(waypoints, period, index).url
 
   val formProvider = new VatOnSalesFormProvider()
   val form = formProvider()
@@ -56,13 +52,13 @@ class VatOnSalesControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[VatOnSalesView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, waypoints, period, index)(request, messages(application)).toString
       }
     }
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = emptyUserAnswers.set(VatOnSalesPage, VatOnSales.values.head).success.value
+      val userAnswers = emptyUserAnswers.set(VatOnSalesPage(period, index), VatOnSales.values.head).success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -74,7 +70,7 @@ class VatOnSalesControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(VatOnSales.values.head), NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form.fill(VatOnSales.values.head), waypoints, period, index)(request, messages(application)).toString
       }
     }
 
@@ -87,7 +83,6 @@ class VatOnSalesControllerSpec extends SpecBase with MockitoSugar {
       val application =
         applicationBuilder(userAnswers = Some(emptyUserAnswers))
           .overrides(
-            bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
             bind[SessionRepository].toInstance(mockSessionRepository)
           )
           .build()
@@ -100,7 +95,8 @@ class VatOnSalesControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual onwardRoute.url
+        // TODO - should go to mini CYA
+        redirectLocation(result).value mustEqual routes.CheckYourAnswersController.onPageLoad().url
       }
     }
 
@@ -120,7 +116,7 @@ class VatOnSalesControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, waypoints, period, index)(request, messages(application)).toString
       }
     }
 

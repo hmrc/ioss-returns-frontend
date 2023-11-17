@@ -18,52 +18,55 @@ package controllers
 
 import controllers.actions._
 import forms.StartReturnFormProvider
-
-import javax.inject.Inject
-import models.{Mode, NormalMode, Period}
-import navigation.Navigator
-import pages.StartReturnPage
+import models.{Period, UserAnswers}
+import pages.{StartReturnPage, Waypoints}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import play.api.mvc.Results._
-import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax.FutureOps
 import views.html.StartReturnView
 
-import scala.concurrent.{ExecutionContext, Future}
+import java.time.{Clock, Instant}
+import javax.inject.Inject
+import scala.concurrent.ExecutionContext
 
 class StartReturnController @Inject()(
                                        override val messagesApi: MessagesApi,
                                        cc: AuthenticatedControllerComponents,
-                                       navigator: Navigator,
                                        formProvider: StartReturnFormProvider,
-                                       view: StartReturnView
+                                       view: StartReturnView,
+                                       clock: Clock
                                      )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
   val form = formProvider()
 
-  def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetOptionalData(period) {
+  def onPageLoad(waypoints: Waypoints, period: Period): Action[AnyContent] = cc.authAndGetOptionalData(period) {
     implicit request =>
 
-      Ok(view(form, mode, period))
+      Ok(view(form, waypoints, period))
   }
 
-  def onSubmit(mode: Mode, period: Period): Action[AnyContent] = cc.authAndGetOptionalData(period).async {
+  def onSubmit(waypoints: Waypoints, period: Period): Action[AnyContent] = cc.authAndGetOptionalData(period).async {
     implicit request =>
 
       form.bindFromRequest().fold(
         formWithErrors =>
-          BadRequest(view(formWithErrors, mode, period)).toFuture,
+          BadRequest(view(formWithErrors, waypoints, period)).toFuture,
 
         value => {
           if (!value) {
             cc.sessionRepository.clear(request.userId)
           }
-//          Redirect(routes.SoldGoodsController.onPageLoad(NormalMode, period))
-          Redirect("TODO").toFuture
+
+          val answers: UserAnswers = request.userAnswers.getOrElse(UserAnswers(
+            request.userId,
+            period = period,
+            lastUpdated = Instant.now(clock)
+          ))
+
+          Redirect(StartReturnPage(period).navigate(waypoints, answers, answers).route).toFuture
         }
       )
   }

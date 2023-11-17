@@ -16,11 +16,19 @@
 
 package pages
 
+import controllers.routes
+import models.{Index, Period, UserAnswers}
 import play.api.libs.json.JsPath
+import play.api.mvc.Call
 
-case object SoldGoodsPage extends QuestionPage[Boolean] {
+case class SoldGoodsPage(period: Period) extends QuestionPage[Boolean] {
 
   override def path: JsPath = JsPath \ toString
 
   override def toString: String = "soldGoods"
+
+  override def route(waypoints: Waypoints): Call = routes.SoldGoodsController.onPageLoad(waypoints, period)
+
+  override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
+    SoldToCountryPage(period, Index(0)) // TODO should it always be Index(0)?
 }

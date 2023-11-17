@@ -14,29 +14,24 @@
  * limitations under the License.
  */
 
-package queries
+package pages
 
+import controllers.routes
 import models.UserAnswers
-import play.api.libs.json.JsPath
+import play.api.mvc.Call
 
-import scala.util.{Success, Try}
+case object CheckYourAnswersPage extends CheckAnswersPage {
 
-sealed trait Query {
+  override def isTheSamePage(other: Page): Boolean = other match {
+    case CheckYourAnswersPage => true
+    case _ => false
+  }
 
-  def path: JsPath
-}
+  override val urlFragment: String = "check-your-answers"
 
-trait Gettable[A] extends Query
+  override def route(waypoints: Waypoints): Call =
+    routes.CheckYourAnswersController.onPageLoad()
 
-trait Settable[A] extends Query {
-
-  def cleanup(value: Option[A], previousAnswers: UserAnswers, currentAnswers: UserAnswers): Try[UserAnswers] =
-    cleanup(value, currentAnswers)
-
-  def cleanup(value: Option[A], userAnswers: UserAnswers): Try[UserAnswers] =
-    Success(userAnswers)
-}
-
-trait Derivable[A, B] extends Query {
-  val derive: A => B
+  override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
+    ??? // TODO
 }

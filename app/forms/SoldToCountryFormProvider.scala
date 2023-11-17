@@ -17,15 +17,21 @@
 package forms
 
 import javax.inject.Inject
-
 import forms.mappings.Mappings
+import models.{Country, Index}
+import models.Country.euCountriesWithNI
 import play.api.data.Form
 
 class SoldToCountryFormProvider @Inject() extends Mappings {
 
-  def apply(): Form[String] =
+  def apply(index: Index, existingAnswers: Seq[Country]): Form[Country] = {
+    val countries = euCountriesWithNI // TODO should this always be EU countries with NI?
+
     Form(
       "value" -> text("soldToCountry.error.required")
-        .verifying(maxLength(100, "soldToCountry.error.length"))
+        .verifying("soldToCountry.error.required", value => countries.exists(_.code == value))
+        .transform[Country](value => Country.euCountries.find(_.code == value).get, _.code)
+        .verifying(notADuplicate(index, existingAnswers, "soldToCountry.error.duplicate"))
     )
+  }
 }

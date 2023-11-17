@@ -18,21 +18,19 @@ package controllers
 
 import controllers.actions._
 import forms.SalesToCountryFormProvider
-import javax.inject.Inject
-import models.{Mode, Period}
-import navigation.Navigator
-import pages.SalesToCountryPage
+import models.{Index, Period}
+import pages.{SalesToCountryPage, Waypoints}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.SalesToCountryView
 
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class SalesToCountryController @Inject()(
                                         override val messagesApi: MessagesApi,
                                         cc: AuthenticatedControllerComponents,
-                                        navigator: Navigator,
                                         formProvider: SalesToCountryFormProvider,
                                         view: SalesToCountryView
                                       )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
@@ -41,29 +39,29 @@ class SalesToCountryController @Inject()(
 
   val form = formProvider()
 
-  def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndRequireData(period) {
+  def onPageLoad(waypoints: Waypoints, period: Period, index: Index): Action[AnyContent] = cc.authAndRequireData(period) {
     implicit request =>
 
-      val preparedForm = request.userAnswers.get(SalesToCountryPage) match {
+      val preparedForm = request.userAnswers.get(SalesToCountryPage(period, index)) match {
         case None => form
         case Some(value) => form.fill(value)
       }
 
-      Ok(view(preparedForm, mode, period))
+      Ok(view(preparedForm, waypoints, period, index))
   }
 
-  def onSubmit(mode: Mode, period: Period): Action[AnyContent] = cc.authAndRequireData(period).async {
+  def onSubmit(waypoints: Waypoints, period: Period, index: Index): Action[AnyContent] = cc.authAndRequireData(period).async {
     implicit request =>
 
       form.bindFromRequest().fold(
         formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, mode, period))),
+          Future.successful(BadRequest(view(formWithErrors, waypoints, period, index))),
 
         value =>
           for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(SalesToCountryPage, value))
+            updatedAnswers <- Future.fromTry(request.userAnswers.set(SalesToCountryPage(period, index), value))
             _              <- cc.sessionRepository.set(updatedAnswers)
-          } yield Redirect(navigator.nextPage(SalesToCountryPage, mode, updatedAnswers))
+          } yield Redirect(SalesToCountryPage(period, index).navigate(waypoints, request.userAnswers, updatedAnswers).route)
       )
   }
 }

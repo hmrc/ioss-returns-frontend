@@ -18,14 +18,12 @@ package controllers
 
 import base.SpecBase
 import forms.VatRatesFromCountryFormProvider
-import models.{NormalMode, VatRatesFromCountry, UserAnswers}
-import navigation.{FakeNavigator, Navigator}
+import models.VatRatesFromCountry
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
 import pages.VatRatesFromCountryPage
 import play.api.inject.bind
-import play.api.mvc.Call
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
@@ -35,9 +33,7 @@ import scala.concurrent.Future
 
 class VatRatesFromCountryControllerSpec extends SpecBase with MockitoSugar {
 
-  def onwardRoute = Call("GET", "/foo")
-
-  lazy val vatRatesFromCountryRoute = routes.VatRatesFromCountryController.onPageLoad(NormalMode, period).url
+  lazy val vatRatesFromCountryRoute = routes.VatRatesFromCountryController.onPageLoad(waypoints, period, index).url
 
   val formProvider = new VatRatesFromCountryFormProvider()
   val form = formProvider()
@@ -57,13 +53,13 @@ class VatRatesFromCountryControllerSpec extends SpecBase with MockitoSugar {
 
         status(result) mustEqual OK
 
-        contentAsString(result) mustEqual view(form, NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, waypoints, period, index)(request, messages(application)).toString
       }
     }
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = emptyUserAnswers.set(VatRatesFromCountryPage, VatRatesFromCountry.values.toSet).success.value
+      val userAnswers = emptyUserAnswers.set(VatRatesFromCountryPage(period, index), VatRatesFromCountry.values.toSet).success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -75,7 +71,7 @@ class VatRatesFromCountryControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(VatRatesFromCountry.values.toSet), NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form.fill(VatRatesFromCountry.values.toSet), waypoints, period, index)(request, messages(application)).toString
       }
     }
 
@@ -88,7 +84,6 @@ class VatRatesFromCountryControllerSpec extends SpecBase with MockitoSugar {
       val application =
         applicationBuilder(userAnswers = Some(emptyUserAnswers))
           .overrides(
-            bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
             bind[SessionRepository].toInstance(mockSessionRepository)
           )
           .build()
@@ -101,7 +96,7 @@ class VatRatesFromCountryControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual onwardRoute.url
+        redirectLocation(result).value mustEqual routes.SalesToCountryController.onPageLoad(waypoints, period, index).url
       }
     }
 
@@ -121,7 +116,7 @@ class VatRatesFromCountryControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, waypoints, period, index)(request, messages(application)).toString
       }
     }
 

@@ -16,12 +16,19 @@
 
 package pages
 
-import models.VatOnSales
+import controllers.routes
+import models.{Index, Period, UserAnswers, VatOnSales}
 import play.api.libs.json.JsPath
+import play.api.mvc.Call
 
-case object VatOnSalesPage extends QuestionPage[VatOnSales] {
+case class VatOnSalesPage(period: Period, index: Index) extends QuestionPage[VatOnSales] {
 
   override def path: JsPath = JsPath \ toString
 
   override def toString: String = "vatOnSales"
+
+  override def route(waypoints: Waypoints): Call = routes.VatOnSalesController.onPageLoad(waypoints, period, index)
+
+  override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
+    CheckYourAnswersPage
 }

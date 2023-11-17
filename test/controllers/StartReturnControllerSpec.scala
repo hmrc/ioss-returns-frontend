@@ -18,14 +18,14 @@ package controllers
 
 import base.SpecBase
 import forms.StartReturnFormProvider
-import models.{NormalMode, UserAnswers}
-import navigation.{FakeNavigator, Navigator}
+import models.Country
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.when
+import org.mockito.ArgumentMatchersSugar.eqTo
+import org.mockito.Mockito.{times, verify, when}
+import org.scalacheck.Arbitrary
 import org.scalatestplus.mockito.MockitoSugar
-import pages.StartReturnPage
+import pages.SoldToCountryPage
 import play.api.inject.bind
-import play.api.mvc.Call
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
@@ -35,12 +35,10 @@ import scala.concurrent.Future
 
 class StartReturnControllerSpec extends SpecBase with MockitoSugar {
 
-  def onwardRoute = Call("GET", "/foo")
-
   val formProvider = new StartReturnFormProvider()
   val form = formProvider()
 
-  lazy val startReturnRoute = routes.StartReturnController.onPageLoad(NormalMode, period).url
+  lazy val startReturnRoute = routes.StartReturnController.onPageLoad(waypoints, period).url
 
   "StartReturn Controller" - {
 
@@ -57,7 +55,7 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[StartReturnView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, waypoints, period)(request, messages(application)).toString
       }
     }
 
@@ -75,8 +73,7 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual SEE_OTHER
-        /*TODO
-        redirectLocation(result).value mustEqual StartReturnPage.navigate(period, startReturn = true).url*/
+        redirectLocation(result).value mustEqual routes.SoldGoodsController.onPageLoad(waypoints, period).url
       }
     }
 
@@ -94,23 +91,22 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual SEE_OTHER
-        /*TODO
-        redirectLocation(result).value mustEqual StartReturnPage.navigate(period, startReturn = false).url*/
+        // TODO should go to no other periods available page when exists
+        redirectLocation(result).value mustEqual routes.SoldGoodsController.onPageLoad(waypoints, period).url
       }
     }
 
-    /*TODO
     "must clear useranswers when answer is no" in {
       val mockSessionRepository = mock[SessionRepository]
 
       when(mockSessionRepository.clear(any())) thenReturn Future.successful(true)
 
-      val country: Country = arbitrary[Country].sample.value
+      val country: Country = Arbitrary.arbitrary[Country].sample.value
 
-      val answers = emptyUserAnswers.set(CountryOfConsumptionFromNiPage(index), country).success.value
+      val answers = emptyUserAnswers.set(SoldToCountryPage(period, index), country).success.value
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-        .overrides(bind[UserAnswersRepository].toInstance(mockSessionRepository))
+        .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
         .build()
 
       running(application) {
@@ -122,10 +118,10 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual StartReturnPage.navigate(period, startReturn = false).url
-        verify(mockSessionRepository, times(1)).clear(eqTo(answers.userId))
+        redirectLocation(result).value mustEqual routes.SoldGoodsController.onPageLoad(waypoints, period).url
+        verify(mockSessionRepository, times(1)).clear(eqTo(answers.id))
       }
-    }*/
+    }
 
     "must return a Bad Request and errors when invalid data is submitted" in {
 
@@ -145,7 +141,7 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, waypoints, period)(request, messages(application)).toString
       }
     }
   }
