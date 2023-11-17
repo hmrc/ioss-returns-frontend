@@ -56,9 +56,6 @@ class StartReturnController @Inject()(
           BadRequest(view(formWithErrors, waypoints, period)).toFuture,
 
         value => {
-          if (!value) {
-            cc.sessionRepository.clear(request.userId)
-          }
 
           val answers: UserAnswers = request.userAnswers.getOrElse(UserAnswers(
             request.userId,
@@ -66,9 +63,16 @@ class StartReturnController @Inject()(
             lastUpdated = Instant.now(clock)
           ))
 
+          val dbCall = if (!value) {
+            cc.sessionRepository.clear(request.userId)
+          } else {
+            Future.fromTry(answers.set(StartReturnPage(period), value)).flatMap { updatedAnswers =>
+              cc.sessionRepository.set(updatedAnswers)
+            }
+          }
+
           for {
-            updatedAnswers <- Future.fromTry(answers.set(StartReturnPage(period), value))
-            _ <- cc.sessionRepository.set(updatedAnswers)
+            _ <- dbCall
           } yield Redirect(StartReturnPage(period).navigate(waypoints, answers, answers).route)
         }
       )
