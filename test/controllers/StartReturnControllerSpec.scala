@@ -1,0 +1,148 @@
+/*
+ * Copyright 2023 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package controllers
+
+import base.SpecBase
+import forms.StartReturnFormProvider
+import models.Country
+import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchersSugar.eqTo
+import org.mockito.Mockito.{times, verify, when}
+import org.scalacheck.Arbitrary
+import org.scalatestplus.mockito.MockitoSugar
+import pages.SoldToCountryPage
+import play.api.inject.bind
+import play.api.test.FakeRequest
+import play.api.test.Helpers._
+import repositories.SessionRepository
+import views.html.StartReturnView
+
+import scala.concurrent.Future
+
+class StartReturnControllerSpec extends SpecBase with MockitoSugar {
+
+  val formProvider = new StartReturnFormProvider()
+  val form = formProvider()
+
+  lazy val startReturnRoute = routes.StartReturnController.onPageLoad(waypoints, period).url
+
+  "StartReturn Controller" - {
+
+    "must return OK and the correct view for a GET" in {
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .build()
+
+      running(application) {
+        val request = FakeRequest(GET, startReturnRoute)
+
+        val result = route(application, request).value
+
+        val view = application.injector.instanceOf[StartReturnView]
+
+        status(result) mustEqual OK
+        contentAsString(result) mustEqual view(form, waypoints, period)(request, messages(application)).toString
+      }
+    }
+
+    "must redirect to the next page when valid data is submitted" in {
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .build()
+
+      running(application) {
+
+        val request =
+          FakeRequest(POST, startReturnRoute)
+            .withFormUrlEncodedBody(("value", "true"))
+
+        val result = route(application, request).value
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual routes.SoldGoodsController.onPageLoad(waypoints, period).url
+      }
+    }
+
+    "must redirect to the No Other Periods Available page when answer is no" in {
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .build()
+
+      running(application) {
+
+        val request =
+          FakeRequest(POST, startReturnRoute)
+            .withFormUrlEncodedBody(("value", "false"))
+
+        val result = route(application, request).value
+
+        status(result) mustEqual SEE_OTHER
+        // TODO should go to no other periods available page when exists
+        redirectLocation(result).value mustEqual routes.SoldGoodsController.onPageLoad(waypoints, period).url
+      }
+    }
+
+    "must clear useranswers when answer is no" in {
+      val mockSessionRepository = mock[SessionRepository]
+
+      when(mockSessionRepository.clear(any())) thenReturn Future.successful(true)
+
+      val country: Country = Arbitrary.arbitrary[Country].sample.value
+
+      val answers = emptyUserAnswers.set(SoldToCountryPage(period, index), country).success.value
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
+        .build()
+
+      running(application) {
+
+        val request =
+          FakeRequest(POST, startReturnRoute)
+            .withFormUrlEncodedBody(("value", "false"))
+
+        val result = route(application, request).value
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual routes.SoldGoodsController.onPageLoad(waypoints, period).url
+        verify(mockSessionRepository, times(1)).clear(eqTo(answers.id))
+      }
+    }
+
+    "must return a Bad Request and errors when invalid data is submitted" in {
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .build()
+
+      running(application) {
+
+        val request =
+          FakeRequest(POST, startReturnRoute)
+            .withFormUrlEncodedBody(("value", ""))
+
+        val boundForm = form.bind(Map("value" -> ""))
+
+        val view = application.injector.instanceOf[StartReturnView]
+
+        val result = route(application, request).value
+
+        status(result) mustEqual BAD_REQUEST
+        contentAsString(result) mustEqual view(boundForm, waypoints, period)(request, messages(application)).toString
+      }
+    }
+  }
+}

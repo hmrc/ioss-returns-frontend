@@ -16,8 +16,9 @@
 
 package forms.mappings
 
-import java.time.LocalDate
+import models.Index
 
+import java.time.LocalDate
 import play.api.data.validation.{Constraint, Invalid, Valid}
 
 trait Constraints {
@@ -109,4 +110,17 @@ trait Constraints {
       case _ =>
         Invalid(errorKey)
     }
+
+  protected def notADuplicate[A](index: Index, existingAnswers: Seq[A], errorKey: String, args: Any*): Constraint[A] = {
+
+    val indexedAnswers = existingAnswers.zipWithIndex
+    val filteredAnswers = indexedAnswers.filter(_._2 != index.position)
+
+    Constraint {
+      case answer if filteredAnswers.map(_._1) contains answer =>
+        Invalid(errorKey, args: _*)
+      case _ =>
+        Valid
+    }
+  }
 }

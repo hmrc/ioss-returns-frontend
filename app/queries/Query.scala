@@ -30,6 +30,13 @@ trait Gettable[A] extends Query
 
 trait Settable[A] extends Query {
 
+  def cleanup(value: Option[A], previousAnswers: UserAnswers, currentAnswers: UserAnswers): Try[UserAnswers] =
+    cleanup(value, currentAnswers)
+
   def cleanup(value: Option[A], userAnswers: UserAnswers): Try[UserAnswers] =
     Success(userAnswers)
+}
+
+trait Derivable[A, B] extends Query {
+  val derive: A => B
 }

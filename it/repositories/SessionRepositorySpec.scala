@@ -1,7 +1,7 @@
 package repositories
 
 import config.FrontendAppConfig
-import models.UserAnswers
+import models.{Period, UserAnswers}
 import org.mockito.Mockito.when
 import org.mongodb.scala.model.Filters
 import org.scalatest.OptionValues
@@ -12,7 +12,7 @@ import org.scalatestplus.mockito.MockitoSugar
 import play.api.libs.json.Json
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
 
-import java.time.{Clock, Instant, ZoneId}
+import java.time.{Clock, Instant, Month, ZoneId}
 import java.time.temporal.ChronoUnit
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -27,8 +27,9 @@ class SessionRepositorySpec
 
   private val instant = Instant.now.truncatedTo(ChronoUnit.MILLIS)
   private val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+  private val period: Period = Period(2024, Month.MARCH)
 
-  private val userAnswers = UserAnswers("id", Json.obj("foo" -> "bar"), Instant.ofEpochSecond(1))
+  private val userAnswers = UserAnswers("id", period, Json.obj("foo" -> "bar"), Instant.ofEpochSecond(1))
 
   private val mockAppConfig = mock[FrontendAppConfig]
   when(mockAppConfig.cacheTtl) thenReturn 1

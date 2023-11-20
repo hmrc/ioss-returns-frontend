@@ -14,14 +14,9 @@
  * limitations under the License.
  */
 
-package navigation
+package pages
 
-import play.api.mvc.Call
-import pages._
-import models.{Mode, UserAnswers}
+object PageConstants {
 
-class FakeNavigator(desiredRoute: Call) extends Navigator {
-
-  override def nextPage(page: Page, mode: Mode, userAnswers: UserAnswers): Call =
-    desiredRoute
+  val sales: String = "sales"
 }

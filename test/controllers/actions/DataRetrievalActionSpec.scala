@@ -17,9 +17,11 @@
 package controllers.actions
 
 import base.SpecBase
-import models.UserAnswers
-import models.requests.{IdentifierRequest, OptionalDataRequest}
+import models.requests.{OptionalDataRequest, RegistrationRequest}
+import models.{Period, RegistrationWrapper}
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
+import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.test.FakeRequest
 import repositories.SessionRepository
@@ -29,21 +31,29 @@ import scala.concurrent.Future
 
 class DataRetrievalActionSpec extends SpecBase with MockitoSugar {
 
-  class Harness(sessionRepository: SessionRepository) extends DataRetrievalActionImpl(sessionRepository) {
-    def callTransform[A](request: IdentifierRequest[A]): Future[OptionalDataRequest[A]] = transform(request)
+  class Harness(period: Period, repository: SessionRepository) extends DataRetrievalAction(period, repository) {
+
+    def callTransform(request: RegistrationRequest[_]): Future[OptionalDataRequest[_]] =
+      transform(request)
   }
 
   "Data Retrieval Action" - {
 
+    val registrationWrapper = arbitrary[RegistrationWrapper].sample.value
+
     "when there is no data in the cache" - {
 
-      "must set userAnswers to 'None' in the request" in {
+      "must set userAnswers to `None` in the request" in {
 
-        val sessionRepository = mock[SessionRepository]
-        when(sessionRepository.get(userAnswersId)) thenReturn Future(None)
-        val action = new Harness(sessionRepository)
+        val period     = arbitrary[Period].sample.value
+        val repository = mock[SessionRepository]
+        val request    = RegistrationRequest(FakeRequest(), testCredentials, vrn, iossNumber, registrationWrapper)
 
-        val result = action.callTransform(IdentifierRequest(FakeRequest(), testCredentials, vrn, iossNumber)).futureValue
+        when(repository.get(any(), any())) thenReturn Future.successful(None)
+
+        val action = new Harness(period, repository)
+
+        val result = action.callTransform(request).futureValue
 
         result.userAnswers must not be defined
       }
@@ -51,15 +61,19 @@ class DataRetrievalActionSpec extends SpecBase with MockitoSugar {
 
     "when there is data in the cache" - {
 
-      "must build a userAnswers object and add it to the request" in {
+      "must add the userAnswers to the request" in {
 
-        val sessionRepository = mock[SessionRepository]
-        when(sessionRepository.get(userAnswersId)) thenReturn Future(Some(UserAnswers(userAnswersId)))
-        val action = new Harness(sessionRepository)
+        val period     = arbitrary[Period].sample.value
+        val repository = mock[SessionRepository]
+        val request    = RegistrationRequest(FakeRequest(), testCredentials, vrn, iossNumber, registrationWrapper)
 
-        val result = action.callTransform(new IdentifierRequest(FakeRequest(), testCredentials, vrn, iossNumber)).futureValue
+        when(repository.get(any(), any())) thenReturn Future.successful(Some(emptyUserAnswers))
 
-        result.userAnswers mustBe defined
+        val action = new Harness(period, repository)
+
+        val result = action.callTransform(request).futureValue
+
+        result.userAnswers.value mustEqual emptyUserAnswers
       }
     }
   }

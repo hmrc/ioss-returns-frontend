@@ -16,7 +16,8 @@
 
 package controllers.actions
 
-import models.requests.{IdentifierRequest, RegistrationRequest}
+import models.requests.{DataRequest, IdentifierRequest, OptionalDataRequest, RegistrationRequest}
+import models.Period
 import play.api.http.FileMimeTypes
 import play.api.i18n.{Langs, MessagesApi}
 import play.api.mvc._
@@ -35,12 +36,26 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
 
   def getRegistration: GetRegistrationAction
 
+  def getData: DataRetrievalActionProvider
+
+  def requireData: DataRequiredAction
+
   def auth: ActionBuilder[IdentifierRequest, AnyContent] =
     actionBuilder andThen identify
 
   def authAndGetRegistration: ActionBuilder[RegistrationRequest, AnyContent] = {
     auth andThen
       getRegistration
+  }
+
+  def authAndGetOptionalData(period: Period): ActionBuilder[OptionalDataRequest, AnyContent] = {
+    authAndGetRegistration andThen
+      getData(period)
+  }
+
+  def authAndRequireData(period: Period): ActionBuilder[DataRequest, AnyContent] = {
+    authAndGetOptionalData(period) andThen
+      requireData
   }
 
 }
@@ -55,5 +70,7 @@ case class DefaultAuthenticatedControllerComponents @Inject()(
                                                                executionContext: ExecutionContext,
                                                                sessionRepository: SessionRepository,
                                                                identify: IdentifierAction,
-                                                               getRegistration: GetRegistrationAction
+                                                               getRegistration: GetRegistrationAction,
+                                                               getData: DataRetrievalActionProvider,
+                                                               requireData: DataRequiredAction
                                                              ) extends AuthenticatedControllerComponents

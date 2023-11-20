@@ -17,13 +17,36 @@
 package generators
 
 import models._
-import models.etmp.{DesAddress, EtmpAdminUse, EtmpBankDetails, EtmpDisplayRegistration, EtmpEuRegistrationDetails, EtmpExclusion, EtmpExclusionReason, EtmpPreviousEuRegistrationDetails, EtmpSchemeDetails, EtmpTradingName, EtmpWebsite, SchemeType, VatCustomerInfo, VatNumberTraderId}
-import org.scalacheck.Arbitrary.arbitrary
+import models.etmp._
 import org.scalacheck.{Arbitrary, Gen}
+import org.scalacheck.Arbitrary.arbitrary
 
-import java.time.{LocalDate, LocalDateTime}
+import java.time.{LocalDate, LocalDateTime, Month}
 
 trait ModelGenerators {
+
+  implicit lazy val arbitraryCountry: Arbitrary[Country] =
+    Arbitrary {
+      Gen.oneOf(Country.euCountries)
+    }
+
+  implicit lazy val arbitraryVatOnSales: Arbitrary[VatOnSales] =
+    Arbitrary {
+      Gen.oneOf(VatOnSales.values.toSeq)
+    }
+
+  implicit lazy val arbitraryVatRatesFromCountry: Arbitrary[VatRatesFromCountry] =
+    Arbitrary {
+      Gen.oneOf(VatRatesFromCountry.values)
+    }
+
+  implicit val arbitraryPeriod: Arbitrary[Period] =
+    Arbitrary {
+      for {
+        year <- Gen.choose(2022, 2099)
+        quarter <- Gen.oneOf(Month.values)
+      } yield Period(year, quarter)
+    }
 
   implicit lazy val arbitraryBic: Arbitrary[Bic] = {
     val asciiCodeForA = 65
