@@ -30,11 +30,11 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class SoldToCountryController @Inject()(
-                                        override val messagesApi: MessagesApi,
-                                        cc: AuthenticatedControllerComponents,
-                                        formProvider: SoldToCountryFormProvider,
-                                        view: SoldToCountryView
-                                    )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                         override val messagesApi: MessagesApi,
+                                         cc: AuthenticatedControllerComponents,
+                                         formProvider: SoldToCountryFormProvider,
+                                         view: SoldToCountryView
+                                       )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
@@ -73,7 +73,7 @@ class SoldToCountryController @Inject()(
         value =>
           for {
             updatedAnswers <- Future.fromTry(request.userAnswers.set(SoldToCountryPage(period, index), value))
-            _              <- cc.sessionRepository.set(updatedAnswers)
+            _ <- cc.sessionRepository.set(updatedAnswers)
           } yield Redirect(SoldToCountryPage(period, index).navigate(waypoints, request.userAnswers, updatedAnswers).route)
       )
   }

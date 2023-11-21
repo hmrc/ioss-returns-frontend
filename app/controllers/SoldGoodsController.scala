@@ -20,6 +20,7 @@ import controllers.actions._
 import forms.SoldGoodsFormProvider
 import models.Period
 import pages.{SoldGoodsPage, Waypoints}
+import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -29,15 +30,15 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class SoldGoodsController @Inject()(
-                                         override val messagesApi: MessagesApi,
-                                         cc: AuthenticatedControllerComponents,
-                                         formProvider: SoldGoodsFormProvider,
-                                         view: SoldGoodsView
-                                 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                     override val messagesApi: MessagesApi,
+                                     cc: AuthenticatedControllerComponents,
+                                     formProvider: SoldGoodsFormProvider,
+                                     view: SoldGoodsView
+                                   )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  val form = formProvider()
+  val form: Form[Boolean] = formProvider()
 
   def onPageLoad(waypoints: Waypoints, period: Period): Action[AnyContent] = cc.authAndRequireData(period) {
     implicit request =>
@@ -60,7 +61,7 @@ class SoldGoodsController @Inject()(
         value =>
           for {
             updatedAnswers <- Future.fromTry(request.userAnswers.set(SoldGoodsPage(period), value))
-            _              <- cc.sessionRepository.set(updatedAnswers)
+            _ <- cc.sessionRepository.set(updatedAnswers)
           } yield Redirect(SoldGoodsPage(period).navigate(waypoints, request.userAnswers, updatedAnswers).route)
       )
   }

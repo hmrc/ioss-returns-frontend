@@ -14,23 +14,11 @@
  * limitations under the License.
  */
 
-package viewmodels
+package object pages {
 
-package object govuk {
+  implicit class RecoveryOps(val a: Option[Page]) {
 
-  object all
-    extends ImplicitConversions
-      with BackLinkFluency
-      with ButtonFluency
-      with CheckboxFluency
-      with DateFluency
-      with ErrorSummaryFluency
-      with FieldsetFluency
-      with HintFluency
-      with InputFluency
-      with LabelFluency
-      with RadiosFluency
-      with SelectFluency
-      with SummaryListFluency
-      with TagFluency
+    def orRecovery: Page =
+      a.getOrElse(JourneyRecoveryPage)
+  }
 }

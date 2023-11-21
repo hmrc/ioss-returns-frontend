@@ -88,8 +88,13 @@ class IdentifierAction @Inject()(
     }
   }
 
-  private def getSuccessfulResponse[A](request: Request[A], credentials: Credentials, vrn: Vrn, iossNumber: String, groupId: String)
-                                      (implicit hc: HeaderCarrier): Future[Either[Result, IdentifierRequest[A]]] = {
+  private def getSuccessfulResponse[A](
+                                        request: Request[A],
+                                        credentials: Credentials,
+                                        vrn: Vrn,
+                                        iossNumber: String,
+                                        groupId: String
+                                      ): Future[Either[Result, IdentifierRequest[A]]] = {
     val identifierRequest = IdentifierRequest(request, credentials, vrn, iossNumber)
     Right(identifierRequest).toFuture
   }
@@ -101,7 +106,7 @@ class IdentifierAction @Inject()(
                                                 iossNumber: String,
                                                 groupId: String,
                                                 confidence: ConfidenceLevel
-                                              )(implicit hc: HeaderCarrier): Future[Either[Result, IdentifierRequest[A]]] = {
+                                              ): Future[Either[Result, IdentifierRequest[A]]] = {
     if (confidence >= ConfidenceLevel.L200) {
       getSuccessfulResponse(request, credentials, vrn, iossNumber, groupId)
     } else {

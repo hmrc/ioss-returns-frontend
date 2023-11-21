@@ -38,7 +38,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           .build()
 
         running(application) {
-          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad.url)
+          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad(waypoints).url)
 
           val result = route(application, request).value
 

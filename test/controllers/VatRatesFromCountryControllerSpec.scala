@@ -18,11 +18,12 @@ package controllers
 
 import base.SpecBase
 import forms.VatRatesFromCountryFormProvider
-import models.VatRatesFromCountry
+import models.{Country, VatRatesFromCountry}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
-import pages.VatRatesFromCountryPage
+import pages.{SoldToCountryPage, VatRatesFromCountryPage}
+import play.api.data.Form
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -33,16 +34,19 @@ import scala.concurrent.Future
 
 class VatRatesFromCountryControllerSpec extends SpecBase with MockitoSugar {
 
-  lazy val vatRatesFromCountryRoute = routes.VatRatesFromCountryController.onPageLoad(waypoints, period, index).url
+  private val country: Country = arbitraryCountry.arbitrary.sample.value
+  private val userAnswersWithCountry = emptyUserAnswers.set(SoldToCountryPage(period, index), country).success.value
+
+  lazy val vatRatesFromCountryRoute: String = routes.VatRatesFromCountryController.onPageLoad(waypoints, period, index).url
 
   val formProvider = new VatRatesFromCountryFormProvider()
-  val form = formProvider()
+  val form: Form[Set[VatRatesFromCountry]] = formProvider()
 
   "VatRatesFromCountry Controller" - {
 
     "must return OK and the correct view for a GET" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(userAnswersWithCountry)).build()
 
       running(application) {
         val request = FakeRequest(GET, vatRatesFromCountryRoute)
@@ -53,13 +57,13 @@ class VatRatesFromCountryControllerSpec extends SpecBase with MockitoSugar {
 
         status(result) mustEqual OK
 
-        contentAsString(result) mustEqual view(form, waypoints, period, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, waypoints, period, index, country)(request, messages(application)).toString
       }
     }
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = emptyUserAnswers.set(VatRatesFromCountryPage(period, index), VatRatesFromCountry.values.toSet).success.value
+      val userAnswers = userAnswersWithCountry.set(VatRatesFromCountryPage(period, index), VatRatesFromCountry.values.toSet).success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -71,7 +75,14 @@ class VatRatesFromCountryControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(VatRatesFromCountry.values.toSet), waypoints, period, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual
+          view(
+            form.fill(VatRatesFromCountry.values.toSet),
+            waypoints,
+            period,
+            index,
+            country
+          )(request, messages(application)).toString
       }
     }
 
@@ -82,7 +93,7 @@ class VatRatesFromCountryControllerSpec extends SpecBase with MockitoSugar {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
       val application =
-        applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        applicationBuilder(userAnswers = Some(userAnswersWithCountry))
           .overrides(
             bind[SessionRepository].toInstance(mockSessionRepository)
           )
@@ -102,7 +113,7 @@ class VatRatesFromCountryControllerSpec extends SpecBase with MockitoSugar {
 
     "must return a Bad Request and errors when invalid data is submitted" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(userAnswersWithCountry)).build()
 
       running(application) {
         val request =
@@ -116,7 +127,7 @@ class VatRatesFromCountryControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, waypoints, period, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, waypoints, period, index, country)(request, messages(application)).toString
       }
     }
 

@@ -19,22 +19,25 @@ package controllers
 import base.SpecBase
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import views.html.NoOtherPeriodsAvailableView
 
-class IndexControllerSpec extends SpecBase {
+class NoOtherPeriodsAvailableControllerSpec extends SpecBase {
 
-  "Index Controller" - {
+  "CannotStartReturns Controller" - {
 
     "must return OK and the correct view for a GET" in {
 
-      val application = applicationBuilder(userAnswers = None).build()
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
       running(application) {
-        val request = FakeRequest(GET, routes.IndexController.onPageLoad.url)
+        val request = FakeRequest(GET, routes.NoOtherPeriodsAvailableController.onPageLoad(waypoints).url)
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.YourAccountController.onPageLoad(waypoints).url
+        val view = application.injector.instanceOf[NoOtherPeriodsAvailableView]
+
+        status(result) mustBe OK
+        contentAsString(result) mustBe view(waypoints)(request, messages(application)).toString
       }
     }
   }

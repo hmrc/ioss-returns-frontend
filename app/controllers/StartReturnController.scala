@@ -20,6 +20,7 @@ import controllers.actions._
 import forms.StartReturnFormProvider
 import models.{Period, UserAnswers}
 import pages.{StartReturnPage, Waypoints}
+import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -40,7 +41,7 @@ class StartReturnController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  val form = formProvider()
+  val form: Form[Boolean] = formProvider()
 
   def onPageLoad(waypoints: Waypoints, period: Period): Action[AnyContent] = cc.authAndGetOptionalData(period) {
     implicit request =>
@@ -57,23 +58,13 @@ class StartReturnController @Inject()(
 
         value => {
 
-          val answers: UserAnswers = request.userAnswers.getOrElse(UserAnswers(
-            request.userId,
-            period = period,
-            lastUpdated = Instant.now(clock)
-          ))
-
-          val dbCall = if (!value) {
-            cc.sessionRepository.clear(request.userId)
-          } else {
-            Future.fromTry(answers.set(StartReturnPage(period), value)).flatMap { updatedAnswers =>
-              cc.sessionRepository.set(updatedAnswers)
-            }
-          }
+          val initialisedAnswers = UserAnswers(id = request.userId, period = period, lastUpdated = Instant.now(clock))
 
           for {
-            _ <- dbCall
-          } yield Redirect(StartReturnPage(period).navigate(waypoints, answers, answers).route)
+            answers <- request.userAnswers.getOrElse(initialisedAnswers).toFuture
+            updatedAnswers <- Future.fromTry(answers.set(StartReturnPage(period), value))
+            _ <- cc.sessionRepository.set(updatedAnswers)
+          } yield Redirect(StartReturnPage(period).navigate(waypoints, answers, updatedAnswers).route)
         }
       )
   }

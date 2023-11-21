@@ -16,21 +16,25 @@
 
 package controllers
 
-import controllers.actions.AuthenticatedControllerComponents
-import pages.EmptyWaypoints
-import play.api.i18n.I18nSupport
+import controllers.actions._
+import pages.Waypoints
+import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import views.html.NoOtherPeriodsAvailableView
 
 import javax.inject.Inject
 
-class IndexController @Inject()(
-                                 cc: AuthenticatedControllerComponents,
-                               ) extends FrontendBaseController with I18nSupport {
+class NoOtherPeriodsAvailableController @Inject()(
+                                                   override val messagesApi: MessagesApi,
+                                                   cc: AuthenticatedControllerComponents,
+                                                   view: NoOtherPeriodsAvailableView
+                                                 ) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad: Action[AnyContent] = cc.authAndGetRegistration { _ =>
-    Redirect(routes.YourAccountController.onPageLoad(waypoints = EmptyWaypoints))
+  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = (cc.actionBuilder andThen cc.identify) {
+    implicit request =>
+      Ok(view(waypoints))
   }
 }

@@ -19,29 +19,27 @@ package controllers
 import config.FrontendAppConfig
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
+import pages.Waypoints
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.YourAccountView
 
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
 
 class YourAccountController @Inject()(
                                        cc: AuthenticatedControllerComponents,
                                        view: YourAccountView,
                                        appConfig: FrontendAppConfig
-                                     )(implicit ec: ExecutionContext)
+                                     )
 
   extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad: Action[AnyContent] = cc.authAndGetRegistration {
+  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetRegistration {
     implicit request =>
 
       Ok(view(request.registrationWrapper.vatInfo.getName, request.iossNumber, appConfig.amendRegistrationUrl))
   }
-
-
 }
