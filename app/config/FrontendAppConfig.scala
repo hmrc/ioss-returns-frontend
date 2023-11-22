@@ -40,7 +40,7 @@ class FrontendAppConfig @Inject() (configuration: Configuration) {
   val amendRegistrationUrl: String = configuration.get[String]("urls.amendRegistrationUrl")
 
   private val exitSurveyBaseUrl: String = configuration.get[Service]("microservice.services.feedback-frontend").baseUrl
-  val exitSurveyUrl: String             = s"$exitSurveyBaseUrl/feedback/ioss-returns-frontend"
+  val exitSurveyUrl: String             = s"${exitSurveyBaseUrl}feedback/ioss-returns-frontend"
 
   val languageTranslationEnabled: Boolean =
     configuration.get[Boolean]("features.welsh-translation")
