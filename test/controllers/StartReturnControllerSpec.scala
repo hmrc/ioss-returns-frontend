@@ -65,7 +65,7 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe SoldGoodsPage(period).route(waypoints).url
+        redirectLocation(result).value mustBe SoldGoodsPage.route(waypoints).url
       }
     }
 

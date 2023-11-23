@@ -14,21 +14,17 @@
  * limitations under the License.
  */
 
-package pages
+package forms
 
-import controllers.routes
-import models.{Index, UserAnswers}
-import play.api.libs.json.JsPath
-import play.api.mvc.Call
+import javax.inject.Inject
 
-case object SoldGoodsPage extends QuestionPage[Boolean] {
+import forms.mappings.Mappings
+import play.api.data.Form
 
-  override def path: JsPath = JsPath \ toString
+class SoldToCountryListFormProvider @Inject() extends Mappings {
 
-  override def toString: String = "soldGoods"
-
-  override def route(waypoints: Waypoints): Call = routes.SoldGoodsController.onPageLoad(waypoints)
-
-  override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
-    SoldToCountryPage(Index(0)) // TODO should it always be Index(0)?
+  def apply(): Form[Boolean] =
+    Form(
+      "value" -> boolean("soldToCountryList.error.required")
+    )
 }

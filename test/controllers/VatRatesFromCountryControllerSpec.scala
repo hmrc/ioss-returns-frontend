@@ -35,9 +35,9 @@ import scala.concurrent.Future
 class VatRatesFromCountryControllerSpec extends SpecBase with MockitoSugar {
 
   private val country: Country = arbitraryCountry.arbitrary.sample.value
-  private val userAnswersWithCountry = emptyUserAnswers.set(SoldToCountryPage(period, index), country).success.value
+  private val userAnswersWithCountry = emptyUserAnswers.set(SoldToCountryPage(index), country).success.value
 
-  lazy val vatRatesFromCountryRoute: String = routes.VatRatesFromCountryController.onPageLoad(waypoints, period, index).url
+  lazy val vatRatesFromCountryRoute: String = routes.VatRatesFromCountryController.onPageLoad(waypoints, index).url
 
   val formProvider = new VatRatesFromCountryFormProvider()
   val form: Form[Set[VatRatesFromCountry]] = formProvider()
@@ -63,7 +63,7 @@ class VatRatesFromCountryControllerSpec extends SpecBase with MockitoSugar {
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = userAnswersWithCountry.set(VatRatesFromCountryPage(period, index), VatRatesFromCountry.values.toSet).success.value
+      val userAnswers = userAnswersWithCountry.set(VatRatesFromCountryPage(index), VatRatesFromCountry.values.toSet).success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -107,7 +107,7 @@ class VatRatesFromCountryControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.SalesToCountryController.onPageLoad(waypoints, period, index).url
+        redirectLocation(result).value mustEqual routes.SalesToCountryController.onPageLoad(waypoints, index).url
       }
     }
 

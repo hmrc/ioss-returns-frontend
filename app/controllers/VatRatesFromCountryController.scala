@@ -18,7 +18,7 @@ package controllers
 
 import controllers.actions._
 import forms.VatRatesFromCountryFormProvider
-import models.{Index, Period, VatRatesFromCountry}
+import models.{Index, VatRatesFromCountry}
 import pages.{VatRatesFromCountryPage, Waypoints}
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
@@ -41,12 +41,15 @@ class VatRatesFromCountryController @Inject()(
 
   val form: Form[Set[VatRatesFromCountry]] = formProvider()
 
-  def onPageLoad(waypoints: Waypoints, period: Period, index: Index): Action[AnyContent] = cc.authAndRequireData(period).async {
+  def onPageLoad(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
-      getCountry(waypoints, period, index) {
+
+      val period = request.userAnswers.period
+
+      getCountry(waypoints, index) {
         country =>
 
-          val preparedForm = request.userAnswers.get(VatRatesFromCountryPage(period, index)) match {
+          val preparedForm = request.userAnswers.get(VatRatesFromCountryPage(index)) match {
             case None => form
             case Some(value) => form.fill(value)
           }
@@ -55,9 +58,12 @@ class VatRatesFromCountryController @Inject()(
       }
   }
 
-  def onSubmit(waypoints: Waypoints, period: Period, index: Index): Action[AnyContent] = cc.authAndRequireData(period).async {
+  def onSubmit(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
-      getCountry(waypoints, period, index) {
+
+      val period = request.userAnswers.period
+
+      getCountry(waypoints, index) {
         country =>
 
           form.bindFromRequest().fold(
@@ -66,9 +72,9 @@ class VatRatesFromCountryController @Inject()(
 
             value =>
               for {
-                updatedAnswers <- Future.fromTry(request.userAnswers.set(VatRatesFromCountryPage(period, index), value))
+                updatedAnswers <- Future.fromTry(request.userAnswers.set(VatRatesFromCountryPage(index), value))
                 _ <- cc.sessionRepository.set(updatedAnswers)
-              } yield Redirect(VatRatesFromCountryPage(period, index).navigate(waypoints, request.userAnswers, updatedAnswers).route)
+              } yield Redirect(VatRatesFromCountryPage(index).navigate(waypoints, request.userAnswers, updatedAnswers).route)
           )
       }
   }

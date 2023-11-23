@@ -26,7 +26,7 @@
 
 @layout(pageTitle = title(form, messages("vatOnSales.title"))) {
 
-    @formHelper(action = routes.VatOnSalesController.onSubmit(waypoints, period, index), Symbol("autoComplete") -> "off") {
+    @formHelper(action = routes.VatOnSalesController.onSubmit(waypoints, index), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form,  errorLinkOverrides = Map("value" -> "value_0")))

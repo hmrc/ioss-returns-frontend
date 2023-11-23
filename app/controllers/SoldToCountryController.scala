@@ -18,12 +18,13 @@ package controllers
 
 import controllers.actions._
 import forms.SoldToCountryFormProvider
-import models.{Index, Period}
+import models.Index
 import pages.{SoldToCountryPage, Waypoints}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import queries.AllSalesQuery
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.FutureSyntax.FutureOps
 import views.html.SoldToCountryView
 
 import javax.inject.Inject
@@ -38,8 +39,10 @@ class SoldToCountryController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(waypoints: Waypoints, period: Period, index: Index): Action[AnyContent] = cc.authAndRequireData(period) {
+  def onPageLoad(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndRequireData() {
     implicit request =>
+
+      val period = request.userAnswers.period
 
       val form = formProvider(
         index,
@@ -48,7 +51,7 @@ class SoldToCountryController @Inject()(
           .map(_.country)
       )
 
-      val preparedForm = request.userAnswers.get(SoldToCountryPage(period, index)) match {
+      val preparedForm = request.userAnswers.get(SoldToCountryPage(index)) match {
         case None => form
         case Some(value) => form.fill(value)
       }
@@ -56,8 +59,10 @@ class SoldToCountryController @Inject()(
       Ok(view(preparedForm, waypoints, period, index))
   }
 
-  def onSubmit(waypoints: Waypoints, period: Period, index: Index): Action[AnyContent] = cc.authAndRequireData(period).async {
+  def onSubmit(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
+
+      val period = request.userAnswers.period
 
       val form = formProvider(
         index,
@@ -68,13 +73,13 @@ class SoldToCountryController @Inject()(
 
       form.bindFromRequest().fold(
         formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, waypoints, period, index))),
+          BadRequest(view(formWithErrors, waypoints, period, index)).toFuture,
 
         value =>
           for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(SoldToCountryPage(period, index), value))
+            updatedAnswers <- Future.fromTry(request.userAnswers.set(SoldToCountryPage(index), value))
             _ <- cc.sessionRepository.set(updatedAnswers)
-          } yield Redirect(SoldToCountryPage(period, index).navigate(waypoints, request.userAnswers, updatedAnswers).route)
+          } yield Redirect(SoldToCountryPage(index).navigate(waypoints, request.userAnswers, updatedAnswers).route)
       )
   }
 }

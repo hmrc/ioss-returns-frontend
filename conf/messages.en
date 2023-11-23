@@ -81,8 +81,8 @@ soldGoods.change.hidden = Sold Goods
 
 soldToCountry.title = Which country did you sell to?
 soldToCountry.heading = Which country did you sell to?
-soldToCountry.checkYourAnswersLabel = soldToCountry
-soldToCountry.error.required = Enter a country you sold to
+soldToCountry.checkYourAnswersLabel = Country sold to
+soldToCountry.error.required = Select a country you sold to
 soldToCountry.change.hidden = which country you sold to
 
 vatRatesFromCountry.title = Which VAT rates did you sell goods at?
@@ -116,3 +116,14 @@ noOtherPeriodsAvailable.title = You cannot start returns for other months yet
 noOtherPeriodsAvailable.heading = You cannot start returns for other months yet
 noOtherPeriodsAvailable.p1 = You can only start returns for months that have ended.
 noOtherPeriodsAvailable.backToYourAccount = <a class="govuk-link" href={0}>Back to your account</a>
+
+soldToCountryList.title.singular = You added sales to 1 country
+soldToCountryList.title.plural = You added sales to {0} countries
+soldToCountryList.heading.singular = You added sales to 1 country
+soldToCountryList.heading.plural = You added sales to {0} countries
+soldToCountryList.addAnother = Add sales to another country?
+soldToCountryList.maximumReached = You have added details for every country
+soldToCountryList.error.required = Select yes if you want to add sales to an additional country
+soldToCountryList.change.hidden = sales to {0}
+soldToCountryList.remove.hidden = sales to {0}
+soldToCountryList.addAnother.hint = You must tell us about all of your eligible sales.

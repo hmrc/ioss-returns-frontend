@@ -17,7 +17,7 @@
 package viewmodels.checkAnswers
 
 import controllers.routes
-import models.{Index, Period, UserAnswers}
+import models.{Index, UserAnswers}
 import pages.{VatRatesFromCountryPage, Waypoints}
 import play.api.i18n.Messages
 import play.twirl.api.HtmlFormat
@@ -28,8 +28,8 @@ import viewmodels.implicits._
 
 object VatRatesFromCountrySummary  {
 
-  def row(answers: UserAnswers, waypoints: Waypoints, period: Period, index: Index)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(VatRatesFromCountryPage(period, index)).map {
+  def row(answers: UserAnswers, waypoints: Waypoints, index: Index)(implicit messages: Messages): Option[SummaryListRow] =
+    answers.get(VatRatesFromCountryPage(index)).map {
       answers =>
 
         val value = ValueViewModel(
@@ -45,7 +45,7 @@ object VatRatesFromCountrySummary  {
           key     = "vatRatesFromCountry.checkYourAnswersLabel",
           value   = value,
           actions = Seq(
-            ActionItemViewModel("site.change", routes.VatRatesFromCountryController.onPageLoad(waypoints, period, index).url)
+            ActionItemViewModel("site.change", routes.VatRatesFromCountryController.onPageLoad(waypoints, index).url)
               .withVisuallyHiddenText(messages("vatRatesFromCountry.change.hidden"))
           )
         )

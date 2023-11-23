@@ -1,45 +1,49 @@
 # microservice specific routes
 
-->          /hmrc-frontend                             hmrcfrontend.Routes
+->          /hmrc-frontend                     hmrcfrontend.Routes
 
-GET         /                                          controllers.IndexController.onPageLoad
+GET         /                                  controllers.IndexController.onPageLoad
 
-GET         /assets/*file                              controllers.Assets.versioned(path="/public", file: Asset)
+GET         /assets/*file                      controllers.Assets.versioned(path="/public", file: Asset)
 
-GET         /language/:lang                            controllers.LanguageSwitchController.switchToLanguage(lang: String)
+GET         /language/:lang                    controllers.LanguageSwitchController.switchToLanguage(lang: String)
 
-GET         /refresh-session                           controllers.KeepAliveController.keepAlive
+GET         /refresh-session                   controllers.KeepAliveController.keepAlive
 
-GET         /there-is-a-problem                        controllers.JourneyRecoveryController.onPageLoad(continueUrl: Option[RedirectUrl] ?= None)
+GET         /there-is-a-problem                controllers.JourneyRecoveryController.onPageLoad(continueUrl: Option[RedirectUrl] ?= None)
 
-GET         /check-your-answers                        controllers.CheckYourAnswersController.onPageLoad()
+GET         /check-your-answers                controllers.CheckYourAnswersController.onPageLoad()
 
-GET         /account/sign-out-survey                   controllers.auth.AuthController.signOut
-GET         /account/sign-out                          controllers.auth.AuthController.signOutNoSurvey
-GET         /account/signed-out                        controllers.auth.SignedOutController.onPageLoad
+GET         /account/sign-out-survey           controllers.auth.AuthController.signOut
+GET         /account/sign-out                  controllers.auth.AuthController.signOutNoSurvey
+GET         /account/signed-out                controllers.auth.SignedOutController.onPageLoad
 
-GET         /unauthorised                              controllers.UnauthorisedController.onPageLoad
+GET         /unauthorised                      controllers.UnauthorisedController.onPageLoad
 
-GET         /cannot-use-not-registered                 controllers.NotRegisteredController.onPageLoad()
+GET         /cannot-use-not-registered         controllers.NotRegisteredController.onPageLoad()
 
-GET         /your-account                              controllers.YourAccountController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
+GET         /your-account                      controllers.YourAccountController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
 
-GET         /startReturn/:period                       controllers.StartReturnController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, period: Period)
-POST        /startReturn/:period                       controllers.StartReturnController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, period: Period)
+GET         /:period/start                     controllers.StartReturnController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, period: Period)
+POST        /:period/start                     controllers.StartReturnController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, period: Period)
 
-GET         /soldGoods/:period                         controllers.SoldGoodsController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, period: Period)
-POST        /soldGoods/:period                         controllers.SoldGoodsController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, period: Period)
+GET         /soldGoods                         controllers.SoldGoodsController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
+POST        /soldGoods                         controllers.SoldGoodsController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints)
 
-GET         /soldToCountry/:period/:index              controllers.SoldToCountryController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, period: Period, index: Index)
-POST        /soldToCountry/:period/:index              controllers.SoldToCountryController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, period: Period, index: Index)
+GET         /soldToCountry/:index              controllers.SoldToCountryController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, index: Index)
+POST        /soldToCountry/:index              controllers.SoldToCountryController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, index: Index)
 
-GET         /vatRatesFromCountry/:period/:index        controllers.VatRatesFromCountryController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, period: Period, index: Index)
-POST        /vatRatesFromCountry/:period/:index        controllers.VatRatesFromCountryController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, period: Period, index: Index)
+GET         /vatRatesFromCountry/:index        controllers.VatRatesFromCountryController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, index: Index)
+POST        /vatRatesFromCountry/:index        controllers.VatRatesFromCountryController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, index: Index)
 
-GET         /salesToCountry/:period/:index             controllers.SalesToCountryController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, period: Period, index: Index)
-POST        /salesToCountry/:period/:index             controllers.SalesToCountryController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, period: Period, index: Index)
+GET         /salesToCountry/:index             controllers.SalesToCountryController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, index: Index)
+POST        /salesToCountry/:index             controllers.SalesToCountryController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, index: Index)
 
-GET         /vatOnSales/:period/:index                 controllers.VatOnSalesController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, period: Period, index: Index)
-POST        /vatOnSales/:period/:index                 controllers.VatOnSalesController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, period: Period, index: Index)
+GET         /vatOnSales/:index                 controllers.VatOnSalesController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, index: Index)
+POST        /vatOnSales/:index                 controllers.VatOnSalesController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, index: Index)
 
-GET         /no-other-periods-available                controllers.NoOtherPeriodsAvailableController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
+GET         /no-other-periods-available        controllers.NoOtherPeriodsAvailableController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
+
+GET         /add-sales-country-list            controllers.SoldToCountryListController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
+POST        /add-sales-country-list            controllers.SoldToCountryListController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints)
+

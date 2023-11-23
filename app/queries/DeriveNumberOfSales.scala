@@ -14,21 +14,14 @@
  * limitations under the License.
  */
 
-package pages
+package queries
 
-import controllers.routes
-import models.{Index, UserAnswers}
-import play.api.libs.json.JsPath
-import play.api.mvc.Call
+import pages.PageConstants
+import play.api.libs.json.{JsObject, JsPath}
 
-case object SoldGoodsPage extends QuestionPage[Boolean] {
+case object DeriveNumberOfSales extends Derivable[Seq[JsObject], Int] {
 
-  override def path: JsPath = JsPath \ toString
+  override val derive: Seq[JsObject] => Int = _.size
 
-  override def toString: String = "soldGoods"
-
-  override def route(waypoints: Waypoints): Call = routes.SoldGoodsController.onPageLoad(waypoints)
-
-  override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
-    SoldToCountryPage(Index(0)) // TODO should it always be Index(0)?
+  override def path: JsPath = JsPath \ PageConstants.sales
 }

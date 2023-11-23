@@ -17,12 +17,11 @@
 package repositories
 
 import config.FrontendAppConfig
-import models.{Period, UserAnswers}
+import models.UserAnswers
 import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.model._
 import play.api.libs.json.Format
 import uk.gov.hmrc.mongo.MongoComponent
-import uk.gov.hmrc.mongo.play.json.Codecs.JsonOps
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 
@@ -55,13 +54,6 @@ class SessionRepository @Inject()(
 
   private def byId(id: String): Bson = Filters.equal("_id", id)
 
-  private def byUserIdAndPeriod(userId: String, period: Period): Bson = {
-    Filters.and(
-      Filters.equal("_id", userId),
-      Filters.equal("period", period.toBson(legacyNumbers = false))
-    )
-  }
-
   def keepAlive(id: String): Future[Boolean] =
     collection
       .updateOne(
@@ -76,14 +68,6 @@ class SessionRepository @Inject()(
       _ =>
         collection
           .find(byId(id))
-          .headOption()
-    }
-
-  def get(userId: String, period: Period): Future[Option[UserAnswers]] =
-    keepAlive(userId).flatMap {
-      _ =>
-        collection
-          .find(byUserIdAndPeriod(userId, period))
           .headOption()
     }
 

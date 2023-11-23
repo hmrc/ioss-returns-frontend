@@ -32,8 +32,8 @@ case class StartReturnPage(period: Period) extends QuestionPage[Boolean] {
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
     answers.get(this).map {
       case true =>
-        SoldGoodsPage(period)
+        SoldGoodsPage
       case false =>
         NoOtherPeriodsAvailablePage
-    }.orRecovery
+    }.orRecover
 }

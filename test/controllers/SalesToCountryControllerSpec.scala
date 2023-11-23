@@ -22,6 +22,7 @@ import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
 import pages.SalesToCountryPage
+import play.api.data.Form
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -33,11 +34,11 @@ import scala.concurrent.Future
 class SalesToCountryControllerSpec extends SpecBase with MockitoSugar {
 
   val formProvider = new SalesToCountryFormProvider()
-  val form = formProvider()
+  val form: Form[Int] = formProvider()
 
   val validAnswer = 0
 
-  lazy val salesToCountryRoute = routes.SalesToCountryController.onPageLoad(waypoints, period, index).url
+  lazy val salesToCountryRoute: String = routes.SalesToCountryController.onPageLoad(waypoints, index).url
 
   "SalesToCountry Controller" - {
 
@@ -59,7 +60,7 @@ class SalesToCountryControllerSpec extends SpecBase with MockitoSugar {
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = emptyUserAnswers.set(SalesToCountryPage(period, index), validAnswer).success.value
+      val userAnswers = emptyUserAnswers.set(SalesToCountryPage(index), validAnswer).success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -96,7 +97,7 @@ class SalesToCountryControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.VatOnSalesController.onPageLoad(waypoints, period, index).url
+        redirectLocation(result).value mustEqual routes.VatOnSalesController.onPageLoad(waypoints, index).url
       }
     }
 

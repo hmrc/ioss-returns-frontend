@@ -17,7 +17,7 @@
 package controllers
 
 import models.requests.DataRequest
-import models.{Country, Index, Period}
+import models.{Country, Index}
 import pages.{JourneyRecoveryPage, SoldToCountryPage, Waypoints}
 import play.api.mvc.Results.Redirect
 import play.api.mvc.{AnyContent, Result}
@@ -27,11 +27,11 @@ import scala.concurrent.Future
 
 trait GetCountry {
 
-  protected def getCountry(waypoints: Waypoints, period: Period, index: Index)
+  protected def getCountry(waypoints: Waypoints, index: Index)
                           (block: Country => Future[Result])
                           (implicit request: DataRequest[AnyContent]): Future[Result] =
     request.userAnswers
-      .get(SoldToCountryPage(period, index))
+      .get(SoldToCountryPage(index))
       .map(block(_))
       .getOrElse(Redirect(JourneyRecoveryPage.route(waypoints)).toFuture)
 }

@@ -18,31 +18,35 @@ package controllers
 
 import controllers.actions._
 import forms.SalesToCountryFormProvider
-import models.{Index, Period}
+import models.Index
 import pages.{SalesToCountryPage, Waypoints}
+import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.FutureSyntax.FutureOps
 import views.html.SalesToCountryView
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class SalesToCountryController @Inject()(
-                                        override val messagesApi: MessagesApi,
-                                        cc: AuthenticatedControllerComponents,
-                                        formProvider: SalesToCountryFormProvider,
-                                        view: SalesToCountryView
-                                      )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                          override val messagesApi: MessagesApi,
+                                          cc: AuthenticatedControllerComponents,
+                                          formProvider: SalesToCountryFormProvider,
+                                          view: SalesToCountryView
+                                        )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  val form = formProvider()
+  val form: Form[Int] = formProvider()
 
-  def onPageLoad(waypoints: Waypoints, period: Period, index: Index): Action[AnyContent] = cc.authAndRequireData(period) {
+  def onPageLoad(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndRequireData() {
     implicit request =>
 
-      val preparedForm = request.userAnswers.get(SalesToCountryPage(period, index)) match {
+      val period = request.userAnswers.period
+
+      val preparedForm = request.userAnswers.get(SalesToCountryPage(index)) match {
         case None => form
         case Some(value) => form.fill(value)
       }
@@ -50,18 +54,20 @@ class SalesToCountryController @Inject()(
       Ok(view(preparedForm, waypoints, period, index))
   }
 
-  def onSubmit(waypoints: Waypoints, period: Period, index: Index): Action[AnyContent] = cc.authAndRequireData(period).async {
+  def onSubmit(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
+
+      val period = request.userAnswers.period
 
       form.bindFromRequest().fold(
         formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, waypoints, period, index))),
+          BadRequest(view(formWithErrors, waypoints, period, index)).toFuture,
 
         value =>
           for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(SalesToCountryPage(period, index), value))
-            _              <- cc.sessionRepository.set(updatedAnswers)
-          } yield Redirect(SalesToCountryPage(period, index).navigate(waypoints, request.userAnswers, updatedAnswers).route)
+            updatedAnswers <- Future.fromTry(request.userAnswers.set(SalesToCountryPage(index), value))
+            _ <- cc.sessionRepository.set(updatedAnswers)
+          } yield Redirect(SalesToCountryPage(index).navigate(waypoints, request.userAnswers, updatedAnswers).route)
       )
   }
 }

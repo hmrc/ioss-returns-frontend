@@ -45,7 +45,7 @@ class GetRegistrationActionSpec extends SpecBase with MockitoSugar with EitherVa
 
     "and a registration can be retrieved from the backend" - {
 
-      "must save the registration to the repository and return Right" in {
+      "must save the registration to the sessionRepository and return Right" in {
 
         val registrationWrapper = Arbitrary.arbitrary[RegistrationWrapper].sample.value
 

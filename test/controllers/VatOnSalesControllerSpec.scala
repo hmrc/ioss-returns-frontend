@@ -22,7 +22,8 @@ import models.VatOnSales
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
-import pages.VatOnSalesPage
+import pages.{SoldToCountryListPage, VatOnSalesPage}
+import play.api.data.Form
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -33,10 +34,10 @@ import scala.concurrent.Future
 
 class VatOnSalesControllerSpec extends SpecBase with MockitoSugar {
 
-  lazy val vatOnSalesRoute = routes.VatOnSalesController.onPageLoad(waypoints, period, index).url
+  lazy val vatOnSalesRoute: String = routes.VatOnSalesController.onPageLoad(waypoints, index).url
 
   val formProvider = new VatOnSalesFormProvider()
-  val form = formProvider()
+  val form: Form[VatOnSales] = formProvider()
 
   "VatOnSales Controller" - {
 
@@ -58,7 +59,7 @@ class VatOnSalesControllerSpec extends SpecBase with MockitoSugar {
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = emptyUserAnswers.set(VatOnSalesPage(period, index), VatOnSales.values.head).success.value
+      val userAnswers = emptyUserAnswers.set(VatOnSalesPage(index), VatOnSales.values.head).success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -96,7 +97,7 @@ class VatOnSalesControllerSpec extends SpecBase with MockitoSugar {
 
         status(result) mustEqual SEE_OTHER
         // TODO - should go to mini CYA
-        redirectLocation(result).value mustEqual routes.CheckYourAnswersController.onPageLoad().url
+        redirectLocation(result).value mustEqual SoldToCountryListPage().route(waypoints).url
       }
     }
 

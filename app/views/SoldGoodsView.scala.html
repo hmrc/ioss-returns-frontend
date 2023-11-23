@@ -28,7 +28,7 @@
 
     @layout(pageTitle = title(form, messages("soldGoods.title", period.displayText))) {
 
-        @formHelper(action = routes.SoldGoodsController.onSubmit(waypoints, period), Symbol("autoComplete") -> "off") {
+        @formHelper(action = routes.SoldGoodsController.onSubmit(waypoints), Symbol("autoComplete") -> "off") {
 
             @if(form.errors.nonEmpty) {
                 @govukErrorSummary(ErrorSummaryViewModel(form))

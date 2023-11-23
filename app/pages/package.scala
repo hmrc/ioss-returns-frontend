@@ -18,7 +18,7 @@ package object pages {
 
   implicit class RecoveryOps(val a: Option[Page]) {
 
-    def orRecovery: Page =
+    def orRecover: Page =
       a.getOrElse(JourneyRecoveryPage)
   }
 }

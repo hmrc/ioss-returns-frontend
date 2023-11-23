@@ -43,13 +43,15 @@ class StartReturnController @Inject()(
 
   val form: Form[Boolean] = formProvider()
 
-  def onPageLoad(waypoints: Waypoints, period: Period): Action[AnyContent] = cc.authAndGetOptionalData(period) {
+  def onPageLoad(waypoints: Waypoints, period: Period): Action[AnyContent] = cc.authAndGetOptionalData() {
     implicit request =>
+
+      // TODO check for starting correct period
 
       Ok(view(form, waypoints, period))
   }
 
-  def onSubmit(waypoints: Waypoints, period: Period): Action[AnyContent] = cc.authAndGetOptionalData(period).async {
+  def onSubmit(waypoints: Waypoints, period: Period): Action[AnyContent] = cc.authAndGetOptionalData().async {
     implicit request =>
 
       form.bindFromRequest().fold(

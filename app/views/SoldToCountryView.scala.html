@@ -30,7 +30,7 @@
 
 @layout(pageTitle = title(form, messages("soldToCountry.title"))) {
 
-    @formHelper(action = routes.SoldToCountryController.onSubmit(waypoints, period, index)) {
+    @formHelper(action = routes.SoldToCountryController.onSubmit(waypoints, index)) {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))
