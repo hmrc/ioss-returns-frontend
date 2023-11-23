@@ -18,20 +18,19 @@ package pages
 
 import controllers.routes
 import models.{Index, UserAnswers}
-import play.api.libs.json.JsPath
 import play.api.mvc.Call
+import queries.DeriveNumberOfSales
 
-case object SoldGoodsPage extends QuestionPage[Boolean] {
+case class DeleteSoldToCountryPage(index: Index) extends Page {
 
-  override def path: JsPath = JsPath \ toString
-
-  override def toString: String = "soldGoods"
-
-  override def route(waypoints: Waypoints): Call = routes.SoldGoodsController.onPageLoad(waypoints)
+  override def route(waypoints: Waypoints): Call =
+    routes.DeleteSoldToCountryController.onPageLoad(waypoints, index)
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
-    answers.get(this).map {
-      case true => SoldToCountryPage(Index(0)) // TODO should it always be Index(0)?
-      case false => CheckYourAnswersPage // TODO -> To correct a previous return page when created
-    }.orRecover
+    answers.get(DeriveNumberOfSales) match {
+      case Some(n) if n > 0 =>
+        SoldToCountryListPage()
+      case _ =>
+        SoldGoodsPage
+    }
 }
