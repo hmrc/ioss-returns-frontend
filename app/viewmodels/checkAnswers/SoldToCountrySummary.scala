@@ -17,7 +17,7 @@
 package viewmodels.checkAnswers
 
 import controllers.routes
-import models.{Index, Period, UserAnswers}
+import models.{Index, UserAnswers}
 import pages.{SoldToCountryPage, Waypoints}
 import play.api.i18n.Messages
 import play.twirl.api.HtmlFormat
@@ -27,15 +27,15 @@ import viewmodels.implicits._
 
 object SoldToCountrySummary  {
 
-  def row(answers: UserAnswers, waypoints: Waypoints, period: Period, index: Index)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(SoldToCountryPage(period, index)).map {
+  def row(answers: UserAnswers, waypoints: Waypoints, index: Index)(implicit messages: Messages): Option[SummaryListRow] =
+    answers.get(SoldToCountryPage(index)).map {
       answer =>
 
         SummaryListRowViewModel(
           key     = "soldToCountry.checkYourAnswersLabel",
           value   = ValueViewModel(HtmlFormat.escape(answer.name).toString),
           actions = Seq(
-            ActionItemViewModel("site.change", routes.SoldToCountryController.onPageLoad(waypoints, period, index).url)
+            ActionItemViewModel("site.change", routes.SoldToCountryController.onPageLoad(waypoints, index).url)
               .withVisuallyHiddenText(messages("soldToCountry.change.hidden"))
           )
         )

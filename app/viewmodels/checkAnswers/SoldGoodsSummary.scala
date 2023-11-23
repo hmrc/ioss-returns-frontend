@@ -17,7 +17,7 @@
 package viewmodels.checkAnswers
 
 import controllers.routes
-import models.{Period, UserAnswers}
+import models.UserAnswers
 import pages.{SoldGoodsPage, Waypoints}
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
@@ -26,8 +26,8 @@ import viewmodels.implicits._
 
 object SoldGoodsSummary  {
 
-  def row(answers: UserAnswers, waypoints: Waypoints, period: Period)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(SoldGoodsPage(period)).map {
+  def row(answers: UserAnswers, waypoints: Waypoints)(implicit messages: Messages): Option[SummaryListRow] =
+    answers.get(SoldGoodsPage).map {
       answer =>
 
         val value = if (answer) "site.yes" else "site.no"
@@ -36,7 +36,7 @@ object SoldGoodsSummary  {
           key     = "soldGoods.checkYourAnswersLabel",
           value   = ValueViewModel(value),
           actions = Seq(
-            ActionItemViewModel("site.change", routes.SoldGoodsController.onPageLoad(waypoints, period).url)
+            ActionItemViewModel("site.change", routes.SoldGoodsController.onPageLoad(waypoints).url)
               .withVisuallyHiddenText(messages("soldGoods.change.hidden"))
           )
         )

@@ -14,30 +14,35 @@
  * limitations under the License.
  *@
 
+@import viewmodels.LegendSize
+
 @this(
-    layout: templates.Layout,
-    formHelper: FormWithCSRF,
-    govukErrorSummary: GovukErrorSummary,
-    govukRadios: GovukRadios,
-    button: ButtonGroup
+        layout: templates.Layout,
+        formHelper: FormWithCSRF,
+        govukErrorSummary: GovukErrorSummary,
+        govukRadios: GovukRadios,
+        button: ButtonGroup
 )
 
 @(form: Form[_], waypoints: Waypoints, period: Period)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = title(form, messages("soldGoods.title", period.displayText))) {
+    @layout(pageTitle = title(form, messages("soldGoods.title", period.displayText))) {
 
-    @formHelper(action = routes.SoldGoodsController.onSubmit(waypoints, period), Symbol("autoComplete") -> "off") {
+        @formHelper(action = routes.SoldGoodsController.onSubmit(waypoints), Symbol("autoComplete") -> "off") {
 
-        @if(form.errors.nonEmpty) {
-            @govukErrorSummary(ErrorSummaryViewModel(form))
-        }
+            @if(form.errors.nonEmpty) {
+                @govukErrorSummary(ErrorSummaryViewModel(form))
+            }
 
-        @govukRadios(
-            RadiosViewModel.yesNo(
-                field = form("value"),
-                legend = LegendViewModel(messages("soldGoods.heading", period.displayText)).asPageHeading()
+            @govukRadios(
+                RadiosViewModel.yesNo(
+                    field = form("value"),
+                    legend = HmrcPageHeadingLegend(
+                        content = messages("soldGoods.heading", period.displayText),
+                        caption = period.displayText
+                    ).asPageHeading(size = LegendSize.Large)
+                )
             )
-        )
 
         @button(
             messages("site.continue")

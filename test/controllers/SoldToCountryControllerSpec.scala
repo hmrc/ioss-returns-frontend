@@ -38,7 +38,7 @@ class SoldToCountryControllerSpec extends SpecBase with MockitoSugar {
   private val form = formProvider(index, Seq.empty)
   private val country: Country = Arbitrary.arbitrary[Country].sample.value
 
-  lazy val soldToCountryRoute = routes.SoldToCountryController.onPageLoad(waypoints, period, index).url
+  lazy val soldToCountryRoute: String = routes.SoldToCountryController.onPageLoad(waypoints, index).url
 
   "SoldToCountry Controller" - {
 
@@ -60,7 +60,7 @@ class SoldToCountryControllerSpec extends SpecBase with MockitoSugar {
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = emptyUserAnswers.set(SoldToCountryPage(period, index), country).success.value
+      val userAnswers = emptyUserAnswers.set(SoldToCountryPage(index), country).success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -97,7 +97,7 @@ class SoldToCountryControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.VatRatesFromCountryController.onPageLoad(waypoints, period, index).url
+        redirectLocation(result).value mustEqual routes.VatRatesFromCountryController.onPageLoad(waypoints, index).url
       }
     }
 

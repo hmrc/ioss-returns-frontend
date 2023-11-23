@@ -18,7 +18,7 @@ package controllers.actions
 
 import base.SpecBase
 import models.requests.{OptionalDataRequest, RegistrationRequest}
-import models.{Period, RegistrationWrapper}
+import models.RegistrationWrapper
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalacheck.Arbitrary.arbitrary
@@ -31,7 +31,7 @@ import scala.concurrent.Future
 
 class DataRetrievalActionSpec extends SpecBase with MockitoSugar {
 
-  class Harness(period: Period, repository: SessionRepository) extends DataRetrievalAction(period, repository) {
+  class Harness(repository: SessionRepository) extends DataRetrievalAction(repository) {
 
     def callTransform(request: RegistrationRequest[_]): Future[OptionalDataRequest[_]] =
       transform(request)
@@ -45,13 +45,12 @@ class DataRetrievalActionSpec extends SpecBase with MockitoSugar {
 
       "must set userAnswers to `None` in the request" in {
 
-        val period     = arbitrary[Period].sample.value
         val repository = mock[SessionRepository]
         val request    = RegistrationRequest(FakeRequest(), testCredentials, vrn, iossNumber, registrationWrapper)
 
-        when(repository.get(any(), any())) thenReturn Future.successful(None)
+        when(repository.get(any())) thenReturn Future.successful(None)
 
-        val action = new Harness(period, repository)
+        val action = new Harness(repository)
 
         val result = action.callTransform(request).futureValue
 
@@ -63,13 +62,12 @@ class DataRetrievalActionSpec extends SpecBase with MockitoSugar {
 
       "must add the userAnswers to the request" in {
 
-        val period     = arbitrary[Period].sample.value
         val repository = mock[SessionRepository]
         val request    = RegistrationRequest(FakeRequest(), testCredentials, vrn, iossNumber, registrationWrapper)
 
-        when(repository.get(any(), any())) thenReturn Future.successful(Some(emptyUserAnswers))
+        when(repository.get(any())) thenReturn Future.successful(Some(emptyUserAnswers))
 
-        val action = new Harness(period, repository)
+        val action = new Harness(repository)
 
         val result = action.callTransform(request).futureValue
 

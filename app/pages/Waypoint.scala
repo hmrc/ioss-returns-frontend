@@ -16,7 +16,7 @@
 
 package pages
 
-import models.Mode
+import models.{CheckMode, Mode, NormalMode}
 
 case class Waypoint(
                      page: WaypointPage,
@@ -28,6 +28,8 @@ object Waypoint {
 
   private val fragments: Map[String, Waypoint] =
     Map(
+      SoldToCountryListPage.normalModeUrlFragment -> SoldToCountryListPage().waypoint(NormalMode),
+      SoldToCountryListPage.checkModeUrlFragment -> SoldToCountryListPage().waypoint(CheckMode),
       CheckYourAnswersPage.urlFragment -> CheckYourAnswersPage.waypoint
     )
 

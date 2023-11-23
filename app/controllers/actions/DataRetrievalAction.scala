@@ -17,26 +17,25 @@
 package controllers.actions
 
 import models.requests.{OptionalDataRequest, RegistrationRequest}
-import models.Period
 import play.api.mvc.ActionTransformer
 import repositories.SessionRepository
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class DataRetrievalAction(period: Period, repository: SessionRepository)
+class DataRetrievalAction(sessionRepository: SessionRepository)
                          (implicit val executionContext: ExecutionContext)
   extends ActionTransformer[RegistrationRequest, OptionalDataRequest] {
 
   override protected def transform[A](request: RegistrationRequest[A]): Future[OptionalDataRequest[A]] =
-    repository.get(request.userId, period).map { x =>
-      OptionalDataRequest(request.request, request.credentials, request.vrn, request.iossNumber, request.registrationWrapper, x)
+    sessionRepository.get(request.userId).map { maybeUserAnswers =>
+      OptionalDataRequest(request.request, request.credentials, request.vrn, request.iossNumber, request.registrationWrapper, maybeUserAnswers)
     }
 }
 
 class DataRetrievalActionProvider @Inject()(repository: SessionRepository)
                                            (implicit ec: ExecutionContext) {
 
-  def apply(period: Period): DataRetrievalAction =
-    new DataRetrievalAction(period, repository)
+  def apply(): DataRetrievalAction =
+    new DataRetrievalAction(repository)
 }

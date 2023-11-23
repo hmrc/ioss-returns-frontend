@@ -17,6 +17,8 @@
 package models
 
 import play.api.libs.json.{Json, OFormat}
+import uk.gov.hmrc.govukfrontend.views.viewmodels.select.SelectItem
+import viewmodels.govuk.select._
 
 case class Country(code: String, name: String)
 
@@ -260,5 +262,17 @@ object Country {
     euCountries.take(positionOfNI) ++ Seq(northernIreland) ++ euCountries.drop(positionOfNI)
   }
 
+  val euCountrySelectItems: Seq[SelectItem] =
+    selectItems(euCountries)
+
+  def selectItems(countries: Seq[Country]): Seq[SelectItem] =
+    SelectItem(value = None, text = "Select a country") +:
+      countries.map {
+        country =>
+          SelectItemViewModel(
+            value = country.code,
+            text = country.name
+          )
+      }
 
 }

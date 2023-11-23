@@ -17,6 +17,7 @@
 package controllers
 
 import controllers.actions.AuthenticatedControllerComponents
+import pages.EmptyWaypoints
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -30,6 +31,6 @@ class IndexController @Inject()(
   protected val controllerComponents: MessagesControllerComponents = cc
 
   def onPageLoad: Action[AnyContent] = cc.authAndGetRegistration { _ =>
-    Redirect(routes.YourAccountController.onPageLoad)
+    Redirect(routes.YourAccountController.onPageLoad(waypoints = EmptyWaypoints))
   }
 }

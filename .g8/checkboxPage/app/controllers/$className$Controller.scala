@@ -25,7 +25,7 @@ class $className$Controller @Inject()(
 
   val form = formProvider()
 
-  def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndRequireData(period) {
+  def onPageLoad(mode: Mode, period: Period): Action[AnyContent] = cc.authAndRequireData() {
     implicit request =>
 
       val preparedForm = request.userAnswers.get($className$Page) match {
@@ -36,7 +36,7 @@ class $className$Controller @Inject()(
       Ok(view(preparedForm, mode, period))
   }
 
-  def onSubmit(mode: Mode, period: Period): Action[AnyContent] = cc.authAndRequireData(period).async {
+  def onSubmit(mode: Mode, period: Period): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
 
       form.bindFromRequest().fold(

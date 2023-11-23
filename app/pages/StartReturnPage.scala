@@ -30,5 +30,10 @@ case class StartReturnPage(period: Period) extends QuestionPage[Boolean] {
   override def route(waypoints: Waypoints): Call = routes.StartReturnController.onPageLoad(waypoints, period)
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
-    SoldGoodsPage(period)
+    answers.get(this).map {
+      case true =>
+        SoldGoodsPage
+      case false =>
+        NoOtherPeriodsAvailablePage
+    }.orRecover
 }

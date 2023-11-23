@@ -14,32 +14,39 @@
  * limitations under the License.
  *@
 
-@import viewmodels.InputWidth._
+@import viewmodels.InputWidth.Fixed20
+@import viewmodels.LabelSize
+@import views.html.components.ButtonGroup
 
 @this(
-    layout: templates.Layout,
-    formHelper: FormWithCSRF,
-    govukErrorSummary: GovukErrorSummary,
-    govukInput: GovukInput,
-    button: ButtonGroup
+        layout: templates.Layout,
+        formHelper: FormWithCSRF,
+        govukErrorSummary: GovukErrorSummary,
+        govukSelect: GovukSelect,
+        button: ButtonGroup
 )
 
 @(form: Form[_], waypoints: Waypoints, period: Period, index: Index)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, messages("soldToCountry.title"))) {
 
-    @formHelper(action = routes.SoldToCountryController.onSubmit(waypoints, period, index)) {
+    @formHelper(action = routes.SoldToCountryController.onSubmit(waypoints, index)) {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))
         }
 
-        @govukInput(
-            InputViewModel(
+        @govukSelect(
+            SelectViewModel(
                 field = form("value"),
-                label = LabelViewModel(messages("soldToCountry.heading")).asPageHeading()
+                items = Country.euCountrySelectItems,
+                label = HmrcPageHeadingLabel(
+                    content = messages("soldToCountry.heading"),
+                    caption = period.displayText
+                ).asPageHeading(size = LabelSize.Large)
             )
-            .withWidth(Full)
+                    .withCssClass(Fixed20.toString)
+                    .withCssClass("autocomplete")
         )
 
         @button(

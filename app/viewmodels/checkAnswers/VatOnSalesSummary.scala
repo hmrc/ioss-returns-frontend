@@ -17,7 +17,7 @@
 package viewmodels.checkAnswers
 
 import controllers.routes
-import models.{Index, Period, UserAnswers}
+import models.{Index, UserAnswers}
 import pages.{VatOnSalesPage, Waypoints}
 import play.api.i18n.Messages
 import play.twirl.api.HtmlFormat
@@ -28,8 +28,8 @@ import viewmodels.implicits._
 
 object VatOnSalesSummary  {
 
-  def row(answers: UserAnswers, waypoints: Waypoints, period: Period, index: Index)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(VatOnSalesPage(period, index)).map {
+  def row(answers: UserAnswers, waypoints: Waypoints, index: Index)(implicit messages: Messages): Option[SummaryListRow] =
+    answers.get(VatOnSalesPage(index)).map {
       answer =>
 
         val value = ValueViewModel(
@@ -42,7 +42,7 @@ object VatOnSalesSummary  {
           key     = "vatOnSales.checkYourAnswersLabel",
           value   = value,
           actions = Seq(
-            ActionItemViewModel("site.change", routes.VatOnSalesController.onPageLoad(waypoints, period, index).url)
+            ActionItemViewModel("site.change", routes.VatOnSalesController.onPageLoad(waypoints, index).url)
               .withVisuallyHiddenText(messages("vatOnSales.change.hidden"))
           )
         )

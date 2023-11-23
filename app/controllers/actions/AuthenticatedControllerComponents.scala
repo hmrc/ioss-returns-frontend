@@ -17,7 +17,6 @@
 package controllers.actions
 
 import models.requests.{DataRequest, IdentifierRequest, OptionalDataRequest, RegistrationRequest}
-import models.Period
 import play.api.http.FileMimeTypes
 import play.api.i18n.{Langs, MessagesApi}
 import play.api.mvc._
@@ -48,13 +47,13 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
       getRegistration
   }
 
-  def authAndGetOptionalData(period: Period): ActionBuilder[OptionalDataRequest, AnyContent] = {
+  def authAndGetOptionalData(): ActionBuilder[OptionalDataRequest, AnyContent] = {
     authAndGetRegistration andThen
-      getData(period)
+      getData()
   }
 
-  def authAndRequireData(period: Period): ActionBuilder[DataRequest, AnyContent] = {
-    authAndGetOptionalData(period) andThen
+  def authAndRequireData(): ActionBuilder[DataRequest, AnyContent] = {
+    authAndGetOptionalData() andThen
       requireData
   }
 

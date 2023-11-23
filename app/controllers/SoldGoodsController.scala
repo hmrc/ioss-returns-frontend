@@ -18,31 +18,34 @@ package controllers
 
 import controllers.actions._
 import forms.SoldGoodsFormProvider
-import models.Period
 import pages.{SoldGoodsPage, Waypoints}
+import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.FutureSyntax.FutureOps
 import views.html.SoldGoodsView
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class SoldGoodsController @Inject()(
-                                         override val messagesApi: MessagesApi,
-                                         cc: AuthenticatedControllerComponents,
-                                         formProvider: SoldGoodsFormProvider,
-                                         view: SoldGoodsView
-                                 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                     override val messagesApi: MessagesApi,
+                                     cc: AuthenticatedControllerComponents,
+                                     formProvider: SoldGoodsFormProvider,
+                                     view: SoldGoodsView
+                                   )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  val form = formProvider()
+  val form: Form[Boolean] = formProvider()
 
-  def onPageLoad(waypoints: Waypoints, period: Period): Action[AnyContent] = cc.authAndRequireData(period) {
+  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndRequireData() {
     implicit request =>
 
-      val preparedForm = request.userAnswers.get(SoldGoodsPage(period)) match {
+      val period = request.userAnswers.period
+
+      val preparedForm = request.userAnswers.get(SoldGoodsPage) match {
         case None => form
         case Some(value) => form.fill(value)
       }
@@ -50,18 +53,20 @@ class SoldGoodsController @Inject()(
       Ok(view(preparedForm, waypoints, period))
   }
 
-  def onSubmit(waypoints: Waypoints, period: Period): Action[AnyContent] = cc.authAndRequireData(period).async {
+  def onSubmit(waypoints: Waypoints): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
+
+      val period = request.userAnswers.period
 
       form.bindFromRequest().fold(
         formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, waypoints, period))),
+          BadRequest(view(formWithErrors, waypoints, period)).toFuture,
 
         value =>
           for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(SoldGoodsPage(period), value))
-            _              <- cc.sessionRepository.set(updatedAnswers)
-          } yield Redirect(SoldGoodsPage(period).navigate(waypoints, request.userAnswers, updatedAnswers).route)
+            updatedAnswers <- Future.fromTry(request.userAnswers.set(SoldGoodsPage, value))
+            _ <- cc.sessionRepository.set(updatedAnswers)
+          } yield Redirect(SoldGoodsPage.navigate(waypoints, request.userAnswers, updatedAnswers).route)
       )
   }
 }

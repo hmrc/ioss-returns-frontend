@@ -22,11 +22,11 @@
     button: ButtonGroup
 )
 
-@(form: Form[_], waypoints: Waypoints, period: Period, index: Index)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, period: Period, index: Index, country: Country)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, messages("vatRatesFromCountry.title"))) {
 
-    @formHelper(action = routes.VatRatesFromCountryController.onSubmit(waypoints, period, index), Symbol("autoComplete") -> "off") {
+    @formHelper(action = routes.VatRatesFromCountryController.onSubmit(waypoints, index), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form, errorLinkOverrides = Map("value" -> "value_0")))
@@ -36,9 +36,12 @@
             CheckboxesViewModel(
                 form   = form,
                 name   = "value",
-                legend = LegendViewModel(messages("vatRatesFromCountry.heading")).asPageHeading(),
+                legend = HmrcPageHeadingLegend(
+                    content = messages("vatRatesFromCountry.heading"),
+                    caption = messages("vatRatesFromCountry.caption", period.displayText, country.name)
+                ),
                 items  = VatRatesFromCountry.checkboxItems
-            )
+            ).withHint(HintViewModel(messages("vatRatesFromCountry.hint")))
         )
 
         @button(
