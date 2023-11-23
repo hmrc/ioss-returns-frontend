@@ -35,39 +35,45 @@ class SalesToCountryController @Inject()(
                                           cc: AuthenticatedControllerComponents,
                                           formProvider: SalesToCountryFormProvider,
                                           view: SalesToCountryView
-                                        )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                        )(implicit ec: ExecutionContext) extends FrontendBaseController with GetCountryAndVatRate with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
   val form: Form[Int] = formProvider()
 
-  def onPageLoad(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndRequireData() {
+  def onPageLoad(waypoints: Waypoints, countryIndex: Index): Action[AnyContent] = cc.authAndRequireData() {
     implicit request =>
+      getCountryAndVatRate(waypoints, countryIndex) {
+        case (country) =>
 
-      val period = request.userAnswers.period
+        val period = request.userAnswers.period
 
-      val preparedForm = request.userAnswers.get(SalesToCountryPage(index)) match {
-        case None => form
-        case Some(value) => form.fill(value)
+        val preparedForm = request.userAnswers.get(SalesToCountryPage(countryIndex)) match {
+          case None => form
+          case Some(value) => form.fill(value)
+        }
+
+        Ok(view(preparedForm, waypoints, period, countryIndex, country))
       }
-
-      Ok(view(preparedForm, waypoints, period, index))
   }
 
-  def onSubmit(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndRequireData().async {
+  def onSubmit(waypoints: Waypoints, countryIndex: Index): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
+      getCountryAndVatRateAsync(waypoints, countryIndex) {
+        case (country) =>
 
-      val period = request.userAnswers.period
+        val period = request.userAnswers.period
 
-      form.bindFromRequest().fold(
-        formWithErrors =>
-          BadRequest(view(formWithErrors, waypoints, period, index)).toFuture,
+        form.bindFromRequest().fold(
+          formWithErrors =>
+            BadRequest(view(formWithErrors, waypoints, period, countryIndex, country)).toFuture,
 
-        value =>
-          for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(SalesToCountryPage(index), value))
-            _ <- cc.sessionRepository.set(updatedAnswers)
-          } yield Redirect(SalesToCountryPage(index).navigate(waypoints, request.userAnswers, updatedAnswers).route)
-      )
+          value =>
+            for {
+              updatedAnswers <- Future.fromTry(request.userAnswers.set(SalesToCountryPage(countryIndex), value))
+              _ <- cc.sessionRepository.set(updatedAnswers)
+            } yield Redirect(SalesToCountryPage(countryIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route)
+        )
+      }
   }
 }

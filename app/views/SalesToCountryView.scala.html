@@ -14,6 +14,7 @@
  * limitations under the License.
  *@
 
+@import uk.gov.hmrc.hmrcfrontend.views.config.HmrcPageHeadingLabel
 @import viewmodels.InputWidth._
 
 @this(
@@ -21,14 +22,18 @@
     formHelper: FormWithCSRF,
     govukErrorSummary: GovukErrorSummary,
     govukInput: GovukInput,
-    button: ButtonGroup
+    govukButton: GovukButton
 )
 
-@(form: Form[_], waypoints: Waypoints, period: Period, index: Index)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, period: Period, countryIndex: Index, country: Country)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = title(form, messages("salesToCountry.title"))) {
+@layout(pageTitle = title(
+    form,
+    messages("salesToCountry.title"),
+    Some(messages("caption.fromCountry.periodAndCountry", period.displayText, country.name))
+)) {
 
-    @formHelper(action = routes.SalesToCountryController.onSubmit(waypoints, index), Symbol("autoComplete") -> "off") {
+    @formHelper(action = routes.SalesToCountryController.onSubmit(waypoints, countryIndex), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))
@@ -37,14 +42,19 @@
         @govukInput(
             InputViewModel(
                 field = form("value"),
-                label = LabelViewModel(messages("salesToCountry.heading")).asPageHeading()
+                label = HmrcPageHeadingLabel(
+                    content = messages("salesToCountry.heading"),
+                    caption = messages("caption.fromCountry.periodAndCountry", period.displayText, country.name)
+                )
             )
             .asNumeric()
             .withWidth(Fixed10)
+            .withPrefix(PrefixOrSuffix(content = Text("£")))
+            .withHint(HintViewModel(messages("salesToCountry.hint")))
         )
 
-        @button(
-            messages("site.continue")
+        @govukButton(
+            ButtonViewModel(messages("site.continue"))
         )
     }
 }

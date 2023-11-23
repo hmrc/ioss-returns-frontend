@@ -18,10 +18,13 @@ package controllers
 
 import base.SpecBase
 import forms.SalesToCountryFormProvider
+import models.Country
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.when
+import org.mockito.ArgumentMatchersSugar.eqTo
+import org.mockito.Mockito.{times, verify, when}
+import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.mockito.MockitoSugar
-import pages.SalesToCountryPage
+import pages.{SalesToCountryPage, SoldToCountryPage}
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.test.FakeRequest
@@ -40,11 +43,19 @@ class SalesToCountryControllerSpec extends SpecBase with MockitoSugar {
 
   lazy val salesToCountryRoute: String = routes.SalesToCountryController.onPageLoad(waypoints, index).url
 
+  private val country = arbitrary[Country].sample.value
+
+  private val baseAnswers =
+    emptyUserAnswers
+      .set(SoldToCountryPage(index), country).success.value
+
+
+
   "SalesToCountry Controller" - {
 
     "must return OK and the correct view for a GET" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(baseAnswers)).build()
 
       running(application) {
         val request = FakeRequest(GET, salesToCountryRoute)
@@ -54,13 +65,13 @@ class SalesToCountryControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[SalesToCountryView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, waypoints, period, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, waypoints, period, index, country)(request, messages(application)).toString
       }
     }
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = emptyUserAnswers.set(SalesToCountryPage(index), validAnswer).success.value
+      val userAnswers = baseAnswers.set(SalesToCountryPage(index), validAnswer).success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -72,7 +83,7 @@ class SalesToCountryControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(validAnswer), waypoints, period, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form.fill(validAnswer), waypoints, period, index, country)(request, messages(application)).toString
       }
     }
 
@@ -83,7 +94,7 @@ class SalesToCountryControllerSpec extends SpecBase with MockitoSugar {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
       val application =
-        applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        applicationBuilder(userAnswers = Some(baseAnswers))
           .overrides(
             bind[SessionRepository].toInstance(mockSessionRepository)
           )
@@ -95,15 +106,17 @@ class SalesToCountryControllerSpec extends SpecBase with MockitoSugar {
             .withFormUrlEncodedBody(("value", validAnswer.toString))
 
         val result = route(application, request).value
+        val expectedAnswers = baseAnswers.set(SalesToCountryPage(index), validAnswer).success.value
 
         status(result) mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual routes.VatOnSalesController.onPageLoad(waypoints, index).url
+        verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
       }
     }
 
     "must return a Bad Request and errors when invalid data is submitted" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(baseAnswers)).build()
 
       running(application) {
         val request =
@@ -117,7 +130,7 @@ class SalesToCountryControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, waypoints, period, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, waypoints, period, index, country)(request, messages(application)).toString
       }
     }
 

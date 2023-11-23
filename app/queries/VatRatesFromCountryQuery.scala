@@ -14,21 +14,13 @@
  * limitations under the License.
  */
 
-package forms
+package queries
 
-import forms.mappings.Mappings
-import javax.inject.Inject
-import play.api.data.Form
+import models.{Index, VatRatesFromCountry}
+import play.api.libs.json.JsPath
 
-class SalesToCountryFormProvider @Inject() extends Mappings {
+case class VatRatesFromCountryQuery(countryIndex: Index) extends Gettable[VatRatesFromCountry] {
 
-  def apply(): Form[Int] =
-    Form(
-      "value" -> int(
-        "salesToCountry.error.required",
-        "salesToCountry.error.wholeNumber",
-        "salesToCountry.error.nonNumeric",
-        args = Seq())
-          .verifying(inRange(0, Int.MaxValue, "salesToCountry.error.outOfRange"))
-    )
+  override def path: JsPath = JsPath \ "salesFromCountry" \ countryIndex.position
+
 }

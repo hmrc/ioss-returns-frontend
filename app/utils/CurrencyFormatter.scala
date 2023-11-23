@@ -14,21 +14,11 @@
  * limitations under the License.
  */
 
-package forms
+package utils
 
-import forms.mappings.Mappings
-import javax.inject.Inject
-import play.api.data.Form
+trait CurrencyFormatter {
 
-class SalesToCountryFormProvider @Inject() extends Mappings {
-
-  def apply(): Form[Int] =
-    Form(
-      "value" -> int(
-        "salesToCountry.error.required",
-        "salesToCountry.error.wholeNumber",
-        "salesToCountry.error.nonNumeric",
-        args = Seq())
-          .verifying(inRange(0, Int.MaxValue, "salesToCountry.error.outOfRange"))
-    )
+  def currencyFormat(amt: BigDecimal): String = f"&pound;$amt%,1.2f".replace(".00","")
 }
+
+object CurrencyFormatter extends CurrencyFormatter
