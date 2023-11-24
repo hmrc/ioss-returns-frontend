@@ -82,6 +82,7 @@ soldGoods.change.hidden = Sold Goods
 soldToCountry.title = Which country did you sell to?
 soldToCountry.heading = Which country did you sell to?
 soldToCountry.checkYourAnswersLabel = Country sold to
+soldToCountry.error.duplicate = You selected this country already. Select a different one.
 soldToCountry.error.required = Select a country you sold to
 soldToCountry.change.hidden = which country you sold to
 
