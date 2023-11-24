@@ -116,7 +116,7 @@ vatOnSales.change.hidden = VAT charged
 noOtherPeriodsAvailable.title = You cannot start returns for other months yet
 noOtherPeriodsAvailable.heading = You cannot start returns for other months yet
 noOtherPeriodsAvailable.p1 = You can only start returns for months that have ended.
-noOtherPeriodsAvailable.backToYourAccount = <a class="govuk-link" href={0}>Back to your account</a>
+noOtherPeriodsAvailable.backToYourAccount = <a class="govuk-link" id="back-to-your-account" href={0}>Back to your account</a>
 
 soldToCountryList.title.singular = You added sales to 1 country
 soldToCountryList.title.plural = You added sales to {0} countries
