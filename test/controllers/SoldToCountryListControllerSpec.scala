@@ -34,20 +34,20 @@ import views.html.SoldToCountryListView
 
 class SoldToCountryListControllerSpec extends SpecBase with MockitoSugar {
 
-  val formProvider = new SoldToCountryListFormProvider()
-  val form: Form[Boolean] = formProvider()
+  private val formProvider = new SoldToCountryListFormProvider()
+  private val form: Form[Boolean] = formProvider()
 
   private val country: Country = arbitraryCountry.arbitrary.sample.value
   private val salesValue: Int = 1234
 
-  val baseAnswers: UserAnswers = emptyUserAnswers
+  private val baseAnswers: UserAnswers = emptyUserAnswers
     .set(SoldGoodsPage, true).success.value
     .set(SoldToCountryPage(index), country).success.value
     .set(VatRatesFromCountryPage(index), Set(VatRatesFromCountry.values.head)).success.value
     .set(SalesToCountryPage(index), salesValue).success.value
     .set(VatOnSalesPage(index), VatOnSales.values.head).success.value
 
-  lazy val soldToCountryListRoute: String = routes.SoldToCountryListController.onPageLoad(waypoints).url
+  private lazy val soldToCountryListRoute: String = routes.SoldToCountryListController.onPageLoad(waypoints).url
 
   "SoldToCountryList Controller" - {
 

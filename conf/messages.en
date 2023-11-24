@@ -82,6 +82,7 @@ soldGoods.change.hidden = Sold Goods
 soldToCountry.title = Which country did you sell to?
 soldToCountry.heading = Which country did you sell to?
 soldToCountry.checkYourAnswersLabel = Country sold to
+soldToCountry.error.duplicate = You selected this country already. Select a different one.
 soldToCountry.error.required = Select a country you sold to
 soldToCountry.change.hidden = which country you sold to
 
@@ -115,7 +116,7 @@ vatOnSales.change.hidden = VAT charged
 noOtherPeriodsAvailable.title = You cannot start returns for other months yet
 noOtherPeriodsAvailable.heading = You cannot start returns for other months yet
 noOtherPeriodsAvailable.p1 = You can only start returns for months that have ended.
-noOtherPeriodsAvailable.backToYourAccount = <a class="govuk-link" href={0}>Back to your account</a>
+noOtherPeriodsAvailable.backToYourAccount = <a class="govuk-link" id="back-to-your-account" href={0}>Back to your account</a>
 
 soldToCountryList.title.singular = You added sales to 1 country
 soldToCountryList.title.plural = You added sales to {0} countries
@@ -127,3 +128,8 @@ soldToCountryList.error.required = Select yes if you want to add sales to an add
 soldToCountryList.change.hidden = sales to {0}
 soldToCountryList.remove.hidden = sales to {0}
 soldToCountryList.addAnother.hint = You must tell us about all of your eligible sales.
+
+deleteSoldToCountry.title = Are you sure you want to remove all the sales information for {0}?
+deleteSoldToCountry.heading = Are you sure you want to remove all the sales information for {0}?
+deleteSoldToCountry.error.required = Select yes if want to remove all the sales information for {0}
+deleteSoldToCountry.change.hidden = all the sales information for {0}

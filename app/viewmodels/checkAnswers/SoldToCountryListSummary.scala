@@ -16,8 +16,8 @@
 
 package viewmodels.checkAnswers
 
-import models.UserAnswers
-import pages.{AddItemPage, JourneyRecoveryPage, Waypoints}
+import models.{Index, UserAnswers}
+import pages.{AddItemPage, DeleteSoldToCountryPage, JourneyRecoveryPage, Waypoints}
 import play.twirl.api.HtmlFormat
 import queries.AllSalesQuery
 import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.ListItem
@@ -31,7 +31,7 @@ object SoldToCountryListSummary {
         ListItem(
           name = HtmlFormat.escape(salesToCountryWithOptionalVat.country.name).toString,
           changeUrl = JourneyRecoveryPage.changeLink(waypoints, sourcePage).url, // TODO -> to Mini CYA when created
-          removeUrl = JourneyRecoveryPage.changeLink(waypoints, sourcePage).url // TODO -> to DeleteSoldToCountrySalesPage when created
+          removeUrl = DeleteSoldToCountryPage(Index(countryIndex)).route(waypoints).url
         )
     }
   }
