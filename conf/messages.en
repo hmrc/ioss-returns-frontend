@@ -146,6 +146,15 @@ deleteSoldToCountry.heading = Are you sure you want to remove all the sales info
 deleteSoldToCountry.error.required = Select yes if want to remove all the sales information for {0}
 deleteSoldToCountry.change.hidden = all the sales information for {0}
 
+checkSales.title = Check your answers
+checkSales.heading = Check your answers
+checkSales.caption = {0} sales to {1}
+checkSales.checkYourAnswersLabel = checkSales
+checkSales.addAnother = Add another VAT rate?
+checkSales.error.required = Select yes if checkSales
+checkSales.vat.change.hidden = VAT charged for VAT rate {0}
+checkSales.vatRate.remove.hidden = VAT rate for {0}
+
 correctPreviousReturn.title = Do you want to correct a previous return?
 correctPreviousReturn.heading = Do you want to correct a previous return?
 correctPreviousReturn.checkYourAnswersLabel = Corrections
