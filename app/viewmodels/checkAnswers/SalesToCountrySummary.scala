@@ -26,15 +26,15 @@ import viewmodels.implicits._
 
 object SalesToCountrySummary  {
 
-  def row(answers: UserAnswers, waypoints: Waypoints, index: Index)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(SalesToCountryPage(index)).map {
+  def row(answers: UserAnswers, waypoints: Waypoints, countryIndex: Index, vatRateIndex: Index)(implicit messages: Messages): Option[SummaryListRow] =
+    answers.get(SalesToCountryPage(countryIndex, vatRateIndex)).map {
       answer =>
 
         SummaryListRowViewModel(
           key     = "salesToCountry.checkYourAnswersLabel",
           value   = ValueViewModel(answer.toString),
           actions = Seq(
-            ActionItemViewModel("site.change", routes.SalesToCountryController.onPageLoad(waypoints, index).url)
+            ActionItemViewModel("site.change", routes.SalesToCountryController.onPageLoad(waypoints, countryIndex, vatRateIndex).url)
               .withVisuallyHiddenText(messages("salesToCountry.change.hidden"))
           )
         )

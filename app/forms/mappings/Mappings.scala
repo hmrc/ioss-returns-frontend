@@ -17,10 +17,10 @@
 package forms.mappings
 
 import java.time.LocalDate
-
 import play.api.data.FieldMapping
 import play.api.data.Forms.of
-import models.Enumerable
+import models.{Enumerable, VatRateFromCountry}
+import play.api.data.validation.{Constraint, Invalid, Valid}
 
 trait Mappings extends Formatters with Constraints {
 
@@ -32,6 +32,13 @@ trait Mappings extends Formatters with Constraints {
                     nonNumericKey: String = "error.nonNumeric",
                     args: Seq[String] = Seq.empty): FieldMapping[Int] =
     of(intFormatter(requiredKey, wholeNumberKey, nonNumericKey, args))
+
+  protected def currency(requiredKey: String = "error.required",
+                         invalidNumeric: String = "error.invalidNumeric",
+                         nonNumericKey: String = "error.nonNumeric",
+                         decimalCount: Int = 2,
+                         args: Seq[String] = Seq.empty): FieldMapping[BigDecimal] =
+    of(currencyFormatter(requiredKey, invalidNumeric, nonNumericKey, decimalCount, args))
 
   protected def boolean(requiredKey: String = "error.required",
                         invalidKey: String = "error.boolean",
@@ -51,4 +58,12 @@ trait Mappings extends Formatters with Constraints {
                            requiredKey: String,
                            args: Seq[String] = Seq.empty): FieldMapping[LocalDate] =
     of(new LocalDateFormatter(invalidKey, allRequiredKey, twoRequiredKey, requiredKey, args))
+
+  protected def validVatRates(vatRates: Seq[VatRateFromCountry], errorKey: String): Constraint[List[String]] =
+    Constraint {
+      case seq if seq.forall(vatRates.map(_.rate.toString).contains) =>
+        Valid
+      case _ =>
+        Invalid(errorKey)
+    }
 }

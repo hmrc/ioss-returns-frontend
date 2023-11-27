@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-package queries
+package config
 
-import models.{Index, VatRatesFromCountry}
-import play.api.libs.json.JsPath
+object Constants {
 
-case class VatRatesFromCountryQuery(countryIndex: Index, vatRateIndex: Index) extends Gettable[VatRatesFromCountry] {
-
-  override def path: JsPath = JsPath \ "salesFromCountry" \ countryIndex.position \ "vatRates" \ vatRateIndex.position
+    val maxCurrencyAmount: BigDecimal = 1000000000
+    val minCurrencyAmount: BigDecimal = -1000000000
 
 }

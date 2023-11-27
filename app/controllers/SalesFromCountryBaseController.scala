@@ -26,23 +26,25 @@ import utils.FutureSyntax.FutureOps
 
 import scala.concurrent.Future
 
-trait GetCountryAndVatRate {
+trait SalesFromCountryBaseController {
 
-  protected def getCountryAndVatRate(waypoints: Waypoints, countryIndex: Index)
-                                    (block: (Country) => Result)
+  protected def getCountryAndVatRate(waypoints: Waypoints, countryIndex: Index, vatRateIndex: Index)
+                                    (block: (Country, VatRatesFromCountry) => Result)
                                     (implicit request: DataRequest[AnyContent]): Result =
     (for {
       country <- request.userAnswers.get(SoldToCountryPage(countryIndex))
-    } yield block(country))
+      vatRate <- request.userAnswers.get(VatRatesFromCountryQuery(countryIndex, vatRateIndex))
+    } yield block(country, vatRate))
       .getOrElse(Redirect(JourneyRecoveryPage.route(waypoints)))
 
 
-  protected def getCountryAndVatRateAsync(waypoints: Waypoints, countryIndex: Index)
-                                         (block: (Country) => Future[Result])
+  protected def getCountryAndVatRateAsync(waypoints: Waypoints, countryIndex: Index, vatRateIndex: Index)
+                                         (block: (Country, VatRatesFromCountry) => Future[Result])
                                          (implicit request: DataRequest[AnyContent]): Future[Result] =
 
     (for {
       country <- request.userAnswers.get(SoldToCountryPage(countryIndex))
-    } yield block(country))
+      vatRate <- request.userAnswers.get(VatRatesFromCountryQuery(countryIndex, vatRateIndex))
+    } yield block(country, vatRate))
       .getOrElse(Redirect(JourneyRecoveryPage.route(waypoints)).toFuture)
 }

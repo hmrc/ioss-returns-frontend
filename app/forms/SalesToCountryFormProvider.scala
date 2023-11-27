@@ -16,19 +16,25 @@
 
 package forms
 
+import config.Constants.maxCurrencyAmount
 import forms.mappings.Mappings
+import models.{VatRateFromCountry, VatRatesFromCountry}
+
 import javax.inject.Inject
 import play.api.data.Form
 
-class SalesToCountryFormProvider @Inject() extends Mappings {
+class SalesToCountryFormProvider @Inject()(vatRateService: VatRateService) extends Mappings {
 
-  def apply(): Form[Int] =
+  def apply(vatRate: VatRatesFromCountry): Form[BigDecimal] =
     Form(
-      "value" -> int(
+      "value" -> currency(
         "salesToCountry.error.required",
         "salesToCountry.error.wholeNumber",
         "salesToCountry.error.nonNumeric",
-        args = Seq())
-          .verifying(inRange(0, Int.MaxValue, "salesToCountry.error.outOfRange"))
+        args = Seq(vatRate.rateForDisplay))
+          .verifying(inRange[BigDecimal](0, maxCurrencyAmount, "salesToCountry.error.outOfRange"))
+              .verifying("salesToCountry.error.calculatedVatRateOutOfRange", value => {
+                vatRateService.standardVatOnSales(value, vatRate) > BigDecimal(0)
+              })
     )
 }

@@ -103,6 +103,7 @@ salesToCountry.error.nonNumeric = Enter your sales excluding VAT using numbers
 salesToCountry.error.required = Enter your sales excluding VAT
 salesToCountry.error.wholeNumber = Enter your sales excluding VAT using whole numbers
 salesToCountry.error.outOfRange = Sales excluding VAT must be between {0} and {1}
+salesToCountry.error.calculatedVatRateOutOfRange = Add a sales total above £0.02
 salesToCountry.change.hidden = sales excluding VAT
 salesToCountry.hint = For example, £600 or £193.54.
 
