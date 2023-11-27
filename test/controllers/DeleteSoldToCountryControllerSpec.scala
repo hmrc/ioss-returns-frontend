@@ -18,7 +18,7 @@ package controllers
 
 import base.SpecBase
 import forms.DeleteSoldToCountryFormProvider
-import models.{Country, UserAnswers, VatOnSales, VatRatesFromCountry}
+import models.{Country, UserAnswers, VatOnSales, VatRateFromCountry}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{times, verify, verifyNoInteractions, when}
 import org.scalatestplus.mockito.MockitoSugar
@@ -35,6 +35,7 @@ import views.html.DeleteSoldToCountryView
 class DeleteSoldToCountryControllerSpec extends SpecBase with MockitoSugar {
   
   private val country: Country = arbitraryCountry.arbitrary.sample.value
+  private val vatRateFromCountry: VatRateFromCountry = arbitraryVatRateFromCountry.arbitrary.sample.value
   private val salesValue: Int = 1234
   
   private val formProvider = new DeleteSoldToCountryFormProvider()
@@ -43,7 +44,7 @@ class DeleteSoldToCountryControllerSpec extends SpecBase with MockitoSugar {
   private val baseAnswers: UserAnswers = emptyUserAnswers
     .set(SoldGoodsPage, true).success.value
     .set(SoldToCountryPage(index), country).success.value
-    .set(VatRatesFromCountryPage(index), Set(VatRatesFromCountry.values.head)).success.value
+    .set(VatRatesFromCountryPage(index), List(vatRateFromCountry)).success.value
     .set(SalesToCountryPage(index), salesValue).success.value
     .set(VatOnSalesPage(index), VatOnSales.values.head).success.value
 

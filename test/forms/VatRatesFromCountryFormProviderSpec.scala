@@ -17,29 +17,54 @@
 package forms
 
 import forms.behaviours.CheckboxFieldBehaviours
-import models.VatRatesFromCountry
+import models.{VatRateFromCountry}
 import play.api.data.FormError
+import generators.{Generators, ModelGenerators}
+import org.scalacheck.Arbitrary.arbitrary
 
-class VatRatesFromCountryFormProviderSpec extends CheckboxFieldBehaviours {
+class VatRatesFromCountryFormProviderSpec extends CheckboxFieldBehaviours with Generators {
 
-  val form = new VatRatesFromCountryFormProvider()()
+  private val vatRateFromCountry1 = arbitrary[VatRateFromCountry].sample.value
+  private val vatRateFromCountry2 = arbitrary[VatRateFromCountry].retryUntil(_ != vatRateFromCountry1).sample.value
+  private val vatRateFromCountry3 = arbitrary[VatRateFromCountry].retryUntil(v => !List(vatRateFromCountry1, vatRateFromCountry2).contains(v)).sample.value
+  private val vatRatesFromCountries = List(vatRateFromCountry1, vatRateFromCountry2)
+  private val formProvider = new VatRatesFromCountryFormProvider()
+  private val form = formProvider(vatRatesFromCountries)
 
   ".value" - {
 
     val fieldName = "value"
     val requiredKey = "vatRatesFromCountry.error.required"
 
-    behave like checkboxField[VatRatesFromCountry](
-      form,
-      fieldName,
-      validValues  = VatRatesFromCountry.values,
-      invalidError = FormError(s"$fieldName[0]", "error.invalid")
-    )
+    "must bind all valid values" in {
 
-    behave like mandatoryCheckboxField(
-      form,
-      fieldName,
-      requiredKey
-    )
+      val data =
+        Map(
+          s"$fieldName[0]" -> vatRatesFromCountries.head.rate.toString,
+          s"$fieldName[1]" -> vatRatesFromCountries.tail.head.rate.toString
+        )
+
+      val result = form.bind(data)
+      result.get mustEqual vatRatesFromCountries
+      result.errors mustBe empty
+    }
+
+    "must fail to bind invalid values" in {
+
+      val data = Map(s"$fieldName[0]" -> vatRateFromCountry3.rate.toString)
+      form.bind(data).errors must contain(FormError(fieldName, "vatRatesFromCountry.error.invalid"))
+    }
+
+    "must fail to bind when the key is not present" in {
+
+      val data = Map.empty[String, String]
+      form.bind(data).errors must contain theSameElementsAs Seq(FormError(fieldName, requiredKey))
+    }
+
+    "must fail to bind when no answer is selected" in {
+
+      val data = Map(s"$fieldName[0]" -> "")
+      form.bind(data).errors must contain theSameElementsAs Seq(FormError(s"$fieldName[0]", requiredKey))
+    }
   }
 }

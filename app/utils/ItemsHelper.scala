@@ -17,6 +17,7 @@
 package utils
 
 import controllers.actions.AuthenticatedControllerComponents
+import models.VatRateFromCountry
 import models.requests.DataRequest
 import pages.{JourneyRecoveryPage, QuestionPage, Waypoints}
 import play.api.libs.json.JsObject
@@ -26,6 +27,9 @@ import queries.{Derivable, Settable}
 import utils.FutureSyntax.FutureOps
 
 import scala.concurrent.{ExecutionContext, Future}
+import viewmodels.govuk.checkbox._
+import uk.gov.hmrc.govukfrontend.views.viewmodels.checkboxes.CheckboxItem
+import uk.gov.hmrc.govukfrontend.views.viewmodels.content.Text
 
 object ItemsHelper {
 
@@ -56,4 +60,15 @@ object ItemsHelper {
       _ <- cc.sessionRepository.set(calculatedAnswers)
     } yield Redirect(deleteAllItemsPage.navigate(waypoints, request.userAnswers, calculatedAnswers).route)
   }
+
+  def checkboxItems(vatRates: Seq[VatRateFromCountry]): Seq[CheckboxItem] =
+    vatRates.zipWithIndex.map {
+      case (vatRate, index) =>
+        CheckboxItemViewModel(
+          content = Text(vatRate.rateForDisplay),
+          fieldId = "value",
+          index = index,
+          value = vatRate.rate.toString
+        )
+    }
 }
