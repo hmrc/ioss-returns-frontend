@@ -17,10 +17,10 @@
 package forms
 
 import forms.behaviours.CheckboxFieldBehaviours
-import models.{VatRateFromCountry}
-import play.api.data.FormError
-import generators.{Generators, ModelGenerators}
+import generators.Generators
+import models.VatRateFromCountry
 import org.scalacheck.Arbitrary.arbitrary
+import play.api.data.FormError
 
 class VatRatesFromCountryFormProviderSpec extends CheckboxFieldBehaviours with Generators {
 

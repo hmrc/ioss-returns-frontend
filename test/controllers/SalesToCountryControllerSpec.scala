@@ -121,7 +121,7 @@ class SalesToCountryControllerSpec extends SpecBase with MockitoSugar {
         val expectedAnswers = baseAnswers.set(SalesToCountryPage(index, index), validAnswer).success.value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.VatOnSalesController.onPageLoad(waypoints, index).url
+        redirectLocation(result).value mustEqual routes.VatOnSalesController.onPageLoad(waypoints, index, vatRateIndex).url
         verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
       }
     }

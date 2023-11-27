@@ -111,11 +111,19 @@ caption.fromCountry.periodAndCountry = {0} sales to {1}
 
 vatOnSales.title = How much VAT did you charge on sales of {0} at {1} VAT rate?
 vatOnSales.heading = How much VAT did you charge on sales of {0} at {1} VAT rate?
+vatOnSales.caption = {0} sales to {1}
 vatOnSales.option1 = Option 1
 vatOnSales.option2 = Option 2
+vatOnSales.nonStandard = A different amount
+vatOnSales.amount = Enter VAT charged
+vatOnSales.hint = For example, £600 or £193.54.
 vatOnSales.checkYourAnswersLabel = VAT charged
-vatOnSales.error.required = Select VAT charged
+vatOnSales.choice.error.required = Select VAT charged
 vatOnSales.change.hidden = VAT charged
+vatOnSales.amount.error.required = Enter the amount of VAT charged
+vatOnSales.amount.error.decimalFormat = Enter the amount of VAT charged up to two decimal places
+vatOnSales.amount.error.calculatedVatRateOutOfRange = Add a sales total above £0.02
+vatOnSales.amount.error.nonNumeric = Enter the amount of VAT charged using numbers
 
 noOtherPeriodsAvailable.title = You cannot start returns for other months yet
 noOtherPeriodsAvailable.heading = You cannot start returns for other months yet

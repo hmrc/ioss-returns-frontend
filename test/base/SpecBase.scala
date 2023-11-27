@@ -52,6 +52,7 @@ trait SpecBase
   val period: Period = Period(2024, Month.MARCH)
   val waypoints: Waypoints = EmptyWaypoints
   val index: Index = Index(0)
+  val vatRateIndex: Index = Index(0)
 
   val arbitraryDate: LocalDate = datesBetween(LocalDate.of(2023, 3, 1), LocalDate.of(2025, 12, 31)).sample.value
   val arbitraryInstant: Instant = arbitraryDate.atStartOfDay(ZoneId.systemDefault).toInstant

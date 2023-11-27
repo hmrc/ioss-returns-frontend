@@ -18,7 +18,8 @@ package journey
 
 import base.SpecBase
 import generators.Generators
-import models.{Country, Index, UserAnswers, VatOnSales, VatRateFromCountry}
+import models.VatOnSalesChoice.Standard
+import models.{Country, Index, UserAnswers, VatOnSales, VatOnSalesChoice, VatRateFromCountry}
 import org.scalacheck.Gen
 import org.scalatest.freespec.AnyFreeSpec
 import pages._
@@ -44,8 +45,10 @@ class EligibleSalesJourneySpec extends AnyFreeSpec with JourneyHelpers with Spec
     submitAnswer(SoldGoodsPage, true),
     submitAnswer(SoldToCountryPage(countryIndex1), country),
     submitAnswer(VatRatesFromCountryPage(countryIndex1), List(vatRateFromCountry1, vatRateFromCountry2)),
-    submitAnswer(SalesToCountryPage(countryIndex1, index), salesValue),
-    submitAnswer(VatOnSalesPage(countryIndex1), VatOnSales.values.head),
+    submitAnswer(SalesToCountryPage(countryIndex1, vatRateIndex), salesValue),
+    submitAnswer(VatOnSalesPage(countryIndex1, vatRateIndex), arbitraryVatOnSales.arbitrary.sample.value),
+    submitAnswer(SalesToCountryPage(countryIndex1, vatRateIndex.+(1)), salesValue),
+    submitAnswer(VatOnSalesPage(countryIndex1, vatRateIndex.+(1)), arbitraryVatOnSales.arbitrary.sample.value),
     pageMustBe(SoldToCountryListPage(Some(countryIndex1)))
   )
 
@@ -67,9 +70,10 @@ class EligibleSalesJourneySpec extends AnyFreeSpec with JourneyHelpers with Spec
             submitAnswer(SoldToCountryPage(Index(index)), country) :+
             submitAnswer(VatRatesFromCountryPage(Index(index)), List(vatRateFromCountry1, vatRateFromCountry2)) :+
             submitAnswer(SalesToCountryPage(Index(index), vatRateIndex), salesValue) :+
-            submitAnswer(VatOnSalesPage(Index(index)), arbitraryVatOnSales.arbitrary.sample.value) :+
-            pageMustBe(SoldToCountryListPage(Some(Index(index)))) :+
-            goTo(SoldToCountryListPage(Some(Index(index)))) :+
+            submitAnswer(VatOnSalesPage(Index(index), vatRateIndex), VatOnSales(Standard, salesValue * vatRateFromCountry1.rate)) :+
+            pageMustBe(SalesToCountryPage(Index(index), vatRateIndex.+(1))) :+
+            submitAnswer(SalesToCountryPage(Index(index), vatRateIndex.+(1)), salesValue) :+
+            submitAnswer(VatOnSalesPage(Index(index), vatRateIndex.+(1)), VatOnSales(Standard, salesValue * vatRateFromCountry2.rate)) :+
             submitAnswer(SoldToCountryListPage(Some(Index(index))), true)
       }
     }
@@ -96,8 +100,10 @@ class EligibleSalesJourneySpec extends AnyFreeSpec with JourneyHelpers with Spec
         submitAnswer(SoldToCountryListPage(Some(countryIndex1)), true),
         submitAnswer(SoldToCountryPage(countryIndex2), country),
         submitAnswer(VatRatesFromCountryPage(countryIndex2), List(vatRateFromCountry1, vatRateFromCountry2)),
-        submitAnswer(SalesToCountryPage(countryIndex2, index), salesValue),
-        submitAnswer(VatOnSalesPage(countryIndex2), VatOnSales.values.head),
+        submitAnswer(SalesToCountryPage(countryIndex2, vatRateIndex), salesValue),
+        submitAnswer(VatOnSalesPage(countryIndex2, vatRateIndex), arbitraryVatOnSales.arbitrary.sample.value),
+        submitAnswer(SalesToCountryPage(countryIndex2, vatRateIndex.+(1)), salesValue),
+        submitAnswer(VatOnSalesPage(countryIndex2, vatRateIndex.+(1)), arbitraryVatOnSales.arbitrary.sample.value),
         pageMustBe(SoldToCountryListPage(Some(countryIndex2)))
       )
   }
@@ -122,8 +128,10 @@ class EligibleSalesJourneySpec extends AnyFreeSpec with JourneyHelpers with Spec
           submitAnswer(SoldToCountryListPage(Some(countryIndex1)), true),
           submitAnswer(SoldToCountryPage(countryIndex2), country),
           submitAnswer(VatRatesFromCountryPage(countryIndex2), List(vatRateFromCountry1, vatRateFromCountry2)),
-          submitAnswer(SalesToCountryPage(countryIndex2, index), salesValue),
-          submitAnswer(VatOnSalesPage(countryIndex2), VatOnSales.values.head),
+          submitAnswer(SalesToCountryPage(countryIndex2, vatRateIndex), salesValue),
+          submitAnswer(VatOnSalesPage(countryIndex2, vatRateIndex), arbitraryVatOnSales.arbitrary.sample.value),
+          submitAnswer(SalesToCountryPage(countryIndex2, vatRateIndex.+(1)), salesValue),
+          submitAnswer(VatOnSalesPage(countryIndex2, vatRateIndex.+(1)), arbitraryVatOnSales.arbitrary.sample.value),
           pageMustBe(SoldToCountryListPage(Some(countryIndex2))),
           goTo(DeleteSoldToCountryPage(countryIndex2)),
           removeAddToListItem(SalesByCountryQuery(countryIndex2)),

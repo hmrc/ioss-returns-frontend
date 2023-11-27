@@ -14,21 +14,23 @@
  * limitations under the License.
  */
 
-package pages
+package controllers
 
-import controllers.routes
-import models.{Country, Index, UserAnswers}
-import play.api.libs.json.JsPath
-import play.api.mvc.Call
+import play.api.mvc.Result
+import play.api.mvc.Results.Redirect
+import utils.FutureSyntax._
 
-case class SoldToCountryPage(index: Index) extends QuestionPage[Country] {
+import scala.concurrent.Future
 
-  override def path: JsPath = JsPath \ PageConstants.sales \ index.position \ toString
+object JourneyRecoverySyntax {
 
-  override def toString: String = "country"
+  implicit class OptionResultOps(val a: Option[Result]) {
+    def orRecoverJourney: Result =
+      a.getOrElse(Redirect(routes.JourneyRecoveryController.onPageLoad()))
+  }
 
-    override def route(waypoints: Waypoints): Call = routes.SoldToCountryController.onPageLoad(waypoints, index)
-
-  override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
-    VatRatesFromCountryPage(index)
+  implicit class OptionFutureResultOps(val a: Option[Future[Result]]) {
+    def orRecoverJourney: Future[Result] =
+      a.getOrElse(Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture)
+  }
 }

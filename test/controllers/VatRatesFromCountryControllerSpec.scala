@@ -122,7 +122,7 @@ class VatRatesFromCountryControllerSpec extends SpecBase with MockitoSugar with 
         val result = route(application, request).value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.SalesToCountryController.onPageLoad(waypoints, index, index).url
+        redirectLocation(result).value mustEqual routes.SalesToCountryController.onPageLoad(waypoints, index, vatRateIndex).url
       }
     }
 

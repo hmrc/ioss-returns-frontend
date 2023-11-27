@@ -33,9 +33,14 @@ trait ModelGenerators {
       Gen.oneOf(Country.euCountries)
     }
 
-  implicit lazy val arbitraryVatOnSales: Arbitrary[VatOnSales] =
+  implicit val arbitraryNetSales = arbitrary[BigDecimal].sample.head
+
+  implicit val arbitraryVatOnSales: Arbitrary[VatOnSales] =
     Arbitrary {
-      Gen.oneOf(VatOnSales.values)
+      for {
+        choice <- Gen.oneOf(VatOnSalesChoice.values)
+        amount <- arbitrary[BigDecimal]
+      } yield VatOnSales(choice, amount)
     }
 
   implicit def arbitraryVatRateFromCountry: Arbitrary[VatRateFromCountry] =

@@ -17,7 +17,6 @@
 package utils
 
 trait CurrencyFormatter {
-
   def currencyFormat(amt: BigDecimal): String = f"&pound;$amt%,1.2f".replace(".00","")
 }
 
