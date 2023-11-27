@@ -18,9 +18,9 @@ package controllers
 
 import base.SpecBase
 import forms.VatRatesFromCountryFormProvider
-import models.{Country, VatRatesFromCountry}
+import models.{Country, NormalMode, VatRateFromCountry}
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.when
+import org.mockito.Mockito.{reset, when}
 import org.scalatestplus.mockito.MockitoSugar
 import pages.{SoldToCountryPage, VatRatesFromCountryPage}
 import play.api.data.Form
@@ -28,25 +28,36 @@ import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
+import services.VatRateService
 import views.html.VatRatesFromCountryView
 
 import scala.concurrent.Future
+import org.scalacheck.Arbitrary.arbitrary
+import org.scalatest.{BeforeAndAfter, BeforeAndAfterEach}
 
-class VatRatesFromCountryControllerSpec extends SpecBase with MockitoSugar {
+class VatRatesFromCountryControllerSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
 
   private val country: Country = arbitraryCountry.arbitrary.sample.value
   private val userAnswersWithCountry = emptyUserAnswers.set(SoldToCountryPage(index), country).success.value
+  private val vatRatesFromCountry = List(arbitrary[VatRateFromCountry].sample.value, arbitrary[VatRateFromCountry].sample.value)
+  private lazy val vatRatesFromCountryRoute: String = routes.VatRatesFromCountryController.onPageLoad(waypoints, index).url
 
-  lazy val vatRatesFromCountryRoute: String = routes.VatRatesFromCountryController.onPageLoad(waypoints, index).url
+  private val formProvider = new VatRatesFromCountryFormProvider()
+  private val form: Form[List[VatRateFromCountry]] = formProvider(vatRatesFromCountry)
 
-  val formProvider = new VatRatesFromCountryFormProvider()
-  val form: Form[Set[VatRatesFromCountry]] = formProvider()
+  private val mockVatRateService = mock[VatRateService]
+
+  override def beforeEach: Unit = {
+    reset(mockVatRateService)
+  }
 
   "VatRatesFromCountry Controller" - {
 
     "must return OK and the correct view for a GET" in {
-
-      val application = applicationBuilder(userAnswers = Some(userAnswersWithCountry)).build()
+      when(mockVatRateService.vatRates(any(), any())) thenReturn vatRatesFromCountry
+      val application = applicationBuilder(userAnswers = Some(userAnswersWithCountry))
+        .overrides(bind[VatRateService].toInstance(mockVatRateService))
+        .build()
 
       running(application) {
         val request = FakeRequest(GET, vatRatesFromCountryRoute)
@@ -57,15 +68,17 @@ class VatRatesFromCountryControllerSpec extends SpecBase with MockitoSugar {
 
         status(result) mustEqual OK
 
-        contentAsString(result) mustEqual view(form, waypoints, period, index, country)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, waypoints, period, index, country, utils.ItemsHelper.checkboxItems(vatRatesFromCountry))(request, messages(application)).toString
       }
     }
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
+      when(mockVatRateService.vatRates(any(), any())) thenReturn vatRatesFromCountry
+      val userAnswers = userAnswersWithCountry.set(VatRatesFromCountryPage(index), vatRatesFromCountry).success.value
 
-      val userAnswers = userAnswersWithCountry.set(VatRatesFromCountryPage(index), VatRatesFromCountry.values.toSet).success.value
-
-      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(userAnswers))
+        .overrides(bind[VatRateService].toInstance(mockVatRateService))
+        .build()
 
       running(application) {
         val request = FakeRequest(GET, vatRatesFromCountryRoute)
@@ -77,11 +90,12 @@ class VatRatesFromCountryControllerSpec extends SpecBase with MockitoSugar {
         status(result) mustEqual OK
         contentAsString(result) mustEqual
           view(
-            form.fill(VatRatesFromCountry.values.toSet),
+            form.fill(vatRatesFromCountry),
             waypoints,
             period,
             index,
-            country
+            country,
+            utils.ItemsHelper.checkboxItems(vatRatesFromCountry)
           )(request, messages(application)).toString
       }
     }
@@ -89,7 +103,7 @@ class VatRatesFromCountryControllerSpec extends SpecBase with MockitoSugar {
     "must redirect to the next page when valid data is submitted" in {
 
       val mockSessionRepository = mock[SessionRepository]
-
+      when(mockVatRateService.vatRates(any(), any())) thenReturn vatRatesFromCountry
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
       val application =
@@ -97,12 +111,13 @@ class VatRatesFromCountryControllerSpec extends SpecBase with MockitoSugar {
           .overrides(
             bind[SessionRepository].toInstance(mockSessionRepository)
           )
+          .overrides(bind[VatRateService].toInstance(mockVatRateService))
           .build()
 
       running(application) {
         val request =
           FakeRequest(POST, vatRatesFromCountryRoute)
-            .withFormUrlEncodedBody(("value[0]", VatRatesFromCountry.values.head.toString))
+            .withFormUrlEncodedBody(("value[0]", vatRatesFromCountry.head.rate.toString), ("value[1]", vatRatesFromCountry(1).rate.toString))
 
         val result = route(application, request).value
 
@@ -112,8 +127,10 @@ class VatRatesFromCountryControllerSpec extends SpecBase with MockitoSugar {
     }
 
     "must return a Bad Request and errors when invalid data is submitted" in {
-
-      val application = applicationBuilder(userAnswers = Some(userAnswersWithCountry)).build()
+      when(mockVatRateService.vatRates(any(), any())) thenReturn vatRatesFromCountry
+      val application = applicationBuilder(userAnswers = Some(userAnswersWithCountry))
+        .overrides(bind[VatRateService].toInstance(mockVatRateService))
+        .build()
 
       running(application) {
         val request =
@@ -127,12 +144,12 @@ class VatRatesFromCountryControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, waypoints, period, index, country)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, waypoints, period, index, country, utils.ItemsHelper.checkboxItems(vatRatesFromCountry))(request, messages(application)).toString
       }
     }
 
     "must redirect to Journey Recovery for a GET if no existing data is found" in {
-
+      when(mockVatRateService.vatRates(any(), any())) thenReturn vatRatesFromCountry
       val application = applicationBuilder(userAnswers = None).build()
 
       running(application) {
@@ -146,13 +163,13 @@ class VatRatesFromCountryControllerSpec extends SpecBase with MockitoSugar {
     }
 
     "must redirect to Journey Recovery for a POST if no existing data is found" in {
-
+      when(mockVatRateService.vatRates(any(), any())) thenReturn vatRatesFromCountry
       val application = applicationBuilder(userAnswers = None).build()
 
       running(application) {
         val request =
           FakeRequest(POST, vatRatesFromCountryRoute)
-            .withFormUrlEncodedBody(("value[0]", VatRatesFromCountry.values.head.toString))
+            .withFormUrlEncodedBody(("value[0]", vatRatesFromCountry.head.rate.toString))
 
         val result = route(application, request).value
 
@@ -160,5 +177,26 @@ class VatRatesFromCountryControllerSpec extends SpecBase with MockitoSugar {
         redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
       }
     }
+  }
+
+  "must skip this page (303 SEE_OTHER) if there is only 1 selection and update user answers" in {
+    val singleVatRate = vatRatesFromCountry.drop(1)
+    when(mockVatRateService.vatRates(any(), any())) thenReturn singleVatRate
+    val application = applicationBuilder(userAnswers = Some(userAnswersWithCountry))
+      .overrides(bind[VatRateService].toInstance(mockVatRateService))
+      .build()
+
+    running(application) {
+      val request = FakeRequest(GET, vatRatesFromCountryRoute)
+      val updatedAnswers = userAnswersWithCountry.set(VatRatesFromCountryPage(index), singleVatRate).success.value
+
+      val result = route(application, request).value
+
+      status(result) mustEqual SEE_OTHER
+
+      redirectLocation(result).value mustEqual VatRatesFromCountryPage(index).navigate(waypoints, userAnswersWithCountry, updatedAnswers).url
+
+    }
+
   }
 }

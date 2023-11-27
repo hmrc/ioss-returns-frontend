@@ -21,7 +21,8 @@ import models.etmp._
 import org.scalacheck.{Arbitrary, Gen}
 import org.scalacheck.Arbitrary.arbitrary
 
-import java.time.{LocalDate, LocalDateTime, Month}
+import java.time.{Instant, LocalDate, LocalDateTime, Month, ZoneOffset}
+import scala.math.BigDecimal.RoundingMode
 
 trait ModelGenerators {
 
@@ -37,10 +38,25 @@ trait ModelGenerators {
       Gen.oneOf(VatOnSales.values)
     }
 
-  implicit lazy val arbitraryVatRatesFromCountry: Arbitrary[VatRatesFromCountry] =
+  implicit def arbitraryVatRateFromCountry: Arbitrary[VatRateFromCountry] =
     Arbitrary {
-      Gen.oneOf(VatRatesFromCountry.values)
+      for {
+        rate <- Gen.choose[BigDecimal](BigDecimal(1), BigDecimal(100))
+        rateType <- Gen.oneOf(VatRateType.values)
+        validFrom <- datesBetween(LocalDate.of(2021, 7, 1), LocalDate.of(2100, 1, 1))
+      } yield VatRateFromCountry(rate.setScale(2, RoundingMode.HALF_EVEN), rateType, validFrom)
     }
+
+  private def datesBetween(min: LocalDate, max: LocalDate): Gen[LocalDate] = {
+
+    def toMillis(date: LocalDate): Long =
+      date.atStartOfDay.atZone(ZoneOffset.UTC).toInstant.toEpochMilli
+
+    Gen.choose(toMillis(min), toMillis(max)).map {
+      millis =>
+        Instant.ofEpochMilli(millis).atOffset(ZoneOffset.UTC).toLocalDate
+    }
+  }
 
   implicit val arbitraryPeriod: Arbitrary[Period] =
     Arbitrary {
