@@ -18,15 +18,15 @@ package controllers
 
 import controllers.actions._
 import forms.CheckSalesFormProvider
-import models.{Index, VatRatesFromCountry}
+import models.Index
 import pages.{CheckSalesPage, Waypoints}
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import queries.DeriveNumberOfSales
+import queries.RemainingVatRatesFromCountryQuery
+import services.VatRateService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax.FutureOps
-import utils.ItemsHelper.getDerivedItems
 import viewmodels.checkAnswers.CheckSalesSummary
 import views.html.CheckSalesView
 
@@ -37,6 +37,7 @@ class CheckSalesController @Inject()(
                                       override val messagesApi: MessagesApi,
                                       cc: AuthenticatedControllerComponents,
                                       formProvider: CheckSalesFormProvider,
+                                      vatRateService: VatRateService,
                                       view: CheckSalesView
                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with GetCountry {
 
@@ -51,15 +52,16 @@ class CheckSalesController @Inject()(
 
           val period = request.userAnswers.period
 
-          // TODO -> Derive number of vat rates for country
-          // val canAddVatRates = request.userAnswers.get(???new query) < VatRatesFromCountry.values.size
+          val canAddAnotherVatRate = vatRateService.countRemainingVatRatesForCountry(countryIndex, request.userAnswers).nonEmpty
+
+          val checkSalesSummary = CheckSalesSummary.rows(request.userAnswers, waypoints, countryIndex)
 
           val preparedForm = request.userAnswers.get(CheckSalesPage(Some(countryIndex))) match {
             case None => form
             case Some(value) => form.fill(value)
           }
 
-          Ok(view(preparedForm, waypoints, period, countryIndex, country)).toFuture
+          Ok(view(preparedForm, waypoints, period, checkSalesSummary, countryIndex, country, canAddAnotherVatRate)).toFuture
       }
   }
 
@@ -70,19 +72,22 @@ class CheckSalesController @Inject()(
 
           val period = request.userAnswers.period
 
-          // TODO -> Derive number of vat rates for country
-          // val canAddVatRates = request.userAnswers.get(???new query) < VatRatesFromCountry.values.size
-          val checkSalesSummary = CheckSalesSummary.row(request.userAnswers, waypoints, countryIndex)
+          val remainingVatRates = vatRateService.countRemainingVatRatesForCountry(countryIndex, request.userAnswers)
+
+          val canAddAnotherVatRate = remainingVatRates.nonEmpty
+
+          val checkSalesSummary = CheckSalesSummary.rows(request.userAnswers, waypoints, countryIndex)
 
           form.bindFromRequest().fold(
             formWithErrors =>
-              BadRequest(view(formWithErrors, waypoints, period, countryIndex, country)).toFuture,
+              BadRequest(view(formWithErrors, waypoints, period, checkSalesSummary, countryIndex, country, canAddAnotherVatRate)).toFuture,
 
             value =>
               for {
                 updatedAnswers <- Future.fromTry(request.userAnswers.set(CheckSalesPage(Some(countryIndex)), value))
-                _ <- cc.sessionRepository.set(updatedAnswers)
-              } yield Redirect(CheckSalesPage(Some(countryIndex)).navigate(waypoints, request.userAnswers, updatedAnswers).route)
+                updatedAnswersWithRemainingVatRates <- Future.fromTry(updatedAnswers.set(RemainingVatRatesFromCountryQuery(countryIndex), remainingVatRates))
+                _ <- cc.sessionRepository.set(updatedAnswersWithRemainingVatRates)
+              } yield Redirect(CheckSalesPage(Some(countryIndex)).navigate(waypoints, request.userAnswers, updatedAnswersWithRemainingVatRates).route)
           )
       }
   }

@@ -14,23 +14,15 @@
  * limitations under the License.
  */
 
-package pages
+package queries
 
-import controllers.routes
-import models.{Index, UserAnswers, VatRateFromCountry}
+import models.{Index, VatRateFromCountry}
+import pages.PageConstants
 import play.api.libs.json.JsPath
-import play.api.mvc.Call
 
-case class VatRatesFromCountryPage(countryIndex: Index) extends QuestionPage[List[VatRateFromCountry]] {
+case class RemainingVatRatesFromCountryQuery(countryIndex: Index) extends Gettable[Seq[VatRateFromCountry]] with Settable[Seq[VatRateFromCountry]] {
 
   override def path: JsPath = JsPath \ PageConstants.sales \ countryIndex.position \ toString
 
-  override def toString: String = PageConstants.vatRates
-
-  override def route(waypoints: Waypoints): Call = routes.VatRatesFromCountryController.onPageLoad(waypoints, countryIndex)
-
-  override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page = {
-    // TODO need vatRateIndex
-    SalesToCountryPage(countryIndex, Index(0))
-  }
+  override def toString: String = "remainingVatRates"
 }

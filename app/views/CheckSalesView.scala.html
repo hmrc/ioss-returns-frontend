@@ -21,11 +21,11 @@
         formHelper: FormWithCSRF,
         govukErrorSummary: GovukErrorSummary,
         govukRadios: GovukRadios,
-        addToList: components.addToList,
+        govukSummaryList: GovukSummaryList,
         govukButton: GovukButton
 )
 
-@(form: Form[_], waypoints: Waypoints, period: Period, countryIndex: Index, country: Country)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, period: Period, checkSalesSummaryLists: Seq[SummaryList], countryIndex: Index, country: Country, canAddAnotherVatRate: Boolean)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, messages("checkSales.title"), Some(messages("checkSales.caption", period.displayText, country.name)))) {
 
@@ -40,16 +40,22 @@
             <h1 class="govuk-heading-l">@messages("checkSales.heading")</h1>
         </header>
 
-@*//        @addToList()*@
+        @for(checkSalesSummaryList <- checkSalesSummaryLists) {
+            @govukSummaryList(checkSalesSummaryList)
+        }
 
-        @govukRadios(
-            RadiosViewModel.yesNo(
-                field = form("value"),
-                legend = LegendViewModel(
-                    HtmlContent(Html("""<h2 class="govuk-fieldset__heading">""" + messages("checkSales.addAnother") + "</h2>"))
-                ).withSize(LegendSize.Medium)
+        @if(canAddAnotherVatRate) {
+            @govukRadios(
+                RadiosViewModel.yesNo(
+                    field = form("value"),
+                    legend = LegendViewModel(
+                        HtmlContent(Html("""<h2 class="govuk-fieldset__heading">""" + messages("checkSales.addAnother") + "</h2>"))
+                    ).withSize(LegendSize.Medium)
+                )
             )
-        )
+        } else {
+
+        }
 
         @govukButton(
             ButtonViewModel(messages("site.continue"))

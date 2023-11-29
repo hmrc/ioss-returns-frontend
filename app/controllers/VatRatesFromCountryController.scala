@@ -20,13 +20,14 @@ import controllers.actions._
 import forms.VatRatesFromCountryFormProvider
 import models.requests.DataRequest
 import models.{Country, Index, VatRateFromCountry}
-import pages.{SoldToCountryPage, VatRatesFromCountryPage, Waypoints}
+import pages.{JourneyRecoveryPage, SoldToCountryPage, VatRatesFromCountryPage, Waypoints}
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import services.VatRateService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.VatRatesFromCountryView
+
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -44,7 +45,7 @@ class VatRatesFromCountryController @Inject()(
     implicit request => {
       val period = request.userAnswers.period
 
-      withCountrySold(index) { country =>
+      withCountrySold(waypoints, index) { country =>
 
         val vatRates = vatRateService.vatRates(period, country)
 
@@ -53,7 +54,7 @@ class VatRatesFromCountryController @Inject()(
 
         val preparedForm = answers match {
           case None => form
-          case Some(value) => form.fill(value.toList)
+          case Some(value) => form.fill(value)
         }
 
         if (vatRates.size == 1) {
@@ -74,7 +75,7 @@ class VatRatesFromCountryController @Inject()(
 
       val period = request.userAnswers.period
 
-      withCountrySold(index) { country =>
+      withCountrySold(waypoints, index) { country =>
         val vatRates = vatRateService.vatRates(period, country)
         val form = formProvider(vatRates.toList)
         form.bindFromRequest().fold(
@@ -90,12 +91,12 @@ class VatRatesFromCountryController @Inject()(
       }
   }
 
-  private def withCountrySold(index: Index)
+  private def withCountrySold(waypoints: Waypoints, index: Index)
                              (block: Country => Future[Result])
                              (implicit request: DataRequest[AnyContent]): Future[Result] =
     request.userAnswers.get(SoldToCountryPage(index))
       .fold(
-        Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
+        Future.successful(Redirect(JourneyRecoveryPage.route(waypoints).url))
       )(
         block(_)
       )

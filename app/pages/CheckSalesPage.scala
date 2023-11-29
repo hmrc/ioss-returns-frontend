@@ -17,10 +17,11 @@
 package pages
 
 import controllers.routes
+import logging.Logging
 import models.{Index, UserAnswers}
 import play.api.libs.json.{JsObject, JsPath}
 import play.api.mvc.Call
-import queries.{Derivable, DeriveNumberOfSales}
+import queries.{Derivable, RemainingVatRatesFromCountryQuery}
 
 object CheckSalesPage {
 
@@ -28,7 +29,7 @@ object CheckSalesPage {
   val checkModeUrlFragment: String = "change-check-sales"
 }
 
-final case class CheckSalesPage(override val index: Option[Index] = None) extends AddItemPage(index) with QuestionPage[Boolean] {
+final case class CheckSalesPage(override val index: Option[Index] = None) extends AddItemPage(index) with QuestionPage[Boolean] with Logging {
 
   override def isTheSamePage(other: Page): Boolean = other match {
     case p: CheckSalesPage => p.index == this.index
@@ -45,25 +46,55 @@ final case class CheckSalesPage(override val index: Option[Index] = None) extend
   override val normalModeUrlFragment: String = CheckSalesPage.normalModeUrlFragment
   override val checkModeUrlFragment: String = CheckSalesPage.checkModeUrlFragment
 
-  // TODO -> Need to check VatRatesFromCountryPage for how many of available vat rates for country have been checked, then remaining ones should be available to be added here
-  override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
-    answers.get(this).map {
-      case true =>
-        index
-          .map { i =>
-            if (i.position + 1 < 5) { // TODO -> Replace with query checking how many checked VAT rates
-              SalesToCountryPage(Index(i.position + 1))
-            } else {
-              SoldToCountryListPage(Some(i))
-            }
-          }.getOrElse {
-          answers
-            .get(deriveNumberOfItems)
-            .map(n => SalesToCountryPage(Index(n)))
-            .orRecover
+  // TODO -> Refactor using flatMaps???
+  override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page = {
+    answers.get(this) match {
+      case Some(true) =>
+        index match {
+          case Some(countryIndex) =>
+          answers.get(RemainingVatRatesFromCountryQuery(countryIndex)) match {
+            case maybeVatRatesFromCountry =>
+              maybeVatRatesFromCountry.toList.flatten match {
+                case list if list.size == 1 =>
+                  RemainingVatRateFromCountryPage(countryIndex, Index(list.size -1)) // TODO -> Get vatRateIndex
+                case list if list.size > 1 =>
+                  VatRatesFromCountryPage(countryIndex) //TODO -> If more than one remaining, to checkbox page but only showing remaining vat rates
+                case Nil =>
+                  val exception = new IllegalStateException("VAT rate missing")
+                  logger.error(exception.getMessage, exception)
+                  throw exception
+                case _ =>
+                  JourneyRecoveryPage
+              }
+          }
+          case _ => throw new Exception
         }
-      case false => SoldToCountryListPage(index)
-    }.orRecover
+      case Some(false) =>
+        SoldToCountryListPage(index)
+      case _ =>
+        JourneyRecoveryPage
+    }
+  }
 
-  override def deriveNumberOfItems: Derivable[Seq[JsObject], Int] = DeriveNumberOfSales // TODO -> Replace with query checking max vat rats for country
+  // TODO -> To be replaced by above
+//  override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
+//    answers.get(this).map {
+//      case true =>
+//        index
+//          .map { i =>
+//            if (i.position + 1 < 5) {
+//              SalesToCountryPage(Index(i.position + 1), Index(0))
+//            } else {
+//              SoldToCountryListPage(Some(i))
+//            }
+//          }.getOrElse {
+//          answers
+//            .get(deriveNumberOfItems)
+//            .map(n => SalesToCountryPage(Index(n), Index(0)))
+//            .orRecover
+//        }
+//      case false => SoldToCountryListPage(index)
+//    }.orRecover
+
+  override def deriveNumberOfItems: Derivable[Seq[JsObject], Int] = ???
 }

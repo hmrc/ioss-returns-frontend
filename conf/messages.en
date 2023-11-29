@@ -98,10 +98,11 @@ vatRatesFromCountry.change.hidden = VAT rates from country
 
 salesToCountry.title = What were your sales at {0} rate excluding VAT?
 salesToCountry.heading = What were your sales at {0} rate excluding VAT?
+salesToCountry.caption = {0} sales to {1}
 salesToCountry.checkYourAnswersLabel = Sales excluding VAT
-salesToCountry.error.nonNumeric = Enter your sales excluding VAT using numbers
-salesToCountry.error.required = Enter your sales excluding VAT
-salesToCountry.error.wholeNumber = Enter your sales excluding VAT using whole numbers
+salesToCountry.error.nonNumeric = Enter your sales at {0} rate excluding VAT using numbers
+salesToCountry.error.required = Enter your sales at {0} rate excluding VAT
+salesToCountry.error.wholeNumber = Enter your sales at {0} rate excluding VAT using whole numbers
 salesToCountry.error.outOfRange = Sales excluding VAT must be between {0} and {1}
 salesToCountry.error.calculatedVatRateOutOfRange = Add a sales total above £0.02
 salesToCountry.change.hidden = sales excluding VAT
@@ -150,10 +151,20 @@ checkSales.title = Check your answers
 checkSales.heading = Check your answers
 checkSales.caption = {0} sales to {1}
 checkSales.checkYourAnswersLabel = checkSales
+checkSales.vatRate = {0}% VAT rate
 checkSales.addAnother = Add another VAT rate?
 checkSales.error.required = Select yes if checkSales
 checkSales.vat.change.hidden = VAT charged for VAT rate {0}
 checkSales.vatRate.remove.hidden = VAT rate for {0}
+
+deleteVatRateSalesForCountry.title = Do you want to remove all your {0} VAT rate sales for {1}?
+deleteVatRateSalesForCountry.heading = Do you want to remove all your {0} VAT rate sales for {1}?
+deleteVatRateSalesForCountry.error.required = Select yes if you want to remove all your {0} VAT rate sales for {1}
+
+remainingVatRateFromCountry.title = Did you sell goods at the {0}% VAT rate?
+remainingVatRateFromCountry.heading = Did you sell goods at the {0}% VAT rate?
+remainingVatRateFromCountry.caption = {0} sales to {1}
+remainingVatRateFromCountry.error.required = Select yes if you sold goods at the {0}% VAT rate
 
 correctPreviousReturn.title = Do you want to correct a previous return?
 correctPreviousReturn.heading = Do you want to correct a previous return?

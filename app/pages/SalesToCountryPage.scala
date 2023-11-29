@@ -30,7 +30,8 @@ case class SalesToCountryPage(countryIndex: Index, vatRateIndex: Index) extends 
 
   override def toString: String = netValueOfSales
 
-  override def route(waypoints: Waypoints): Call = routes.SalesToCountryController.onPageLoad(waypoints, countryIndex, vatRateIndex)
+  override def route(waypoints: Waypoints): Call =
+    routes.SalesToCountryController.onPageLoad(waypoints, countryIndex, vatRateIndex)
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
     VatOnSalesPage(countryIndex, vatRateIndex)

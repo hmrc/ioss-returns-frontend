@@ -34,8 +34,8 @@ class VatOnSalesController @Inject()(
                                       override val messagesApi: MessagesApi,
                                       cc: AuthenticatedControllerComponents,
                                       formProvider: VatOnSalesFormProvider,
-                                      view: VatOnSalesView,
-                                      vatRateService: VatRateService
+                                      vatRateService: VatRateService,
+                                      view: VatOnSalesView
                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with SalesFromCountryBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc

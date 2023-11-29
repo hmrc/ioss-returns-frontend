@@ -14,32 +14,13 @@
  * limitations under the License.
  */
 
-package forms
+package queries
 
-import forms.behaviours.BooleanFieldBehaviours
-import play.api.data.FormError
+import models.{Index, VatRateFromCountry}
+import pages.PageConstants
+import play.api.libs.json.JsPath
 
-class CheckSalesFormProviderSpec extends BooleanFieldBehaviours {
+case class VatRateFromCountryQuery(countryIndex: Index, vatRateIndex: Index) extends Gettable[VatRateFromCountry] with Settable[VatRateFromCountry] {
 
-  val requiredKey = "checkSales.error.required"
-  val invalidKey = "error.boolean"
-
-  val form = new CheckSalesFormProvider()()
-
-  ".value" - {
-
-    val fieldName = "value"
-
-    behave like booleanField(
-      form,
-      fieldName,
-      invalidError = FormError(fieldName, invalidKey)
-    )
-
-    behave like mandatoryField(
-      form,
-      fieldName,
-      requiredError = FormError(fieldName, requiredKey)
-    )
-  }
+  override def path: JsPath = JsPath \ PageConstants.sales \ countryIndex.position \ PageConstants.vatRates \ vatRateIndex.position
 }

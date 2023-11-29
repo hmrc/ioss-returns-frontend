@@ -17,14 +17,17 @@
 package forms
 
 import forms.behaviours.BooleanFieldBehaviours
+import models.Country
 import play.api.data.FormError
 
-class CheckSalesFormProviderSpec extends BooleanFieldBehaviours {
+class DeleteVatRateSalesForCountryFormProviderSpec extends BooleanFieldBehaviours {
 
-  val requiredKey = "checkSales.error.required"
-  val invalidKey = "error.boolean"
+  private val requiredKey = "deleteVatRateSalesForCountry.error.required"
+  private val invalidKey = "error.boolean"
+  private val country: Country = arbitraryCountry.arbitrary.sample.value
+  private val vatRate: String = arbitraryVatRateFromCountry.arbitrary.sample.value.rateForDisplay
 
-  val form = new CheckSalesFormProvider()()
+  private val form = new DeleteVatRateSalesForCountryFormProvider()(vatRate, country)
 
   ".value" - {
 
@@ -33,13 +36,13 @@ class CheckSalesFormProviderSpec extends BooleanFieldBehaviours {
     behave like booleanField(
       form,
       fieldName,
-      invalidError = FormError(fieldName, invalidKey)
+      invalidError = FormError(fieldName, invalidKey, Seq(vatRate, country.name))
     )
 
     behave like mandatoryField(
       form,
       fieldName,
-      requiredError = FormError(fieldName, requiredKey)
+      requiredError = FormError(fieldName, requiredKey, Seq(vatRate, country.name))
     )
   }
 }

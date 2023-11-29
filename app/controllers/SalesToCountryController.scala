@@ -25,7 +25,6 @@ import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import utils.FutureSyntax.FutureOps
 import views.html.SalesToCountryView
 
 import javax.inject.Inject
@@ -63,19 +62,20 @@ class SalesToCountryController @Inject()(
       getCountryAndVatRateAsync(waypoints, countryIndex, vatRateIndex) {
         case (country, vatRate) =>
 
-        val period = request.userAnswers.period
-        val form: Form[BigDecimal] = formProvider(vatRate)
+          val period = request.userAnswers.period
+          val form: Form[BigDecimal] = formProvider(vatRate)
 
         form.bindFromRequest().fold(
           formWithErrors =>
             BadRequest(view(formWithErrors, waypoints, period, countryIndex, country, vatRateIndex, vatRate)).toFuture,
 
-          value =>
-            for {
-              updatedAnswers <- Future.fromTry(request.userAnswers.set(SalesToCountryPage(countryIndex, vatRateIndex), value))
-              _ <- cc.sessionRepository.set(updatedAnswers)
-            } yield Redirect(SalesToCountryPage(countryIndex, vatRateIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route)
-        )
+            value =>
+              for {
+                updatedAnswers <- Future.fromTry(request.userAnswers.set(SalesToCountryPage(countryIndex, vatRateIndex), value))
+                _ <- cc.sessionRepository.set(updatedAnswers)
+              } yield Redirect(SalesToCountryPage(countryIndex, vatRateIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route)
+          )
+      }
       }
   }
 }

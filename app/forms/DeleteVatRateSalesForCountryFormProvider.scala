@@ -16,30 +16,15 @@
 
 package forms
 
-import forms.behaviours.BooleanFieldBehaviours
-import play.api.data.FormError
+import javax.inject.Inject
+import forms.mappings.Mappings
+import models.Country
+import play.api.data.Form
 
-class CheckSalesFormProviderSpec extends BooleanFieldBehaviours {
+class DeleteVatRateSalesForCountryFormProvider @Inject() extends Mappings {
 
-  val requiredKey = "checkSales.error.required"
-  val invalidKey = "error.boolean"
-
-  val form = new CheckSalesFormProvider()()
-
-  ".value" - {
-
-    val fieldName = "value"
-
-    behave like booleanField(
-      form,
-      fieldName,
-      invalidError = FormError(fieldName, invalidKey)
+  def apply(vatRate: String, country: Country): Form[Boolean] =
+    Form(
+      "value" -> boolean("deleteVatRateSalesForCountry.error.required", args = Seq(vatRate, country.name))
     )
-
-    behave like mandatoryField(
-      form,
-      fieldName,
-      requiredError = FormError(fieldName, requiredKey)
-    )
-  }
 }

@@ -24,13 +24,14 @@ import org.mockito.Mockito.{reset, when}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
-import pages.{SoldToCountryPage, VatRatesFromCountryPage}
+import pages.{JourneyRecoveryPage, SoldToCountryPage, VatRatesFromCountryPage}
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
 import services.VatRateService
+import utils.FutureSyntax.FutureOps
 import views.html.VatRatesFromCountryView
 
 import scala.concurrent.Future
@@ -66,9 +67,9 @@ class VatRatesFromCountryControllerSpec extends SpecBase with MockitoSugar with 
 
         val view = application.injector.instanceOf[VatRatesFromCountryView]
 
-        status(result) mustEqual OK
+        status(result) mustBe OK
 
-        contentAsString(result) mustEqual view(form, waypoints, period, index, country, utils.ItemsHelper.checkboxItems(vatRatesFromCountry))(request, messages(application)).toString
+        contentAsString(result) mustBe view(form, waypoints, period, index, country, utils.ItemsHelper.checkboxItems(vatRatesFromCountry))(request, messages(application)).toString
       }
     }
 
@@ -87,8 +88,8 @@ class VatRatesFromCountryControllerSpec extends SpecBase with MockitoSugar with 
 
         val result = route(application, request).value
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual
+        status(result) mustBe OK
+        contentAsString(result) mustBe
           view(
             form.fill(vatRatesFromCountry),
             waypoints,
@@ -104,7 +105,7 @@ class VatRatesFromCountryControllerSpec extends SpecBase with MockitoSugar with 
 
       val mockSessionRepository = mock[SessionRepository]
       when(mockVatRateService.vatRates(any(), any())) thenReturn vatRatesFromCountry
-      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      when(mockSessionRepository.set(any())) thenReturn true.toFuture
 
       val application =
         applicationBuilder(userAnswers = Some(userAnswersWithCountry))
@@ -121,8 +122,8 @@ class VatRatesFromCountryControllerSpec extends SpecBase with MockitoSugar with 
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.SalesToCountryController.onPageLoad(waypoints, index, vatRateIndex).url
+        status(result) mustBe SEE_OTHER
+        redirectLocation(result).value mustBe routes.SalesToCountryController.onPageLoad(waypoints, index, index).url
       }
     }
 
@@ -143,8 +144,8 @@ class VatRatesFromCountryControllerSpec extends SpecBase with MockitoSugar with 
 
         val result = route(application, request).value
 
-        status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, waypoints, period, index, country, utils.ItemsHelper.checkboxItems(vatRatesFromCountry))(request, messages(application)).toString
+        status(result) mustBe BAD_REQUEST
+        contentAsString(result) mustBe view(boundForm, waypoints, period, index, country, utils.ItemsHelper.checkboxItems(vatRatesFromCountry))(request, messages(application)).toString
       }
     }
 
@@ -157,8 +158,8 @@ class VatRatesFromCountryControllerSpec extends SpecBase with MockitoSugar with 
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+        status(result) mustBe SEE_OTHER
+        redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
       }
     }
 
@@ -173,8 +174,8 @@ class VatRatesFromCountryControllerSpec extends SpecBase with MockitoSugar with 
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+        status(result) mustBe SEE_OTHER
+        redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
       }
     }
   }
@@ -192,9 +193,9 @@ class VatRatesFromCountryControllerSpec extends SpecBase with MockitoSugar with 
 
       val result = route(application, request).value
 
-      status(result) mustEqual SEE_OTHER
+      status(result) mustBe SEE_OTHER
 
-      redirectLocation(result).value mustEqual VatRatesFromCountryPage(index).navigate(waypoints, userAnswersWithCountry, updatedAnswers).url
+      redirectLocation(result).value mustBe VatRatesFromCountryPage(index).navigate(waypoints, userAnswersWithCountry, updatedAnswers).url
 
     }
 

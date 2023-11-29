@@ -17,20 +17,25 @@
 package pages
 
 import controllers.routes
-import models.{Index, UserAnswers, VatRateFromCountry}
+import models.{Index, UserAnswers}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
-case class VatRatesFromCountryPage(countryIndex: Index) extends QuestionPage[List[VatRateFromCountry]] {
 
-  override def path: JsPath = JsPath \ PageConstants.sales \ countryIndex.position \ toString
+final case class RemainingVatRateFromCountryPage(countryIndex: Index, vatRateIndex: Index) extends QuestionPage[Boolean] {
 
-  override def toString: String = PageConstants.vatRates
+  override def path: JsPath = JsPath \ toString
 
-  override def route(waypoints: Waypoints): Call = routes.VatRatesFromCountryController.onPageLoad(waypoints, countryIndex)
+  override def toString: String = "remainingVatRateFromCountry"
 
-  override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page = {
-    // TODO need vatRateIndex
-    SalesToCountryPage(countryIndex, Index(0))
-  }
+  override def route(waypoints: Waypoints): Call =
+    routes.RemainingVatRateFromCountryController.onPageLoad(waypoints, countryIndex, vatRateIndex)
+
+  override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
+    answers.get(this) match {
+      case Some(true) =>
+        SalesToCountryPage(countryIndex, vatRateIndex)
+      case Some(false) =>
+        CheckSalesPage(Some(countryIndex))
+    }
 }

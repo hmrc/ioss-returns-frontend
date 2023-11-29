@@ -39,7 +39,7 @@ class SoldToCountryListControllerSpec extends SpecBase with MockitoSugar {
 
   private val country: Country = arbitraryCountry.arbitrary.sample.value
   private val vatRateFromCountry: VatRateFromCountry = arbitraryVatRateFromCountry.arbitrary.sample.value
-  private val salesValue = BigDecimal(1234)
+  private val salesValue: BigDecimal = BigDecimal(1234)
 
   private val baseAnswers: UserAnswers = emptyUserAnswers
     .set(SoldGoodsPage, true).success.value

@@ -19,12 +19,12 @@ package forms
 import forms.behaviours.BooleanFieldBehaviours
 import play.api.data.FormError
 
-class CheckSalesFormProviderSpec extends BooleanFieldBehaviours {
+class RemainingVatRateFromCountryFormProviderSpec extends BooleanFieldBehaviours {
 
-  val requiredKey = "checkSales.error.required"
+  val requiredKey = "remainingVatRateFromCountry.error.required"
   val invalidKey = "error.boolean"
 
-  val form = new CheckSalesFormProvider()()
+  val form = new RemainingVatRateFromCountryFormProvider()()
 
   ".value" - {
 

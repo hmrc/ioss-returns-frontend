@@ -16,29 +16,43 @@
 
 package viewmodels.checkAnswers
 
-import controllers.routes
 import models.{Index, UserAnswers}
-import pages.{CheckSalesPage, Waypoints}
+import pages.{CheckSalesPage, DeleteVatRateSalesForCountryPage, Waypoints}
 import play.api.i18n.Messages
-import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
+import queries.SalesByCountryQuery
+import uk.gov.hmrc.govukfrontend.views.Aliases.CardTitle
+import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
+import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{Actions, Card, SummaryList}
 import viewmodels.govuk.summarylist._
 import viewmodels.implicits._
 
-object CheckSalesSummary  {
+object CheckSalesSummary {
 
-  def row(answers: UserAnswers, waypoints: Waypoints, countryIndex: Index)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(CheckSalesPage(Some(countryIndex))).map {
-      answer =>
+  def rows(answers: UserAnswers, waypoints: Waypoints, countryIndex: Index)(implicit messages: Messages): Seq[SummaryList] =
 
-        val value = if (answer) "site.yes" else "site.no"
+    answers.get(SalesByCountryQuery(countryIndex)).toList.flatMap { salesByCountryDetails =>
+      salesByCountryDetails.vatRatesFromCountry.toList.flatMap {
+        vatRatesFromCountry =>
 
-        SummaryListRowViewModel(
-          key     = "checkSales.checkYourAnswersLabel",
-          value   = ValueViewModel(value),
-          actions = Seq(
-            ActionItemViewModel("site.change", routes.CheckSalesController.onPageLoad(waypoints, countryIndex).url)
-              .withVisuallyHiddenText(messages("checkSales.change.hidden"))
-          )
-        )
+          vatRatesFromCountry.zipWithIndex.map {
+            case (vatRateFromCountry, vatRateIndex) =>
+
+              val rows = SalesToCountrySummary.row(answers, waypoints, countryIndex, Index(vatRateIndex), CheckSalesPage()).toList ++
+                VatOnSalesSummary.row(answers, waypoints, countryIndex, Index(vatRateIndex), CheckSalesPage()).toList
+
+              SummaryListViewModel(
+                rows = rows
+              ).withCard(
+                card = Card(
+                  title = Some(CardTitle(content = HtmlContent(messages("checkSales.vatRate", vatRateFromCountry.rate)))),
+                  actions = Some(Actions(
+                    items = Seq(
+                      ActionItemViewModel("site.remove", DeleteVatRateSalesForCountryPage(countryIndex, Index(vatRateIndex)).route(waypoints).url)
+                        .withVisuallyHiddenText(messages("salesToCountry.remove.hidden")))
+                  ))
+                )
+              )
+          }
+      }
     }
 }

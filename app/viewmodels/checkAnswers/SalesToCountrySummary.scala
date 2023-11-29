@@ -16,26 +16,25 @@
 
 package viewmodels.checkAnswers
 
-import controllers.routes
 import models.{Index, UserAnswers, VatRateFromCountry}
-import pages.{SalesToCountryPage, Waypoints}
+import pages.{AddItemPage, SalesToCountryPage, Waypoints}
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
 import viewmodels.govuk.summarylist._
 import viewmodels.implicits._
 
-object SalesToCountrySummary  {
+object SalesToCountrySummary {
 
-  def row(answers: UserAnswers, waypoints: Waypoints, countryIndex: Index, vatRateIndex: Index, vatRate: VatRateFromCountry)
+  def row(answers: UserAnswers, waypoints: Waypoints, countryIndex: Index, vatRateIndex: Index, vatRate: VatRateFromCountry, sourcePage: AddItemPage)
          (implicit messages: Messages): Option[SummaryListRow] =
     answers.get(SalesToCountryPage(countryIndex, vatRateIndex)).map {
       answer =>
 
         SummaryListRowViewModel(
-          key     = "salesToCountry.checkYourAnswersLabel",
-          value   = ValueViewModel(answer.toString),
+          key = "salesToCountry.checkYourAnswersLabel",
+          value = ValueViewModel(answer.toString),
           actions = Seq(
-            ActionItemViewModel("site.change", routes.SalesToCountryController.onPageLoad(waypoints, countryIndex, vatRateIndex).url)
+            ActionItemViewModel("site.change", SalesToCountryPage(countryIndex, vatRateIndex).changeLink(waypoints, sourcePage).url)
               .withVisuallyHiddenText(messages("salesToCountry.change.hidden", vatRate.rateForDisplay))
               .withAttribute(("id", s"change-net-value-sales-${vatRate.rate}-percent"))
           )

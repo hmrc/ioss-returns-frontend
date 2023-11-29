@@ -20,7 +20,7 @@ import play.api.libs.json.{Json, OFormat}
 
 case class SalesToCountryWithOptionalVat(
                              country: Country,
-                             vatRates: Option[List[String]]
+                             vatRatesFromCountry: Option[List[VatRateFromCountry]]
                            )
 
 object SalesToCountryWithOptionalVat {

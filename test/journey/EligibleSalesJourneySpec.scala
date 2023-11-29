@@ -33,6 +33,7 @@ class EligibleSalesJourneySpec extends AnyFreeSpec with JourneyHelpers with Spec
   private val maxSalesValue: Int = 1000000
   private val countryIndex1: Index = Index(0)
   private val countryIndex2: Index = Index(1)
+  private val vatRateIndex: Index = Index(0)
   private val country: Country = arbitraryCountry.arbitrary.sample.value
   private val vatRateFromCountry1: VatRateFromCountry = arbitraryVatRateFromCountry.arbitrary.sample.value
   private val vatRateFromCountry2: VatRateFromCountry = arbitraryVatRateFromCountry.arbitrary.sample.value
@@ -48,9 +49,9 @@ class EligibleSalesJourneySpec extends AnyFreeSpec with JourneyHelpers with Spec
     submitAnswer(VatOnSalesPage(countryIndex1, vatRateIndex), arbitraryVatOnSales.arbitrary.sample.value),
     submitAnswer(SalesToCountryPage(countryIndex1, vatRateIndex.+(1)), salesValue),
     submitAnswer(VatOnSalesPage(countryIndex1, vatRateIndex.+(1)), arbitraryVatOnSales.arbitrary.sample.value),
+    submitAnswer(CheckSalesPage(Some(countryIndex1)), false),
     pageMustBe(SoldToCountryListPage(Some(countryIndex1)))
   )
-
 
   "must go directly to Check your answers if no eligible sales were made" in {
     startingFrom(SoldGoodsPage, answers = initialAnswers)
@@ -73,7 +74,10 @@ class EligibleSalesJourneySpec extends AnyFreeSpec with JourneyHelpers with Spec
             pageMustBe(SalesToCountryPage(Index(index), vatRateIndex.+(1))) :+
             submitAnswer(SalesToCountryPage(Index(index), vatRateIndex.+(1)), salesValue) :+
             submitAnswer(VatOnSalesPage(Index(index), vatRateIndex.+(1)), VatOnSales(Standard, salesValue * vatRateFromCountry2.rate)) :+
-            submitAnswer(SoldToCountryListPage(Some(Index(index))), true)
+            submitAnswer(CheckSalesPage(Some(Index(index))), false) :+
+            pageMustBe(SoldToCountryListPage(Some(Index(index))))
+//            goTo(SoldToCountryListPage(Some(Index(index)))) :+
+//            submitAnswer(SoldToCountryListPage(Some(Index(index))), true)
       }
     }
 
@@ -81,7 +85,8 @@ class EligibleSalesJourneySpec extends AnyFreeSpec with JourneyHelpers with Spec
       .run(
         submitAnswer(SoldGoodsPage, true) +:
           generateSales :+
-          pageMustBe(CheckYourAnswersPage): _*
+          pageMustBe(SoldToCountryListPage()): _*
+//          pageMustBe(CheckSalesPage()): _*
       )
   }
 
@@ -101,8 +106,11 @@ class EligibleSalesJourneySpec extends AnyFreeSpec with JourneyHelpers with Spec
         submitAnswer(VatRatesFromCountryPage(countryIndex2), List(vatRateFromCountry1, vatRateFromCountry2)),
         submitAnswer(SalesToCountryPage(countryIndex2, vatRateIndex), salesValue),
         submitAnswer(VatOnSalesPage(countryIndex2, vatRateIndex), arbitraryVatOnSales.arbitrary.sample.value),
+        submitAnswer(SalesToCountryPage(countryIndex2, vatRateIndex), salesValue),
+        submitAnswer(VatOnSalesPage(countryIndex2, vatRateIndex), arbitraryVatOnSales.arbitrary.sample.value),
         submitAnswer(SalesToCountryPage(countryIndex2, vatRateIndex.+(1)), salesValue),
         submitAnswer(VatOnSalesPage(countryIndex2, vatRateIndex.+(1)), arbitraryVatOnSales.arbitrary.sample.value),
+        submitAnswer(CheckSalesPage(Some(countryIndex2)), false),
         pageMustBe(SoldToCountryListPage(Some(countryIndex2)))
       )
   }
@@ -131,6 +139,7 @@ class EligibleSalesJourneySpec extends AnyFreeSpec with JourneyHelpers with Spec
           submitAnswer(VatOnSalesPage(countryIndex2, vatRateIndex), arbitraryVatOnSales.arbitrary.sample.value),
           submitAnswer(SalesToCountryPage(countryIndex2, vatRateIndex.+(1)), salesValue),
           submitAnswer(VatOnSalesPage(countryIndex2, vatRateIndex.+(1)), arbitraryVatOnSales.arbitrary.sample.value),
+          submitAnswer(CheckSalesPage(Some(countryIndex2)), false),
           pageMustBe(SoldToCountryListPage(Some(countryIndex2))),
           goTo(DeleteSoldToCountryPage(countryIndex2)),
           removeAddToListItem(SalesByCountryQuery(countryIndex2)),
@@ -141,5 +150,6 @@ class EligibleSalesJourneySpec extends AnyFreeSpec with JourneyHelpers with Spec
   }
 
   // TODO Change answers journey
+  // TODO Multiple VAT rates (vat rate indexed)
   // TODO Delete all answers journey from CYA page
 }

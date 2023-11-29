@@ -23,7 +23,7 @@ import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.mockito.MockitoSugar
-import pages.{SalesToCountryPage, SoldToCountryListPage, SoldToCountryPage, VatOnSalesPage, VatRatesFromCountryPage}
+import pages.{JourneyRecoveryPage, SalesToCountryPage, SoldToCountryListPage, SoldToCountryPage, VatOnSalesPage, VatRatesFromCountryPage}
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.test.FakeRequest
@@ -31,8 +31,6 @@ import play.api.test.Helpers._
 import repositories.SessionRepository
 import services.VatRateService
 import views.html.VatOnSalesView
-
-import scala.concurrent.Future
 
 class VatOnSalesControllerSpec extends SpecBase with MockitoSugar {
 
@@ -169,8 +167,23 @@ class VatOnSalesControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+        status(result) mustBe SEE_OTHER
+        redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
+      }
+    }
+
+    // TODO -> Test failing
+    "must redirect to Journey Recovery for a GET if no VAT on sales data is found" in {
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+
+      running(application) {
+        val request = FakeRequest(GET, vatOnSalesRoute)
+
+        val result = route(application, request).value
+
+        status(result) mustBe SEE_OTHER
+        redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
       }
     }
 
@@ -187,9 +200,9 @@ class VatOnSalesControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
+        status(result) mustBe SEE_OTHER
 
-        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+        redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
       }
     }
   }
