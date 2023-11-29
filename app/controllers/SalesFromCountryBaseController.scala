@@ -31,20 +31,11 @@ trait SalesFromCountryBaseController {
   protected def getCountryAndVatRate(waypoints: Waypoints, countryIndex: Index, vatRateIndex: Index)
                                     (block: (Country, VatRateFromCountry) => Result)
                                     (implicit request: DataRequest[AnyContent]): Result = {
-    val result = (for {
+    (for {
       country <- request.userAnswers.get(SoldToCountryPage(countryIndex))
       vatRate <- request.userAnswers.get(VatRatesFromCountryQuery(countryIndex, vatRateIndex))
     } yield block(country, vatRate))
       .getOrElse(Redirect(JourneyRecoveryPage.route(waypoints)))
-
-    println(s"result: $result")
-    println(s"User Answers: ${request.userAnswers}")
-    println(s"waypoints: $waypoints, countryIndex: $countryIndex, vatRateIndex: $vatRateIndex")
-    println(s"country: ${request.userAnswers.get(SoldToCountryPage(countryIndex))}")
-    println(s"vatRatesFromCountry: ${request.userAnswers.get(VatRatesFromCountryQuery(countryIndex, vatRateIndex))}")
-    println(s"VatRatesFromCountryQuery data: ${request.userAnswers.get(VatRatesFromCountryQuery(countryIndex, vatRateIndex))}")
-
-    result
   }
 
 
