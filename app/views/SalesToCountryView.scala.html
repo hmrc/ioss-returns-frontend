@@ -16,13 +16,14 @@
 
 @import uk.gov.hmrc.hmrcfrontend.views.config.HmrcPageHeadingLabel
 @import viewmodels.InputWidth._
+@import components.ButtonGroup
 
 @this(
     layout: templates.Layout,
     formHelper: FormWithCSRF,
     govukErrorSummary: GovukErrorSummary,
     govukInput: GovukInput,
-    govukButton: GovukButton
+    button: ButtonGroup
 )
 
 @(form: Form[_], waypoints: Waypoints, period: Period, countryIndex: Index, country: Country, vatRateIndex: Index, vatRate: VatRateFromCountry)(implicit request: Request[_], messages: Messages)
@@ -47,15 +48,14 @@
                     caption = messages("caption.fromCountry.periodAndCountry", period.displayText, country.name)
                 )
             )
-            .asNumeric()
             .withWidth(Fixed10)
             .withCssClass("govuk-currency-input__inner__input")
             .withPrefix(PrefixOrSuffix(content = Text("£")))
             .withHint(HintViewModel(messages("salesToCountry.hint")))
         )
 
-        @govukButton(
-            ButtonViewModel(messages("site.continue"))
+        @button(
+            messages("site.continue", routes.SalesToCountryController.onPageLoad(waypoints, countryIndex, vatRateIndex).url)
         )
     }
 }

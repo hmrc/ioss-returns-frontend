@@ -51,4 +51,7 @@ class VatRateService @Inject()(env: Environment, config: Configuration) {
       .filter(_.validFrom isBefore period.lastDay.plusDays(1))
       .filter(rate => rate.validUntil.fold(true)(_.isAfter(period.firstDay.minusDays(1))))
 
+  def standardVatOnSales(netSales: BigDecimal, vatRate: VatRateFromCountry): BigDecimal =
+    ((netSales * vatRate.rate) / 100).setScale(2, RoundingMode.HALF_EVEN)
+
 }

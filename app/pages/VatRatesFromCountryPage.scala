@@ -30,5 +30,5 @@ case class VatRatesFromCountryPage(index: Index) extends QuestionPage[List[VatRa
   override def route(waypoints: Waypoints): Call = routes.VatRatesFromCountryController.onPageLoad(waypoints, index)
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
-    SalesToCountryPage(index)
+    SalesToCountryPage(index, Index(0))
 }

@@ -18,14 +18,15 @@ package forms
 
 import config.Constants.maxCurrencyAmount
 import forms.mappings.Mappings
-import models.{VatRateFromCountry, VatRatesFromCountry}
+import models.VatRateFromCountry
 
 import javax.inject.Inject
 import play.api.data.Form
+import services.VatRateService
 
 class SalesToCountryFormProvider @Inject()(vatRateService: VatRateService) extends Mappings {
 
-  def apply(vatRate: VatRatesFromCountry): Form[BigDecimal] =
+  def apply(vatRate: VatRateFromCountry): Form[BigDecimal] =
     Form(
       "value" -> currency(
         "salesToCountry.error.required",

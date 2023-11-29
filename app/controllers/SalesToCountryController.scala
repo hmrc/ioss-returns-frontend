@@ -18,6 +18,7 @@ package controllers
 
 import controllers.actions._
 import forms.SalesToCountryFormProvider
+import logging.Logging
 import models.Index
 import pages.{SalesToCountryPage, Waypoints}
 import play.api.data.Form
@@ -27,6 +28,7 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax.FutureOps
 import views.html.SalesToCountryView
 
+import java.lang.System.Logger
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -35,23 +37,24 @@ class SalesToCountryController @Inject()(
                                           cc: AuthenticatedControllerComponents,
                                           formProvider: SalesToCountryFormProvider,
                                           view: SalesToCountryView
-                                        )(implicit ec: ExecutionContext) extends FrontendBaseController with SalesFromCountryBaseController with I18nSupport {
+                                        )(implicit ec: ExecutionContext)
+  extends FrontendBaseController with SalesFromCountryBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
   def onPageLoad(waypoints: Waypoints, countryIndex: Index, vatRateIndex: Index): Action[AnyContent] = cc.authAndRequireData() {
     implicit request =>
+
+      val period = request.userAnswers.period
+
       getCountryAndVatRate(waypoints, countryIndex, vatRateIndex) {
         case (country, vatRate) =>
-
-        val period = request.userAnswers.period
         val form: Form[BigDecimal] = formProvider(vatRate)
 
         val preparedForm = request.userAnswers.get(SalesToCountryPage(countryIndex, vatRateIndex)) match {
           case None => form
           case Some(value) => form.fill(value)
         }
-
         Ok(view(preparedForm, waypoints, period, countryIndex, country, vatRateIndex, vatRate))
       }
   }

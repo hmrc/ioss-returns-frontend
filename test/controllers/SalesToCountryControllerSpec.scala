@@ -18,13 +18,13 @@ package controllers
 
 import base.SpecBase
 import forms.SalesToCountryFormProvider
-import models.{Country, VatRatesFromCountry}
+import models.{Country, VatRateFromCountry}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito.{times, verify, when}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.mockito.MockitoSugar
-import pages.{SalesToCountryPage, SoldToCountryPage}
+import pages.{SalesToCountryPage, SoldToCountryPage, VatRatesFromCountryPage}
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.test.FakeRequest
@@ -39,12 +39,12 @@ class SalesToCountryControllerSpec extends SpecBase with MockitoSugar {
 
   private val mockVatRateService = mock[VatRateService]
 
-  val validAnswer: BigDecimal = 0
+  val validAnswer: BigDecimal = 1
 
   lazy val salesToCountryRoute: String = routes.SalesToCountryController.onPageLoad(waypoints, index, index).url
 
   private val country = arbitrary[Country].sample.value
-  private val vatRate = arbitrary[VatRatesFromCountry].sample.value
+  private val vatRate = arbitrary[VatRateFromCountry].sample.value
 
   val formProvider = new SalesToCountryFormProvider(mockVatRateService)
   val form: Form[BigDecimal] = formProvider(vatRate)
@@ -52,6 +52,7 @@ class SalesToCountryControllerSpec extends SpecBase with MockitoSugar {
   private val baseAnswers =
     emptyUserAnswers
       .set(SoldToCountryPage(index), country).success.value
+      .set(VatRatesFromCountryPage(index), List(vatRate)).success.value
 
 
 

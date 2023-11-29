@@ -18,7 +18,9 @@ package forms
 
 import config.Constants.maxCurrencyAmount
 import forms.behaviours.DecimalFieldBehaviours
-import models.VatRatesFromCountry
+import models.VatRateFromCountry
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.when
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Gen
 import org.scalatestplus.mockito.MockitoSugar.mock
@@ -31,7 +33,7 @@ class SalesToCountryFormProviderSpec extends DecimalFieldBehaviours {
 
   private val mockVatRateService = mock[VatRateService]
 
-  private val vatRate = arbitrary[VatRatesFromCountry].sample.value
+  private val vatRate = arbitrary[VatRateFromCountry].sample.value
   val form = new SalesToCountryFormProvider(mockVatRateService)(vatRate)
 
   ".value" - {
@@ -46,6 +48,8 @@ class SalesToCountryFormProviderSpec extends DecimalFieldBehaviours {
         .map(_.setScale(2, RoundingMode.HALF_EVEN))
         .map(_.toString)
 
+    when(mockVatRateService.standardVatOnSales(any(), any())) thenReturn BigDecimal(1)
+
     behave like fieldThatBindsValidData(
       form,
       fieldName,
@@ -55,8 +59,8 @@ class SalesToCountryFormProviderSpec extends DecimalFieldBehaviours {
     behave like decimalField(
       form,
       fieldName,
-      nonNumericError  = FormError(fieldName, "salesToCountry.error.nonNumeric"),
-      invalidNumericError = FormError(fieldName, "salesToCountry.error.wholeNumber")
+      nonNumericError  = FormError(fieldName, "salesToCountry.error.nonNumeric", Seq(vatRate.rateForDisplay)),
+      invalidNumericError = FormError(fieldName, "salesToCountry.error.wholeNumber", Seq(vatRate.rateForDisplay))
     )
 
     behave like decimalFieldWithRange(
@@ -70,7 +74,7 @@ class SalesToCountryFormProviderSpec extends DecimalFieldBehaviours {
     behave like mandatoryField(
       form,
       fieldName,
-      requiredError = FormError(fieldName, "salesToCountry.error.required")
+      requiredError = FormError(fieldName, "salesToCountry.error.required", Seq(vatRate.rateForDisplay))
     )
   }
 }

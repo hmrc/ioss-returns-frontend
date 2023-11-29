@@ -17,7 +17,7 @@
 package viewmodels.checkAnswers
 
 import controllers.routes
-import models.{Index, UserAnswers}
+import models.{Index, UserAnswers, VatRateFromCountry}
 import pages.{SalesToCountryPage, Waypoints}
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
@@ -26,7 +26,8 @@ import viewmodels.implicits._
 
 object SalesToCountrySummary  {
 
-  def row(answers: UserAnswers, waypoints: Waypoints, countryIndex: Index, vatRateIndex: Index)(implicit messages: Messages): Option[SummaryListRow] =
+  def row(answers: UserAnswers, waypoints: Waypoints, countryIndex: Index, vatRateIndex: Index, vatRate: VatRateFromCountry)
+         (implicit messages: Messages): Option[SummaryListRow] =
     answers.get(SalesToCountryPage(countryIndex, vatRateIndex)).map {
       answer =>
 
@@ -35,7 +36,8 @@ object SalesToCountrySummary  {
           value   = ValueViewModel(answer.toString),
           actions = Seq(
             ActionItemViewModel("site.change", routes.SalesToCountryController.onPageLoad(waypoints, countryIndex, vatRateIndex).url)
-              .withVisuallyHiddenText(messages("salesToCountry.change.hidden"))
+              .withVisuallyHiddenText(messages("salesToCountry.change.hidden", vatRate.rateForDisplay))
+              .withAttribute(("id", s"change-net-value-sales-${vatRate.rate}-percent"))
           )
         )
     }

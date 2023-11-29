@@ -19,8 +19,7 @@ package forms.mappings
 import java.time.LocalDate
 import play.api.data.FieldMapping
 import play.api.data.Forms.of
-import models.{Enumerable, VatRateFromCountry}
-import play.api.data.validation.{Constraint, Invalid, Valid}
+import models.Enumerable
 
 trait Mappings extends Formatters with Constraints {
 
@@ -59,11 +58,4 @@ trait Mappings extends Formatters with Constraints {
                            args: Seq[String] = Seq.empty): FieldMapping[LocalDate] =
     of(new LocalDateFormatter(invalidKey, allRequiredKey, twoRequiredKey, requiredKey, args))
 
-  protected def validVatRates(vatRates: Seq[VatRateFromCountry], errorKey: String): Constraint[List[String]] =
-    Constraint {
-      case seq if seq.forall(vatRates.map(_.rate.toString).contains) =>
-        Valid
-      case _ =>
-        Invalid(errorKey)
-    }
 }

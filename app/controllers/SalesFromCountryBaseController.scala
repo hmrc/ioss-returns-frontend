@@ -17,7 +17,7 @@
 package controllers
 
 import models.requests.DataRequest
-import models.{Country, Index, Period, VatRatesFromCountry}
+import models.{Country, Index, VatRateFromCountry}
 import pages.{JourneyRecoveryPage, SoldToCountryPage, Waypoints}
 import play.api.mvc.Results.Redirect
 import play.api.mvc.{AnyContent, Result}
@@ -29,17 +29,27 @@ import scala.concurrent.Future
 trait SalesFromCountryBaseController {
 
   protected def getCountryAndVatRate(waypoints: Waypoints, countryIndex: Index, vatRateIndex: Index)
-                                    (block: (Country, VatRatesFromCountry) => Result)
-                                    (implicit request: DataRequest[AnyContent]): Result =
-    (for {
+                                    (block: (Country, VatRateFromCountry) => Result)
+                                    (implicit request: DataRequest[AnyContent]): Result = {
+    val result = (for {
       country <- request.userAnswers.get(SoldToCountryPage(countryIndex))
       vatRate <- request.userAnswers.get(VatRatesFromCountryQuery(countryIndex, vatRateIndex))
     } yield block(country, vatRate))
       .getOrElse(Redirect(JourneyRecoveryPage.route(waypoints)))
 
+    println(s"result: $result")
+    println(s"User Answers: ${request.userAnswers}")
+    println(s"waypoints: $waypoints, countryIndex: $countryIndex, vatRateIndex: $vatRateIndex")
+    println(s"country: ${request.userAnswers.get(SoldToCountryPage(countryIndex))}")
+    println(s"vatRatesFromCountry: ${request.userAnswers.get(VatRatesFromCountryQuery(countryIndex, vatRateIndex))}")
+    println(s"VatRatesFromCountryQuery data: ${request.userAnswers.get(VatRatesFromCountryQuery(countryIndex, vatRateIndex))}")
+
+    result
+  }
+
 
   protected def getCountryAndVatRateAsync(waypoints: Waypoints, countryIndex: Index, vatRateIndex: Index)
-                                         (block: (Country, VatRatesFromCountry) => Future[Result])
+                                         (block: (Country, VatRateFromCountry) => Future[Result])
                                          (implicit request: DataRequest[AnyContent]): Future[Result] =
 
     (for {

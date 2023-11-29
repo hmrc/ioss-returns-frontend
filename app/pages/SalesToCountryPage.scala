@@ -18,17 +18,23 @@ package pages
 
 import controllers.routes
 import models.{Index, UserAnswers}
+import pages.PageConstants._
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
+import scala.util.Try
+
 case class SalesToCountryPage(countryIndex: Index, vatRateIndex: Index) extends QuestionPage[BigDecimal] {
 
-  override def path: JsPath = JsPath \ PageConstants.sales \ countryIndex.position \ "varRates" \ vatRateIndex.position \ toString
+  override def path: JsPath = JsPath \ sales \ countryIndex.position \ vatRates \ vatRateIndex.position \ salesAtVatRate \ toString
 
-  override def toString: String = "salesToCountry"
+  override def toString: String = netValueOfSales
 
   override def route(waypoints: Waypoints): Call = routes.SalesToCountryController.onPageLoad(waypoints, countryIndex, vatRateIndex)
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
     VatOnSalesPage(countryIndex)
+
+  override def cleanup(value: Option[BigDecimal], userAnswers: UserAnswers): Try[UserAnswers] =
+    userAnswers.remove(VatOnSalesPage(countryIndex))
 }
