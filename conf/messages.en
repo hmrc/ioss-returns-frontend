@@ -133,3 +133,9 @@ deleteSoldToCountry.title = Are you sure you want to remove all the sales inform
 deleteSoldToCountry.heading = Are you sure you want to remove all the sales information for {0}?
 deleteSoldToCountry.error.required = Select yes if want to remove all the sales information for {0}
 deleteSoldToCountry.change.hidden = all the sales information for {0}
+
+correctPreviousReturn.title = Do you want to correct a previous return?
+correctPreviousReturn.heading = Do you want to correct a previous return?
+correctPreviousReturn.checkYourAnswersLabel = Corrections
+correctPreviousReturn.error.required = Select yes if you want to correct a previous return
+correctPreviousReturn.change.hidden = if you want to correct a previous return
