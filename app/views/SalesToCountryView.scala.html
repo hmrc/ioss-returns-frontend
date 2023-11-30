@@ -17,6 +17,7 @@
 @import uk.gov.hmrc.hmrcfrontend.views.config.HmrcPageHeadingLabel
 @import viewmodels.InputWidth._
 @import components.ButtonGroup
+@import pages.VatOnSalesPage
 
 @this(
     layout: templates.Layout,
@@ -55,7 +56,7 @@
         )
 
         @button(
-            messages("site.continue", routes.SalesToCountryController.onPageLoad(waypoints, countryIndex, vatRateIndex).url)
+            messages("site.continue", VatOnSalesPage(countryIndex).route(waypoints).url, waypoints)
         )
     }
 }
