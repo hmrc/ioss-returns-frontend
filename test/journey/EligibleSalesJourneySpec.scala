@@ -22,6 +22,7 @@ import models.{Country, Index, UserAnswers, VatOnSales, VatRateFromCountry}
 import org.scalacheck.Gen
 import org.scalatest.freespec.AnyFreeSpec
 import pages._
+import pages.corrections.CorrectPreviousReturnPage
 import queries.SalesByCountryQuery
 
 class EligibleSalesJourneySpec extends AnyFreeSpec with JourneyHelpers with SpecBase with Generators {
@@ -52,7 +53,7 @@ class EligibleSalesJourneySpec extends AnyFreeSpec with JourneyHelpers with Spec
     startingFrom(SoldGoodsPage, answers = initialAnswers)
       .run(
         submitAnswer(SoldGoodsPage, false),
-        pageMustBe(CheckYourAnswersPage) // TODO -> To correct a previous return page when created
+        pageMustBe(CorrectPreviousReturnPage)
       )
   }
 
