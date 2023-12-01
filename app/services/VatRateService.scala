@@ -17,11 +17,9 @@
 package services
 
 import logging.Logging
-import models.{Country, Index, Period, UserAnswers, VatRateFromCountry}
-import pages.SoldToCountryPage
+import models.{Country, Period, VatRateFromCountry}
 import play.api.libs.json.Json
 import play.api.{Configuration, Environment}
-import queries.SalesByCountryQuery
 
 import javax.inject.Inject
 import scala.io.Source
@@ -56,23 +54,11 @@ class VatRateService @Inject()(env: Environment, config: Configuration) extends 
       .filter(_.validFrom isBefore period.lastDay.plusDays(1))
       .filter(rate => rate.validUntil.fold(true)(_.isAfter(period.firstDay.minusDays(1))))
 
-  def countRemainingVatRatesForCountry(countryIndex: Index, answers: UserAnswers): Seq[VatRateFromCountry] = {
-    val vatRatesForCountry = answers.get(SalesByCountryQuery(countryIndex)).flatMap { salesToCountryWithOptionalVat =>
-      salesToCountryWithOptionalVat.vatRatesFromCountry
-    }.toList.flatten
-
-    answers.get(SoldToCountryPage(countryIndex)).flatMap { country =>
-      vatRates.get(country).map { allVatRatesForCountry =>
-        allVatRatesForCountry.filterNot { vatRateForCountry =>
-          vatRatesForCountry.contains(vatRateForCountry)
-        }
+  def getRemainingVatRatesForCountry(period: Period, country: Country, currentVatRatesForCountry: Seq[VatRateFromCountry]): Seq[VatRateFromCountry] = {
+    vatRates(period, country)
+      .filterNot { vatRateForCountry =>
+        currentVatRatesForCountry.contains(vatRateForCountry)
       }
-    }.getOrElse {
-      Seq.empty
-//      val exception = new IllegalStateException("Country could not be found, must select a country")
-//      logger.error(exception.getMessage, exception)
-//      throw exception
-    }
   }
 
   def standardVatOnSales(netSales: BigDecimal, vatRate: VatRateFromCountry): BigDecimal =

@@ -30,7 +30,6 @@ case class VatRatesFromCountryPage(countryIndex: Index) extends QuestionPage[Lis
   override def route(waypoints: Waypoints): Call = routes.VatRatesFromCountryController.onPageLoad(waypoints, countryIndex)
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page = {
-    // TODO need vatRateIndex
-    SalesToCountryPage(countryIndex, Index(0))
+    SalesToCountryPage(countryIndex, Index(0)) // TODO needs vatRateIndex
   }
 }

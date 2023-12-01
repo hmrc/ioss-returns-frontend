@@ -38,7 +38,7 @@ class DeleteVatRateSalesForCountryController @Inject()(
                                                         formProvider: DeleteVatRateSalesForCountryFormProvider,
                                                         view: DeleteVatRateSalesForCountryView
                                                       )(implicit ec: ExecutionContext)
-  extends FrontendBaseController with I18nSupport with GetCountry with GetVatRate with Logging {
+  extends FrontendBaseController with I18nSupport with GetCountry with GetVatRates with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
@@ -48,11 +48,13 @@ class DeleteVatRateSalesForCountryController @Inject()(
       getCountry(waypoints, countryIndex) {
         country =>
 
-          val vatRate = getVatRate(countryIndex, vatRateIndex, request)
+          getVatRateFromCountry(waypoints, countryIndex, vatRateIndex) {
+            vatRate =>
 
-          val form: Form[Boolean] = formProvider(vatRate, country)
+              val form: Form[Boolean] = formProvider(vatRate.rateForDisplay, country)
 
-          Ok(view(form, waypoints, countryIndex, vatRateIndex, vatRate, country)).toFuture
+              Ok(view(form, waypoints, countryIndex, vatRateIndex, vatRate.rateForDisplay, country)).toFuture
+          }
       }
   }
 
@@ -61,26 +63,28 @@ class DeleteVatRateSalesForCountryController @Inject()(
       getCountry(waypoints, countryIndex) {
         country =>
 
-          val vatRate: String = getVatRate(countryIndex, vatRateIndex, request)
+          getVatRateFromCountry(waypoints, countryIndex, vatRateIndex) {
+            vatRate =>
 
-          val form: Form[Boolean] = formProvider(vatRate, country)
+              val form: Form[Boolean] = formProvider(vatRate.rateForDisplay, country)
 
-          form.bindFromRequest().fold(
-            formWithErrors =>
-              Future.successful(BadRequest(view(formWithErrors, waypoints, countryIndex, vatRateIndex, vatRate, country))),
+              form.bindFromRequest().fold(
+                formWithErrors =>
+                  Future.successful(BadRequest(view(formWithErrors, waypoints, countryIndex, vatRateIndex, vatRate.rateForDisplay, country))),
 
-            value =>
-              if (value) {
-                for {
-                  updatedAnswers <- Future.fromTry(request.userAnswers.remove(VatRateFromCountryQuery(countryIndex, vatRateIndex)))
-                  _ <- cc.sessionRepository.set(updatedAnswers)
-                } yield Redirect(DeleteVatRateSalesForCountryPage(countryIndex, vatRateIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route)
-              } else {
-                Redirect(
-                  DeleteVatRateSalesForCountryPage(countryIndex, vatRateIndex).navigate(waypoints, request.userAnswers, request.userAnswers).route
-                ).toFuture
-              }
-          )
+                value =>
+                  if (value) {
+                    for {
+                      updatedAnswers <- Future.fromTry(request.userAnswers.remove(VatRateFromCountryQuery(countryIndex, vatRateIndex)))
+                      _ <- cc.sessionRepository.set(updatedAnswers)
+                    } yield Redirect(DeleteVatRateSalesForCountryPage(countryIndex, vatRateIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route)
+                  } else {
+                    Redirect(
+                      DeleteVatRateSalesForCountryPage(countryIndex, vatRateIndex).navigate(waypoints, request.userAnswers, request.userAnswers).route
+                    ).toFuture
+                  }
+              )
+          }
       }
   }
 }

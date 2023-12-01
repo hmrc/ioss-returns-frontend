@@ -39,7 +39,7 @@ class CheckSalesController @Inject()(
                                       formProvider: CheckSalesFormProvider,
                                       vatRateService: VatRateService,
                                       view: CheckSalesView
-                                    )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with GetCountry {
+                                    )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with GetCountry with GetVatRates {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
@@ -47,12 +47,12 @@ class CheckSalesController @Inject()(
 
   def onPageLoad(waypoints: Waypoints, countryIndex: Index): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
-      getCountry(waypoints, countryIndex) {
-        country =>
+      getCountry(waypoints, countryIndex) { country =>
+        getAllVatRatesFromCountry(countryIndex) { vatRates =>
 
           val period = request.userAnswers.period
 
-          val canAddAnotherVatRate = vatRateService.countRemainingVatRatesForCountry(countryIndex, request.userAnswers).nonEmpty
+          val canAddAnotherVatRate = vatRateService.getRemainingVatRatesForCountry(period, country, vatRates).nonEmpty
 
           val checkSalesSummary = CheckSalesSummary.rows(request.userAnswers, waypoints, countryIndex)
 
@@ -62,17 +62,18 @@ class CheckSalesController @Inject()(
           }
 
           Ok(view(preparedForm, waypoints, period, checkSalesSummary, countryIndex, country, canAddAnotherVatRate)).toFuture
+        }
       }
   }
 
   def onSubmit(waypoints: Waypoints, countryIndex: Index): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
-      getCountry(waypoints, countryIndex) {
-        country =>
+      getCountry(waypoints, countryIndex) { country =>
+        getAllVatRatesFromCountry(countryIndex) { vatRates =>
 
           val period = request.userAnswers.period
 
-          val remainingVatRates = vatRateService.countRemainingVatRatesForCountry(countryIndex, request.userAnswers)
+          val remainingVatRates = vatRateService.getRemainingVatRatesForCountry(period, country, vatRates)
 
           val canAddAnotherVatRate = remainingVatRates.nonEmpty
 
@@ -89,6 +90,7 @@ class CheckSalesController @Inject()(
                 _ <- cc.sessionRepository.set(updatedAnswersWithRemainingVatRates)
               } yield Redirect(CheckSalesPage(Some(countryIndex)).navigate(waypoints, request.userAnswers, updatedAnswersWithRemainingVatRates).route)
           )
+        }
       }
   }
 }

@@ -22,9 +22,9 @@
         button: ButtonGroup
 )
 
-@(form: Form[_], waypoints: Waypoints, period: Period, countryIndex: Index, vatRateIndex: Index, country: Country)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, period: Period, countryIndex: Index, vatRateIndex: Index, vatRate: String, country: Country)(implicit request: Request[_], messages: Messages)
 
-    @layout(pageTitle = title(form, messages("remainingVatRateFromCountry.title", country.name))) {
+    @layout(pageTitle = title(form, messages("remainingVatRateFromCountry.title", vatRate))) {
 
         @formHelper(action = routes.RemainingVatRateFromCountryController.onSubmit(waypoints, countryIndex, vatRateIndex), Symbol("autoComplete") -> "off") {
 
@@ -36,8 +36,9 @@
                 RadiosViewModel.yesNo(
                     field = form("value"),
                     legend = HmrcPageHeadingLegend(
-                        content = messages("remainingVatRateFromCountry.heading", country.name),
-                        caption = messages("remainingVatRateFromCountry.caption", period.displayText, country.name)
+                        content = messages("remainingVatRateFromCountry.heading", vatRate),
+                        caption = messages("remainingVatRateFromCountry.caption", period.displayText, country.name),
+                        classes = "govuk-label--l"
                     )
                 )
             )

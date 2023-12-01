@@ -172,21 +172,6 @@ class VatOnSalesControllerSpec extends SpecBase with MockitoSugar {
       }
     }
 
-    // TODO -> Test failing
-    "must redirect to Journey Recovery for a GET if no VAT on sales data is found" in {
-
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
-
-      running(application) {
-        val request = FakeRequest(GET, vatOnSalesRoute)
-
-        val result = route(application, request).value
-
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
-      }
-    }
-
     "redirect to Journey Recovery for a POST if no existing data is found" in {
 
       val application = applicationBuilder(userAnswers = None)

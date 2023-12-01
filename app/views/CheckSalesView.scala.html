@@ -22,43 +22,41 @@
         govukErrorSummary: GovukErrorSummary,
         govukRadios: GovukRadios,
         govukSummaryList: GovukSummaryList,
-        govukButton: GovukButton
+        button: ButtonGroup
 )
 
 @(form: Form[_], waypoints: Waypoints, period: Period, checkSalesSummaryLists: Seq[SummaryList], countryIndex: Index, country: Country, canAddAnotherVatRate: Boolean)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = title(form, messages("checkSales.title"), Some(messages("checkSales.caption", period.displayText, country.name)))) {
+    @layout(pageTitle = title(form, messages("checkSales.title"), Some(messages("checkSales.caption", period.displayText, country.name)))) {
 
-    @formHelper(action = routes.CheckSalesController.onSubmit(waypoints, countryIndex), Symbol("autoComplete") -> "off") {
+        @formHelper(action = routes.CheckSalesController.onSubmit(waypoints, countryIndex), Symbol("autoComplete") -> "off") {
 
-        @if(form.errors.nonEmpty) {
-            @govukErrorSummary(ErrorSummaryViewModel(form))
-        }
+            @if(form.errors.nonEmpty) {
+                @govukErrorSummary(ErrorSummaryViewModel(form))
+            }
 
-        <header class="hmrc-page-heading">
-            <p class="govuk-caption-l hmrc-caption-l">@messages("checkSales.caption", period.displayText, country.name)</p>
-            <h1 class="govuk-heading-l">@messages("checkSales.heading")</h1>
-        </header>
+            <header class="hmrc-page-heading">
+                <p class="govuk-caption-l hmrc-caption-l">@messages("checkSales.caption", period.displayText, country.name)</p>
+                <h1 class="govuk-heading-l">@messages("checkSales.heading")</h1>
+            </header>
 
-        @for(checkSalesSummaryList <- checkSalesSummaryLists) {
-            @govukSummaryList(checkSalesSummaryList)
-        }
+            @for(checkSalesSummaryList <- checkSalesSummaryLists) {
+                @govukSummaryList(checkSalesSummaryList)
+            }
 
-        @if(canAddAnotherVatRate) {
-            @govukRadios(
-                RadiosViewModel.yesNo(
-                    field = form("value"),
-                    legend = LegendViewModel(
-                        HtmlContent(Html("""<h2 class="govuk-fieldset__heading">""" + messages("checkSales.addAnother") + "</h2>"))
-                    ).withSize(LegendSize.Medium)
+            @if(canAddAnotherVatRate) {
+                @govukRadios(
+                    RadiosViewModel.yesNo(
+                        field = form("value"),
+                        legend = LegendViewModel(
+                            HtmlContent(Html("""<h2 class="govuk-fieldset__heading">""" + messages("checkSales.addAnother") + "</h2>"))
+                        ).withSize(LegendSize.Medium)
+                    )
                 )
-            )
-        } else {
+            } else {
+                <input type="hidden" name="value" id="value" value="false"/>
+            }
 
+            @button(messages("site.continue"))
         }
-
-        @govukButton(
-            ButtonViewModel(messages("site.continue"))
-        )
     }
-}

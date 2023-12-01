@@ -46,55 +46,32 @@ final case class CheckSalesPage(override val index: Option[Index] = None) extend
   override val normalModeUrlFragment: String = CheckSalesPage.normalModeUrlFragment
   override val checkModeUrlFragment: String = CheckSalesPage.checkModeUrlFragment
 
-  // TODO -> Refactor using flatMaps???
-  override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page = {
+  override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
     answers.get(this) match {
       case Some(true) =>
-        index match {
-          case Some(countryIndex) =>
-          answers.get(RemainingVatRatesFromCountryQuery(countryIndex)) match {
-            case maybeVatRatesFromCountry =>
-              maybeVatRatesFromCountry.toList.flatten match {
-                case list if list.size == 1 =>
-                  RemainingVatRateFromCountryPage(countryIndex, Index(list.size -1)) // TODO -> Get vatRateIndex
-                case list if list.size > 1 =>
-                  VatRatesFromCountryPage(countryIndex) //TODO -> If more than one remaining, to checkbox page but only showing remaining vat rates
-                case Nil =>
-                  val exception = new IllegalStateException("VAT rate missing")
-                  logger.error(exception.getMessage, exception)
-                  throw exception
-                case _ =>
-                  JourneyRecoveryPage
-              }
-          }
-          case _ => throw new Exception
-        }
+        index.flatMap { countryIndex =>
+          determinePageRedirect(answers, countryIndex)
+          }.orRecover
       case Some(false) =>
         SoldToCountryListPage(index)
       case _ =>
         JourneyRecoveryPage
     }
-  }
 
-  // TODO -> To be replaced by above
-//  override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
-//    answers.get(this).map {
-//      case true =>
-//        index
-//          .map { i =>
-//            if (i.position + 1 < 5) {
-//              SalesToCountryPage(Index(i.position + 1), Index(0))
-//            } else {
-//              SoldToCountryListPage(Some(i))
-//            }
-//          }.getOrElse {
-//          answers
-//            .get(deriveNumberOfItems)
-//            .map(n => SalesToCountryPage(Index(n), Index(0)))
-//            .orRecover
-//        }
-//      case false => SoldToCountryListPage(index)
-//    }.orRecover
+  private def determinePageRedirect(answers: UserAnswers, countryIndex: Index): Option[Page] = {
+    answers.get(RemainingVatRatesFromCountryQuery(countryIndex)).flatMap {
+      case vatRatesFromCountry if vatRatesFromCountry.size == 1 =>
+        Some(RemainingVatRateFromCountryPage(countryIndex, Index(vatRatesFromCountry.size))) // TODO -> Check vatRateIndex size or size -1
+      case vatRatesFromCountry if vatRatesFromCountry.size > 1 =>
+        Some(VatRatesFromCountryPage(countryIndex))
+      case vatRatesFromCountry if vatRatesFromCountry.isEmpty =>
+        val exception = new IllegalStateException("VAT rate missing")
+        logger.error(exception.getMessage, exception)
+        throw exception
+      case _ =>
+        Some(JourneyRecoveryPage)
+    }
+  }
 
   override def deriveNumberOfItems: Derivable[Seq[JsObject], Int] = ???
 }

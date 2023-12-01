@@ -25,6 +25,14 @@ class WaypointSpec extends AnyFreeSpec with Matchers with OptionValues {
 
   "fromString" - {
 
+    "must return Check Sales when given it's Normal mode waypoint" in {
+      Waypoint.fromString("check-sales").value mustBe CheckSalesPage().waypoint(NormalMode)
+    }
+
+    "must return Check Sales when given it's Check mode waypoint" in {
+      Waypoint.fromString("change-check-sales").value mustBe CheckSalesPage().waypoint(CheckMode)
+    }
+
     "must return Sold To Country List when given it's Normal mode waypoint" in {
       Waypoint.fromString("add-sales-country-list").value mustBe SoldToCountryListPage().waypoint(NormalMode)
     }

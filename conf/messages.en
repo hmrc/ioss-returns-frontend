@@ -161,10 +161,10 @@ deleteVatRateSalesForCountry.title = Do you want to remove all your {0} VAT rate
 deleteVatRateSalesForCountry.heading = Do you want to remove all your {0} VAT rate sales for {1}?
 deleteVatRateSalesForCountry.error.required = Select yes if you want to remove all your {0} VAT rate sales for {1}
 
-remainingVatRateFromCountry.title = Did you sell goods at the {0}% VAT rate?
-remainingVatRateFromCountry.heading = Did you sell goods at the {0}% VAT rate?
+remainingVatRateFromCountry.title = Did you sell goods at the {0} VAT rate?
+remainingVatRateFromCountry.heading = Did you sell goods at the {0} VAT rate?
 remainingVatRateFromCountry.caption = {0} sales to {1}
-remainingVatRateFromCountry.error.required = Select yes if you sold goods at the {0}% VAT rate
+remainingVatRateFromCountry.error.required = Select yes if you sold goods at the {0} VAT rate
 
 correctPreviousReturn.title = Do you want to correct a previous return?
 correctPreviousReturn.heading = Do you want to correct a previous return?

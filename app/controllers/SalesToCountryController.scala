@@ -25,6 +25,7 @@ import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.FutureSyntax.FutureOps
 import views.html.SalesToCountryView
 
 import javax.inject.Inject
@@ -47,13 +48,13 @@ class SalesToCountryController @Inject()(
 
       getCountryAndVatRate(waypoints, countryIndex, vatRateIndex) {
         case (country, vatRate) =>
-        val form: Form[BigDecimal] = formProvider(vatRate)
+          val form: Form[BigDecimal] = formProvider(vatRate)
 
-        val preparedForm = request.userAnswers.get(SalesToCountryPage(countryIndex, vatRateIndex)) match {
-          case None => form
-          case Some(value) => form.fill(value)
-        }
-        Ok(view(preparedForm, waypoints, period, countryIndex, country, vatRateIndex, vatRate))
+          val preparedForm = request.userAnswers.get(SalesToCountryPage(countryIndex, vatRateIndex)) match {
+            case None => form
+            case Some(value) => form.fill(value)
+          }
+          Ok(view(preparedForm, waypoints, period, countryIndex, country, vatRateIndex, vatRate))
       }
   }
 
@@ -65,9 +66,9 @@ class SalesToCountryController @Inject()(
           val period = request.userAnswers.period
           val form: Form[BigDecimal] = formProvider(vatRate)
 
-        form.bindFromRequest().fold(
-          formWithErrors =>
-            BadRequest(view(formWithErrors, waypoints, period, countryIndex, country, vatRateIndex, vatRate)).toFuture,
+          form.bindFromRequest().fold(
+            formWithErrors =>
+              BadRequest(view(formWithErrors, waypoints, period, countryIndex, country, vatRateIndex, vatRate)).toFuture,
 
             value =>
               for {
@@ -75,7 +76,6 @@ class SalesToCountryController @Inject()(
                 _ <- cc.sessionRepository.set(updatedAnswers)
               } yield Redirect(SalesToCountryPage(countryIndex, vatRateIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route)
           )
-      }
       }
   }
 }

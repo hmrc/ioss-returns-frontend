@@ -24,7 +24,6 @@ case class Waypoint(
                      urlFragment: String
                    )
 
-// TODO -> Tests
 object Waypoint {
 
   private val fragments: Map[String, Waypoint] =

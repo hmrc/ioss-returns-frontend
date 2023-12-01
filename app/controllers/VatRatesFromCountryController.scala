@@ -18,14 +18,14 @@ package controllers
 
 import controllers.actions._
 import forms.VatRatesFromCountryFormProvider
-import models.requests.DataRequest
-import models.{Country, Index, VatRateFromCountry}
-import pages.{JourneyRecoveryPage, SoldToCountryPage, VatRatesFromCountryPage, Waypoints}
+import models.{Index, VatRateFromCountry}
+import pages.{CheckSalesPage, VatRatesFromCountryPage, Waypoints}
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.VatRateService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.FutureSyntax.FutureOps
 import views.html.VatRatesFromCountryView
 
 import javax.inject.Inject
@@ -37,67 +37,69 @@ class VatRatesFromCountryController @Inject()(
                                                formProvider: VatRatesFromCountryFormProvider,
                                                vatRateService: VatRateService,
                                                view: VatRatesFromCountryView
-                                             )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with GetCountry {
+                                             )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with GetCountry with GetVatRates {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndRequireData().async {
+  def onPageLoad(waypoints: Waypoints, countryIndex: Index): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request => {
-      val period = request.userAnswers.period
+      getCountry(waypoints, countryIndex) { country =>
+        getAllVatRatesFromCountry(countryIndex) { currentVatRatesAnswers =>
 
-      withCountrySold(waypoints, index) { country =>
+          val period = request.userAnswers.period
 
-        val vatRates = vatRateService.vatRates(period, country)
+          val answers = request.userAnswers.get(VatRatesFromCountryPage(countryIndex))
 
-        val form: Form[List[VatRateFromCountry]] = formProvider(vatRates.toList)
-        val answers = request.userAnswers.get(VatRatesFromCountryPage(index))
+          val remainingVatRates = vatRateService.getRemainingVatRatesForCountry(period, country, currentVatRatesAnswers)
 
-        val preparedForm = answers match {
-          case None => form
-          case Some(value) => form.fill(value)
-        }
+          val form: Form[List[VatRateFromCountry]] = formProvider(remainingVatRates.toList)
 
-        if (vatRates.size == 1) {
-          val onlySingletonSelection = vatRates.toList
-          for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(VatRatesFromCountryPage(index), onlySingletonSelection))
-            _ <- cc.sessionRepository.set(updatedAnswers)
-          } yield Redirect(VatRatesFromCountryPage(index).navigate(waypoints, request.userAnswers, updatedAnswers).route)
-        } else {
-          Future.successful(Ok(view(preparedForm, waypoints, period, index, country, utils.ItemsHelper.checkboxItems(vatRates))))
+          val preparedForm = answers match {
+            case None => form
+            case Some(value) => form.fill(value)
+          }
+
+          remainingVatRates.size match {
+            case 0 =>
+              Redirect(CheckSalesPage(Some(countryIndex)).route(waypoints)).toFuture
+            case 1 =>
+              val onlySingletonSelection = remainingVatRates.toList
+              for {
+                updatedAnswers <- Future.fromTry(request.userAnswers.set(VatRatesFromCountryPage(countryIndex), onlySingletonSelection))
+                _ <- cc.sessionRepository.set(updatedAnswers)
+              } yield Redirect(VatRatesFromCountryPage(countryIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route)
+
+            case _ =>
+              Ok(view(preparedForm, waypoints, period, countryIndex, country, utils.ItemsHelper.checkboxItems(remainingVatRates))).toFuture
+          }
         }
       }
     }
   }
 
-  def onSubmit(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndRequireData().async {
+  def onSubmit(waypoints: Waypoints, countryIndex: Index): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
+      getCountry(waypoints, countryIndex) { country =>
+        getAllVatRatesFromCountry(countryIndex) { currentVatRatesAnswers =>
 
-      val period = request.userAnswers.period
+          val period = request.userAnswers.period
 
-      withCountrySold(waypoints, index) { country =>
-        val vatRates = vatRateService.vatRates(period, country)
-        val form = formProvider(vatRates.toList)
-        form.bindFromRequest().fold(
-          formWithErrors =>
-            Future.successful(BadRequest(view(formWithErrors, waypoints, period, index, country, utils.ItemsHelper.checkboxItems(vatRates).toList))),
+          val remainingVatRates = vatRateService.getRemainingVatRatesForCountry(period, country, currentVatRatesAnswers)
 
-          value =>
-            for {
-              updatedAnswers <- Future.fromTry(request.userAnswers.set(VatRatesFromCountryPage(index), value))
-              _ <- cc.sessionRepository.set(updatedAnswers)
-            } yield Redirect(VatRatesFromCountryPage(index).navigate(waypoints, request.userAnswers, updatedAnswers).route)
-        )
+          val form = formProvider(remainingVatRates.toList)
+          form.bindFromRequest().fold(
+            formWithErrors =>
+              BadRequest(view(formWithErrors, waypoints, period, countryIndex, country, utils.ItemsHelper.checkboxItems(remainingVatRates).toList)).toFuture,
+
+            value => {
+              val allVatRates = currentVatRatesAnswers ++ value
+              for {
+                updatedAnswers <- Future.fromTry(request.userAnswers.set(VatRatesFromCountryPage(countryIndex), allVatRates.toList))
+                _ <- cc.sessionRepository.set(updatedAnswers)
+              } yield Redirect(VatRatesFromCountryPage(countryIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route)
+            }
+          )
+        }
       }
   }
-
-  private def withCountrySold(waypoints: Waypoints, index: Index)
-                             (block: Country => Future[Result])
-                             (implicit request: DataRequest[AnyContent]): Future[Result] =
-    request.userAnswers.get(SoldToCountryPage(index))
-      .fold(
-        Future.successful(Redirect(JourneyRecoveryPage.route(waypoints).url))
-      )(
-        block(_)
-      )
 }
