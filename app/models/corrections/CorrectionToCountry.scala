@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-package pages
+package models.corrections
 
-object PageConstants {
+import models.Country
+import play.api.libs.json.{Format, Json}
 
-  val sales: String = "sales"
-  val vatRates: String = "vatRatesFromCountry"
-  val salesAtVatRate: String = "salesAtVatRate"
-  val netValueOfSales: String = "netValueOfSales"
-  val corrections: String = "corrections"
-  val correctionsToCountry: String = "correctionsToCountry"
+final case class CorrectionToCountry(correctionCountry: Country, countryVatCorrection: Option[BigDecimal])
+
+object CorrectionToCountry {
+  implicit val format: Format[CorrectionToCountry] = Json.format[CorrectionToCountry]
 }

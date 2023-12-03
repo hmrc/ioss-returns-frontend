@@ -143,3 +143,13 @@ correctPreviousReturn.heading = Do you want to correct a previous return?
 correctPreviousReturn.checkYourAnswersLabel = Corrections
 correctPreviousReturn.error.required = Select yes if you want to correct a previous return
 correctPreviousReturn.change.hidden = if you want to correct a previous return
+
+correctionCountry.checkYourAnswersLabel = Country sold to
+correctionCountry.change.hidden = which country you sold to
+
+correctionCountry.title = Which country would you like to correct?
+correctionCountry.heading = Which country would you like to correct?
+correctionCountry.caption = Correction period: {0}
+correctionCountry.hint = You can also add a new country that was not included in your previous return.
+correctionCountry.error.required = Select which country you would like to correct
+correctionCountry.error.duplicate = You selected this country already. Select a different one.

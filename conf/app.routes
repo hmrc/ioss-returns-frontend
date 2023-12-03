@@ -50,6 +50,8 @@ POST        /add-sales-country-list            controllers.SoldToCountryListCont
 GET         /remove-sales-country/:index        controllers.DeleteSoldToCountryController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, index: Index)
 POST        /remove-sales-country/:index        controllers.DeleteSoldToCountryController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, index: Index)
 
+GET         /correction-country/:countryIndex   controllers.corrections.CorrectionCountryController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, countryIndex: Index)
+POST        /correction-country/:countryIndex   controllers.corrections.CorrectionCountryController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, countryIndex: Index)
 
 GET        /correct-previous-return             controllers.corrections.CorrectPreviousReturnController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
 POST       /correct-previous-return             controllers.corrections.CorrectPreviousReturnController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints)
