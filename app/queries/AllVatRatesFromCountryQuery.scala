@@ -20,7 +20,6 @@ import models.{Index, VatRateFromCountry}
 import pages.PageConstants
 import play.api.libs.json.JsPath
 
-// TODO -> May delete this
 case class AllVatRatesFromCountryQuery(countryIndex: Index) extends Gettable[Seq[VatRateFromCountry]] with Settable[Seq[VatRateFromCountry]] {
 
   override def path: JsPath = JsPath \ PageConstants.sales \ countryIndex.position \ PageConstants.vatRates

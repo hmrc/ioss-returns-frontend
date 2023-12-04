@@ -75,9 +75,7 @@ class EligibleSalesJourneySpec extends AnyFreeSpec with JourneyHelpers with Spec
             submitAnswer(SalesToCountryPage(Index(index), vatRateIndex.+(1)), salesValue) :+
             submitAnswer(VatOnSalesPage(Index(index), vatRateIndex.+(1)), VatOnSales(Standard, salesValue * vatRateFromCountry2.rate)) :+
             submitAnswer(CheckSalesPage(Some(Index(index))), false) :+
-            pageMustBe(SoldToCountryListPage(Some(Index(index))))
-//            goTo(SoldToCountryListPage(Some(Index(index)))) :+
-//            submitAnswer(SoldToCountryListPage(Some(Index(index))), true)
+            submitAnswer(SoldToCountryListPage(Some(Index(index))), true)
       }
     }
 
@@ -85,10 +83,12 @@ class EligibleSalesJourneySpec extends AnyFreeSpec with JourneyHelpers with Spec
       .run(
         submitAnswer(SoldGoodsPage, true) +:
           generateSales :+
-          pageMustBe(SoldToCountryListPage()): _*
-//          pageMustBe(CheckSalesPage()): _*
+          pageMustBe(CheckYourAnswersPage): _* // TODO -> To correct a previous return page when created
       )
   }
+
+  // TODO -> loop SalesToCountryPage & VatOnSalesPage according to number of VatRatesFromCountryPage
+  // TODO test for maximum vat rates for country???
 
   "must allow the user to add a sale" in {
     startingFrom(SoldGoodsPage, answers = initialAnswers)
@@ -149,7 +149,36 @@ class EligibleSalesJourneySpec extends AnyFreeSpec with JourneyHelpers with Spec
     }
   }
 
-  // TODO Change answers journey
-  // TODO Multiple VAT rates (vat rate indexed)
-  // TODO Delete all answers journey from CYA page
+  "must be able to change the users original sales answers" - {
+
+    "when there is only one VAT rate sale" in {
+
+      val changedSalesValue = Gen.chooseNum(minSalesValue, maxSalesValue).sample.value
+
+      startingFrom(SoldGoodsPage, answers = initialAnswers)
+        .run(
+          initialise,
+          pageMustBe(SoldToCountryListPage(Some(countryIndex1))),
+          goTo(CheckSalesPage(Some(countryIndex1))),
+          pageMustBe(CheckSalesPage(Some(countryIndex1))),
+          goToChangeAnswer(SalesToCountryPage(countryIndex1, vatRateIndex1)),
+          pageMustBe(SalesToCountryPage(countryIndex1, vatRateIndex1)),
+          submitAnswer(SalesToCountryPage(countryIndex1, vatRateIndex1), changedSalesValue),
+          pageMustBe(CheckSalesPage(Some(countryIndex1))),
+          answerMustEqual(SalesToCountryPage(countryIndex1, vatRateIndex1), changedSalesValue)
+        )
+    }
+
+    // TODO Multiple VAT rates (vat rate indexed)
+    "when there are multiple VAT rate sales" in {
+
+      startingFrom(SoldGoodsPage, answers = initialAnswers)
+        .run(
+          initialise,
+          pageMustBe(SoldToCountryListPage(Some(countryIndex1)))
+        )
+    }
+  }
+
+  // TODO Change vat rate or remove vat rate
 }
