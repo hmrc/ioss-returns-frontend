@@ -38,7 +38,7 @@ final case class CheckSalesPage(override val index: Option[Index] = None) extend
 
   override def path: JsPath = JsPath \ toString
 
-  override def toString: String = "check-sales"
+  override def toString: String = "checkSales"
 
   override def route(waypoints: Waypoints): Call =
     routes.CheckSalesController.onPageLoad(waypoints, index.getOrElse(Index(0)))
