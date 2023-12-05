@@ -18,6 +18,7 @@ package pages
 
 import controllers.routes
 import models.{Country, Index, UserAnswers}
+import pages.corrections.CorrectPreviousReturnPage
 import play.api.libs.json.{JsObject, JsPath}
 import play.api.mvc.Call
 import queries.{Derivable, DeriveNumberOfSales}
@@ -63,7 +64,7 @@ final case class SoldToCountryListPage(override val index: Option[Index] = None)
             .orRecover
         }
       case false =>
-        CheckYourAnswersPage
+        CorrectPreviousReturnPage
     }.orRecover
 
 

@@ -14,25 +14,25 @@
  * limitations under the License.
  */
 
-package pages
+package pages.corrections
 
-import controllers.routes
-import models.{Index, UserAnswers}
-import pages.corrections.CorrectPreviousReturnPage
+import models.UserAnswers
+import pages.{CheckYourAnswersPage, JourneyRecoveryPage, Page, QuestionPage, Waypoints}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
-case object SoldGoodsPage extends QuestionPage[Boolean] {
+case object CorrectPreviousReturnPage extends QuestionPage[Boolean] {
 
   override def path: JsPath = JsPath \ toString
 
-  override def toString: String = "soldGoods"
+  override def toString: String = "correctPreviousReturn"
 
-  override def route(waypoints: Waypoints): Call = routes.SoldGoodsController.onPageLoad(waypoints)
+  override def route(waypoints: Waypoints): Call = controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(waypoints)
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
-    answers.get(this).map {
-      case true => SoldToCountryPage(Index(0)) // TODO should it always be Index(0)?
-      case false => CorrectPreviousReturnPage
-    }.orRecover
+    answers.get(CorrectPreviousReturnPage) match {
+      case Some(true) => CorrectPreviousReturnPage //todo CorrectionReturnPeriod
+      case Some(false) => CheckYourAnswersPage
+      case _ => JourneyRecoveryPage
+    }
 }
