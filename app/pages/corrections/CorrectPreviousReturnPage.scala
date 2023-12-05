@@ -20,6 +20,7 @@ import models.{Index, UserAnswers}
 import pages.{CheckYourAnswersPage, JourneyRecoveryPage, Page, QuestionPage, Waypoints}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
+import queries.corrections.DeriveCompletedCorrectionPeriods
 
 case object CorrectPreviousReturnPage extends QuestionPage[Boolean] {
 
@@ -29,10 +30,19 @@ case object CorrectPreviousReturnPage extends QuestionPage[Boolean] {
 
   override def route(waypoints: Waypoints): Call = controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(waypoints)
 
-  override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
+  override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page = {
+
+    val correctedPeriods: Int = answers.get(DeriveCompletedCorrectionPeriods).map(_.size).getOrElse(0)
+
     answers.get(CorrectPreviousReturnPage) match {
-      case Some(true) => CorrectionReturnPeriodPage(Index(0))
+      case Some(true) if correctedPeriods > 0 => CheckYourAnswersPage
+      case Some(true) => if (correctedPeriods > 1) { //todo uncorrectedPeriods when API is
+        CorrectionReturnPeriodPage(Index(0))
+      } else {
+        CorrectionReturnSinglePeriodPage(Index(0))
+      }
       case Some(false) => CheckYourAnswersPage
       case _ => JourneyRecoveryPage
     }
+  }
 }
