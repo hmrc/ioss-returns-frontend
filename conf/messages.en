@@ -108,8 +108,6 @@ salesToCountry.error.calculatedVatRateOutOfRange = Add a sales total above £0.0
 salesToCountry.change.hidden = sales excluding VAT
 salesToCountry.hint = For example, £600 or £193.54.
 
-caption.fromCountry.periodAndCountry = {0} sales to {1}
-
 vatOnSales.title = How much VAT did you charge on sales of {0} at {1} VAT rate?
 vatOnSales.heading = How much VAT did you charge on sales of {0} at {1} VAT rate?
 vatOnSales.caption = {0} sales to {1}
@@ -153,7 +151,7 @@ checkSales.caption = {0} sales to {1}
 checkSales.checkYourAnswersLabel = checkSales
 checkSales.vatRate = {0}% VAT rate
 checkSales.addAnother = Add another VAT rate?
-checkSales.error.required = Select yes if checkSales
+checkSales.error.required = Select yes if want to add another VAT rate
 checkSales.vat.change.hidden = VAT charged for VAT rate {0}
 checkSales.vatRate.remove.hidden = VAT rate for {0}
 

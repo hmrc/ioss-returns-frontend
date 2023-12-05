@@ -36,7 +36,7 @@ object VatOnSalesSummary {
           HtmlContent(
             HtmlFormat.escape(messages(s"vatOnSales.$answer"))
           )
-        )
+        ).withCssClass("govuk-table__cell--numeric")
 
         SummaryListRowViewModel(
           key = "vatOnSales.checkYourAnswersLabel",

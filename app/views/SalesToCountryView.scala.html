@@ -30,7 +30,7 @@
 @layout(pageTitle = title(
     form,
     messages("salesToCountry.title", vatRate.rateForDisplay),
-    Some(messages("caption.fromCountry.periodAndCountry", period.displayText, country.name))
+    Some(messages("salesToCountry.caption", period.displayText, country.name))
 )) {
 
         @formHelper(action = routes.SalesToCountryController.onSubmit(waypoints, countryIndex, vatRateIndex), Symbol("autoComplete") -> "off") {

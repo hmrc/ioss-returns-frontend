@@ -19,7 +19,9 @@ package viewmodels.checkAnswers
 import models.{Index, UserAnswers, VatRateFromCountry}
 import pages.{AddItemPage, SalesToCountryPage, Waypoints}
 import play.api.i18n.Messages
+import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
+import utils.CurrencyFormatter.currencyFormat
 import viewmodels.govuk.summarylist._
 import viewmodels.implicits._
 
@@ -32,7 +34,7 @@ object SalesToCountrySummary {
 
         SummaryListRowViewModel(
           key = "salesToCountry.checkYourAnswersLabel",
-          value = ValueViewModel(answer.toString),
+          value = ValueViewModel(HtmlContent(currencyFormat(answer))).withCssClass("govuk-table__cell--numeric"),
           actions = Seq(
             ActionItemViewModel("site.change", SalesToCountryPage(countryIndex, vatRateIndex).changeLink(waypoints, sourcePage).url)
               .withVisuallyHiddenText(messages("salesToCountry.change.hidden", vatRate.rateForDisplay))

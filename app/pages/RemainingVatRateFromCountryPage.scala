@@ -22,7 +22,7 @@ import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
 
-final case class RemainingVatRateFromCountryPage(countryIndex: Index, vatRateIndex: Index) extends QuestionPage[Boolean] {
+case class RemainingVatRateFromCountryPage(countryIndex: Index, vatRateIndex: Index) extends QuestionPage[Boolean] {
 
   override def path: JsPath = JsPath \ toString
 
@@ -34,10 +34,13 @@ final case class RemainingVatRateFromCountryPage(countryIndex: Index, vatRateInd
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
     answers.get(this) match {
       case Some(true) =>
+        println("true")
         SalesToCountryPage(countryIndex, vatRateIndex)
       case Some(false) =>
+        println("true")
         CheckSalesPage(Some(countryIndex))
       case _ =>
+        println("JR")
         JourneyRecoveryPage
     }
 }
