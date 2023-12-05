@@ -14,7 +14,10 @@
  * limitations under the License.
  *@
 
+@import uk.gov.hmrc.hmrcfrontend.views.config.HmrcPageHeadingLabel
 @import viewmodels.InputWidth._
+@import components.ButtonGroup
+@import pages.VatOnSalesPage
 
 @this(
     layout: templates.Layout,
@@ -24,11 +27,15 @@
     button: ButtonGroup
 )
 
-@(form: Form[_], waypoints: Waypoints, period: Period, index: Index)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, period: Period, countryIndex: Index, country: Country, vatRateIndex: Index, vatRate: VatRateFromCountry)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = title(form, messages("salesToCountry.title"))) {
+@layout(pageTitle = title(
+    form,
+    messages("salesToCountry.title", vatRate.rateForDisplay),
+    Some(messages("caption.fromCountry.periodAndCountry", period.displayText, country.name))
+)) {
 
-    @formHelper(action = routes.SalesToCountryController.onSubmit(waypoints, index), Symbol("autoComplete") -> "off") {
+    @formHelper(action = routes.SalesToCountryController.onSubmit(waypoints, countryIndex, vatRateIndex), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))
@@ -37,14 +44,19 @@
         @govukInput(
             InputViewModel(
                 field = form("value"),
-                label = LabelViewModel(messages("salesToCountry.heading")).asPageHeading()
+                label = HmrcPageHeadingLabel(
+                    content = messages("salesToCountry.heading", vatRate.rateForDisplay),
+                    caption = messages("caption.fromCountry.periodAndCountry", period.displayText, country.name)
+                )
             )
-            .asNumeric()
             .withWidth(Fixed10)
+            .withCssClass("govuk-currency-input__inner__input")
+            .withPrefix(PrefixOrSuffix(content = Text("£")))
+            .withHint(HintViewModel(messages("salesToCountry.hint")))
         )
 
         @button(
-            messages("site.continue")
+            messages("site.continue", VatOnSalesPage(countryIndex).route(waypoints).url, waypoints)
         )
     }
 }

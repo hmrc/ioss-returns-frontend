@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package pages
+package config
 
-object PageConstants {
+object Constants {
 
-  val sales: String = "sales"
-  val vatRates: String = "vatRatesFromCountry"
-  val salesAtVatRate: String = "salesAtVatRate"
-  val netValueOfSales: String = "netValueOfSales"
+    val maxCurrencyAmount: BigDecimal = 1000000000
+    val minCurrencyAmount: BigDecimal = -1000000000
+
 }

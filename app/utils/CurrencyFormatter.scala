@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package pages
+package utils
 
-object PageConstants {
+trait CurrencyFormatter {
 
-  val sales: String = "sales"
-  val vatRates: String = "vatRatesFromCountry"
-  val salesAtVatRate: String = "salesAtVatRate"
-  val netValueOfSales: String = "netValueOfSales"
+  def currencyFormat(amt: BigDecimal): String = f"&pound;$amt%,1.2f".replace(".00","")
 }
+
+object CurrencyFormatter extends CurrencyFormatter

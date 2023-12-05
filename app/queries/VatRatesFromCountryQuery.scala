@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-package pages
+package queries
 
-object PageConstants {
+import models.{Index, VatRateFromCountry}
+import pages.PageConstants
+import play.api.libs.json.JsPath
 
-  val sales: String = "sales"
-  val vatRates: String = "vatRatesFromCountry"
-  val salesAtVatRate: String = "salesAtVatRate"
-  val netValueOfSales: String = "netValueOfSales"
+case class VatRatesFromCountryQuery(countryIndex: Index, vatRateIndex: Index) extends Gettable[VatRateFromCountry] {
+
+  override def path: JsPath = JsPath \ PageConstants.sales \ countryIndex.position \ PageConstants.vatRates \ vatRateIndex.position
+
 }

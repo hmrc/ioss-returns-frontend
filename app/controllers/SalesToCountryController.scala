@@ -18,6 +18,7 @@ package controllers
 
 import controllers.actions._
 import forms.SalesToCountryFormProvider
+import logging.Logging
 import models.Index
 import pages.{SalesToCountryPage, Waypoints}
 import play.api.data.Form
@@ -27,6 +28,7 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax.FutureOps
 import views.html.SalesToCountryView
 
+import java.lang.System.Logger
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -35,39 +37,46 @@ class SalesToCountryController @Inject()(
                                           cc: AuthenticatedControllerComponents,
                                           formProvider: SalesToCountryFormProvider,
                                           view: SalesToCountryView
-                                        )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                        )(implicit ec: ExecutionContext)
+  extends FrontendBaseController with SalesFromCountryBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  val form: Form[Int] = formProvider()
-
-  def onPageLoad(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndRequireData() {
+  def onPageLoad(waypoints: Waypoints, countryIndex: Index, vatRateIndex: Index): Action[AnyContent] = cc.authAndRequireData() {
     implicit request =>
 
       val period = request.userAnswers.period
 
-      val preparedForm = request.userAnswers.get(SalesToCountryPage(index)) match {
-        case None => form
-        case Some(value) => form.fill(value)
-      }
+      getCountryAndVatRate(waypoints, countryIndex, vatRateIndex) {
+        case (country, vatRate) =>
+        val form: Form[BigDecimal] = formProvider(vatRate)
 
-      Ok(view(preparedForm, waypoints, period, index))
+        val preparedForm = request.userAnswers.get(SalesToCountryPage(countryIndex, vatRateIndex)) match {
+          case None => form
+          case Some(value) => form.fill(value)
+        }
+        Ok(view(preparedForm, waypoints, period, countryIndex, country, vatRateIndex, vatRate))
+      }
   }
 
-  def onSubmit(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndRequireData().async {
+  def onSubmit(waypoints: Waypoints, countryIndex: Index, vatRateIndex: Index): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
+      getCountryAndVatRateAsync(waypoints, countryIndex, vatRateIndex) {
+        case (country, vatRate) =>
 
-      val period = request.userAnswers.period
+        val period = request.userAnswers.period
+        val form: Form[BigDecimal] = formProvider(vatRate)
 
-      form.bindFromRequest().fold(
-        formWithErrors =>
-          BadRequest(view(formWithErrors, waypoints, period, index)).toFuture,
+        form.bindFromRequest().fold(
+          formWithErrors =>
+            BadRequest(view(formWithErrors, waypoints, period, countryIndex, country, vatRateIndex, vatRate)).toFuture,
 
-        value =>
-          for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(SalesToCountryPage(index), value))
-            _ <- cc.sessionRepository.set(updatedAnswers)
-          } yield Redirect(SalesToCountryPage(index).navigate(waypoints, request.userAnswers, updatedAnswers).route)
-      )
+          value =>
+            for {
+              updatedAnswers <- Future.fromTry(request.userAnswers.set(SalesToCountryPage(countryIndex, vatRateIndex), value))
+              _ <- cc.sessionRepository.set(updatedAnswers)
+            } yield Redirect(SalesToCountryPage(countryIndex, vatRateIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route)
+        )
+      }
   }
 }

@@ -16,21 +16,39 @@
 
 package forms
 
-import forms.behaviours.IntFieldBehaviours
+import config.Constants.maxCurrencyAmount
+import forms.behaviours.DecimalFieldBehaviours
+import models.VatRateFromCountry
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.when
+import org.scalacheck.Arbitrary.arbitrary
+import org.scalacheck.Gen
+import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.data.FormError
+import services.VatRateService
 
-class SalesToCountryFormProviderSpec extends IntFieldBehaviours {
+import scala.math.BigDecimal.RoundingMode
 
-  val form = new SalesToCountryFormProvider()()
+class SalesToCountryFormProviderSpec extends DecimalFieldBehaviours {
+
+  private val mockVatRateService = mock[VatRateService]
+
+  private val vatRate = arbitrary[VatRateFromCountry].sample.value
+  val form = new SalesToCountryFormProvider(mockVatRateService)(vatRate)
 
   ".value" - {
 
     val fieldName = "value"
 
-    val minimum = 0
-    val maximum = Int.MaxValue
+    val minimum = BigDecimal(0)
+    val maximum = maxCurrencyAmount
 
-    val validDataGenerator = intsInRangeWithCommas(minimum, maximum)
+    val validDataGenerator =
+      Gen.choose[BigDecimal](minimum, maximum)
+        .map(_.setScale(2, RoundingMode.HALF_EVEN))
+        .map(_.toString)
+
+    when(mockVatRateService.standardVatOnSales(any(), any())) thenReturn BigDecimal(1)
 
     behave like fieldThatBindsValidData(
       form,
@@ -38,14 +56,14 @@ class SalesToCountryFormProviderSpec extends IntFieldBehaviours {
       validDataGenerator
     )
 
-    behave like intField(
+    behave like decimalField(
       form,
       fieldName,
-      nonNumericError  = FormError(fieldName, "salesToCountry.error.nonNumeric"),
-      wholeNumberError = FormError(fieldName, "salesToCountry.error.wholeNumber")
+      nonNumericError  = FormError(fieldName, "salesToCountry.error.nonNumeric", Seq(vatRate.rateForDisplay)),
+      invalidNumericError = FormError(fieldName, "salesToCountry.error.wholeNumber", Seq(vatRate.rateForDisplay))
     )
 
-    behave like intFieldWithRange(
+    behave like decimalFieldWithRange(
       form,
       fieldName,
       minimum       = minimum,
@@ -56,7 +74,7 @@ class SalesToCountryFormProviderSpec extends IntFieldBehaviours {
     behave like mandatoryField(
       form,
       fieldName,
-      requiredError = FormError(fieldName, "salesToCountry.error.required")
+      requiredError = FormError(fieldName, "salesToCountry.error.required", Seq(vatRate.rateForDisplay))
     )
   }
 }

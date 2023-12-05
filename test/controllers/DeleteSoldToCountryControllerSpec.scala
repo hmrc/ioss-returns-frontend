@@ -36,7 +36,7 @@ class DeleteSoldToCountryControllerSpec extends SpecBase with MockitoSugar {
   
   private val country: Country = arbitraryCountry.arbitrary.sample.value
   private val vatRateFromCountry: VatRateFromCountry = arbitraryVatRateFromCountry.arbitrary.sample.value
-  private val salesValue: Int = 1234
+  private val salesValue: BigDecimal = 1234
   
   private val formProvider = new DeleteSoldToCountryFormProvider()
   private val form: Form[Boolean] = formProvider(country)
@@ -45,7 +45,7 @@ class DeleteSoldToCountryControllerSpec extends SpecBase with MockitoSugar {
     .set(SoldGoodsPage, true).success.value
     .set(SoldToCountryPage(index), country).success.value
     .set(VatRatesFromCountryPage(index), List(vatRateFromCountry)).success.value
-    .set(SalesToCountryPage(index), salesValue).success.value
+    .set(SalesToCountryPage(index, index), salesValue).success.value
     .set(VatOnSalesPage(index), VatOnSales.values.head).success.value
 
   private lazy val deleteSoldToCountryRoute: String = routes.DeleteSoldToCountryController.onPageLoad(waypoints, index).url
