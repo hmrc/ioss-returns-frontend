@@ -19,7 +19,7 @@ package forms.mappings
 import java.time.LocalDate
 import play.api.data.FieldMapping
 import play.api.data.Forms.of
-import models.Enumerable
+import models.{Enumerable, Period}
 
 trait Mappings extends Formatters with Constraints {
 
@@ -58,4 +58,9 @@ trait Mappings extends Formatters with Constraints {
                            args: Seq[String] = Seq.empty): FieldMapping[LocalDate] =
     of(new LocalDateFormatter(invalidKey, allRequiredKey, twoRequiredKey, requiredKey, args))
 
+
+  protected def period(requiredKey: String = "error.required",
+                       invalidKey: String = "error.invalidPeriod",
+                       args: Seq[String] = Seq.empty): FieldMapping[Period] =
+    of(periodFormatter(requiredKey, invalidKey, args))
 }

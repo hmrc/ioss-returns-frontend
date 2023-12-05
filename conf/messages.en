@@ -168,6 +168,29 @@ correctPreviousReturn.checkYourAnswersLabel = Corrections
 correctPreviousReturn.error.required = Select yes if you want to correct a previous return
 correctPreviousReturn.change.hidden = if you want to correct a previous return
 
+correctionReturnSinglePeriod.title = Do you want to correct the VAT amounts in your {0} return?
+correctionReturnSinglePeriod.heading = Do you want to correct the VAT amounts in your {0} return?
+correctionReturnSinglePeriod.checkYourAnswersLabel = Do you want to correct the VAT amounts in your {0} return?
+correctionReturnSinglePeriod.error.required = Select yes if you want to correct the VAT amounts in your return
+
+correctionReturnPeriod.title = Which return period do you want to correct?
+correctionReturnPeriod.heading = Which return period do you want to correct?
+correctionReturnPeriod.checkYourAnswersLabel = Which return period do you want to correct?
+correctionReturnPeriod.error.required = Select which period you want to correct
+correctionReturnPeriod.change.hidden = which return period you want to correct
+correctionReturnPeriod.period1 = 1 January to 31 March 2022
+correctionReturnPeriod.period2 = 1 October to 31 December 2021
+correctionReturnPeriod.period3 = 1 July to 30 September 2021
+
+noOtherCorrectionPeriodsAvailable.title = You cannot make a correction to other VAT Import One Stop Shop months
+noOtherCorrectionPeriodsAvailable.heading = You cannot make a correction to other VAT Import One Stop Shop months
+noOtherCorrectionPeriodsAvailable.paragraph = You can only make corrections for months that have ended.
+
+correctionCountry.checkYourAnswersLabel = Country sold to
+correctionCountry.change.hidden = which country you sold to
+
+caption.fromCountry.periodAndCountry = {0} sales to {1}
+
 correctionCountry.title = Which country would you like to correct?
 correctionCountry.heading = Which country would you like to correct?
 correctionCountry.caption = Correction period: {0}
