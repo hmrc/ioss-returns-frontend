@@ -18,15 +18,14 @@ package models
 
 import play.api.libs.json._
 import play.api.mvc.{PathBindable, QueryStringBindable}
-import uk.gov.hmrc.govukfrontend.views.viewmodels.radios.RadioItem
 import uk.gov.hmrc.govukfrontend.views.Aliases.Text
+import uk.gov.hmrc.govukfrontend.views.viewmodels.radios.RadioItem
 
-import java.time.Month
+import java.time.{LocalDate, Month}
 import java.time.format.TextStyle
 import java.util.Locale
-import scala.util.matching.Regex
 import scala.util.Try
-import java.time.{Clock, LocalDate}
+import scala.util.matching.Regex
 final case class Period(year: Int, month: Month) {
   val firstDay: LocalDate = LocalDate.of(year, month, 1)
   val lastDay: LocalDate = firstDay.plusMonths(3).minusDays(1)

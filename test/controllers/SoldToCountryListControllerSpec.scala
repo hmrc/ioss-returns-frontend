@@ -18,7 +18,7 @@ package controllers
 
 import base.SpecBase
 import forms.SoldToCountryListFormProvider
-import models.{Country, Index, UserAnswers, VatOnSales, VatRateFromCountry}
+import models.{Country, Index, UserAnswers, VatRateFromCountry}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
@@ -46,7 +46,7 @@ class SoldToCountryListControllerSpec extends SpecBase with MockitoSugar {
     .set(SoldToCountryPage(index), country).success.value
     .set(VatRatesFromCountryPage(index), List[VatRateFromCountry](vatRateFromCountry)).success.value
     .set(SalesToCountryPage(index, vatRateIndex), salesValue).success.value
-    .set(VatOnSalesPage(index, vatRateIndex), VatOnSales.values.head).success.value
+    .set(VatOnSalesPage(index, vatRateIndex), arbitraryVatOnSales.arbitrary.sample.value).success.value
 
   private lazy val soldToCountryListRoute: String = routes.SoldToCountryListController.onPageLoad(waypoints).url
 

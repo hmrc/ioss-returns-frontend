@@ -17,7 +17,7 @@
 package pages
 
 import controllers.routes
-import models.{Index, UserAnswers, VatOnSales, VatOnSalesChoice}
+import models.{Index, UserAnswers, VatOnSales}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 

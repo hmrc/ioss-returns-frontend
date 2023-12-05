@@ -18,9 +18,11 @@ package controllers
 
 import base.SpecBase
 import forms.VatRatesFromCountryFormProvider
-import models.{Country, NormalMode, VatRateFromCountry}
+import models.{Country, VatRateFromCountry}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{reset, when}
+import org.scalacheck.Arbitrary.arbitrary
+import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import pages.{SoldToCountryPage, VatRatesFromCountryPage}
 import play.api.data.Form
@@ -32,8 +34,6 @@ import services.VatRateService
 import views.html.VatRatesFromCountryView
 
 import scala.concurrent.Future
-import org.scalacheck.Arbitrary.arbitrary
-import org.scalatest.{BeforeAndAfter, BeforeAndAfterEach}
 
 class VatRatesFromCountryControllerSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
 

@@ -56,7 +56,7 @@
         )
 
         @button(
-            messages("site.continue", VatOnSalesPage(countryIndex).route(waypoints).url, waypoints)
+            messages("site.continue", VatOnSalesPage(countryIndex, vatRateIndex).route(waypoints).url, waypoints)
         )
     }
 }

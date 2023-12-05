@@ -19,7 +19,7 @@ package journey
 import base.SpecBase
 import generators.Generators
 import models.VatOnSalesChoice.Standard
-import models.{Country, Index, UserAnswers, VatOnSales, VatOnSalesChoice, VatRateFromCountry}
+import models.{Country, Index, UserAnswers, VatOnSales, VatRateFromCountry}
 import org.scalacheck.Gen
 import org.scalatest.freespec.AnyFreeSpec
 import pages._
@@ -33,7 +33,6 @@ class EligibleSalesJourneySpec extends AnyFreeSpec with JourneyHelpers with Spec
   private val maxSalesValue: Int = 1000000
   private val countryIndex1: Index = Index(0)
   private val countryIndex2: Index = Index(1)
-  private val vatRateIndex: Index = Index(0)
   private val country: Country = arbitraryCountry.arbitrary.sample.value
   private val vatRateFromCountry1: VatRateFromCountry = arbitraryVatRateFromCountry.arbitrary.sample.value
   private val vatRateFromCountry2: VatRateFromCountry = arbitraryVatRateFromCountry.arbitrary.sample.value

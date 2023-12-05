@@ -16,16 +16,13 @@
 
 package controllers
 
-import controllers.JourneyRecoverySyntax.{OptionFutureResultOps, OptionResultOps}
 import controllers.actions._
 import forms.VatOnSalesFormProvider
-import models.requests.DataRequest
-import models.{Country, Index, VatOnSales, VatRateFromCountry}
-import pages.{SalesToCountryPage, SoldToCountryPage, VatOnSalesPage, Waypoints}
+import models.{Index, VatOnSales}
+import pages.{VatOnSalesPage, Waypoints}
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
-import queries.VatRatesFromCountryQuery
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.VatRateService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.VatOnSalesView

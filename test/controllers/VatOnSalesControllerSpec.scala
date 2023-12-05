@@ -23,7 +23,7 @@ import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.mockito.MockitoSugar
-import pages.{CheckYourAnswersPage, SalesToCountryPage, SoldToCountryListPage, SoldToCountryPage, VatOnSalesPage, VatRatesFromCountryPage}
+import pages.{SalesToCountryPage, SoldToCountryListPage, SoldToCountryPage, VatOnSalesPage, VatRatesFromCountryPage}
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.test.FakeRequest
