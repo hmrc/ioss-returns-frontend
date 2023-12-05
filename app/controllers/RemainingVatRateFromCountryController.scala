@@ -88,8 +88,13 @@ class RemainingVatRateFromCountryController @Inject()(
                     .navigate(waypoints, request.userAnswers, updatedVatRateAnswersWithFinalVatRate).route)
                 }
               } else {
-                Redirect(RemainingVatRateFromCountryPage(countryIndex, vatRateIndex)
-                  .navigate(waypoints, request.userAnswers, request.userAnswers).route).toFuture
+                for {
+                  updatedAnswers <- Future.fromTry(request.userAnswers.set(RemainingVatRateFromCountryPage(countryIndex, vatRateIndex), value))
+                  _ <- cc.sessionRepository.set(updatedAnswers)
+                } yield {
+                  Redirect(RemainingVatRateFromCountryPage(countryIndex, vatRateIndex)
+                    .navigate(waypoints, request.userAnswers, updatedAnswers).route)
+                }
               }
           )
         }
