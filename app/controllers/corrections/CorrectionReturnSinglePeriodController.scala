@@ -14,44 +14,45 @@
  * limitations under the License.
  */
 
-package controllers
+package controllers.corrections
 
 import controllers.actions._
-import forms.CorrectionReturnPeriodFormProvider
-
-import javax.inject.Inject
-import models.{Index, Period}
-import pages.{CorrectionReturnPeriodPage, Waypoints}
+import forms.corrections.CorrectionReturnSinglePeriodFormProvider
+import models.Index
+import pages.Waypoints
+import pages.corrections.CorrectionReturnSinglePeriodPage
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.CorrectionReturnPeriodView
+import utils.FutureSyntax.FutureOps
+import views.html.corrections.CorrectionReturnSinglePeriodView
 
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class CorrectionReturnPeriodController @Inject()(
+class CorrectionReturnSinglePeriodController @Inject()(
                                          override val messagesApi: MessagesApi,
                                          cc: AuthenticatedControllerComponents,
-                                         formProvider: CorrectionReturnPeriodFormProvider,
-                                         view: CorrectionReturnPeriodView
+                                         formProvider: CorrectionReturnSinglePeriodFormProvider,
+                                         view: CorrectionReturnSinglePeriodView
                                  )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  val form: Form[Period] = formProvider()
+  val form: Form[Boolean] = formProvider()
 
-  def onPageLoad(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndRequireData() {
+  def onPageLoad(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
 
       val period = request.userAnswers.period
 
-      val preparedForm = request.userAnswers.get(CorrectionReturnPeriodPage(index)) match {
+      val preparedForm = request.userAnswers.get(CorrectionReturnSinglePeriodPage(index)) match {
         case None => form
         case Some(value) => form.fill(value)
       }
 
-      Ok(view(preparedForm, waypoints, period, index))
+      Ok(view(preparedForm, waypoints, period, index)).toFuture
   }
 
   def onSubmit(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndRequireData().async {
@@ -65,9 +66,9 @@ class CorrectionReturnPeriodController @Inject()(
 
         value =>
           for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionReturnPeriodPage(index), value))
+            updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionReturnSinglePeriodPage(index), value))
             _              <- cc.sessionRepository.set(updatedAnswers)
-          } yield Redirect(CorrectionReturnPeriodPage(index).navigate(waypoints, request.userAnswers, updatedAnswers).route)
+          } yield Redirect(CorrectionReturnSinglePeriodPage(index).navigate(waypoints, request.userAnswers, updatedAnswers).route)
       )
   }
 }

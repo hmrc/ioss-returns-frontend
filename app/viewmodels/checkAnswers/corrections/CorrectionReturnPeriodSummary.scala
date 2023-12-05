@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package viewmodels.checkAnswers
+package viewmodels.checkAnswers.corrections
 
-import controllers.routes
 import models.{Index, UserAnswers}
-import pages.{CorrectionReturnPeriodPage, Waypoints}
+import pages.Waypoints
+import pages.corrections.CorrectionReturnPeriodPage
 import play.api.i18n.Messages
 import play.twirl.api.HtmlFormat
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
@@ -42,7 +42,7 @@ object CorrectionReturnPeriodSummary  {
           key     = "correctionReturnPeriod.checkYourAnswersLabel",
           value   = value,
           actions = Seq(
-            ActionItemViewModel("site.change", routes.CorrectionReturnPeriodController.onPageLoad(waypoints, index).url)
+            ActionItemViewModel("site.change", controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(waypoints, index).url)
               .withVisuallyHiddenText(messages("correctionReturnPeriod.change.hidden"))
           )
         )

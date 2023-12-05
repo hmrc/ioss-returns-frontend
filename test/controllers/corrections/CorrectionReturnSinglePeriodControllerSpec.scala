@@ -14,23 +14,22 @@
  * limitations under the License.
  */
 
-package controllers
+package controllers.corrections
 
 import base.SpecBase
-import forms.CorrectionReturnSinglePeriodFormProvider
-import models.UserAnswers
+import controllers.routes
+import forms.corrections.CorrectionReturnSinglePeriodFormProvider
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
-import pages.CorrectionReturnSinglePeriodPage
+import pages.corrections.CorrectionReturnSinglePeriodPage
 import play.api.data.Form
 import play.api.inject.bind
-import play.api.mvc.Call
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
-import views.html.CorrectionReturnSinglePeriodView
+import views.html.corrections.CorrectionReturnSinglePeriodView
 
 import scala.concurrent.Future
 
@@ -39,7 +38,7 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
   val formProvider = new CorrectionReturnSinglePeriodFormProvider()
   val form: Form[Boolean] = formProvider()
 
-  lazy val correctionReturnSinglePeriodRoute: String = routes.CorrectionReturnSinglePeriodController.onPageLoad(waypoints, index).url
+  lazy val correctionReturnSinglePeriodRoute: String = controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(waypoints, index).url
 
   "CorrectionReturnSinglePeriod Controller" - {
 

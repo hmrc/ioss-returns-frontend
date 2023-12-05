@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package pages
+package pages.corrections
 
 import models.{Index, UserAnswers}
+import pages.{JourneyRecoveryPage, Page, QuestionPage, Waypoints}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
@@ -27,7 +28,7 @@ case class CorrectionReturnSinglePeriodPage(index: Index) extends QuestionPage[B
   override def toString: String = "correctionReturnSinglePeriod"
 
   override def route(waypoints: Waypoints): Call =
-    controllers.routes.CorrectionReturnSinglePeriodController.onPageLoad(waypoints, index)
+    controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(waypoints, index)
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
     answers.get(CorrectionReturnSinglePeriodPage(index)) match {

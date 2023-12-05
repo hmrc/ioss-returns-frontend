@@ -14,14 +14,18 @@
  * limitations under the License.
  */
 
-package pages
+package forms.corrections
 
-import controllers.routes
-import play.api.mvc.Call
+import forms.mappings.Mappings
+import models.Period
+import play.api.data.Form
 
-object NoOtherCorrectionPeriodsAvailablePage extends Page {
+import javax.inject.Inject
 
-  override def route(waypoints: Waypoints): Call =
-    routes.NoOtherCorrectionPeriodsAvailableController.onPageLoad()
+class CorrectionReturnPeriodFormProvider @Inject() extends Mappings {
 
+  def apply(): Form[Period] =
+    Form(
+      "value" -> period("correctionReturnPeriod.error.required")
+    )
 }

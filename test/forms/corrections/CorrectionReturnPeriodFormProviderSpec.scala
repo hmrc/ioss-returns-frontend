@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package forms
+package forms.corrections
 
-import forms.behaviours.{BooleanFieldBehaviours, OptionFieldBehaviours}
-import models.{CorrectionReturnPeriod, Index, Period}
+import forms.behaviours.OptionFieldBehaviours
+import models.{Index, Period}
 import play.api.data.FormError
 
 import java.time.Month

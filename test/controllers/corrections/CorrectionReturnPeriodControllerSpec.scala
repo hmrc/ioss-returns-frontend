@@ -14,22 +14,23 @@
  * limitations under the License.
  */
 
-package controllers
+package controllers.corrections
 
 import base.SpecBase
-import forms.CorrectionReturnPeriodFormProvider
-import models.{CorrectionReturnPeriod, Period}
+import controllers.routes
+import forms.corrections.CorrectionReturnPeriodFormProvider
+import models.Period
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
-import pages.CorrectionReturnPeriodPage
+import pages.corrections.CorrectionReturnPeriodPage
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
-import views.html.CorrectionReturnPeriodView
+import views.html.corrections.CorrectionReturnPeriodView
 
 import java.time.Month
 import scala.concurrent.Future
@@ -40,7 +41,7 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
   private val formProvider = new CorrectionReturnPeriodFormProvider()
   private val form: Form[Period] = formProvider()
 
-  private lazy val correctionReturnPeriodRoute: String = routes.CorrectionReturnPeriodController.onPageLoad(waypoints, index).url
+  private lazy val correctionReturnPeriodRoute: String = controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(waypoints, index).url
 
   "CorrectionReturnPeriod Controller" - {
 
@@ -87,7 +88,7 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
         val expectedAnswers = emptyUserAnswers.set(CorrectionReturnPeriodPage(index), Period(2021, Month.OCTOBER)).success.value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.CorrectionReturnPeriodController.onPageLoad(waypoints, index).url
+        redirectLocation(result).value mustEqual controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(waypoints, index).url
         verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
       }
     }
