@@ -17,6 +17,7 @@
 package controllers
 
 import base.SpecBase
+import config.Constants.{maxCurrencyAmount, minCurrencyAmount}
 import forms.CheckSalesFormProvider
 import models.{Country, UserAnswers, VatOnSales, VatRateFromCountry}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
@@ -48,7 +49,7 @@ class CheckSalesControllerSpec extends SpecBase with MockitoSugar with SummaryLi
   private val form: Form[Boolean] = formProvider()
 
   private val vatRatesFromCountry = Gen.listOfN(3, arbitrary[VatRateFromCountry]).sample.value
-  private val salesValue: Int = 1234
+  private val salesValue: BigDecimal = Gen.chooseNum(minCurrencyAmount, maxCurrencyAmount).sample.value
 
   private val baseAnswers: UserAnswers = emptyUserAnswers
     .set(SoldGoodsPage, true).success.value
@@ -124,7 +125,7 @@ class CheckSalesControllerSpec extends SpecBase with MockitoSugar with SummaryLi
 
       val vatRatesFromCountry = Gen.listOfN(3, arbitrary[VatRateFromCountry]).sample.value
       val remainingVatRateForCountry = List(arbitrary[VatRateFromCountry].sample.value)
-      val salesValue: Int = 1234
+      val salesValue: BigDecimal = Gen.chooseNum(minCurrencyAmount, maxCurrencyAmount).sample.value
 
       val answers: UserAnswers = emptyUserAnswers
         .set(SoldGoodsPage, true).success.value

@@ -42,8 +42,7 @@ class SalesToCountryControllerSpec extends SpecBase with MockitoSugar {
   private val formProvider = new SalesToCountryFormProvider(mockVatRateService)
   private val form: Form[BigDecimal] = formProvider(vatRateFromCountry)
 
-
-  val validAnswer: BigDecimal = 1
+  val validAnswer: BigDecimal = 1234.12
 
   private val baseAnswers: UserAnswers = emptyUserAnswers
     .set(SoldGoodsPage, true).success.value

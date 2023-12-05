@@ -37,7 +37,7 @@ object CheckSalesSummary {
           vatRatesFromCountry.zipWithIndex.map {
             case (vatRateFromCountry, vatRateIndex) =>
 
-              val rows = SalesToCountrySummary.row(answers, waypoints, countryIndex, Index(vatRateIndex), CheckSalesPage()).toList ++
+              val rows = SalesToCountrySummary.row(answers, waypoints, countryIndex, Index(vatRateIndex), vatRateFromCountry, CheckSalesPage()).toList ++
                 VatOnSalesSummary.row(answers, waypoints, countryIndex, Index(vatRateIndex), CheckSalesPage()).toList
 
               SummaryListViewModel(

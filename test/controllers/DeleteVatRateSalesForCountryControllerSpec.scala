@@ -17,10 +17,12 @@
 package controllers
 
 import base.SpecBase
+import config.Constants.{maxCurrencyAmount, minCurrencyAmount}
 import forms.DeleteVatRateSalesForCountryFormProvider
 import models.{Country, UserAnswers, VatOnSales, VatRateFromCountry}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{verifyNoInteractions, when}
+import org.scalacheck.Gen
 import org.scalatestplus.mockito.MockitoSugar
 import pages._
 import play.api.data.Form
@@ -37,7 +39,7 @@ class DeleteVatRateSalesForCountryControllerSpec extends SpecBase with MockitoSu
   private val country: Country = arbitraryCountry.arbitrary.sample.value
 
   private val vatRateFromCountry: VatRateFromCountry = arbitraryVatRateFromCountry.arbitrary.sample.value
-  private val salesValue: Int = 1234
+  private val salesValue: BigDecimal = Gen.chooseNum(minCurrencyAmount, maxCurrencyAmount).sample.value
   private val vatRate = vatRateFromCountry.rateForDisplay
 
   private val baseAnswers: UserAnswers = emptyUserAnswers

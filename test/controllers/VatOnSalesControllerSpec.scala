@@ -40,7 +40,7 @@ class VatOnSalesControllerSpec extends SpecBase with MockitoSugar {
   val netSales = BigDecimal(400)
   val standardVatOnSales = arbitrary[BigDecimal].sample.value
   val country = arbitraryCountry.arbitrary.sample.value
-  val validAnswer = BigDecimal(400)
+  val validAnswer: BigDecimal = BigDecimal(400)
   private val validVatOnSales = VatOnSales(VatOnSalesChoice.Standard, 1)
 
   val formProvider = new VatOnSalesFormProvider(vatRateService)
@@ -152,7 +152,7 @@ class VatOnSalesControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, period, waypoints, index, vatRateIndex, country, vatRateFromCountry, netSales, standardVatOnSales)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, waypoints, period, index, vatRateIndex, country, vatRateFromCountry, netSales, standardVatOnSales)(request, messages(application)).toString
       }
     }
 

@@ -89,6 +89,7 @@ class EligibleSalesJourneySpec extends AnyFreeSpec with JourneyHelpers with Spec
 
   // TODO -> loop SalesToCountryPage & VatOnSalesPage according to number of VatRatesFromCountryPage
   // TODO test for maximum vat rates for country???
+  // TODO RemainingVatRates page
 
   "must allow the user to add a sale" in {
     startingFrom(SoldGoodsPage, answers = initialAnswers)
@@ -153,7 +154,7 @@ class EligibleSalesJourneySpec extends AnyFreeSpec with JourneyHelpers with Spec
 
     "when there is only one VAT rate sale" in {
 
-      val changedSalesValue = Gen.chooseNum(minSalesValue, maxSalesValue).sample.value
+      val changedSalesValue: BigDecimal = Gen.chooseNum(minSalesValue, maxSalesValue).sample.value.toDouble
 
       startingFrom(SoldGoodsPage, answers = initialAnswers)
         .run(
@@ -164,6 +165,8 @@ class EligibleSalesJourneySpec extends AnyFreeSpec with JourneyHelpers with Spec
           goToChangeAnswer(SalesToCountryPage(countryIndex1, vatRateIndex1)),
           pageMustBe(SalesToCountryPage(countryIndex1, vatRateIndex1)),
           submitAnswer(SalesToCountryPage(countryIndex1, vatRateIndex1), changedSalesValue),
+          pageMustBe(VatOnSalesPage(countryIndex1, vatRateIndex1)),
+          submitAnswer(VatOnSalesPage(countryIndex1, vatRateIndex1), VatOnSales.values.head),
           pageMustBe(CheckSalesPage(Some(countryIndex1))),
           answerMustEqual(SalesToCountryPage(countryIndex1, vatRateIndex1), changedSalesValue)
         )

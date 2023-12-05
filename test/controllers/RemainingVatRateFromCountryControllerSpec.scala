@@ -17,11 +17,12 @@
 package controllers
 
 import base.SpecBase
+import config.Constants.{maxCurrencyAmount, minCurrencyAmount}
 import forms.RemainingVatRateFromCountryFormProvider
-import models.VatRateType.{Reduced, Standard}
 import models.{Country, UserAnswers, VatOnSales, VatRateFromCountry}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{reset, times, verify, when}
+import org.scalacheck.Gen
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import pages._
@@ -41,18 +42,21 @@ class RemainingVatRateFromCountryControllerSpec extends SpecBase with MockitoSug
   private val formProvider = new RemainingVatRateFromCountryFormProvider()
   private val form: Form[Boolean] = formProvider()
 
-  val currentlyAnsweredVatRates: List[VatRateFromCountry] = List(
-    VatRateFromCountry(BigDecimal(21.7), Standard, period.firstDay),
-    VatRateFromCountry(BigDecimal(12.0), Reduced, period.firstDay)
-  )
+  private val vatRateFromCountry1: VatRateFromCountry = arbitraryVatRateFromCountry.arbitrary.sample.value
+  private val vatRateFromCountry2: VatRateFromCountry = arbitraryVatRateFromCountry.arbitrary.sample.value
+  private val remainingVatRate: VatRateFromCountry = arbitraryVatRateFromCountry.arbitrary.sample.value
+  private val salesValue: BigDecimal = Gen.chooseNum(minCurrencyAmount, maxCurrencyAmount).sample.value
 
-  val remainingVatRate: VatRateFromCountry = VatRateFromCountry(BigDecimal(25.3), Standard, period.firstDay)
+  val currentlyAnsweredVatRates: List[VatRateFromCountry] = List(
+    vatRateFromCountry1,
+    vatRateFromCountry2
+  )
 
   val answers: UserAnswers = emptyUserAnswers
     .set(SoldGoodsPage, true).success.value
     .set(SoldToCountryPage(index), country).success.value
     .set(VatRatesFromCountryPage(index), currentlyAnsweredVatRates).success.value
-    .set(SalesToCountryPage(index, index), 1).success.value
+    .set(SalesToCountryPage(index, index), salesValue).success.value
     .set(VatOnSalesPage(index, index), VatOnSales.Option1).success.value
 
   lazy val remainingVatRateFromCountryRoute: String = routes.RemainingVatRateFromCountryController.onPageLoad(waypoints, index, index).url
