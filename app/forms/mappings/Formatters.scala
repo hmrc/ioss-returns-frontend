@@ -89,7 +89,7 @@ trait Formatters {
       override def bind(key: String, data: Map[String, String]): Either[Seq[FormError], BigDecimal] =
         baseFormatter
           .bind(key, data)
-          .right.map(_.replace(",", "").replace("£", "").replace(" ", ""))
+          .right.map(_.replace(",", "").replaceAll("[,£ ]", "").replace(" ", ""))
           .right.flatMap {
             case s if !s.matches(validNumeric) =>
               Left(Seq(FormError(key, nonNumericKey, args)))
