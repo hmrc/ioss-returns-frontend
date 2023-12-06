@@ -18,11 +18,11 @@
 @import pages.VatOnSalesPage
 
 @this(
-    layout: templates.Layout,
-    formHelper: FormWithCSRF,
-    govukErrorSummary: GovukErrorSummary,
-    govukInput: GovukInput,
-    button: ButtonGroup
+        layout: templates.Layout,
+        formHelper: FormWithCSRF,
+        govukErrorSummary: GovukErrorSummary,
+        govukInput: GovukInput,
+        button: ButtonGroup
 )
 
 @(form: Form[_], waypoints: Waypoints, period: Period, countryIndex: Index, vatRateIndex: Index, vatRate: VatRateFromCountry, country: Country)(implicit request: Request[_], messages: Messages)
@@ -33,29 +33,28 @@
     Some(messages("salesToCountry.caption", period.displayText, country.name))
 )) {
 
-        @formHelper(action = routes.SalesToCountryController.onSubmit(waypoints, countryIndex, vatRateIndex), Symbol("autoComplete") -> "off") {
+    @formHelper(action = routes.SalesToCountryController.onSubmit(waypoints, countryIndex, vatRateIndex), Symbol("autoComplete") -> "off") {
 
-            @if(form.errors.nonEmpty) {
-                @govukErrorSummary(ErrorSummaryViewModel(form))
-            }
-
-            @govukInput(
-                InputViewModel(
-                    field = form("value"),
-                    label = HmrcPageHeadingLabel(
-                        content = messages("salesToCountry.heading", vatRate.rateForDisplay),
-                        caption = messages("salesToCountry.caption", period.displayText, country.name)
-                    )
-                )
-                        .withWidth(Fixed10)
-                        .withCssClass("govuk-currency-input__inner__input")
-                        .withPrefix(PrefixOrSuffix(content = Text("£")))
-                        .withHint(HintViewModel(messages("salesToCountry.hint")))
-            )
-
-            @button(
-                messages("site.continue", VatOnSalesPage(countryIndex, vatRateIndex).route(waypoints).url, waypoints)
-            )
+        @if(form.errors.nonEmpty) {
+            @govukErrorSummary(ErrorSummaryViewModel(form))
         }
+
+        @govukInput(
+            InputViewModel(
+                field = form("value"),
+                label = HmrcPageHeadingLabel(
+                    content = messages("salesToCountry.heading", vatRate.rateForDisplay),
+                    caption = messages("salesToCountry.caption", period.displayText, country.name)
+                )
+            )
+                    .withWidth(Fixed10)
+                    .withCssClass("govuk-currency-input__inner__input")
+                    .withPrefix(PrefixOrSuffix(content = Text("£")))
+                    .withHint(HintViewModel(messages("salesToCountry.hint")))
+        )
+
+        @button(
+            messages("site.continue", VatOnSalesPage(countryIndex, vatRateIndex).route(waypoints).url, waypoints)
+        )
     }
 }

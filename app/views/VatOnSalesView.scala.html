@@ -14,8 +14,6 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.hmrcfrontend.views.config.HmrcPageHeadingLegend
-@import utils.CurrencyFormatter.currencyFormat
 @import viewmodels.InputWidth._
 @import components.ButtonGroup
 
@@ -27,11 +25,10 @@
         govukInput: GovukInput,
         button: ButtonGroup
 )
-
 @(
         form: Form[_],
-        period: Period,
         waypoints: Waypoints,
+        period: Period,
         countryIndex: Index,
         vatRateIndex: Index,
         country: Country,

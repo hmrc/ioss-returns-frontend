@@ -111,8 +111,6 @@ salesToCountry.hint = For example, £600 or £193.54.
 vatOnSales.title = How much VAT did you charge on sales of {0} at {1} VAT rate?
 vatOnSales.heading = How much VAT did you charge on sales of {0} at {1} VAT rate?
 vatOnSales.caption = {0} sales to {1}
-vatOnSales.option1 = Option 1
-vatOnSales.option2 = Option 2
 vatOnSales.nonStandard = A different amount
 vatOnSales.amount = Enter VAT charged
 vatOnSales.hint = For example, £600 or £193.54.
@@ -170,12 +168,11 @@ correctPreviousReturn.checkYourAnswersLabel = Corrections
 correctPreviousReturn.error.required = Select yes if you want to correct a previous return
 correctPreviousReturn.change.hidden = if you want to correct a previous return
 
-correctionCountry.checkYourAnswersLabel = Country sold to
-correctionCountry.change.hidden = which country you sold to
-
 correctionCountry.title = Which country would you like to correct?
 correctionCountry.heading = Which country would you like to correct?
 correctionCountry.caption = Correction period: {0}
+correctionCountry.checkYourAnswersLabel = Country sold to
+correctionCountry.change.hidden = which country you sold to
 correctionCountry.hint = You can also add a new country that was not included in your previous return.
 correctionCountry.error.required = Select which country you would like to correct
 correctionCountry.error.duplicate = You selected this country already. Select a different one.

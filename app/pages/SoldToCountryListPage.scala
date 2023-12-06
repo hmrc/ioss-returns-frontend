@@ -54,7 +54,7 @@ final case class SoldToCountryListPage(override val index: Option[Index] = None)
           if (i.position +1 < Country.euCountriesWithNI.size) {
             SoldToCountryPage(Index(i.position + 1))
           } else {
-            CheckYourAnswersPage
+            CorrectPreviousReturnPage
           }
         }
         .getOrElse {

@@ -19,9 +19,9 @@ package viewmodels.checkAnswers
 import models.{Index, UserAnswers}
 import pages.{AddItemPage, VatOnSalesPage, Waypoints}
 import play.api.i18n.Messages
-import play.twirl.api.HtmlFormat
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
+import viewmodels.govuk.all.currencyFormat
 import viewmodels.govuk.summarylist._
 import viewmodels.implicits._
 
@@ -34,7 +34,7 @@ object VatOnSalesSummary {
 
         val value = ValueViewModel(
           HtmlContent(
-            HtmlFormat.escape(messages(s"vatOnSales.$answer"))
+            currencyFormat(answer.amount)
           )
         ).withCssClass("govuk-table__cell--numeric")
 

@@ -35,8 +35,6 @@ import services.VatRateService
 import utils.FutureSyntax.FutureOps
 import views.html.VatRatesFromCountryView
 
-import scala.concurrent.Future
-
 class VatRatesFromCountryControllerSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
 
   private val country: Country = arbitraryCountry.arbitrary.sample.value

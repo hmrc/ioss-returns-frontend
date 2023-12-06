@@ -61,7 +61,7 @@ final case class CheckSalesPage(override val index: Option[Index] = None) extend
   private def determinePageRedirect(answers: UserAnswers, countryIndex: Index): Option[Page] = {
     answers.get(RemainingVatRatesFromCountryQuery(countryIndex)).flatMap {
       case vatRatesFromCountry if vatRatesFromCountry.size == 1 =>
-        Some(RemainingVatRateFromCountryPage(countryIndex, Index(vatRatesFromCountry.size -1))) // TODO -> Check vatRateIndex size or size -1
+        Some(RemainingVatRateFromCountryPage(countryIndex, Index(vatRatesFromCountry.size)))
       case vatRatesFromCountry if vatRatesFromCountry.size > 1 =>
         Some(VatRatesFromCountryPage(countryIndex))
       case vatRatesFromCountry if vatRatesFromCountry.isEmpty =>

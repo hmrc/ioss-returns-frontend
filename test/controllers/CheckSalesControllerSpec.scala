@@ -50,13 +50,14 @@ class CheckSalesControllerSpec extends SpecBase with MockitoSugar with SummaryLi
 
   private val vatRatesFromCountry = Gen.listOfN(3, arbitrary[VatRateFromCountry]).sample.value
   private val salesValue: BigDecimal = Gen.chooseNum(minCurrencyAmount, maxCurrencyAmount).sample.value
+  private val vatOnSalesValue: VatOnSales = arbitraryVatOnSales.arbitrary.sample.value
 
   private val baseAnswers: UserAnswers = emptyUserAnswers
     .set(SoldGoodsPage, true).success.value
     .set(SoldToCountryPage(index), country).success.value
     .set(VatRatesFromCountryPage(index), vatRatesFromCountry).success.value
     .set(SalesToCountryPage(index, index), salesValue).success.value
-    .set(VatOnSalesPage(index, index), VatOnSales.values.head).success.value
+    .set(VatOnSalesPage(index, index), vatOnSalesValue).success.value
 
   private lazy val checkSalesRoute: String = CheckSalesPage(Some(index)).route(waypoints).url
 
@@ -132,7 +133,7 @@ class CheckSalesControllerSpec extends SpecBase with MockitoSugar with SummaryLi
         .set(SoldToCountryPage(index), country).success.value
         .set(VatRatesFromCountryPage(index), vatRatesFromCountry).success.value
         .set(SalesToCountryPage(index, index), salesValue).success.value
-        .set(VatOnSalesPage(index, index), VatOnSales.values.head).success.value
+        .set(VatOnSalesPage(index, index), vatOnSalesValue).success.value
 
       when(mockVatRateService.getRemainingVatRatesForCountry(period, country, vatRatesFromCountry)) thenReturn remainingVatRateForCountry
 

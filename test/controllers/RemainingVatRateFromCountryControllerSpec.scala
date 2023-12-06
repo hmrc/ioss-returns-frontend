@@ -46,6 +46,7 @@ class RemainingVatRateFromCountryControllerSpec extends SpecBase with MockitoSug
   private val vatRateFromCountry2: VatRateFromCountry = arbitraryVatRateFromCountry.arbitrary.sample.value
   private val remainingVatRate: VatRateFromCountry = arbitraryVatRateFromCountry.arbitrary.sample.value
   private val salesValue: BigDecimal = Gen.chooseNum(minCurrencyAmount, maxCurrencyAmount).sample.value
+  private val vatOnSalesValue: VatOnSales = arbitraryVatOnSales.arbitrary.sample.value
 
   val currentlyAnsweredVatRates: List[VatRateFromCountry] = List(
     vatRateFromCountry1,
@@ -57,13 +58,13 @@ class RemainingVatRateFromCountryControllerSpec extends SpecBase with MockitoSug
     .set(SoldToCountryPage(index), country).success.value
     .set(VatRatesFromCountryPage(index), currentlyAnsweredVatRates).success.value
     .set(SalesToCountryPage(index, index), salesValue).success.value
-    .set(VatOnSalesPage(index, index), VatOnSales.Option1).success.value
+    .set(VatOnSalesPage(index, index), vatOnSalesValue).success.value
 
   lazy val remainingVatRateFromCountryRoute: String = routes.RemainingVatRateFromCountryController.onPageLoad(waypoints, index, index).url
 
   private val mockVatRateService = mock[VatRateService]
 
-  override def beforeEach: Unit = {
+  override def beforeEach(): Unit = {
     reset(mockVatRateService)
   }
 

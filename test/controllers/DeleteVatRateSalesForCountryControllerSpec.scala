@@ -40,6 +40,7 @@ class DeleteVatRateSalesForCountryControllerSpec extends SpecBase with MockitoSu
 
   private val vatRateFromCountry: VatRateFromCountry = arbitraryVatRateFromCountry.arbitrary.sample.value
   private val salesValue: BigDecimal = Gen.chooseNum(minCurrencyAmount, maxCurrencyAmount).sample.value
+  private val vatOnSalesValue: VatOnSales = arbitraryVatOnSales.arbitrary.sample.value
   private val vatRate = vatRateFromCountry.rateForDisplay
 
   private val baseAnswers: UserAnswers = emptyUserAnswers
@@ -47,7 +48,7 @@ class DeleteVatRateSalesForCountryControllerSpec extends SpecBase with MockitoSu
     .set(SoldToCountryPage(index), country).success.value
     .set(VatRatesFromCountryPage(index), List[VatRateFromCountry](vatRateFromCountry)).success.value
     .set(SalesToCountryPage(index, index), salesValue).success.value
-    .set(VatOnSalesPage(index, index), VatOnSales.values.head).success.value
+    .set(VatOnSalesPage(index, index), vatOnSalesValue).success.value
 
   private val formProvider = new DeleteVatRateSalesForCountryFormProvider()
   private val form: Form[Boolean] = formProvider(vatRate, country)

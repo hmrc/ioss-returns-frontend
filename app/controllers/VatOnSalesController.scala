@@ -25,6 +25,7 @@ import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.VatRateService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.FutureSyntax.FutureOps
 import views.html.VatOnSalesView
 
 import javax.inject.Inject
@@ -56,7 +57,7 @@ class VatOnSalesController @Inject()(
             case Some(value) => form.fill(value)
           }
 
-          Ok(view(preparedForm, period, waypoints, countryIndex, vatRateIndex, country, vatRateFromCountry, netSales, standardVat))
+          Ok(view(preparedForm, waypoints, period, countryIndex, vatRateIndex, country, vatRateFromCountry, netSales, standardVat))
       }
   }
 
@@ -72,7 +73,7 @@ class VatOnSalesController @Inject()(
 
           form.bindFromRequest().fold(
             formWithErrors =>
-              Future.successful(BadRequest(view(formWithErrors, period, waypoints, countryIndex, vatRateIndex, country, vatRate, netSales, standardVat))),
+              BadRequest(view(formWithErrors, waypoints, period, countryIndex, vatRateIndex, country, vatRate, netSales, standardVat)).toFuture,
 
             value =>
               for {
@@ -82,5 +83,4 @@ class VatOnSalesController @Inject()(
           )
       }
   }
-
 }
