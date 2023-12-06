@@ -63,12 +63,12 @@
                     RadioItem(
                         content = HtmlContent(Html(currencyFormat(standardVat))),
                         value   = Some(VatOnSalesChoice.Standard.toString),
-                        id      = Some("value_0")
+                        id      = Some("choice")
                     ),
                     RadioItem(
                         content = Text(messages("vatOnSales.nonStandard")),
                         value   = Some(VatOnSalesChoice.NonStandard.toString),
-                        id      = Some("value_1"),
+                        id      = Some("choice"),
                         conditionalHtml = Some(Html(
                             govukInput(
                                 InputViewModel(
