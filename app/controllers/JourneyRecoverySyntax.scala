@@ -14,10 +14,23 @@
  * limitations under the License.
  */
 
-package utils
+package controllers
 
-trait CurrencyFormatter {
-  def currencyFormat(amt: BigDecimal): String = f"&pound;$amt%,1.2f".replace(".00","")
+import play.api.mvc.Result
+import play.api.mvc.Results.Redirect
+import utils.FutureSyntax._
+
+import scala.concurrent.Future
+
+object JourneyRecoverySyntax {
+
+  implicit class OptionResultOps(val a: Option[Result]) {
+    def orRecoverJourney: Result =
+      a.getOrElse(Redirect(routes.JourneyRecoveryController.onPageLoad()))
+  }
+
+  implicit class OptionFutureResultOps(val a: Option[Future[Result]]) {
+    def orRecoverJourney: Future[Result] =
+      a.getOrElse(Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture)
+  }
 }
-
-object CurrencyFormatter extends CurrencyFormatter

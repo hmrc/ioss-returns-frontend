@@ -14,34 +14,78 @@
  * limitations under the License.
  *@
 
+@import uk.gov.hmrc.hmrcfrontend.views.config.HmrcPageHeadingLegend
+@import utils.CurrencyFormatter.currencyFormat
+@import viewmodels.InputWidth._
+@import components.ButtonGroup
+
 @this(
-    layout: templates.Layout,
-    formHelper: FormWithCSRF,
-    govukErrorSummary: GovukErrorSummary,
-    govukRadios: GovukRadios,
-    button: ButtonGroup
+        layout: templates.Layout,
+        formHelper: FormWithCSRF,
+        govukErrorSummary: GovukErrorSummary,
+        govukRadios: GovukRadios,
+        govukInput: GovukInput,
+        button: ButtonGroup
 )
 
-@(form: Form[_], waypoints: Waypoints, period: Period, index: Index)(implicit request: Request[_], messages: Messages)
+@(
+        form: Form[_],
+        period: Period,
+        waypoints: Waypoints,
+        countryIndex: Index,
+        vatRateIndex: Index,
+        country: Country,
+        vatRate: VatRateFromCountry,
+        netSales: BigDecimal,
+        standardVat: BigDecimal
+)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = title(form, messages("vatOnSales.title"))) {
+@layout(pageTitle = title(
+    form,
+    messages("vatOnSales.title", currencyFormat(netSales), vatRate.rateForDisplay),
+    Some(messages("vatOnSales.caption", period.displayText, country.name))
+)) {
 
-    @formHelper(action = routes.VatOnSalesController.onSubmit(waypoints, index), Symbol("autoComplete") -> "off") {
+    @formHelper(action = routes.VatOnSalesController.onSubmit(waypoints, countryIndex, vatRateIndex), 'autoComplete -> "off") {
 
         @if(form.errors.nonEmpty) {
-            @govukErrorSummary(ErrorSummaryViewModel(form,  errorLinkOverrides = Map("value" -> "value_0")))
+            @govukErrorSummary(ErrorSummaryViewModel(form))
         }
 
-        @govukRadios(
+        @govukRadios(   
             RadiosViewModel(
-                field  = form("value"),
-                legend = LegendViewModel(messages("vatOnSales.heading")).asPageHeading(),
-                items  = VatOnSales.options
+                field  = form("choice"),
+                legend = HmrcPageHeadingLegend(
+                    content = HtmlContent(messages("vatOnSales.heading", currencyFormat(netSales), vatRate.rateForDisplay)),
+                    caption = messages("vatOnSales.caption", period.displayText, country.name)
+                ),
+                items = Seq(
+                    RadioItem(
+                        content = HtmlContent(Html(currencyFormat(standardVat))),
+                        value   = Some(VatOnSalesChoice.Standard.toString),
+                        id      = Some("choice")
+                    ),
+                    RadioItem(
+                        content = Text(messages("vatOnSales.nonStandard")),
+                        value   = Some(VatOnSalesChoice.NonStandard.toString),
+                        id      = Some("choice_different"),
+                        conditionalHtml = Some(Html(
+                            govukInput(
+                                InputViewModel(
+                                    field = form("amount"),
+                                    label = LabelViewModel(messages("vatOnSales.amount"))
+                                )
+                                .withWidth(Fixed10)
+                                .withCssClass("govuk-currency-input__inner__input")
+                                .withPrefix(PrefixOrSuffix(content = Text("£")))
+                                .withHint(HintViewModel(messages("vatOnSales.hint")))
+                            ).toString
+                        ))
+                    )
+                )
             )
         )
 
-        @button(
-            messages("site.continue")
-        )
+        @button("site.continue")
     }
 }

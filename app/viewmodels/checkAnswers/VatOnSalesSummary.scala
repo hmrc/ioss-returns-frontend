@@ -28,8 +28,8 @@ import viewmodels.implicits._
 
 object VatOnSalesSummary  {
 
-  def row(answers: UserAnswers, waypoints: Waypoints, index: Index)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(VatOnSalesPage(index)).map {
+  def row(answers: UserAnswers, waypoints: Waypoints, index: Index)(implicit messages: Messages): Option[SummaryListRow] = {
+    answers.get(VatOnSalesPage(index, Index(0))).map {
       answer =>
 
         val value = ValueViewModel(
@@ -42,9 +42,10 @@ object VatOnSalesSummary  {
           key     = "vatOnSales.checkYourAnswersLabel",
           value   = value,
           actions = Seq(
-            ActionItemViewModel("site.change", routes.VatOnSalesController.onPageLoad(waypoints, index).url)
+            ActionItemViewModel("site.change", routes.VatOnSalesController.onPageLoad(waypoints, index, Index(0)).url)
               .withVisuallyHiddenText(messages("vatOnSales.change.hidden"))
           )
         )
     }
+  }
 }

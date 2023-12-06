@@ -19,11 +19,11 @@ package models
 import generators.{Generators, ModelGenerators}
 import models.VatRateType.Standard
 import org.scalacheck.Arbitrary.arbitrary
-import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
+import org.scalatest.OptionValues
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
-import org.scalatest.OptionValues
-import play.api.libs.json.{JsError, JsString, JsSuccess, Json}
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
+import play.api.libs.json.{JsSuccess, Json}
 
 import java.time.LocalDate
 

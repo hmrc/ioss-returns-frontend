@@ -16,9 +16,10 @@
 
 package controllers
 
+import controllers.JourneyRecoverySyntax.{OptionFutureResultOps, OptionResultOps}
 import models.requests.DataRequest
 import models.{Country, Index, VatRateFromCountry}
-import pages.{JourneyRecoveryPage, SoldToCountryPage, Waypoints}
+import pages.{JourneyRecoveryPage, SalesToCountryPage, SoldToCountryPage, Waypoints}
 import play.api.mvc.Results.Redirect
 import play.api.mvc.{AnyContent, Result}
 import queries.VatRatesFromCountryQuery
@@ -48,4 +49,28 @@ trait SalesFromCountryBaseController {
       vatRate <- request.userAnswers.get(VatRatesFromCountryQuery(countryIndex, vatRateIndex))
     } yield block(country, vatRate))
       .getOrElse(Redirect(JourneyRecoveryPage.route(waypoints)).toFuture)
+
+
+  protected def getCountryVatRateAndNetSales(countryIndex: Index, vatRateIndex: Index)
+                                            (block: (Country, VatRateFromCountry, BigDecimal) => Result)
+                                            (implicit request: DataRequest[AnyContent]): Result = {
+    (for {
+      country <- request.userAnswers.get(SoldToCountryPage(countryIndex))
+      vatRate <- request.userAnswers.get(VatRatesFromCountryQuery(countryIndex, vatRateIndex))
+      netSales <- request.userAnswers.get(SalesToCountryPage(countryIndex, vatRateIndex))
+    } yield {
+      block(country, vatRate, netSales)
+    })
+      .orRecoverJourney
+  }
+
+  protected def getCountryVatRateAndNetSalesAsync(countryIndex: Index, vatRateIndex: Index)
+                                                 (block: (Country, VatRateFromCountry, BigDecimal) => Future[Result])
+                                                 (implicit request: DataRequest[AnyContent]): Future[Result] =
+    (for {
+      country <- request.userAnswers.get(SoldToCountryPage(countryIndex))
+      vatRate <- request.userAnswers.get(VatRatesFromCountryQuery(countryIndex, vatRateIndex))
+      netSales <- request.userAnswers.get(SalesToCountryPage(countryIndex, vatRateIndex))
+    } yield block(country, vatRate, netSales))
+      .orRecoverJourney
 }

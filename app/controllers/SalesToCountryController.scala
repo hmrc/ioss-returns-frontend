@@ -28,7 +28,6 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax.FutureOps
 import views.html.SalesToCountryView
 
-import java.lang.System.Logger
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 

@@ -16,13 +16,12 @@
 
 package forms
 
-import config.Constants.maxCurrencyAmount
 import forms.mappings.Mappings
 import models.VatRateFromCountry
-
-import javax.inject.Inject
 import play.api.data.Form
 import services.VatRateService
+
+import javax.inject.Inject
 
 class SalesToCountryFormProvider @Inject()(vatRateService: VatRateService) extends Mappings {
 

@@ -39,8 +39,8 @@ POST        /vatRatesFromCountry/:index        controllers.VatRatesFromCountryCo
 GET         /sales-to-country/:countryIndex/:vatRateIndex               controllers.SalesToCountryController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, countryIndex: Index, vatRateIndex: Index)
 POST        /sales-to-country/:countryIndex/:vatRateIndex               controllers.SalesToCountryController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, countryIndex: Index, vatRateIndex: Index)
 
-GET         /vatOnSales/:index                 controllers.VatOnSalesController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, index: Index)
-POST        /vatOnSales/:index                 controllers.VatOnSalesController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, index: Index)
+GET         /vatOnSales/:countryIndex/:vatRateIndex                  controllers.VatOnSalesController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, countryIndex: Index, vatRateIndex: Index)
+POST        /vatOnSales/:countryIndex/:vatRateIndex                  controllers.VatOnSalesController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, countryIndex: Index, vatRateIndex: Index)
 
 GET         /no-other-periods-available        controllers.NoOtherPeriodsAvailableController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
 

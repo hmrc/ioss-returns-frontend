@@ -21,14 +21,23 @@ import models.{Index, UserAnswers, VatOnSales}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
-case class VatOnSalesPage(index: Index) extends QuestionPage[VatOnSales] {
+case class VatOnSalesPage(countryIndex: Index, vatRateIndex: Index) extends QuestionPage[VatOnSales] {
 
-  override def path: JsPath = JsPath \ PageConstants.sales \ index.position \ toString
+  override def path: JsPath = JsPath \ PageConstants.sales \ countryIndex.position \ PageConstants.vatRates \ vatRateIndex.position \ toString
 
   override def toString: String = "vatOnSales"
 
-  override def route(waypoints: Waypoints): Call = routes.VatOnSalesController.onPageLoad(waypoints, index)
+  override def route(waypoints: Waypoints): Call = routes.VatOnSalesController.onPageLoad(waypoints, countryIndex, vatRateIndex)
 
-  override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
-    SoldToCountryListPage(Some(index))
+  override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page = {
+    answers.get(VatRatesFromCountryPage(countryIndex)).map {
+      rates =>
+        if (rates.size > vatRateIndex.position + 1) {
+          SalesToCountryPage(countryIndex, vatRateIndex + 1)
+        } else {
+          // TODO
+          SoldToCountryListPage(Some(countryIndex))
+        }
+    }.getOrElse(JourneyRecoveryPage)
+  }
 }

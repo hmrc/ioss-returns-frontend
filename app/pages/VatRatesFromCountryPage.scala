@@ -25,7 +25,7 @@ case class VatRatesFromCountryPage(index: Index) extends QuestionPage[List[VatRa
 
   override def path: JsPath = JsPath \ PageConstants.sales \ index.position \ toString
 
-  override def toString: String = "vatRatesFromCountry"
+  override def toString: String = PageConstants.vatRates
 
   override def route(waypoints: Waypoints): Call = routes.VatRatesFromCountryController.onPageLoad(waypoints, index)
 

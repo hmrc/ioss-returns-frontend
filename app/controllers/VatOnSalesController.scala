@@ -23,8 +23,8 @@ import pages.{VatOnSalesPage, Waypoints}
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import services.VatRateService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import utils.FutureSyntax.FutureOps
 import views.html.VatOnSalesView
 
 import javax.inject.Inject
@@ -34,40 +34,53 @@ class VatOnSalesController @Inject()(
                                       override val messagesApi: MessagesApi,
                                       cc: AuthenticatedControllerComponents,
                                       formProvider: VatOnSalesFormProvider,
-                                      view: VatOnSalesView
-                                    )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                      view: VatOnSalesView,
+                                      vatRateService: VatRateService
+                                    )(implicit ec: ExecutionContext) extends FrontendBaseController with SalesFromCountryBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  val form: Form[VatOnSales] = formProvider()
 
-  def onPageLoad(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndRequireData() {
+  def onPageLoad(waypoints: Waypoints, countryIndex: Index, vatRateIndex: Index): Action[AnyContent] = cc.authAndRequireData() {
     implicit request =>
 
-      val period = request.userAnswers.period
+      getCountryVatRateAndNetSales(countryIndex, vatRateIndex) {
+        case (country, vatRateFromCountry, netSales) =>
+          val form: Form[VatOnSales] = formProvider(vatRateFromCountry, netSales)
 
-      val preparedForm = request.userAnswers.get(VatOnSalesPage(index)) match {
-        case None => form
-        case Some(value) => form.fill(value)
+          val period = request.userAnswers.period
+          val standardVat = vatRateService.standardVatOnSales(netSales, vatRateFromCountry)
+
+          val preparedForm = request.userAnswers.get(VatOnSalesPage(countryIndex, vatRateIndex)) match {
+            case None => form
+            case Some(value) => form.fill(value)
+          }
+
+          Ok(view(preparedForm, period, waypoints, countryIndex, vatRateIndex, country, vatRateFromCountry, netSales, standardVat))
       }
-
-      Ok(view(preparedForm, waypoints, period, index))
   }
 
-  def onSubmit(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndRequireData().async {
+  def onSubmit(waypoints: Waypoints, countryIndex: Index, vatRateIndex: Index): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
 
       val period = request.userAnswers.period
+      getCountryVatRateAndNetSalesAsync(countryIndex, vatRateIndex) {
+        case (country, vatRate, netSales) =>
 
-      form.bindFromRequest().fold(
-        formWithErrors =>
-          BadRequest(view(formWithErrors, waypoints, period, index)).toFuture,
+          val form = formProvider(vatRate, netSales)
+          val standardVat = vatRateService.standardVatOnSales(netSales, vatRate)
 
-        value =>
-          for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(VatOnSalesPage(index), value))
-            _ <- cc.sessionRepository.set(updatedAnswers)
-          } yield Redirect(VatOnSalesPage(index).navigate(waypoints, request.userAnswers, updatedAnswers).route)
-      )
+          form.bindFromRequest().fold(
+            formWithErrors =>
+              Future.successful(BadRequest(view(formWithErrors, period, waypoints, countryIndex, vatRateIndex, country, vatRate, netSales, standardVat))),
+
+            value =>
+              for {
+                updatedAnswers <- Future.fromTry(request.userAnswers.set(VatOnSalesPage(countryIndex, vatRateIndex), value))
+                _ <- cc.sessionRepository.set(updatedAnswers)
+              } yield Redirect(VatOnSalesPage(countryIndex, vatRateIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route)
+          )
+      }
   }
+
 }

@@ -17,18 +17,27 @@
 package models
 
 import play.api.i18n.Messages
+import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.govukfrontend.views.Aliases.Text
 import uk.gov.hmrc.govukfrontend.views.viewmodels.radios.RadioItem
 
-sealed trait VatOnSales
 
-object VatOnSales extends Enumerable.Implicits {
+case class VatOnSales(choice: VatOnSalesChoice, amount: BigDecimal)
 
-  case object Option1 extends WithName("option1") with VatOnSales
-  case object Option2 extends WithName("option2") with VatOnSales
+object VatOnSales {
 
-  val values: Seq[VatOnSales] = Seq(
-    Option1, Option2
+  implicit val format: OFormat[VatOnSales] = Json.format[VatOnSales]
+}
+
+sealed trait VatOnSalesChoice
+
+object VatOnSalesChoice extends Enumerable.Implicits {
+
+  case object Standard extends WithName("option1") with VatOnSalesChoice
+  case object NonStandard extends WithName("option2") with VatOnSalesChoice
+
+  val values: Seq[VatOnSalesChoice] = Seq(
+    Standard, NonStandard
   )
 
   def options(implicit messages: Messages): Seq[RadioItem] = values.zipWithIndex.map {
@@ -40,6 +49,6 @@ object VatOnSales extends Enumerable.Implicits {
       )
   }
 
-  implicit val enumerable: Enumerable[VatOnSales] =
+  implicit val enumerable: Enumerable[VatOnSalesChoice] =
     Enumerable(values.map(v => v.toString -> v): _*)
 }

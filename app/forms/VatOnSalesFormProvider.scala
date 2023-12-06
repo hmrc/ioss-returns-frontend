@@ -16,16 +16,44 @@
 
 package forms
 
+import forms.mappings.Mappings
+import models.VatOnSalesChoice.{Standard, NonStandard}
+import models.{VatOnSales, VatOnSalesChoice, VatRateFromCountry}
+import play.api.data.Form
+import play.api.data.Forms.mapping
+import services.VatRateService
+import uk.gov.voa.play.form.ConditionalMappings.mandatoryIfEqual
+
 import javax.inject.Inject
 
-import forms.mappings.Mappings
-import play.api.data.Form
-import models.VatOnSales
+class VatOnSalesFormProvider @Inject()(vatRateService: VatRateService) extends Mappings {
 
-class VatOnSalesFormProvider @Inject() extends Mappings {
-
-  def apply(): Form[VatOnSales] =
+  def apply(vatRate: VatRateFromCountry, netSales: BigDecimal): Form[VatOnSales] =
     Form(
-      "value" -> enumerable[VatOnSales]("vatOnSales.error.required")
+      mapping(
+        "choice" -> enumerable[VatOnSalesChoice]("vatOnSales.choice.error.required"),
+        "amount" -> mandatoryIfEqual("choice", VatOnSalesChoice.NonStandard.toString, currency(
+          "vatOnSales.amount.error.required",
+          "vatOnSales.amount.error.decimalFormat",
+          "vatOnSales.amount.error.nonNumeric"
+        )
+          .verifying(inRange[BigDecimal](0.01, maxCurrencyAmount, "vatOnSales.amount.error.calculatedVatRateOutOfRange"))
+        )
+      )(a(vatRate, netSales))(u)
     )
+
+  private def a(vatRate: VatRateFromCountry, netSales: BigDecimal)
+               (choice: VatOnSalesChoice, amount: Option[BigDecimal])
+  : VatOnSales =
+    (choice, amount) match {
+      case (Standard, _) => VatOnSales(Standard, vatRateService.standardVatOnSales(netSales, vatRate))
+      case (NonStandard, Some(amount)) => VatOnSales(NonStandard, amount)
+      case (NonStandard, None) => throw new IllegalArgumentException("Tried to bind a form for an other amount, but no amount was supplied")
+    }
+
+  private def u(vatOnSales: VatOnSales): Option[(VatOnSalesChoice, Option[BigDecimal])] =
+    vatOnSales.choice match {
+      case Standard => Some((Standard, None))
+      case NonStandard => Some((NonStandard, Some(vatOnSales.amount)))
+    }
 }
