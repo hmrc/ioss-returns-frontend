@@ -18,14 +18,18 @@ package controllers.corrections
 
 import controllers.actions._
 import logging.Logging
+import models.Period
 import pages.Waypoints
+import pages.corrections.CorrectPreviousReturnPage
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import queries.corrections.DeriveCompletedCorrectionPeriods
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.corrections.NoOtherCorrectionPeriodsAvailableView
 
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Failure
 
 class NoOtherCorrectionPeriodsAvailableController @Inject()(
                                        override val messagesApi: MessagesApi,
@@ -38,5 +42,27 @@ class NoOtherCorrectionPeriodsAvailableController @Inject()(
   def onPageLoad(waypoints: Waypoints): Action[AnyContent] = (cc.actionBuilder andThen cc.identify) {
     implicit request =>
       Ok(view(waypoints))
+  }
+
+  def onSubmit(waypoints: Waypoints): Action[AnyContent] = cc.authAndRequireData().async {
+    implicit request =>
+
+      val completedCorrectionPeriods: List[Period] = request.userAnswers.get(DeriveCompletedCorrectionPeriods).getOrElse(List.empty)
+
+      if(completedCorrectionPeriods.isEmpty) {
+        val cleanup = for {
+          updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectPreviousReturnPage, false))
+          _              <- cc.sessionRepository.set(updatedAnswers)
+        } yield Redirect(controllers.routes.CheckYourAnswersController.onPageLoad())
+
+        cleanup.onComplete {
+          case Failure(exception) => logger.error(s"Could not perform cleanup: ${exception.getLocalizedMessage} ")
+          case _ => ()
+        }
+        cleanup
+      } else {
+        Future.successful(Redirect(controllers.routes.CheckYourAnswersController.onPageLoad()))
+      }
+
   }
 }

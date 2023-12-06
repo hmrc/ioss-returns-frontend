@@ -66,6 +66,7 @@ GET        /correction-return-period/:index                                     
 POST       /correction-return-period/:index                                           controllers.CorrectionReturnPeriodController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, index: Index)
 
 GET        /no-correction-periods-available                                           controllers.NoOtherCorrectionPeriodsAvailableController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
+POST       /no-correction-periods-available                                           controllers.corrections.NoOtherCorrectionPeriodsAvailableController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints)
 
 GET         /correct-previous-return                                                  controllers.corrections.CorrectPreviousReturnController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
 POST        /correct-previous-return                                                  controllers.corrections.CorrectPreviousReturnController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints)

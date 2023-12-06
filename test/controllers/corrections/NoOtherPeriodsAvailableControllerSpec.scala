@@ -18,11 +18,22 @@ package controllers.corrections
 
 import base.SpecBase
 import controllers.routes
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.when
+import org.scalatestplus.mockito.MockitoSugar.mock
+import play.api.inject._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import repositories.SessionRepository
 import views.html.NoOtherPeriodsAvailableView
 
+import scala.concurrent.Future
+
 class NoOtherPeriodsAvailableControllerSpec extends SpecBase {
+
+  private lazy val NoOtherCorrectionPeriodsAvailableRoute = controllers.corrections.routes.NoOtherCorrectionPeriodsAvailableController.onPageLoad(waypoints).url
+
+  val mockSessionRepository: SessionRepository = mock[SessionRepository]
 
   "CannotStartReturns Controller" - {
 
@@ -40,6 +51,58 @@ class NoOtherPeriodsAvailableControllerSpec extends SpecBase {
         status(result) mustBe OK
         contentAsString(result) mustBe view(waypoints)(request, messages(application)).toString
       }
+    }
+
+    "must redirect to CheckYourAnswersController when completed correction periods are empty for a POST" in {
+
+      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(
+          bind[SessionRepository].toInstance(mockSessionRepository)
+        ).build()
+
+      running(application) {
+        val request = FakeRequest(POST, NoOtherCorrectionPeriodsAvailableRoute)
+
+        val result = route(application, request).value
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual routes.CheckYourAnswersController.onPageLoad().url
+      }
+    }
+
+    "must redirect to CheckYourAnswersController when completed correction periods are not empty for a POST" in {
+
+      val application = applicationBuilder(userAnswers = Some(completedUserAnswersWithCorrections)).build()
+
+      running(application) {
+        val request = FakeRequest(POST, NoOtherCorrectionPeriodsAvailableRoute)
+
+        val result = route(application, request).value
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual routes.CheckYourAnswersController.onPageLoad().url
+      }
+    }
+
+    "must throw an Exception when Session Repository returns an Exception" in {
+
+      when(mockSessionRepository.set(any())) thenReturn Future.failed(new Exception("Some exception"))
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(
+          bind[SessionRepository].toInstance(mockSessionRepository)
+        ).build()
+
+      running(application) {
+        val request = FakeRequest(POST, NoOtherCorrectionPeriodsAvailableRoute)
+
+        val result = route(application, request).value
+
+        whenReady(result.failed) { exp => exp mustBe a[Exception] }
+      }
+
     }
   }
 }

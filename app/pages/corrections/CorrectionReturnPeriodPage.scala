@@ -23,7 +23,7 @@ import play.api.mvc.Call
 
 case class CorrectionReturnPeriodPage(index: Index) extends QuestionPage[Period] {
 
-  override def path: JsPath = JsPath \ toString
+  override def path: JsPath = JsPath \ "corrections" \ index.position \ toString
 
   override def toString: String = "correctionReturnPeriod"
 

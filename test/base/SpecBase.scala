@@ -18,13 +18,14 @@ package base
 
 import controllers.actions._
 import generators.Generators
-import models.{Index, Period, RegistrationWrapper, UserAnswers}
+import models.{Country, Index, Period, RegistrationWrapper, UserAnswers, VatRateFromCountry, VatRateType}
 import org.scalacheck.Arbitrary
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.{OptionValues, TryValues}
-import pages.{EmptyWaypoints, Waypoints}
+import pages.corrections.{CorrectPreviousReturnPage, CorrectionReturnPeriodPage}
+import pages.{CorrectionCountryPage, EmptyWaypoints, SalesToCountryPage, SoldGoodsPage, SoldToCountryPage, VatRatesFromCountryPage, Waypoints}
 import play.api.Application
 import play.api.i18n.{Messages, MessagesApi}
 import play.api.inject.bind
@@ -59,6 +60,17 @@ trait SpecBase
   val stubClockAtArbitraryDate: Clock = Clock.fixed(arbitraryInstant, ZoneId.systemDefault)
 
   def emptyUserAnswers: UserAnswers = UserAnswers(userAnswersId, period, lastUpdated = arbitraryInstant)
+
+  def completeUserAnswers: UserAnswers = emptyUserAnswers
+    .set(SoldGoodsPage, true).success.value
+    .set(SoldToCountryPage(index), Country("ES", "Spain")).success.value
+    .set(VatRatesFromCountryPage(index), List(VatRateFromCountry(10, VatRateType.Reduced, arbitraryDate))).success.value
+    .set(SalesToCountryPage(index, index), BigDecimal(100)).success.value
+
+
+  val completedUserAnswersWithCorrections: UserAnswers = completeUserAnswers
+    .set(CorrectPreviousReturnPage, true).success.value
+    .set(CorrectionReturnPeriodPage(index), period).success.value
 
   def messages(app: Application): Messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
 

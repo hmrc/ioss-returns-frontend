@@ -19,7 +19,7 @@ package controllers.corrections
 import base.SpecBase
 import controllers.routes
 import forms.corrections.CorrectionReturnPeriodFormProvider
-import models.Period
+import models.{Index, Period}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito.{times, verify, when}
@@ -62,6 +62,21 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
     }
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
+
+      val userAnswers = emptyUserAnswers.set(CorrectionReturnPeriodPage(Index(0)), Period(2021, Month.OCTOBER)).success.value
+
+      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+
+      running(application) {
+        val request = FakeRequest(GET, correctionReturnPeriodRoute)
+
+        val view = application.injector.instanceOf[CorrectionReturnPeriodView]
+
+        val result = route(application, request).value
+
+        status(result) mustEqual OK
+        contentAsString(result) mustEqual view(form, waypoints, period, index)(request, messages(application)).toString
+      }
 
     }
 
