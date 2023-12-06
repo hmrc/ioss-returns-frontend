@@ -52,7 +52,7 @@
             @govukErrorSummary(ErrorSummaryViewModel(form))
         }
 
-        @govukRadios(
+        @govukRadios(   
             RadiosViewModel(
                 field  = form("choice"),
                 legend = HmrcPageHeadingLegend(
@@ -68,7 +68,7 @@
                     RadioItem(
                         content = Text(messages("vatOnSales.nonStandard")),
                         value   = Some(VatOnSalesChoice.NonStandard.toString),
-                        id      = Some("choice"),
+                        id      = Some("choice_different"),
                         conditionalHtml = Some(Html(
                             govukInput(
                                 InputViewModel(
