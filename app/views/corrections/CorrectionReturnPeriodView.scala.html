@@ -14,12 +14,14 @@
  * limitations under the License.
  *@
 
+@import components.ButtonGroup
+
 @this(
     layout: templates.Layout,
     formHelper: FormWithCSRF,
     govukErrorSummary: GovukErrorSummary,
     govukRadios: GovukRadios,
-    govukButton: GovukButton
+    button: ButtonGroup
 )
 
 @(form: Form[_], waypoints: Waypoints, period: Period, periodIndex: Index)(implicit request: Request[_], messages: Messages)
@@ -40,8 +42,8 @@
             )
         )
 
-        @govukButton(
-            ButtonViewModel(messages("site.continue"))
+        @button(
+            messages("site.continue", period, controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(waypoints, periodIndex).url)
         )
     }
 }
