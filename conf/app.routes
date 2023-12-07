@@ -73,3 +73,6 @@ POST        /add-new-country/:countryIndex                                      
 
 GET         /vat-payable-confirm/:countryIndex                                           controllers.corrections.VatPayableForCountryController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, countryIndex: Index)
 POST        /vat-payable-confirm/:countryIndex                                           controllers.corrections.VatPayableForCountryController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, countryIndex: Index)
+
+GET        /correction-list-countries/:periodIndex                                    controllers.CorrectionListCountriesController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, periodIndex: Index)
+POST       /correction-list-countries/:periodIndex                                    controllers.CorrectionListCountriesController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, periodIndex: Index)

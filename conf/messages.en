@@ -203,3 +203,11 @@ undeclaredCountryCorrection.heading = You did not declare any VAT to {0} in your
 undeclaredCountryCorrection.caption = Correction period: {0}
 undeclaredCountryCorrection.legend = Do you want to add a correction to this country?
 undeclaredCountryCorrection.error.required = Select yes if you want to add a correction to this country
+
+correctionListCountries.title = You have not corrected the VAT amount for any countries
+correctionListCountries.heading = You have not corrected the VAT amount for any countries
+correctionListCountries.section = Correction period: {0}
+correctionListCountries.addAnother = Add corrections to VAT for another country?
+correctionListCountries.checkYourAnswersLabel = correctionListCountries
+correctionListCountries.error.required = Select yes if correctionListCountries
+correctionListCountries.change.hidden = CorrectionListCountries
