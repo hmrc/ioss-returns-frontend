@@ -21,7 +21,7 @@ import logging.Logging
 import models.{Index, UserAnswers}
 import play.api.libs.json.{JsObject, JsPath}
 import play.api.mvc.Call
-import queries.{Derivable, RemainingVatRatesFromCountryQuery}
+import queries.{AllVatRatesFromCountryQuery, Derivable, RemainingVatRatesFromCountryQuery}
 
 object CheckSalesPage {
 
@@ -51,7 +51,7 @@ final case class CheckSalesPage(override val index: Option[Index] = None) extend
       case Some(true) =>
         index.flatMap { countryIndex =>
           determinePageRedirect(answers, countryIndex)
-          }.orRecover
+        }.orRecover
       case Some(false) =>
         SoldToCountryListPage(index)
       case _ =>
@@ -61,9 +61,11 @@ final case class CheckSalesPage(override val index: Option[Index] = None) extend
   private def determinePageRedirect(answers: UserAnswers, countryIndex: Index): Option[Page] = {
     answers.get(RemainingVatRatesFromCountryQuery(countryIndex)).flatMap {
       case vatRatesFromCountry if vatRatesFromCountry.size == 1 =>
-        Some(RemainingVatRateFromCountryPage(countryIndex, Index(vatRatesFromCountry.size)))
+        answers.get(AllVatRatesFromCountryQuery(countryIndex)).flatMap { allVatRatesFromCountry =>
+          Some(RemainingVatRateFromCountryPage(countryIndex, Index(allVatRatesFromCountry.size)))
+        }
       case vatRatesFromCountry if vatRatesFromCountry.size > 1 =>
-        Some(VatRatesFromCountryPage(countryIndex))
+        Some(VatRatesFromCountryPage(countryIndex, Index(vatRatesFromCountry.size + 1)))
       case vatRatesFromCountry if vatRatesFromCountry.isEmpty =>
         val exception = new IllegalStateException("VAT rate missing")
         logger.error(exception.getMessage, exception)

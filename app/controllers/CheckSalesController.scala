@@ -48,7 +48,7 @@ class CheckSalesController @Inject()(
   def onPageLoad(waypoints: Waypoints, countryIndex: Index): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
       getCountry(waypoints, countryIndex) { country =>
-        getAllVatRatesFromCountry(countryIndex) { vatRates =>
+        getAllVatRatesFromCountry(waypoints, countryIndex) { vatRates =>
 
           val period = request.userAnswers.period
 
@@ -69,7 +69,7 @@ class CheckSalesController @Inject()(
   def onSubmit(waypoints: Waypoints, countryIndex: Index): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
       getCountry(waypoints, countryIndex) { country =>
-        getAllVatRatesFromCountry(countryIndex) { vatRates =>
+        getAllVatRatesFromCountry(waypoints, countryIndex) { vatRates =>
 
           val period = request.userAnswers.period
 

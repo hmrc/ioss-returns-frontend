@@ -44,7 +44,7 @@ class DeleteSoldToCountryControllerSpec extends SpecBase with MockitoSugar {
   private val baseAnswers: UserAnswers = emptyUserAnswers
     .set(SoldGoodsPage, true).success.value
     .set(SoldToCountryPage(index), country).success.value
-    .set(VatRatesFromCountryPage(index), List(vatRateFromCountry)).success.value
+    .set(VatRatesFromCountryPage(index, index), List(vatRateFromCountry)).success.value
     .set(SalesToCountryPage(index, vatRateIndex), salesValue).success.value
     .set(VatOnSalesPage(index, vatRateIndex), arbitraryVatOnSales.arbitrary.sample.value).success.value
 

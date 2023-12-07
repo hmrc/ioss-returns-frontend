@@ -53,7 +53,7 @@ class VatOnSalesControllerSpec extends SpecBase with MockitoSugar {
       when(vatRateService.standardVatOnSales(any(), any())) thenReturn standardVatOnSales
       val userAnswers = for {
         answer1 <- emptyUserAnswers.set(SoldToCountryPage(index), country)
-        answer2 <- answer1.set(VatRatesFromCountryPage(index), List(vatRateFromCountry))
+        answer2 <- answer1.set(VatRatesFromCountryPage(index, index), List(vatRateFromCountry))
         answer3 <- answer2.set(SalesToCountryPage(index, vatRateIndex), validAnswer)
       } yield answer3
       val application = applicationBuilder(userAnswers = Some(userAnswers.success.value))
@@ -76,7 +76,7 @@ class VatOnSalesControllerSpec extends SpecBase with MockitoSugar {
       when(vatRateService.standardVatOnSales(any(), any())) thenReturn standardVatOnSales
       val userAnswers = for {
         answer1 <- emptyUserAnswers.set(SoldToCountryPage(index), country)
-        answer2 <- answer1.set(VatRatesFromCountryPage(index), List(vatRateFromCountry))
+        answer2 <- answer1.set(VatRatesFromCountryPage(index, index), List(vatRateFromCountry))
         answer3 <- answer2.set(SalesToCountryPage(index, vatRateIndex), validAnswer)
         answer4 <- answer3.set(VatOnSalesPage(index, vatRateIndex), validVatOnSales)
       } yield answer4
@@ -102,7 +102,7 @@ class VatOnSalesControllerSpec extends SpecBase with MockitoSugar {
 
       val userAnswers = for {
         answer1 <- emptyUserAnswers.set(SoldToCountryPage(index), country)
-        answer2 <- answer1.set(VatRatesFromCountryPage(index), List(vatRateFromCountry))
+        answer2 <- answer1.set(VatRatesFromCountryPage(index, index), List(vatRateFromCountry))
         answer3 <- answer2.set(SalesToCountryPage(index, vatRateIndex), validAnswer)
       } yield answer3
       val mockSessionRepository = mock[SessionRepository]
@@ -137,7 +137,7 @@ class VatOnSalesControllerSpec extends SpecBase with MockitoSugar {
       when(vatRateService.standardVatOnSales(any(), any())) thenReturn standardVatOnSales
       val userAnswers = for {
         answer1 <- emptyUserAnswers.set(SoldToCountryPage(index), country)
-        answer2 <- answer1.set(VatRatesFromCountryPage(index), List(vatRateFromCountry))
+        answer2 <- answer1.set(VatRatesFromCountryPage(index, index), List(vatRateFromCountry))
         answer3 <- answer2.set(SalesToCountryPage(index, vatRateIndex), validAnswer)
       } yield answer3
       val application = applicationBuilder(userAnswers = Some(userAnswers.success.value))

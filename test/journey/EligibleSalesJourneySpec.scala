@@ -44,7 +44,7 @@ class EligibleSalesJourneySpec extends AnyFreeSpec with JourneyHelpers with Spec
   private val initialise = journeyOf(
     submitAnswer(SoldGoodsPage, true),
     submitAnswer(SoldToCountryPage(countryIndex1), country),
-    submitAnswer(VatRatesFromCountryPage(countryIndex1), List(vatRateFromCountry1, vatRateFromCountry2)),
+    submitAnswer(VatRatesFromCountryPage(countryIndex1, vatRateIndex), List(vatRateFromCountry1, vatRateFromCountry2)),
     submitAnswer(SalesToCountryPage(countryIndex1, vatRateIndex), salesValue),
     submitAnswer(VatOnSalesPage(countryIndex1, vatRateIndex), arbitraryVatOnSales.arbitrary.sample.value),
     submitAnswer(SalesToCountryPage(countryIndex1, vatRateIndex.+(1)), salesValue),
@@ -68,7 +68,7 @@ class EligibleSalesJourneySpec extends AnyFreeSpec with JourneyHelpers with Spec
         case (journeySteps: Seq[JourneyStep[Unit]], index: Int) =>
           journeySteps :+
             submitAnswer(SoldToCountryPage(Index(index)), country) :+
-            submitAnswer(VatRatesFromCountryPage(Index(index)), List(vatRateFromCountry1, vatRateFromCountry2)) :+
+            submitAnswer(VatRatesFromCountryPage(Index(index), vatRateIndex), List(vatRateFromCountry1, vatRateFromCountry2)) :+
             submitAnswer(SalesToCountryPage(Index(index), vatRateIndex), salesValue) :+
             submitAnswer(VatOnSalesPage(Index(index), vatRateIndex), VatOnSales(Standard, salesValue * vatRateFromCountry1.rate)) :+
             pageMustBe(SalesToCountryPage(Index(index), vatRateIndex.+(1))) :+
@@ -100,7 +100,7 @@ class EligibleSalesJourneySpec extends AnyFreeSpec with JourneyHelpers with Spec
         initialise,
         submitAnswer(SoldToCountryListPage(Some(countryIndex1)), true),
         submitAnswer(SoldToCountryPage(countryIndex2), country),
-        submitAnswer(VatRatesFromCountryPage(countryIndex2), List(vatRateFromCountry1, vatRateFromCountry2, vatRateFromCountry3)),
+        submitAnswer(VatRatesFromCountryPage(countryIndex2, vatRateIndex), List(vatRateFromCountry1, vatRateFromCountry2, vatRateFromCountry3)),
         submitAnswer(SalesToCountryPage(countryIndex2, vatRateIndex), salesValue),
         submitAnswer(VatOnSalesPage(countryIndex2, vatRateIndex), arbitraryVatOnSales.arbitrary.sample.value),
         submitAnswer(SalesToCountryPage(countryIndex2, vatRateIndex.+(1)), salesValue),
@@ -131,7 +131,7 @@ class EligibleSalesJourneySpec extends AnyFreeSpec with JourneyHelpers with Spec
           initialise,
           submitAnswer(SoldToCountryListPage(Some(countryIndex1)), true),
           submitAnswer(SoldToCountryPage(countryIndex2), country),
-          submitAnswer(VatRatesFromCountryPage(countryIndex2), List(vatRateFromCountry1, vatRateFromCountry2)),
+          submitAnswer(VatRatesFromCountryPage(countryIndex2, vatRateIndex), List(vatRateFromCountry1, vatRateFromCountry2)),
           submitAnswer(SalesToCountryPage(countryIndex2, vatRateIndex), salesValue),
           submitAnswer(VatOnSalesPage(countryIndex2, vatRateIndex), arbitraryVatOnSales.arbitrary.sample.value),
           submitAnswer(SalesToCountryPage(countryIndex2, vatRateIndex.+(1)), salesValue),
@@ -177,7 +177,7 @@ class EligibleSalesJourneySpec extends AnyFreeSpec with JourneyHelpers with Spec
           initialise,
           submitAnswer(SoldToCountryListPage(Some(countryIndex1)), true),
           submitAnswer(SoldToCountryPage(countryIndex2), country),
-          submitAnswer(VatRatesFromCountryPage(countryIndex2), List(vatRateFromCountry1, vatRateFromCountry2, vatRateFromCountry3)),
+          submitAnswer(VatRatesFromCountryPage(countryIndex2, vatRateIndex), List(vatRateFromCountry1, vatRateFromCountry2, vatRateFromCountry3)),
           submitAnswer(SalesToCountryPage(countryIndex2, vatRateIndex), salesValue),
           submitAnswer(VatOnSalesPage(countryIndex2, vatRateIndex), arbitraryVatOnSales.arbitrary.sample.value),
           pageMustBe(SalesToCountryPage(countryIndex2, vatRateIndex.+(1))),

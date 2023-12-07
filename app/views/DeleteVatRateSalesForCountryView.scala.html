@@ -22,11 +22,11 @@
     govukButton: GovukButton
 )
 
-@(form: Form[_], waypoints: Waypoints, countryIndex: Index, vatRateIndex: Index, vatRate: String, country: Country)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, countryIndex: Index, nextVatRateIndex: Index, vatRate: String, country: Country)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, messages("deleteVatRateSalesForCountry.title", vatRate, country.name))) {
 
-    @formHelper(action = routes.DeleteVatRateSalesForCountryController.onSubmit(waypoints, countryIndex, vatRateIndex), Symbol("autoComplete") -> "off") {
+    @formHelper(action = routes.DeleteVatRateSalesForCountryController.onSubmit(waypoints, countryIndex, nextVatRateIndex), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))
@@ -41,6 +41,7 @@
 
         @govukButton(
             ButtonViewModel(messages("site.continue"))
+                    .withAttribute("id", "continue")
         )
     }
 }

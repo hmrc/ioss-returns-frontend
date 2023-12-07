@@ -55,7 +55,7 @@ class CheckSalesControllerSpec extends SpecBase with MockitoSugar with SummaryLi
   private val baseAnswers: UserAnswers = emptyUserAnswers
     .set(SoldGoodsPage, true).success.value
     .set(SoldToCountryPage(index), country).success.value
-    .set(VatRatesFromCountryPage(index), vatRatesFromCountry).success.value
+    .set(VatRatesFromCountryPage(index, index), vatRatesFromCountry).success.value
     .set(SalesToCountryPage(index, index), salesValue).success.value
     .set(VatOnSalesPage(index, index), vatOnSalesValue).success.value
 
@@ -70,7 +70,7 @@ class CheckSalesControllerSpec extends SpecBase with MockitoSugar with SummaryLi
 
     "must return OK and the correct view for a GET" in {
 
-      when(mockVatRateService.getRemainingVatRatesForCountry(period, country, vatRatesFromCountry)) thenReturn vatRatesFromCountry
+      when(mockVatRateService.getRemainingVatRatesForCountry(any(), any(), any())) thenReturn vatRatesFromCountry
 
       val application = applicationBuilder(userAnswers = Some(baseAnswers))
         .overrides(bind[VatRateService].toInstance(mockVatRateService))
@@ -97,7 +97,7 @@ class CheckSalesControllerSpec extends SpecBase with MockitoSugar with SummaryLi
 
       val remainingVatRateForCountry = List(arbitrary[VatRateFromCountry].sample.value)
 
-      when(mockVatRateService.getRemainingVatRatesForCountry(period, country, vatRatesFromCountry)) thenReturn remainingVatRateForCountry
+      when(mockVatRateService.getRemainingVatRatesForCountry(any(), any(), any())) thenReturn remainingVatRateForCountry
 
       val userAnswers = baseAnswers.set(CheckSalesPage(), true).success.value
 
@@ -131,11 +131,11 @@ class CheckSalesControllerSpec extends SpecBase with MockitoSugar with SummaryLi
       val answers: UserAnswers = emptyUserAnswers
         .set(SoldGoodsPage, true).success.value
         .set(SoldToCountryPage(index), country).success.value
-        .set(VatRatesFromCountryPage(index), vatRatesFromCountry).success.value
+        .set(VatRatesFromCountryPage(index, index), vatRatesFromCountry).success.value
         .set(SalesToCountryPage(index, index), salesValue).success.value
         .set(VatOnSalesPage(index, index), vatOnSalesValue).success.value
 
-      when(mockVatRateService.getRemainingVatRatesForCountry(period, country, vatRatesFromCountry)) thenReturn remainingVatRateForCountry
+      when(mockVatRateService.getRemainingVatRatesForCountry(any(), any(), any())) thenReturn remainingVatRateForCountry
 
       val mockSessionRepository = mock[SessionRepository]
 
@@ -166,7 +166,7 @@ class CheckSalesControllerSpec extends SpecBase with MockitoSugar with SummaryLi
 
     "must save the answer and redirect to the next page when valid data is submitted" in {
 
-      when(mockVatRateService.getRemainingVatRatesForCountry(period, country, vatRatesFromCountry)) thenReturn vatRatesFromCountry
+      when(mockVatRateService.getRemainingVatRatesForCountry(any(), any(), any())) thenReturn vatRatesFromCountry
 
       val mockSessionRepository = mock[SessionRepository]
 
@@ -197,7 +197,7 @@ class CheckSalesControllerSpec extends SpecBase with MockitoSugar with SummaryLi
 
     "must return a Bad Request and errors when invalid data is submitted" in {
 
-      when(mockVatRateService.getRemainingVatRatesForCountry(period, country, vatRatesFromCountry)) thenReturn vatRatesFromCountry
+      when(mockVatRateService.getRemainingVatRatesForCountry(any(), any(), any())) thenReturn vatRatesFromCountry
 
       val application = applicationBuilder(userAnswers = Some(baseAnswers))
         .overrides(bind[VatRateService].toInstance(mockVatRateService))

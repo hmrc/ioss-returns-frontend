@@ -23,7 +23,7 @@ import pages.{RemainingVatRateFromCountryPage, Waypoints}
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import queries.AllVatRatesFromCountryQuery
+import queries.{AllSalesByCountryQuery, VatRateWithOptionalSalesFromCountry}
 import services.VatRateService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax.FutureOps
@@ -47,7 +47,7 @@ class RemainingVatRateFromCountryController @Inject()(
   def onPageLoad(waypoints: Waypoints, countryIndex: Index, vatRateIndex: Index): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
       getCountry(waypoints, countryIndex) { country =>
-        getAllVatRatesFromCountry(countryIndex) { vatRates =>
+        getAllVatRatesFromCountry(waypoints, countryIndex) { vatRates =>
 
           val period = request.userAnswers.period
 
@@ -66,7 +66,7 @@ class RemainingVatRateFromCountryController @Inject()(
   def onSubmit(waypoints: Waypoints, countryIndex: Index, vatRateIndex: Index): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
       getCountry(waypoints, countryIndex) { country =>
-        getAllVatRatesFromCountry(countryIndex) { vatRates =>
+        getAllVatRatesFromCountry(waypoints, countryIndex) { vatRates =>
 
           val period = request.userAnswers.period
 
@@ -78,10 +78,11 @@ class RemainingVatRateFromCountryController @Inject()(
 
             value =>
               if (value) {
-                val updatedVatRates = vatRates :+ remainingVatRate
+                val updatedVatRates = vatRates.copy(vatRatesFromCountry =
+                  vatRates.vatRatesFromCountry.map(_ :+ VatRateWithOptionalSalesFromCountry.fromVatRateFromCountry(remainingVatRate)))
                 for {
                   updatedAnswers <- Future.fromTry(request.userAnswers.set(RemainingVatRateFromCountryPage(countryIndex, vatRateIndex), value))
-                  updatedVatRateAnswersWithFinalVatRate <- Future.fromTry(updatedAnswers.set(AllVatRatesFromCountryQuery(countryIndex), updatedVatRates))
+                  updatedVatRateAnswersWithFinalVatRate <- Future.fromTry(updatedAnswers.set(AllSalesByCountryQuery(countryIndex), updatedVatRates))
                   _ <- cc.sessionRepository.set(updatedVatRateAnswersWithFinalVatRate)
                 } yield {
                   Redirect(RemainingVatRateFromCountryPage(countryIndex, vatRateIndex)

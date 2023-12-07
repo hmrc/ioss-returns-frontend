@@ -31,6 +31,6 @@ case class DeleteVatRateSalesForCountryPage(countryIndex: Index, vatRateIndex: I
       case Some(n) if n > 0 =>
         CheckSalesPage(Some(countryIndex))
       case _ =>
-        VatRatesFromCountryPage(countryIndex)
+        VatRatesFromCountryPage(countryIndex, vatRateIndex)
     }
 }

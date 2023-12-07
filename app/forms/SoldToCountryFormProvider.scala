@@ -25,7 +25,7 @@ import play.api.data.Form
 class SoldToCountryFormProvider @Inject() extends Mappings {
 
   def apply(index: Index, existingAnswers: Seq[Country]): Form[Country] = {
-    val countries = euCountriesWithNI // TODO should this always be EU countries with NI?
+    val countries = euCountriesWithNI
 
     Form(
       "value" -> text("soldToCountry.error.required")

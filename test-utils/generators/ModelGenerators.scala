@@ -16,10 +16,12 @@
 
 package generators
 
+import config.Constants.{maxCurrencyAmount, minCurrencyAmount}
 import models._
 import models.etmp._
 import org.scalacheck.{Arbitrary, Gen}
 import org.scalacheck.Arbitrary.arbitrary
+import queries.{OptionalSalesAtVatRate, SalesToCountryWithOptionalSales, VatRateWithOptionalSalesFromCountry}
 
 import java.time.{Instant, LocalDate, LocalDateTime, Month, ZoneOffset}
 import scala.math.BigDecimal.RoundingMode
@@ -33,7 +35,7 @@ trait ModelGenerators {
       Gen.oneOf(Country.euCountries)
     }
 
-  implicit val arbitraryNetSales = arbitrary[BigDecimal].sample.head
+  implicit val arbitraryNetSales: BigDecimal = arbitrary[BigDecimal].sample.head
 
   implicit val arbitraryVatOnSales: Arbitrary[VatOnSales] =
     Arbitrary {
@@ -52,16 +54,32 @@ trait ModelGenerators {
       } yield VatRateFromCountry(rate.setScale(2, RoundingMode.HALF_EVEN), rateType, validFrom)
     }
 
-  private def datesBetween(min: LocalDate, max: LocalDate): Gen[LocalDate] = {
-
-    def toMillis(date: LocalDate): Long =
-      date.atStartOfDay.atZone(ZoneOffset.UTC).toInstant.toEpochMilli
-
-    Gen.choose(toMillis(min), toMillis(max)).map {
-      millis =>
-        Instant.ofEpochMilli(millis).atOffset(ZoneOffset.UTC).toLocalDate
+  implicit val arbitraryOptionalSalesAtVatRate: Arbitrary[OptionalSalesAtVatRate] =
+    Arbitrary {
+      for {
+        netValueOfSales <- Gen.option(Gen.choose[BigDecimal](BigDecimal(minCurrencyAmount.bigDecimal), BigDecimal(maxCurrencyAmount.bigDecimal)))
+        vatOnSales <- Gen.option(arbitraryVatOnSales.arbitrary)
+      } yield OptionalSalesAtVatRate(netValueOfSales, vatOnSales)
     }
-  }
+
+  implicit val arbitraryVatRateWithOptionalSalesFromCountry: Arbitrary[VatRateWithOptionalSalesFromCountry] =
+    Arbitrary {
+      for {
+        rate <- Gen.choose[BigDecimal](BigDecimal(1), BigDecimal(100))
+        rateType <- Gen.oneOf(VatRateType.values)
+        validFrom <- datesBetween(LocalDate.of(2021, 7, 1), LocalDate.of(2100, 1, 1))
+        validUntil <- Gen.option(datesBetween(LocalDate.of(2021, 7, 1), LocalDate.of(2100, 1, 1)))
+        salesAtVatRate <- Gen.option(arbitraryOptionalSalesAtVatRate.arbitrary)
+      } yield VatRateWithOptionalSalesFromCountry(rate, rateType, validFrom, validUntil, salesAtVatRate)
+    }
+
+  implicit val arbitrarySalesToCountryWithOptionalSales: Arbitrary[SalesToCountryWithOptionalSales] =
+    Arbitrary {
+      for {
+        country <- arbitraryCountry.arbitrary
+        vatRatesFromCountry <- Gen.option(Gen.listOfN(3, arbitraryVatRateWithOptionalSalesFromCountry.arbitrary))
+      } yield SalesToCountryWithOptionalSales(country, vatRatesFromCountry)
+    }
 
   implicit val arbitraryPeriod: Arbitrary[Period] =
     Arbitrary {

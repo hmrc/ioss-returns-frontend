@@ -25,7 +25,7 @@
         button: ButtonGroup
 )
 
-@(form: Form[_], waypoints: Waypoints, period: Period, countryIndex: Index, vatRateIndex: Index, vatRate: VatRateFromCountry, country: Country)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, period: Period, countryIndex: Index, nextVatRateIndex: Index, vatRate: VatRateFromCountry, country: Country)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(
     form,
@@ -33,7 +33,7 @@
     Some(messages("salesToCountry.caption", period.displayText, country.name))
 )) {
 
-    @formHelper(action = routes.SalesToCountryController.onSubmit(waypoints, countryIndex, vatRateIndex), Symbol("autoComplete") -> "off") {
+    @formHelper(action = routes.SalesToCountryController.onSubmit(waypoints, countryIndex, nextVatRateIndex), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))
@@ -54,7 +54,7 @@
         )
 
         @button(
-            messages("site.continue", VatOnSalesPage(countryIndex, vatRateIndex).route(waypoints).url, waypoints)
+            messages("site.continue", VatOnSalesPage(countryIndex, nextVatRateIndex).route(waypoints).url, waypoints)
         )
     }
 }

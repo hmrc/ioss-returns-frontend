@@ -33,8 +33,9 @@ case class SalesToCountryPage(countryIndex: Index, vatRateIndex: Index) extends 
   override def route(waypoints: Waypoints): Call =
     routes.SalesToCountryController.onPageLoad(waypoints, countryIndex, vatRateIndex)
 
-  override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
+  override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page = {
     VatOnSalesPage(countryIndex, vatRateIndex)
+  }
 
   override def cleanup(value: Option[BigDecimal], userAnswers: UserAnswers): Try[UserAnswers] =
     userAnswers.remove(VatOnSalesPage(countryIndex, vatRateIndex))

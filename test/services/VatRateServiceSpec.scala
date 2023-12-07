@@ -27,6 +27,7 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.libs.json.Json
 import play.api.{Configuration, Environment}
+import queries.{SalesToCountryWithOptionalSales, VatRateWithOptionalSalesFromCountry}
 
 import java.io.ByteArrayInputStream
 
@@ -113,10 +114,15 @@ class VatRateServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfterE
 
           val ratesBytes = Json.toJson(rates).toString.getBytes
 
-          val currentlyAnsweredVatRates: Seq[VatRateFromCountry] = Seq(
-            VatRateFromCountry(BigDecimal(21.0), Standard, period.firstDay),
-            VatRateFromCountry(BigDecimal(14.0), Reduced, period.firstDay),
-            VatRateFromCountry(BigDecimal(5.0), Reduced, period.firstDay)
+          val currentlyAnsweredVatRates: SalesToCountryWithOptionalSales = SalesToCountryWithOptionalSales(
+            country = country,
+            vatRatesFromCountry = Some(
+              List(
+                VatRateWithOptionalSalesFromCountry(BigDecimal(21.0), Standard, period.firstDay, None, None),
+                VatRateWithOptionalSalesFromCountry(BigDecimal(14.0), Reduced, period.firstDay, None, None),
+                VatRateWithOptionalSalesFromCountry(BigDecimal(5.0), Reduced, period.firstDay, None, None)
+              )
+            )
           )
 
           val mockEnv = mock[Environment]
@@ -147,10 +153,15 @@ class VatRateServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfterE
 
           val ratesBytes = Json.toJson(rates).toString.getBytes
 
-          val currentlyAnsweredVatRates: Seq[VatRateFromCountry] = Seq(
-            VatRateFromCountry(BigDecimal(13.0), Reduced, period.firstDay),
-            VatRateFromCountry(BigDecimal(4.3), Reduced, period.firstDay),
-            VatRateFromCountry(BigDecimal(2.09), Reduced, period.firstDay)
+          val currentlyAnsweredVatRates: SalesToCountryWithOptionalSales = SalesToCountryWithOptionalSales(
+            country = country,
+            vatRatesFromCountry = Some(
+              List(
+                VatRateWithOptionalSalesFromCountry(BigDecimal(13.0), Reduced, period.firstDay, None, None),
+                VatRateWithOptionalSalesFromCountry(BigDecimal(4.3), Reduced, period.firstDay, None, None),
+                VatRateWithOptionalSalesFromCountry(BigDecimal(2.09), Reduced, period.firstDay, None, None),
+              )
+            )
           )
 
           val mockEnv = mock[Environment]
@@ -182,10 +193,15 @@ class VatRateServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfterE
 
           val ratesBytes = Json.toJson(rates).toString.getBytes
 
-          val currentlyAnsweredVatRates: Seq[VatRateFromCountry] = Seq(
-            VatRateFromCountry(BigDecimal(21.7), Standard, period.firstDay),
-            VatRateFromCountry(BigDecimal(12.0), Reduced, period.firstDay),
-            VatRateFromCountry(BigDecimal(9.4), Reduced, period.firstDay)
+          val currentlyAnsweredVatRates: SalesToCountryWithOptionalSales = SalesToCountryWithOptionalSales(
+            country = country,
+            vatRatesFromCountry = Some(
+              List(
+                VatRateWithOptionalSalesFromCountry(BigDecimal(21.7), Standard, period.firstDay, None, None),
+                VatRateWithOptionalSalesFromCountry(BigDecimal(12.0), Standard, period.firstDay, None, None),
+                VatRateWithOptionalSalesFromCountry(BigDecimal(9.4), Reduced, period.firstDay, None, None),
+              )
+            )
           )
 
           val mockEnv = mock[Environment]

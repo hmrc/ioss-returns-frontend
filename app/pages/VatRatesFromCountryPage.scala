@@ -21,7 +21,7 @@ import models.{Index, UserAnswers, VatRateFromCountry}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
-case class VatRatesFromCountryPage(countryIndex: Index) extends QuestionPage[List[VatRateFromCountry]] {
+case class VatRatesFromCountryPage(countryIndex: Index, vatRatesIndex: Index) extends QuestionPage[List[VatRateFromCountry]] {
 
   override def path: JsPath = JsPath \ PageConstants.sales \ countryIndex.position \ toString
 
@@ -30,6 +30,6 @@ case class VatRatesFromCountryPage(countryIndex: Index) extends QuestionPage[Lis
   override def route(waypoints: Waypoints): Call = routes.VatRatesFromCountryController.onPageLoad(waypoints, countryIndex)
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page = {
-    SalesToCountryPage(countryIndex, Index(0)) // TODO needs vatRateIndex when looping implemented
+    SalesToCountryPage(countryIndex, vatRatesIndex)
   }
 }

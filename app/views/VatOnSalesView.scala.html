@@ -30,7 +30,7 @@
         waypoints: Waypoints,
         period: Period,
         countryIndex: Index,
-        vatRateIndex: Index,
+        nextVatRateIndex: Index,
         country: Country,
         vatRate: VatRateFromCountry,
         netSales: BigDecimal,
@@ -43,7 +43,7 @@
     Some(messages("vatOnSales.caption", period.displayText, country.name))
 )) {
 
-    @formHelper(action = routes.VatOnSalesController.onSubmit(waypoints, countryIndex, vatRateIndex), 'autoComplete -> "off") {
+    @formHelper(action = routes.VatOnSalesController.onSubmit(waypoints, countryIndex, nextVatRateIndex), 'autoComplete -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))
