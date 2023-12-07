@@ -14,20 +14,14 @@
  * limitations under the License.
  */
 
-package forms.corrections
+package queries.corrections
 
-import forms.mappings.Mappings
-import models.{Index, Period}
-import play.api.data.Form
+import models.corrections.PeriodWithCorrections
+import play.api.libs.json.JsPath
+import queries.{Gettable, Settable}
 
-import javax.inject.Inject
+case object AllCorrectionPeriodQuery extends Gettable[List[PeriodWithCorrections]] with Settable[List[PeriodWithCorrections]] {
 
-class CorrectionReturnPeriodFormProvider @Inject() extends Mappings {
+  override def path: JsPath = JsPath \ "corrections"
 
-  def apply(index: Index, existingAnswers: Seq[Period]): Form[Period] =
-    Form(
-      "value" -> period("correctionReturnPeriod.error.required")
-//        .verifying("correctionReturnPeriod.error.required", value => availablePeriods.contains(value)) todo uncomment when api ticket complete
-        .verifying(notADuplicate(index, existingAnswers, "correctionReturnPeriod.error.duplicate" ))
-    )
 }

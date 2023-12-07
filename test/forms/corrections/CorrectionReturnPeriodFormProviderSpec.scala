@@ -26,7 +26,7 @@ class CorrectionReturnPeriodFormProviderSpec extends OptionFieldBehaviours {
 
   val testPeriods = Seq(Period(2021, Month.OCTOBER))
   val index = Index(0)
-  val form = new CorrectionReturnPeriodFormProvider()()
+  val form = new CorrectionReturnPeriodFormProvider()(index, Seq.empty)
 
   ".value" - {
 

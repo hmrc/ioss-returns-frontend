@@ -18,14 +18,15 @@ package base
 
 import controllers.actions._
 import generators.Generators
-import models.{Country, Index, Period, RegistrationWrapper, UserAnswers, VatRateFromCountry, VatRateType}
+import models.VatOnSalesChoice.Standard
+import models.{Country, Index, Period, RegistrationWrapper, UserAnswers, VatOnSales, VatRateFromCountry, VatRateType}
 import org.scalacheck.Arbitrary
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.{OptionValues, TryValues}
 import pages.corrections.{CorrectPreviousReturnPage, CorrectionReturnPeriodPage}
-import pages.{CorrectionCountryPage, EmptyWaypoints, SalesToCountryPage, SoldGoodsPage, SoldToCountryPage, VatRatesFromCountryPage, Waypoints}
+import pages.{CorrectionCountryPage, EmptyWaypoints, SalesToCountryPage, SoldGoodsPage, SoldToCountryPage, VatOnSalesPage, VatRatesFromCountryPage, Waypoints}
 import play.api.Application
 import play.api.i18n.{Messages, MessagesApi}
 import play.api.inject.bind
@@ -66,6 +67,7 @@ trait SpecBase
     .set(SoldToCountryPage(index), Country("ES", "Spain")).success.value
     .set(VatRatesFromCountryPage(index), List(VatRateFromCountry(10, VatRateType.Reduced, arbitraryDate))).success.value
     .set(SalesToCountryPage(index, index), BigDecimal(100)).success.value
+    .set(VatOnSalesPage(index, index), VatOnSales(Standard, BigDecimal(20))).success.value
 
 
   val completedUserAnswersWithCorrections: UserAnswers = completeUserAnswers

@@ -24,6 +24,7 @@ import pages.corrections.CorrectionReturnPeriodPage
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import queries.corrections.{AllCorrectionPeriodQuery, DeriveCompletedCorrectionPeriods}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.corrections.CorrectionReturnPeriodView
 
@@ -39,19 +40,21 @@ class CorrectionReturnPeriodController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  val form: Form[Period] = formProvider()
-
   def onPageLoad(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndRequireData() {
     implicit request =>
 
       val period = request.userAnswers.period
+
+      val completedCorrectionPeriods: List[Period] = request.userAnswers.get(DeriveCompletedCorrectionPeriods).getOrElse(List.empty)
+
+      val form: Form[Period] = formProvider(index, request.userAnswers.get(AllCorrectionPeriodQuery).getOrElse(Seq.empty).map(_.correctionReturnPeriod))
 
       val preparedForm = request.userAnswers.get(CorrectionReturnPeriodPage(index)) match {
         case None => form
         case Some(value) => form.fill(value)
       }
 
-      Ok(view(preparedForm, waypoints, period, index))
+      Ok(view(preparedForm, waypoints, period, completedCorrectionPeriods, index))
   }
 
   def onSubmit(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndRequireData().async {
@@ -59,9 +62,13 @@ class CorrectionReturnPeriodController @Inject()(
 
       val period = request.userAnswers.period
 
+      val completedCorrectionPeriods: List[Period] = request.userAnswers.get(DeriveCompletedCorrectionPeriods).getOrElse(List.empty)
+
+      val form: Form[Period] = formProvider(index, request.userAnswers.get(AllCorrectionPeriodQuery).getOrElse(Seq.empty).map(_.correctionReturnPeriod))
+
       form.bindFromRequest().fold(
         formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, waypoints, period, index))),
+          Future.successful(BadRequest(view(formWithErrors, waypoints, period, completedCorrectionPeriods, index))),
 
         value =>
           for {

@@ -39,7 +39,9 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
 
 
   private val formProvider = new CorrectionReturnPeriodFormProvider()
-  private val form: Form[Period] = formProvider()
+  private val form: Form[Period] = formProvider(index, Seq.empty)
+
+  private val periodSequence = Seq(Period(2021, Month.OCTOBER), Period(2021, Month.DECEMBER), Period(2022, Month.MARCH))
 
   private lazy val correctionReturnPeriodRoute: String = controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(waypoints, index).url
 
@@ -57,7 +59,7 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[CorrectionReturnPeriodView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, waypoints, period, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, waypoints, period, periodSequence, index)(request, messages(application)).toString
       }
     }
 
@@ -75,7 +77,7 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, waypoints, period, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, waypoints, period, periodSequence, index)(request, messages(application)).toString
       }
 
     }
@@ -124,7 +126,7 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, waypoints, period, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, waypoints, period, periodSequence, index)(request, messages(application)).toString
       }
     }
 
