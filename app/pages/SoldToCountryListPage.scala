@@ -67,6 +67,8 @@ final case class SoldToCountryListPage(override val index: Option[Index] = None)
         CorrectPreviousReturnPage
     }.orRecover
 
+  override protected def nextPageCheckMode(waypoints: NonEmptyWaypoints, answers: UserAnswers): Page =
+    nextPageNormalMode(waypoints, answers)
 
   override def deriveNumberOfItems: Derivable[Seq[JsObject], Int] = DeriveNumberOfSales
 }

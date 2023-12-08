@@ -36,7 +36,7 @@ case class RemainingVatRateFromCountryPage(countryIndex: Index, vatRateIndex: In
       case Some(true) =>
         SalesToCountryPage(countryIndex, vatRateIndex)
       case Some(false) =>
-        CheckSalesPage(Some(countryIndex))
+        CheckSalesPage(countryIndex)
       case _ =>
         JourneyRecoveryPage
     }

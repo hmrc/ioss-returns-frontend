@@ -56,7 +56,7 @@ class CheckSalesController @Inject()(
 
           val checkSalesSummary = CheckSalesSummary.rows(request.userAnswers, waypoints, countryIndex)
 
-          val preparedForm = request.userAnswers.get(CheckSalesPage(Some(countryIndex))) match {
+          val preparedForm = request.userAnswers.get(CheckSalesPage(countryIndex)) match {
             case None => form
             case Some(value) => form.fill(value)
           }
@@ -85,10 +85,10 @@ class CheckSalesController @Inject()(
 
             value =>
               for {
-                updatedAnswers <- Future.fromTry(request.userAnswers.set(CheckSalesPage(Some(countryIndex)), value))
+                updatedAnswers <- Future.fromTry(request.userAnswers.set(CheckSalesPage(countryIndex), value))
                 updatedAnswersWithRemainingVatRates <- Future.fromTry(updatedAnswers.set(RemainingVatRatesFromCountryQuery(countryIndex), remainingVatRates))
                 _ <- cc.sessionRepository.set(updatedAnswersWithRemainingVatRates)
-              } yield Redirect(CheckSalesPage(Some(countryIndex)).navigate(waypoints, request.userAnswers, updatedAnswersWithRemainingVatRates).route)
+              } yield Redirect(CheckSalesPage(countryIndex).navigate(waypoints, request.userAnswers, updatedAnswersWithRemainingVatRates).route)
           )
         }
       }

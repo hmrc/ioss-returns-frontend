@@ -28,8 +28,6 @@ object Waypoint {
 
   private val fragments: Map[String, Waypoint] =
     Map(
-      CheckSalesPage.normalModeUrlFragment -> CheckSalesPage().waypoint(NormalMode),
-      CheckSalesPage.checkModeUrlFragment -> CheckSalesPage().waypoint(CheckMode),
       SoldToCountryListPage.normalModeUrlFragment -> SoldToCountryListPage().waypoint(NormalMode),
       SoldToCountryListPage.checkModeUrlFragment -> SoldToCountryListPage().waypoint(CheckMode),
       CheckYourAnswersPage.urlFragment -> CheckYourAnswersPage.waypoint
@@ -37,4 +35,6 @@ object Waypoint {
 
   def fromString(s: String): Option[Waypoint] =
     fragments.get(s)
+      .orElse(CheckSalesPage.waypointFromString(s))
+
 }

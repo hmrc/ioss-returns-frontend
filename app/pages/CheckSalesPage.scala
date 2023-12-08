@@ -18,21 +18,17 @@ package pages
 
 import controllers.routes
 import logging.Logging
-import models.{Index, UserAnswers}
+import models.{CheckMode, Index, NormalMode, UserAnswers}
 import play.api.libs.json.{JsObject, JsPath}
 import play.api.mvc.Call
-import queries.{AllVatRatesFromCountryQuery, Derivable, RemainingVatRatesFromCountryQuery}
+import queries.{Derivable, DeriveNumberOfVatRatesFromCountry, RemainingVatRatesFromCountryQuery}
 
-object CheckSalesPage {
 
-  val normalModeUrlFragment: String = "check-sales"
-  val checkModeUrlFragment: String = "change-check-sales"
-}
-
-final case class CheckSalesPage(override val index: Option[Index] = None) extends AddItemPage(index) with QuestionPage[Boolean] with Logging {
+final case class CheckSalesPage(countryIndex: Index, vatRateIndex: Option[Index] = None)
+  extends AddItemPage(vatRateIndex) with QuestionPage[Boolean] with Logging {
 
   override def isTheSamePage(other: Page): Boolean = other match {
-    case p: CheckSalesPage => p.index == this.index
+    case p: CheckSalesPage => p.countryIndex == this.countryIndex
     case _ => false
   }
 
@@ -41,39 +37,67 @@ final case class CheckSalesPage(override val index: Option[Index] = None) extend
   override def toString: String = "checkSales"
 
   override def route(waypoints: Waypoints): Call =
-    routes.CheckSalesController.onPageLoad(waypoints, index.getOrElse(Index(0)))
+    routes.CheckSalesController.onPageLoad(waypoints, countryIndex)
 
-  override val normalModeUrlFragment: String = CheckSalesPage.normalModeUrlFragment
-  override val checkModeUrlFragment: String = CheckSalesPage.checkModeUrlFragment
+  override val normalModeUrlFragment: String = CheckSalesPage.normalModeUrlFragment(countryIndex)
+  override val checkModeUrlFragment: String = CheckSalesPage.checkModeUrlFragment(countryIndex)
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
-    answers.get(this) match {
-      case Some(true) =>
-        index.flatMap { countryIndex =>
-          determinePageRedirect(answers, countryIndex)
-        }.orRecover
-      case Some(false) =>
+    answers.get(this).map {
+      case true =>
+        vatRateIndex
+          .map(i => determinePageRedirect(answers, countryIndex, Index(i.position + 1)))
+          .getOrElse {
+            answers
+              .get(deriveNumberOfItems)
+              .map(n => determinePageRedirect(answers, countryIndex, Index(n)))
+              .orRecover
+          }
+      case false =>
         SoldToCountryListPage(index)
-      case _ =>
-        JourneyRecoveryPage
-    }
+    }.orRecover
 
-  private def determinePageRedirect(answers: UserAnswers, countryIndex: Index): Option[Page] = {
+  override protected def nextPageCheckMode(waypoints: NonEmptyWaypoints, answers: UserAnswers): Page =
+    nextPageNormalMode(waypoints, answers)
+
+
+  private def determinePageRedirect(answers: UserAnswers, countryIndex: Index, vatRateIndex: Index): Page = {
     answers.get(RemainingVatRatesFromCountryQuery(countryIndex)).flatMap {
       case vatRatesFromCountry if vatRatesFromCountry.size == 1 =>
-        answers.get(AllVatRatesFromCountryQuery(countryIndex)).flatMap { allVatRatesFromCountry =>
-          Some(RemainingVatRateFromCountryPage(countryIndex, Index(allVatRatesFromCountry.size)))
-        }
+        Some(RemainingVatRateFromCountryPage(countryIndex, vatRateIndex))
       case vatRatesFromCountry if vatRatesFromCountry.size > 1 =>
-        Some(VatRatesFromCountryPage(countryIndex, Index(vatRatesFromCountry.size + 1)))
+        Some(VatRatesFromCountryPage(countryIndex, vatRateIndex))
       case vatRatesFromCountry if vatRatesFromCountry.isEmpty =>
         val exception = new IllegalStateException("VAT rate missing")
         logger.error(exception.getMessage, exception)
         throw exception
-      case _ =>
-        Some(JourneyRecoveryPage)
-    }
+      case _ => Some(JourneyRecoveryPage)
+    }.orRecover
   }
 
-  override def deriveNumberOfItems: Derivable[Seq[JsObject], Int] = ???
+  override def deriveNumberOfItems: Derivable[Seq[JsObject], Int] = DeriveNumberOfVatRatesFromCountry(countryIndex)
+}
+
+object CheckSalesPage {
+
+  def normalModeUrlFragment(countryIndex: Index): String = s"check-sales-${countryIndex.display}"
+
+  def checkModeUrlFragment(countryIndex: Index): String = s"change-check-sales-${countryIndex.display}"
+
+  def waypointFromString(s: String): Option[Waypoint] = {
+
+    val normalModePattern = """check-sales-(\d{1,3})""".r.anchored
+    val checkModePattern = """change-check-sales-(\d{1,3})""".r.anchored
+
+    s match {
+      case normalModePattern(indexDisplay) =>
+        Some(CheckSalesPage(Index(indexDisplay.toInt - 1), None).waypoint(NormalMode))
+
+      case checkModePattern(indexDisplay) =>
+        Some(CheckSalesPage(Index(indexDisplay.toInt - 1), None).waypoint(CheckMode))
+
+      case _ =>
+        None
+    }
+  }
 }

@@ -65,7 +65,7 @@ class VatRatesFromCountryController @Inject()(
 
           remainingVatRates.size match {
             case 0 =>
-              Redirect(CheckSalesPage(Some(countryIndex)).route(waypoints)).toFuture
+              Redirect(CheckSalesPage(countryIndex).route(waypoints)).toFuture
             case 1 =>
               addVatRateAndRedirect(currentVatRatesAnswers, remainingVatRates.toList, countryIndex, nextVatRateIndex, waypoints)
             case _ =>

@@ -16,7 +16,7 @@
 
 package pages
 
-import models.{CheckMode, NormalMode}
+import models.{CheckMode, Index, NormalMode}
 import org.scalatest.OptionValues
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
@@ -26,11 +26,11 @@ class WaypointSpec extends AnyFreeSpec with Matchers with OptionValues {
   "fromString" - {
 
     "must return Check Sales when given it's Normal mode waypoint" in {
-      Waypoint.fromString("check-sales").value mustBe CheckSalesPage().waypoint(NormalMode)
+      Waypoint.fromString("check-sales-1").value mustBe CheckSalesPage(Index(0)).waypoint(NormalMode)
     }
 
     "must return Check Sales when given it's Check mode waypoint" in {
-      Waypoint.fromString("change-check-sales").value mustBe CheckSalesPage().waypoint(CheckMode)
+      Waypoint.fromString("change-check-sales-1").value mustBe CheckSalesPage(Index(0)).waypoint(CheckMode)
     }
 
     "must return Sold To Country List when given it's Normal mode waypoint" in {

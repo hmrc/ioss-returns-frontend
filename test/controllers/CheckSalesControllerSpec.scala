@@ -59,7 +59,7 @@ class CheckSalesControllerSpec extends SpecBase with MockitoSugar with SummaryLi
     .set(SalesToCountryPage(index, index), salesValue).success.value
     .set(VatOnSalesPage(index, index), vatOnSalesValue).success.value
 
-  private lazy val checkSalesRoute: String = CheckSalesPage(Some(index)).route(waypoints).url
+  private lazy val checkSalesRoute: String = CheckSalesPage(index, Some(index)).route(waypoints).url
 
   override def beforeEach(): Unit = {
     reset(mockVatRateService)
@@ -99,7 +99,7 @@ class CheckSalesControllerSpec extends SpecBase with MockitoSugar with SummaryLi
 
       when(mockVatRateService.getRemainingVatRatesForCountry(any(), any(), any())) thenReturn remainingVatRateForCountry
 
-      val userAnswers = baseAnswers.set(CheckSalesPage(), true).success.value
+      val userAnswers = baseAnswers.set(CheckSalesPage(index), true).success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers))
         .overrides(bind[VatRateService].toInstance(mockVatRateService))
@@ -134,6 +134,10 @@ class CheckSalesControllerSpec extends SpecBase with MockitoSugar with SummaryLi
         .set(VatRatesFromCountryPage(index, index), vatRatesFromCountry).success.value
         .set(SalesToCountryPage(index, index), salesValue).success.value
         .set(VatOnSalesPage(index, index), vatOnSalesValue).success.value
+        .set(SalesToCountryPage(index, index. +(1)), salesValue).success.value
+        .set(VatOnSalesPage(index, index. +(1)), vatOnSalesValue).success.value
+        .set(SalesToCountryPage(index, index. +(2)), salesValue).success.value
+        .set(VatOnSalesPage(index, index. +(2)), vatOnSalesValue).success.value
 
       when(mockVatRateService.getRemainingVatRatesForCountry(any(), any(), any())) thenReturn remainingVatRateForCountry
 
@@ -156,10 +160,10 @@ class CheckSalesControllerSpec extends SpecBase with MockitoSugar with SummaryLi
 
         val expectedAnswers = answers
           .set(RemainingVatRatesFromCountryQuery(index), remainingVatRateForCountry).success.value
-          .set(CheckSalesPage(Some(index)), true).success.value
+          .set(CheckSalesPage(index, Some(index. +(2))), true).success.value
 
         status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe CheckSalesPage(Some(index)).navigate(waypoints, answers, expectedAnswers).url
+        redirectLocation(result).value mustBe CheckSalesPage(index, Some(index. +(2))).navigate(waypoints, answers, expectedAnswers).url
         verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
       }
     }
@@ -187,10 +191,10 @@ class CheckSalesControllerSpec extends SpecBase with MockitoSugar with SummaryLi
 
         val expectedAnswers = baseAnswers
           .set(RemainingVatRatesFromCountryQuery(index), vatRatesFromCountry).success.value
-          .set(CheckSalesPage(Some(index)), true).success.value
+          .set(CheckSalesPage(index, Some(index)), true).success.value
 
         status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe CheckSalesPage(Some(index)).navigate(waypoints, baseAnswers, expectedAnswers).url
+        redirectLocation(result).value mustBe CheckSalesPage(index, Some(index)).navigate(waypoints, baseAnswers, expectedAnswers).url
         verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
       }
     }

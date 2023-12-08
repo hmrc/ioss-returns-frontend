@@ -36,7 +36,7 @@ case class VatOnSalesPage(countryIndex: Index, vatRateIndex: Index) extends Ques
         if (rates.size > vatRateIndex.position + 1) {
           SalesToCountryPage(countryIndex, vatRateIndex + 1)
         } else {
-          CheckSalesPage(Some(countryIndex))
+          CheckSalesPage(countryIndex)
         }
     }.getOrElse(JourneyRecoveryPage)
   }

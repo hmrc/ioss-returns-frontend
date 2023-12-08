@@ -19,11 +19,11 @@ package generators
 import config.Constants.{maxCurrencyAmount, minCurrencyAmount}
 import models._
 import models.etmp._
-import org.scalacheck.{Arbitrary, Gen}
 import org.scalacheck.Arbitrary.arbitrary
+import org.scalacheck.{Arbitrary, Gen}
 import queries.{OptionalSalesAtVatRate, SalesToCountryWithOptionalSales, VatRateWithOptionalSalesFromCountry}
 
-import java.time.{Instant, LocalDate, LocalDateTime, Month, ZoneOffset}
+import java.time.{LocalDate, LocalDateTime, Month}
 import scala.math.BigDecimal.RoundingMode
 
 trait ModelGenerators {

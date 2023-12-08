@@ -30,7 +30,7 @@ object SoldToCountryListSummary {
 
         ListItem(
           name = HtmlFormat.escape(salesToCountryWithOptionalVat.country.name).toString,
-          changeUrl = CheckSalesPage(Some(Index(countryIndex))).changeLink(waypoints, sourcePage).url,
+          changeUrl = CheckSalesPage(Index(countryIndex)).changeLink(waypoints, sourcePage).url,
           removeUrl = DeleteSoldToCountryPage(Index(countryIndex)).route(waypoints).url
         )
     }
