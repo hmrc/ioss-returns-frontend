@@ -61,32 +61,31 @@ class EligibleSalesJourneySpec extends AnyFreeSpec with JourneyHelpers with Spec
       )
   }
 
-  // TODO -> Fix failing test - Not redirecting to CorrectPreviousReturnPage when list size achieved
-//  s"must be asked for as many as necessary upto the maximum of $maxCountries EU countries" in {
-//
-//    def generateSales: Seq[JourneyStep[Unit]] = {
-//      (0 until  maxCountries).foldLeft(Seq.empty[JourneyStep[Unit]]) {
-//        case (journeySteps: Seq[JourneyStep[Unit]], index: Int) =>
-//          journeySteps :+
-//            submitAnswer(SoldToCountryPage(Index(index)), country) :+
-//            submitAnswer(VatRatesFromCountryPage(Index(index), vatRateIndex), List(vatRateFromCountry1, vatRateFromCountry2)) :+
-//            submitAnswer(SalesToCountryPage(Index(index), vatRateIndex), salesValue) :+
-//            submitAnswer(VatOnSalesPage(Index(index), vatRateIndex), arbitraryVatOnSales.arbitrary.sample.value) :+
-//            pageMustBe(SalesToCountryPage(Index(index), vatRateIndex. +(1))) :+
-//            submitAnswer(SalesToCountryPage(Index(index), vatRateIndex. +(1)), salesValue) :+
-//            submitAnswer(VatOnSalesPage(Index(index), vatRateIndex. +(1)), arbitraryVatOnSales.arbitrary.sample.value) :+
-//            submitAnswer(CheckSalesPage(Index(index)), false) :+
-//            submitAnswer(SoldToCountryListPage(), true)
-//      }
-//    }
-//
-//    startingFrom(SoldGoodsPage, answers = initialAnswers)
-//      .run(
-//        submitAnswer(SoldGoodsPage, true) +:
-//          generateSales :+
-//          pageMustBe(CorrectPreviousReturnPage): _*
-//      )
-//  }
+  s"must be asked for as many as necessary upto the maximum of $maxCountries EU countries" in {
+
+    def generateSales: Seq[JourneyStep[Unit]] = {
+      (0 until  maxCountries).foldLeft(Seq.empty[JourneyStep[Unit]]) {
+        case (journeySteps: Seq[JourneyStep[Unit]], index: Int) =>
+          journeySteps :+
+            submitAnswer(SoldToCountryPage(Index(index)), country) :+
+            submitAnswer(VatRatesFromCountryPage(Index(index), vatRateIndex), List(vatRateFromCountry1, vatRateFromCountry2)) :+
+            submitAnswer(SalesToCountryPage(Index(index), vatRateIndex), salesValue) :+
+            submitAnswer(VatOnSalesPage(Index(index), vatRateIndex), arbitraryVatOnSales.arbitrary.sample.value) :+
+            pageMustBe(SalesToCountryPage(Index(index), vatRateIndex. +(1))) :+
+            submitAnswer(SalesToCountryPage(Index(index), vatRateIndex. +(1)), salesValue) :+
+            submitAnswer(VatOnSalesPage(Index(index), vatRateIndex. +(1)), arbitraryVatOnSales.arbitrary.sample.value) :+
+            submitAnswer(CheckSalesPage(Index(index)), false) :+
+            submitAnswer(SoldToCountryListPage(), index != maxCountries -1)
+      }
+    }
+
+    startingFrom(SoldGoodsPage, answers = initialAnswers)
+      .run(
+        submitAnswer(SoldGoodsPage, true) +:
+          generateSales :+
+          pageMustBe(CorrectPreviousReturnPage): _*
+      )
+  }
 
   "must allow the user to add a sale" in {
     startingFrom(SoldGoodsPage, answers = initialAnswers)

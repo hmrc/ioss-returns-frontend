@@ -17,7 +17,7 @@
 package pages
 
 import controllers.routes
-import models.{Country, Index, UserAnswers}
+import models.{Index, UserAnswers}
 import pages.corrections.CorrectPreviousReturnPage
 import play.api.libs.json.{JsObject, JsPath}
 import play.api.mvc.Call
@@ -31,13 +31,13 @@ object SoldToCountryListPage {
 
 final case class SoldToCountryListPage(override val index: Option[Index] = None) extends AddItemPage(index) with QuestionPage[Boolean] {
 
+  override val normalModeUrlFragment: String = SoldToCountryListPage.normalModeUrlFragment
+  override val checkModeUrlFragment: String = SoldToCountryListPage.checkModeUrlFragment
+
   override def isTheSamePage(other: Page): Boolean = other match {
     case _: SoldToCountryListPage => true
     case _ => false
   }
-
-  override val normalModeUrlFragment: String = SoldToCountryListPage.normalModeUrlFragment
-  override val checkModeUrlFragment: String = SoldToCountryListPage.checkModeUrlFragment
 
   override def path: JsPath = JsPath \ toString
 
@@ -46,29 +46,20 @@ final case class SoldToCountryListPage(override val index: Option[Index] = None)
   override def route(waypoints: Waypoints): Call =
     routes.SoldToCountryListController.onPageLoad(waypoints)
 
-  override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
+  override protected def nextPageCheckMode(waypoints: NonEmptyWaypoints, answers: UserAnswers): Page =
+    nextPageNormalMode(waypoints, answers)
+
+  override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page = {
     answers.get(this).map {
       case true =>
-        index
-        .map { i =>
-          if (i.position +1 < Country.euCountriesWithNI.size) {
-            SoldToCountryPage(Index(i.position + 1))
-          } else {
-            CorrectPreviousReturnPage
-          }
-        }
-        .getOrElse {
-          answers
-            .get(deriveNumberOfItems)
-            .map(n => SoldToCountryPage(Index(n)))
-            .orRecover
-        }
+        answers
+          .get(deriveNumberOfItems)
+          .map(n => SoldToCountryPage(Index(n)))
+          .orRecover
       case false =>
         CorrectPreviousReturnPage
     }.orRecover
-
-  override protected def nextPageCheckMode(waypoints: NonEmptyWaypoints, answers: UserAnswers): Page =
-    nextPageNormalMode(waypoints, answers)
+  }
 
   override def deriveNumberOfItems: Derivable[Seq[JsObject], Int] = DeriveNumberOfSales
 }
