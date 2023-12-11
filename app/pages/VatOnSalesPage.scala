@@ -18,25 +18,25 @@ package pages
 
 import controllers.routes
 import models.{Index, UserAnswers, VatOnSales}
+import pages.PageConstants.salesAtVatRate
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
 case class VatOnSalesPage(countryIndex: Index, vatRateIndex: Index) extends QuestionPage[VatOnSales] {
 
-  override def path: JsPath = JsPath \ PageConstants.sales \ countryIndex.position \ PageConstants.vatRates \ vatRateIndex.position \ toString
+  override def path: JsPath = JsPath \ PageConstants.sales \ countryIndex.position \ PageConstants.vatRates \ vatRateIndex.position \ salesAtVatRate \ toString
 
   override def toString: String = "vatOnSales"
 
   override def route(waypoints: Waypoints): Call = routes.VatOnSalesController.onPageLoad(waypoints, countryIndex, vatRateIndex)
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page = {
-    answers.get(VatRatesFromCountryPage(countryIndex)).map {
+    answers.get(VatRatesFromCountryPage(countryIndex, vatRateIndex)).map {
       rates =>
         if (rates.size > vatRateIndex.position + 1) {
           SalesToCountryPage(countryIndex, vatRateIndex + 1)
         } else {
-          // TODO
-          SoldToCountryListPage(Some(countryIndex))
+          CheckSalesPage(countryIndex)
         }
     }.getOrElse(JourneyRecoveryPage)
   }

@@ -98,22 +98,19 @@ vatRatesFromCountry.change.hidden = VAT rates from country
 
 salesToCountry.title = What were your sales at {0} rate excluding VAT?
 salesToCountry.heading = What were your sales at {0} rate excluding VAT?
+salesToCountry.caption = {0} sales to {1}
 salesToCountry.checkYourAnswersLabel = Sales excluding VAT
-salesToCountry.error.nonNumeric = Enter your sales excluding VAT using numbers
-salesToCountry.error.required = Enter your sales excluding VAT
-salesToCountry.error.wholeNumber = Enter your sales excluding VAT using whole numbers
+salesToCountry.error.nonNumeric = Enter your sales at {0} rate excluding VAT using numbers
+salesToCountry.error.required = Enter your sales at {0} rate excluding VAT
+salesToCountry.error.wholeNumber = Enter your sales at {0} rate excluding VAT using whole numbers
 salesToCountry.error.outOfRange = Sales excluding VAT must be between {0} and {1}
 salesToCountry.error.calculatedVatRateOutOfRange = Add a sales total above £0.02
 salesToCountry.change.hidden = sales excluding VAT
 salesToCountry.hint = For example, £600 or £193.54.
 
-caption.fromCountry.periodAndCountry = {0} sales to {1}
-
 vatOnSales.title = How much VAT did you charge on sales of {0} at {1} VAT rate?
 vatOnSales.heading = How much VAT did you charge on sales of {0} at {1} VAT rate?
 vatOnSales.caption = {0} sales to {1}
-vatOnSales.option1 = Option 1
-vatOnSales.option2 = Option 2
 vatOnSales.nonStandard = A different amount
 vatOnSales.amount = Enter VAT charged
 vatOnSales.hint = For example, £600 or £193.54.
@@ -146,18 +143,36 @@ deleteSoldToCountry.heading = Are you sure you want to remove all the sales info
 deleteSoldToCountry.error.required = Select yes if want to remove all the sales information for {0}
 deleteSoldToCountry.change.hidden = all the sales information for {0}
 
+checkSales.title = Check your answers
+checkSales.heading = Check your answers
+checkSales.caption = {0} sales to {1}
+checkSales.checkYourAnswersLabel = checkSales
+checkSales.vatRate = {0}% VAT rate
+checkSales.addAnother = Add another VAT rate?
+checkSales.error.required = Select yes if want to add another VAT rate
+checkSales.vat.change.hidden = VAT charged for VAT rate {0}
+checkSales.vatRate.remove.hidden = VAT rate for {0}
+
+deleteVatRateSalesForCountry.title = Do you want to remove all your {0} VAT rate sales for {1}?
+deleteVatRateSalesForCountry.heading = Do you want to remove all your {0} VAT rate sales for {1}?
+deleteVatRateSalesForCountry.error.required = Select yes if you want to remove all your {0} VAT rate sales for {1}
+
+remainingVatRateFromCountry.title = Did you sell goods at the {0} VAT rate?
+remainingVatRateFromCountry.heading = Did you sell goods at the {0} VAT rate?
+remainingVatRateFromCountry.caption = {0} sales to {1}
+remainingVatRateFromCountry.error.required = Select yes if you sold goods at the {0} VAT rate
+
 correctPreviousReturn.title = Do you want to correct a previous return?
 correctPreviousReturn.heading = Do you want to correct a previous return?
 correctPreviousReturn.checkYourAnswersLabel = Corrections
 correctPreviousReturn.error.required = Select yes if you want to correct a previous return
 correctPreviousReturn.change.hidden = if you want to correct a previous return
 
-correctionCountry.checkYourAnswersLabel = Country sold to
-correctionCountry.change.hidden = which country you sold to
-
 correctionCountry.title = Which country would you like to correct?
 correctionCountry.heading = Which country would you like to correct?
 correctionCountry.caption = Correction period: {0}
+correctionCountry.checkYourAnswersLabel = Country sold to
+correctionCountry.change.hidden = which country you sold to
 correctionCountry.hint = You can also add a new country that was not included in your previous return.
 correctionCountry.error.required = Select which country you would like to correct
 correctionCountry.error.duplicate = You selected this country already. Select a different one.

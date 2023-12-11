@@ -14,21 +14,15 @@
  * limitations under the License.
  */
 
-package pages
+package queries
 
-import controllers.routes
-import models.{Country, Index, UserAnswers}
-import play.api.libs.json.JsPath
-import play.api.mvc.Call
+import models.Index
+import pages.PageConstants
+import play.api.libs.json.{JsObject, JsPath}
 
-case class SoldToCountryPage(index: Index) extends QuestionPage[Country] {
+case class DeriveNumberOfVatRatesFromCountry(countryIndex: Index) extends Derivable[Seq[JsObject], Int] {
 
-  override def path: JsPath = JsPath \ PageConstants.sales \ index.position \ toString
+  override val derive: Seq[JsObject] => Int = _.size
 
-  override def toString: String = "country"
-
-  override def route(waypoints: Waypoints): Call = routes.SoldToCountryController.onPageLoad(waypoints, index)
-
-  override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
-    VatRatesFromCountryPage(index, Index(0))
+  override def path: JsPath = JsPath \ PageConstants.sales \ countryIndex.position \ PageConstants.vatRates
 }

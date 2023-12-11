@@ -14,8 +14,6 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.hmrcfrontend.views.config.HmrcPageHeadingLegend
-@import utils.CurrencyFormatter.currencyFormat
 @import viewmodels.InputWidth._
 @import components.ButtonGroup
 
@@ -27,13 +25,12 @@
         govukInput: GovukInput,
         button: ButtonGroup
 )
-
 @(
         form: Form[_],
-        period: Period,
         waypoints: Waypoints,
+        period: Period,
         countryIndex: Index,
-        vatRateIndex: Index,
+        nextVatRateIndex: Index,
         country: Country,
         vatRate: VatRateFromCountry,
         netSales: BigDecimal,
@@ -46,13 +43,13 @@
     Some(messages("vatOnSales.caption", period.displayText, country.name))
 )) {
 
-    @formHelper(action = routes.VatOnSalesController.onSubmit(waypoints, countryIndex, vatRateIndex), 'autoComplete -> "off") {
+    @formHelper(action = routes.VatOnSalesController.onSubmit(waypoints, countryIndex, nextVatRateIndex), 'autoComplete -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))
         }
 
-        @govukRadios(   
+        @govukRadios(
             RadiosViewModel(
                 field  = form("choice"),
                 legend = HmrcPageHeadingLegend(

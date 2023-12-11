@@ -17,18 +17,27 @@
 package pages
 
 import controllers.routes
-import models.{Country, Index, UserAnswers}
+import models.{Index, UserAnswers}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
-case class SoldToCountryPage(index: Index) extends QuestionPage[Country] {
 
-  override def path: JsPath = JsPath \ PageConstants.sales \ index.position \ toString
+case class RemainingVatRateFromCountryPage(countryIndex: Index, vatRateIndex: Index) extends QuestionPage[Boolean] {
 
-  override def toString: String = "country"
+  override def path: JsPath = JsPath \ toString
 
-  override def route(waypoints: Waypoints): Call = routes.SoldToCountryController.onPageLoad(waypoints, index)
+  override def toString: String = "remainingVatRateFromCountry"
+
+  override def route(waypoints: Waypoints): Call =
+    routes.RemainingVatRateFromCountryController.onPageLoad(waypoints, countryIndex, vatRateIndex)
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
-    VatRatesFromCountryPage(index, Index(0))
+    answers.get(this) match {
+      case Some(true) =>
+        SalesToCountryPage(countryIndex, vatRateIndex)
+      case Some(false) =>
+        CheckSalesPage(countryIndex)
+      case _ =>
+        JourneyRecoveryPage
+    }
 }

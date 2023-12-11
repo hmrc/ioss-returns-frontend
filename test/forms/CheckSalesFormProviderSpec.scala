@@ -14,21 +14,32 @@
  * limitations under the License.
  */
 
-package pages
+package forms
 
-import controllers.routes
-import models.{Country, Index, UserAnswers}
-import play.api.libs.json.JsPath
-import play.api.mvc.Call
+import forms.behaviours.BooleanFieldBehaviours
+import play.api.data.FormError
 
-case class SoldToCountryPage(index: Index) extends QuestionPage[Country] {
+class CheckSalesFormProviderSpec extends BooleanFieldBehaviours {
 
-  override def path: JsPath = JsPath \ PageConstants.sales \ index.position \ toString
+  val requiredKey = "checkSales.error.required"
+  val invalidKey = "error.boolean"
 
-  override def toString: String = "country"
+  val form = new CheckSalesFormProvider()()
 
-  override def route(waypoints: Waypoints): Call = routes.SoldToCountryController.onPageLoad(waypoints, index)
+  ".value" - {
 
-  override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
-    VatRatesFromCountryPage(index, Index(0))
+    val fieldName = "value"
+
+    behave like booleanField(
+      form,
+      fieldName,
+      invalidError = FormError(fieldName, invalidKey)
+    )
+
+    behave like mandatoryField(
+      form,
+      fieldName,
+      requiredError = FormError(fieldName, requiredKey)
+    )
+  }
 }

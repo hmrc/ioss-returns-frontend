@@ -26,6 +26,7 @@ import java.time.format.TextStyle
 import java.util.Locale
 import scala.util.Try
 import scala.util.matching.Regex
+
 final case class Period(year: Int, month: Month) {
   val firstDay: LocalDate = LocalDate.of(year, month, 1)
   val lastDay: LocalDate = firstDay.plusMonths(3).minusDays(1)

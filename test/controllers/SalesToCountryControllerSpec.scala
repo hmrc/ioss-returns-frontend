@@ -18,43 +18,38 @@ package controllers
 
 import base.SpecBase
 import forms.SalesToCountryFormProvider
-import models.{Country, VatRateFromCountry}
-import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchersSugar.eqTo
+import models.{Country, UserAnswers, VatRateFromCountry}
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{times, verify, when}
-import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.mockito.MockitoSugar
-import pages.{SalesToCountryPage, SoldToCountryPage, VatRatesFromCountryPage}
+import pages.{JourneyRecoveryPage, SalesToCountryPage, SoldGoodsPage, SoldToCountryPage, VatRatesFromCountryPage}
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
 import services.VatRateService
+import utils.FutureSyntax.FutureOps
 import views.html.SalesToCountryView
-
-import scala.concurrent.Future
 
 class SalesToCountryControllerSpec extends SpecBase with MockitoSugar {
 
+  private val country: Country = arbitraryCountry.arbitrary.sample.value
+  private val vatRateFromCountry: VatRateFromCountry = arbitraryVatRateFromCountry.arbitrary.sample.value
+
   private val mockVatRateService = mock[VatRateService]
 
-  val validAnswer: BigDecimal = 1
+  private val formProvider = new SalesToCountryFormProvider(mockVatRateService)
+  private val form: Form[BigDecimal] = formProvider(vatRateFromCountry)
 
-  lazy val salesToCountryRoute: String = routes.SalesToCountryController.onPageLoad(waypoints, index, index).url
+  val validAnswer: BigDecimal = 1234.12
 
-  private val country = arbitrary[Country].sample.value
-  private val vatRate = arbitrary[VatRateFromCountry].sample.value
+  private val baseAnswers: UserAnswers = emptyUserAnswers
+    .set(SoldGoodsPage, true).success.value
+    .set(SoldToCountryPage(index), country).success.value
+    .set(VatRatesFromCountryPage(index, index), List[VatRateFromCountry](vatRateFromCountry)).success.value
 
-  val formProvider = new SalesToCountryFormProvider(mockVatRateService)
-  val form: Form[BigDecimal] = formProvider(vatRate)
-
-  private val baseAnswers =
-    emptyUserAnswers
-      .set(SoldToCountryPage(index), country).success.value
-      .set(VatRatesFromCountryPage(index), List(vatRate)).success.value
-
-
+  private lazy val salesToCountryRoute: String = routes.SalesToCountryController.onPageLoad(waypoints, index, index).url
 
   "SalesToCountry Controller" - {
 
@@ -69,8 +64,8 @@ class SalesToCountryControllerSpec extends SpecBase with MockitoSugar {
 
         val view = application.injector.instanceOf[SalesToCountryView]
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, waypoints, period, index, country, index, vatRate)(request, messages(application)).toString
+        status(result) mustBe OK
+        contentAsString(result) mustBe view(form, waypoints, period, index, index, vatRateFromCountry, country)(request, messages(application)).toString
       }
     }
 
@@ -87,23 +82,16 @@ class SalesToCountryControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(validAnswer),
-          waypoints,
-          period,
-          index,
-          country,
-          index,
-          vatRate
-        )(request, messages(application)).toString
+        status(result) mustBe OK
+        contentAsString(result) mustBe view(form.fill(validAnswer), waypoints, period, index, index, vatRateFromCountry, country)(request, messages(application)).toString
       }
     }
 
-    "must redirect to the next page when valid data is submitted" in {
+    "must save the answer and redirect to the next page when valid data is submitted" in {
 
       val mockSessionRepository = mock[SessionRepository]
 
-      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      when(mockSessionRepository.set(any())) thenReturn true.toFuture
 
       val application =
         applicationBuilder(userAnswers = Some(baseAnswers))
@@ -118,10 +106,11 @@ class SalesToCountryControllerSpec extends SpecBase with MockitoSugar {
             .withFormUrlEncodedBody(("value", validAnswer.toString))
 
         val result = route(application, request).value
+
         val expectedAnswers = baseAnswers.set(SalesToCountryPage(index, index), validAnswer).success.value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.VatOnSalesController.onPageLoad(waypoints, index, vatRateIndex).url
+        status(result) mustBe SEE_OTHER
+        redirectLocation(result).value mustBe SalesToCountryPage(index, index).navigate(waypoints, emptyUserAnswers, expectedAnswers).url
         verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
       }
     }
@@ -141,8 +130,8 @@ class SalesToCountryControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, waypoints, period, index, country, index, vatRate)(request, messages(application)).toString
+        status(result) mustBe BAD_REQUEST
+        contentAsString(result) mustBe view(boundForm, waypoints, period, index, index, vatRateFromCountry, country)(request, messages(application)).toString
       }
     }
 
@@ -155,8 +144,22 @@ class SalesToCountryControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+        status(result) mustBe SEE_OTHER
+        redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
+      }
+    }
+
+    "must redirect to Journey Recovery for a GET if no VAT sales data is found" in {
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+
+      running(application) {
+        val request = FakeRequest(GET, salesToCountryRoute)
+
+        val result = route(application, request).value
+
+        status(result) mustBe SEE_OTHER
+        redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
       }
     }
 
@@ -171,9 +174,9 @@ class SalesToCountryControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
+        status(result) mustBe SEE_OTHER
 
-        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+        redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
       }
     }
   }

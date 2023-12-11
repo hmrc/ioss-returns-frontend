@@ -66,7 +66,5 @@ class SoldToCountryFormProviderSpec extends StringFieldBehaviours {
       val result = duplicateForm.bind(Map(fieldName -> answer.code)).apply(fieldName)
       result.errors must contain only FormError(fieldName, "soldToCountry.error.duplicate")
     }
-
-    // TODO ensure NI or no NI?
   }
 }

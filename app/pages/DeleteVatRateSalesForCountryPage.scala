@@ -17,18 +17,20 @@
 package pages
 
 import controllers.routes
-import models.{Country, Index, UserAnswers}
-import play.api.libs.json.JsPath
+import models.{Index, UserAnswers}
 import play.api.mvc.Call
+import queries.DeriveNumberOfVatRatesFromCountry
 
-case class SoldToCountryPage(index: Index) extends QuestionPage[Country] {
+case class DeleteVatRateSalesForCountryPage(countryIndex: Index, vatRateIndex: Index) extends Page {
 
-  override def path: JsPath = JsPath \ PageConstants.sales \ index.position \ toString
-
-  override def toString: String = "country"
-
-  override def route(waypoints: Waypoints): Call = routes.SoldToCountryController.onPageLoad(waypoints, index)
+  override def route(waypoints: Waypoints): Call =
+    routes.DeleteVatRateSalesForCountryController.onPageLoad(waypoints, countryIndex, vatRateIndex)
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
-    VatRatesFromCountryPage(index, Index(0))
+    answers.get(DeriveNumberOfVatRatesFromCountry(countryIndex)) match {
+      case Some(n) if n > 0 =>
+        CheckSalesPage(countryIndex)
+      case _ =>
+        VatRatesFromCountryPage(countryIndex, vatRateIndex)
+    }
 }

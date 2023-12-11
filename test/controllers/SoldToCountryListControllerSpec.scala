@@ -39,12 +39,12 @@ class SoldToCountryListControllerSpec extends SpecBase with MockitoSugar {
 
   private val country: Country = arbitraryCountry.arbitrary.sample.value
   private val vatRateFromCountry: VatRateFromCountry = arbitraryVatRateFromCountry.arbitrary.sample.value
-  private val salesValue = BigDecimal(1234)
+  private val salesValue: BigDecimal = BigDecimal(1234)
 
   private val baseAnswers: UserAnswers = emptyUserAnswers
     .set(SoldGoodsPage, true).success.value
     .set(SoldToCountryPage(index), country).success.value
-    .set(VatRatesFromCountryPage(index), List[VatRateFromCountry](vatRateFromCountry)).success.value
+    .set(VatRatesFromCountryPage(index, index), List[VatRateFromCountry](vatRateFromCountry)).success.value
     .set(SalesToCountryPage(index, vatRateIndex), salesValue).success.value
     .set(VatOnSalesPage(index, vatRateIndex), arbitraryVatOnSales.arbitrary.sample.value).success.value
 
@@ -71,28 +71,26 @@ class SoldToCountryListControllerSpec extends SpecBase with MockitoSugar {
       }
     }
 
-    // TODO
-//    "must populate the view correctly on a GET when the question has previously been answered" in {
-//
-//      val userAnswers = emptyUserAnswers.set(SoldToCountryListPage(), true).success.value
-//
-//      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
-//
-//      running(application) {
-//        implicit val msgs: Messages = messages(application)
-//
-//        val request = FakeRequest(GET, soldToCountryListRoute)
-//
-//        val result = route(application, request).value
-//
-//        val view = application.injector.instanceOf[SoldToCountryListView]
-//
-//        val list = SoldToCountryListSummary.row(baseAnswers, waypoints, SoldToCountryListPage())
-//
-//        status(result) mustBe OK
-//        contentAsString(result) must not be view(form.fill(true), waypoints, period, list, canAddSalesToEuOrNi = true)(request, messages(application)).toString
-//      }
-//    }
+    "must populate the view correctly on a GET when the question has previously been answered" in {
+
+      val userAnswers = baseAnswers.set(SoldToCountryListPage(), true).success.value
+
+      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+
+      running(application) {
+
+        val request = FakeRequest(GET, soldToCountryListRoute)
+
+        val result = route(application, request).value
+
+        val view = application.injector.instanceOf[SoldToCountryListView]
+
+        val list = SoldToCountryListSummary.addToListRows(baseAnswers, waypoints, SoldToCountryListPage())
+
+        status(result) mustBe OK
+        contentAsString(result) must not be view(form.fill(true), waypoints, period, list, canAddSales = true)(request, messages(application)).toString
+      }
+    }
 
     "must return OK and populate the view correctly on a GET when the maximum number of sold to countries have already been added" in {
 
@@ -186,7 +184,7 @@ class SoldToCountryListControllerSpec extends SpecBase with MockitoSugar {
         val list = SoldToCountryListSummary.addToListRows(baseAnswers, waypoints, SoldToCountryListPage())
 
         status(result) mustBe BAD_REQUEST
-        contentAsString(result) mustBe view(boundForm, waypoints, period, list, canAddSales = true)(request, messages(application)).toString // TODO
+        contentAsString(result) mustBe view(boundForm, waypoints, period, list, canAddSales = true)(request, messages(application)).toString
       }
     }
 

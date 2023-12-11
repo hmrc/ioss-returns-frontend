@@ -15,15 +15,19 @@
  */
 
 package services
+
+import logging.Logging
 import models.{Country, Period, VatRateFromCountry}
 import play.api.libs.json.Json
 import play.api.{Configuration, Environment}
+import queries.SalesToCountryWithOptionalSales
 
 import javax.inject.Inject
 import scala.io.Source
 import scala.math.BigDecimal.RoundingMode
 
-class VatRateService @Inject()(env: Environment, config: Configuration) {
+
+class VatRateService @Inject()(env: Environment, config: Configuration) extends Logging {
 
   private val vatRateFile = config.get[String]("vat-rates-file")
 
@@ -35,7 +39,7 @@ class VatRateService @Inject()(env: Environment, config: Configuration) {
     val parsedRates = Json.parse(json).as[Map[String, Seq[VatRateFromCountry]]]
 
     parsedRates.map {
-      case(countryCode, rates) =>
+      case (countryCode, rates) =>
         val country =
           Country.euCountriesWithNI
             .find(_.code == countryCode)
@@ -51,7 +55,17 @@ class VatRateService @Inject()(env: Environment, config: Configuration) {
       .filter(_.validFrom isBefore period.lastDay.plusDays(1))
       .filter(rate => rate.validUntil.fold(true)(_.isAfter(period.firstDay.minusDays(1))))
 
+  def getRemainingVatRatesForCountry(
+                                      period: Period,
+                                      country: Country,
+                                      currentVatRatesForCountry: SalesToCountryWithOptionalSales
+                                    ): Seq[VatRateFromCountry] = {
+    vatRates(period, country)
+      .filterNot { vatRateForCountry =>
+        currentVatRatesForCountry.vatRatesFromCountry.exists(_.map(_.rate).contains(vatRateForCountry.rate))
+      }
+  }
+
   def standardVatOnSales(netSales: BigDecimal, vatRate: VatRateFromCountry): BigDecimal =
     ((netSales * vatRate.rate) / 100).setScale(2, RoundingMode.HALF_EVEN)
-
 }

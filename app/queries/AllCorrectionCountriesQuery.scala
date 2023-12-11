@@ -16,7 +16,7 @@
 
 package queries
 
-import models.{Index, Period}
+import models.Period
 import models.corrections.CorrectionToCountry
 import pages.PageConstants.{corrections, correctionsToCountry}
 import play.api.libs.json.JsPath

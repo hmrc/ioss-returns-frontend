@@ -48,13 +48,13 @@ class SalesToCountryController @Inject()(
 
       getCountryAndVatRate(waypoints, countryIndex, vatRateIndex) {
         case (country, vatRate) =>
-        val form: Form[BigDecimal] = formProvider(vatRate)
+          val form: Form[BigDecimal] = formProvider(vatRate)
 
-        val preparedForm = request.userAnswers.get(SalesToCountryPage(countryIndex, vatRateIndex)) match {
-          case None => form
-          case Some(value) => form.fill(value)
-        }
-        Ok(view(preparedForm, waypoints, period, countryIndex, country, vatRateIndex, vatRate))
+          val preparedForm = request.userAnswers.get(SalesToCountryPage(countryIndex, vatRateIndex)) match {
+            case None => form
+            case Some(value) => form.fill(value)
+          }
+          Ok(view(preparedForm, waypoints, period, countryIndex, vatRateIndex, vatRate, country))
       }
   }
 
@@ -63,19 +63,19 @@ class SalesToCountryController @Inject()(
       getCountryAndVatRateAsync(waypoints, countryIndex, vatRateIndex) {
         case (country, vatRate) =>
 
-        val period = request.userAnswers.period
-        val form: Form[BigDecimal] = formProvider(vatRate)
+          val period = request.userAnswers.period
+          val form: Form[BigDecimal] = formProvider(vatRate)
 
-        form.bindFromRequest().fold(
-          formWithErrors =>
-            BadRequest(view(formWithErrors, waypoints, period, countryIndex, country, vatRateIndex, vatRate)).toFuture,
+          form.bindFromRequest().fold(
+            formWithErrors =>
+              BadRequest(view(formWithErrors, waypoints, period, countryIndex, vatRateIndex, vatRate, country)).toFuture,
 
-          value =>
-            for {
-              updatedAnswers <- Future.fromTry(request.userAnswers.set(SalesToCountryPage(countryIndex, vatRateIndex), value))
-              _ <- cc.sessionRepository.set(updatedAnswers)
-            } yield Redirect(SalesToCountryPage(countryIndex, vatRateIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route)
-        )
+            value =>
+              for {
+                updatedAnswers <- Future.fromTry(request.userAnswers.set(SalesToCountryPage(countryIndex, vatRateIndex), value))
+                _ <- cc.sessionRepository.set(updatedAnswers)
+              } yield Redirect(SalesToCountryPage(countryIndex, vatRateIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route)
+          )
       }
   }
 }

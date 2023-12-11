@@ -16,36 +16,35 @@
 
 package viewmodels.checkAnswers
 
-import controllers.routes
 import models.{Index, UserAnswers}
-import pages.{VatOnSalesPage, Waypoints}
+import pages.{AddItemPage, VatOnSalesPage, Waypoints}
 import play.api.i18n.Messages
-import play.twirl.api.HtmlFormat
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
+import viewmodels.govuk.all.currencyFormat
 import viewmodels.govuk.summarylist._
 import viewmodels.implicits._
 
-object VatOnSalesSummary  {
+object VatOnSalesSummary {
 
-  def row(answers: UserAnswers, waypoints: Waypoints, index: Index)(implicit messages: Messages): Option[SummaryListRow] = {
-    answers.get(VatOnSalesPage(index, Index(0))).map {
+  def row(answers: UserAnswers, waypoints: Waypoints, countryIndex: Index, vatRateIndex: Index, sourcePage: AddItemPage)
+         (implicit messages: Messages): Option[SummaryListRow] =
+    answers.get(VatOnSalesPage(countryIndex, vatRateIndex)).map {
       answer =>
 
         val value = ValueViewModel(
           HtmlContent(
-            HtmlFormat.escape(messages(s"vatOnSales.$answer"))
+            currencyFormat(answer.amount)
           )
-        )
+        ).withCssClass("govuk-table__cell--numeric")
 
         SummaryListRowViewModel(
-          key     = "vatOnSales.checkYourAnswersLabel",
-          value   = value,
+          key = "vatOnSales.checkYourAnswersLabel",
+          value = value,
           actions = Seq(
-            ActionItemViewModel("site.change", routes.VatOnSalesController.onPageLoad(waypoints, index, Index(0)).url)
+            ActionItemViewModel("site.change", VatOnSalesPage(countryIndex, vatRateIndex).changeLink(waypoints, sourcePage).url)
               .withVisuallyHiddenText(messages("vatOnSales.change.hidden"))
           )
         )
     }
-  }
 }

@@ -120,7 +120,7 @@ trait Constraints {
         Invalid(errorKey)
     }
 
-  protected def validVatRates(vatRates: Seq[VatRateFromCountry], errorKey: String): Constraint[List[String]] =
+  protected def validVatRates(vatRates: Seq[VatRateFromCountry], errorKey: String): Constraint[Seq[String]] =
     Constraint {
       case seq if seq.forall(vatRates.map(_.rate.toString).contains) =>
         Valid

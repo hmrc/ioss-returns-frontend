@@ -35,4 +35,6 @@ object Waypoint {
 
   def fromString(s: String): Option[Waypoint] =
     fragments.get(s)
+      .orElse(CheckSalesPage.waypointFromString(s))
+
 }
