@@ -216,3 +216,7 @@ correctionListCountries.error.required = Select yes if you want to add correctio
 correctionListCountries.change.hidden = {0}
 correctionListCountries.remove.hidden = {0}
 vatCorrectionsList.maximumReached = You have added corrections to every country
+
+removeCountryCorrection.title = Are you sure you want to remove this correction?
+removeCountryCorrection.heading = Are you sure you want to remove this correction?
+removeCountryCorrection.error.required = Select yes if you want to remove this correction
