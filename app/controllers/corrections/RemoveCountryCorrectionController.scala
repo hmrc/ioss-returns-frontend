@@ -18,7 +18,7 @@ package controllers.corrections
 
 import controllers.actions._
 import forms.corrections.RemoveCountryCorrectionFormProvider
-import models.{Index, Mode, Period}
+import models.Index
 import pages.Waypoints
 import pages.corrections.RemoveCountryCorrectionPage
 import play.api.data.Form

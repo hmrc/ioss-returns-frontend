@@ -21,8 +21,7 @@ import controllers.routes
 import forms.corrections.CorrectionListCountriesFormProvider
 import models.Country
 import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchersSugar.eqTo
-import org.mockito.Mockito.{times, verify, when}
+import org.mockito.Mockito.when
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.mockito.MockitoSugar
 import pages.corrections.{CorrectionCountryPage, CorrectionListCountriesPage}

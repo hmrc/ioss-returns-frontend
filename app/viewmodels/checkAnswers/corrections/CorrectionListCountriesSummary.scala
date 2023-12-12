@@ -18,20 +18,19 @@ package viewmodels.checkAnswers.corrections
 
 import models.{Index, UserAnswers}
 import pages.{AddItemPage, JourneyRecoveryPage, Waypoints}
-import play.twirl.api.HtmlFormat
 import queries.AllCorrectionCountriesQuery
 import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.ListItem
 
 object CorrectionListCountriesSummary  {
 
   def addToListRows(answers: UserAnswers, waypoints: Waypoints, periodIndex: Index, sourcePage: AddItemPage): Seq[ListItem] =
-    answers.get(AllCorrectionCountriesQuery(answers.period)).getOrElse(List.empty).zipWithIndex.map {
+    answers.get(AllCorrectionCountriesQuery(periodIndex)).getOrElse(List.empty).zipWithIndex.map {
       case (correctionToCountry, countryIndex) =>
 
         ListItem(
           name = correctionToCountry.correctionCountry.name,
           changeUrl = JourneyRecoveryPage.changeLink(waypoints, sourcePage).url, //TODO navigate to correct page when created
-          removeUrl = JourneyRecoveryPage.route(waypoints).url //TODO navigate to correct page when created
+          removeUrl = controllers.corrections.routes.RemoveCountryCorrectionController.onPageLoad(waypoints, periodIndex, Index(countryIndex)).url
         )
     }
 }

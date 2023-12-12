@@ -46,7 +46,7 @@ class CorrectionCountryController @Inject()(
       val period = request.userAnswers.period
       val form = formProvider(
         index,
-        request.userAnswers.get(AllCorrectionCountriesQuery(period))
+        request.userAnswers.get(AllCorrectionCountriesQuery(periodIndex))
           .getOrElse(Seq.empty)
           .map(_.correctionCountry)
       )
@@ -66,7 +66,7 @@ class CorrectionCountryController @Inject()(
 
       val form = formProvider(
         index,
-        request.userAnswers.get(AllCorrectionCountriesQuery(period))
+        request.userAnswers.get(AllCorrectionCountriesQuery(periodIndex))
           .getOrElse(Seq.empty)
           .map(_.correctionCountry)
       )

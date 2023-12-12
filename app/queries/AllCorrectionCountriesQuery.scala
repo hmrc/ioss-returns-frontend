@@ -16,14 +16,14 @@
 
 package queries
 
-import models.Period
+import models.Index
 import models.corrections.CorrectionToCountry
 import pages.PageConstants.{corrections, correctionsToCountry}
 import play.api.libs.json.JsPath
 
-final case class AllCorrectionCountriesQuery(period: Period) extends Gettable[List[CorrectionToCountry]] with Settable[List[CorrectionToCountry]] {
+final case class AllCorrectionCountriesQuery(periodIndex: Index) extends Gettable[List[CorrectionToCountry]] with Settable[List[CorrectionToCountry]] {
 
-  override def path: JsPath = JsPath \ corrections \ period.toString \ correctionsToCountry
+  override def path: JsPath = JsPath \ corrections \ periodIndex.position \ correctionsToCountry
 
 }
 

@@ -27,7 +27,8 @@ case class RemoveCountryCorrectionPage(periodIndex: Index, countryIndex: Index) 
 
   override def toString: String = "removeCountryCorrection"
 
-  override def route(waypoints: Waypoints): Call = controllers.corrections.routes.RemoveCountryCorrectionController.onPageLoad(waypoints, periodIndex, countryIndex)
+  override def route(waypoints: Waypoints): Call =
+    controllers.corrections.routes.RemoveCountryCorrectionController.onPageLoad(waypoints, periodIndex, countryIndex)
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
     CorrectPreviousReturnPage
