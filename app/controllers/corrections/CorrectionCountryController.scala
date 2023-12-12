@@ -17,9 +17,10 @@
 package controllers.corrections
 
 import controllers.actions._
-import forms.CorrectionCountryFormProvider
+import forms.corrections.CorrectionCountryFormProvider
 import models.Index
-import pages.{CorrectionCountryPage, Waypoints}
+import pages.Waypoints
+import pages.corrections.CorrectionCountryPage
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import queries.AllCorrectionCountriesQuery
@@ -78,8 +79,7 @@ class CorrectionCountryController @Inject()(
           for {
             updatedAnswers <-
               Future.fromTry(request.userAnswers.set(CorrectionCountryPage(period, index), value))
-            _ <-
-              cc.sessionRepository.set(updatedAnswers)
+            _ <- cc.sessionRepository.set(updatedAnswers)
           } yield Redirect(CorrectionCountryPage(period, index).navigate(waypoints, request.userAnswers, updatedAnswers).route)
       )
   }

@@ -14,23 +14,26 @@
  * limitations under the License.
  */
 
-package pages
+package pages.corrections
 
-import models.{Country, Index, Period, UserAnswers}
+import models.{Index, Period, UserAnswers}
 import pages.PageConstants.{corrections, correctionsToCountry}
+import pages.{JourneyRecoveryPage, Page, QuestionPage, Waypoints}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
-final case class CorrectionCountryPage(period: Period, index: Index) extends QuestionPage[Country] {
+final case class VatAmountCorrectionCountryPage(period: Period, countryIndex: Index) extends QuestionPage[BigDecimal] {
 
-  override def path: JsPath =
-    JsPath \ corrections \ period.toString \ correctionsToCountry \ index.position \ toString
+  override def path: JsPath = JsPath \ corrections \ period.toString \ correctionsToCountry \ countryIndex.position \ toString
 
-  override def toString: String = "correctionCountry"
-
-  override def route(waypoints: Waypoints): Call =
-    controllers.corrections.routes.CorrectionCountryController.onPageLoad(waypoints, index) // Todo, will change when the next page is implemented
+  override def toString: String = "countryVatCorrection"
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
-    CorrectionCountryPage(period, index) // Todo, will change when the next page is implemented
+    answers.get(VatAmountCorrectionCountryPage(period, countryIndex)) match {
+      case Some(_) =>
+        VatPayableForCountryPage(period, countryIndex)
+      case _ => JourneyRecoveryPage
+    }
+
+  override def route(waypoints: Waypoints): Call = controllers.corrections.routes.VatAmountCorrectionCountryController.onPageLoad(waypoints, countryIndex)
 }

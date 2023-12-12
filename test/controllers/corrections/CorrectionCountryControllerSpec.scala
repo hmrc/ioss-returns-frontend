@@ -17,17 +17,18 @@
 package controllers.corrections
 
 import base.SpecBase
-import forms.CorrectionCountryFormProvider
+import forms.corrections.CorrectionCountryFormProvider
 import models.Country
 import org.mockito.Mockito.when
 import org.scalacheck.Arbitrary
 import org.scalatestplus.mockito.MockitoSugar
-import pages.CorrectionCountryPage
+import pages.corrections.CorrectionCountryPage
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
 import views.html.corrections.CorrectionCountryView
+
 import scala.concurrent.Future
 
 class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
@@ -77,7 +78,6 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
     "must redirect to the next page when valid data is submitted" in {
 
       val mockSessionRepository = mock[SessionRepository]
-
       val updatedAnswers = emptyUserAnswers.set(CorrectionCountryPage(period, index), country).get
 
       when(mockSessionRepository.set(updatedAnswers)) thenReturn Future.successful(true)
@@ -85,7 +85,7 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
       val application =
         applicationBuilder(userAnswers = Some(emptyUserAnswers))
           .overrides(
-            bind[SessionRepository].toInstance(mockSessionRepository)
+            bind[SessionRepository].toInstance(mockSessionRepository),
           )
           .build()
 
@@ -98,7 +98,11 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
 
         status(result) mustEqual SEE_OTHER
 
-        redirectLocation(result).value mustEqual controllers.corrections.routes.CorrectionCountryController.onPageLoad(waypoints, index).url // Todo, will change when the next page is implemented
+        redirectLocation(result).value mustEqual
+          CorrectionCountryPage(
+            period,
+            index
+          ).navigate(waypoints, emptyUserAnswers, updatedAnswers).url
       }
     }
 

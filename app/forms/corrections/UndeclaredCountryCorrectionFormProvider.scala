@@ -14,25 +14,17 @@
  * limitations under the License.
  */
 
-package forms
+package forms.corrections
 
 import forms.mappings.Mappings
-import models.Country.euCountriesWithNI
-import models.{Country, Index}
 import play.api.data.Form
 
 import javax.inject.Inject
 
-class CorrectionCountryFormProvider @Inject() extends Mappings {
+class UndeclaredCountryCorrectionFormProvider @Inject() extends Mappings {
 
-  def apply(index: Index, existingAnswers: Seq[Country]): Form[Country] = {
-    val countries = euCountriesWithNI
-
+  def apply(): Form[Boolean] =
     Form(
-      "value" -> text("correctionCountry.error.required")
-        .verifying("correctionCountry.error.required", value => countries.exists(_.code == value))
-        .transform[Country](value => Country.euCountries.find(_.code == value).get, _.code)
-        .verifying(notADuplicate(index, existingAnswers, "correctionCountry.error.duplicate"))
+      "value" -> boolean("undeclaredCountryCorrection.error.required")
     )
-  }
 }
