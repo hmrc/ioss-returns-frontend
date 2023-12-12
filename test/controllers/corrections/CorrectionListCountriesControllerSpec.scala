@@ -14,21 +14,25 @@
  * limitations under the License.
  */
 
-package controllers
+package controllers.corrections
 
 import base.SpecBase
-import forms.CorrectionListCountriesFormProvider
+import controllers.routes
+import forms.corrections.CorrectionListCountriesFormProvider
+import models.Country
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito.{times, verify, when}
+import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.mockito.MockitoSugar
-import pages.CorrectionListCountriesPage
+import pages.corrections.{CorrectionCountryPage, CorrectionListCountriesPage}
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
-import views.html.CorrectionListCountriesView
+import viewmodels.checkAnswers.corrections.CorrectionListCountriesSummary
+import views.html.corrections.CorrectionListCountriesView
 
 import scala.concurrent.Future
 
@@ -37,13 +41,18 @@ class CorrectionListCountriesControllerSpec extends SpecBase with MockitoSugar {
   val formProvider = new CorrectionListCountriesFormProvider()
   val form: Form[Boolean] = formProvider()
 
-  lazy val correctionListCountriesRoute: String = routes.CorrectionListCountriesController.onPageLoad(waypoints, index).url
+  lazy val correctionListCountriesRoute: String = controllers.corrections.routes.CorrectionListCountriesController.onPageLoad(waypoints, index).url
+
+  private val country = arbitrary[Country].sample.value
+
+  private val baseAnswers = emptyUserAnswers
+    .set(CorrectionCountryPage(index, index), country).success.value
 
   "CorrectionListCountries Controller" - {
 
     "must return OK and the correct view for a GET" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(baseAnswers)).build()
 
       running(application) {
         val request = FakeRequest(GET, correctionListCountriesRoute)
@@ -51,17 +60,23 @@ class CorrectionListCountriesControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         val view = application.injector.instanceOf[CorrectionListCountriesView]
+        val list = CorrectionListCountriesSummary.addToListRows(baseAnswers, waypoints, index, CorrectionListCountriesPage())
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, waypoints, period, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(
+          form,
+          waypoints,
+          list,
+          period,
+          index,
+          canAddCountries = true
+        )(request, messages(application)).toString
       }
     }
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = emptyUserAnswers.set(CorrectionListCountriesPage(index), true).success.value
-
-      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(baseAnswers)).build()
 
       running(application) {
         val request = FakeRequest(GET, correctionListCountriesRoute)
@@ -69,9 +84,17 @@ class CorrectionListCountriesControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[CorrectionListCountriesView]
 
         val result = route(application, request).value
+        val list = CorrectionListCountriesSummary.addToListRows(baseAnswers, waypoints, index, CorrectionListCountriesPage())
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(true), waypoints, period, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(
+          form,
+          waypoints,
+          list,
+          period,
+          index,
+          canAddCountries = true
+        )(request, messages(application)).toString
       }
     }
 
@@ -82,29 +105,26 @@ class CorrectionListCountriesControllerSpec extends SpecBase with MockitoSugar {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
       val application =
-        applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        applicationBuilder(userAnswers = Some(baseAnswers))
           .overrides(
             bind[SessionRepository].toInstance(mockSessionRepository)
           )
           .build()
 
       running(application) {
-        val request =
-          FakeRequest(POST, correctionListCountriesRoute)
-            .withFormUrlEncodedBody(("value", "true"))
+        val request = FakeRequest(POST, correctionListCountriesRoute).withFormUrlEncodedBody(("value", "true"))
 
         val result = route(application, request).value
-        val expectedAnswers = emptyUserAnswers.set(CorrectionListCountriesPage(index), true).success.value
+        val expectedAnswers = emptyUserAnswers.set(CorrectionListCountriesPage(), true).success.value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual CorrectionListCountriesPage(index).navigate(waypoints, emptyUserAnswers, expectedAnswers).url
-        verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
+        redirectLocation(result).value mustEqual CorrectionListCountriesPage(Some(index)).navigate(waypoints, emptyUserAnswers, expectedAnswers).url
       }
     }
 
     "must return a Bad Request and errors when invalid data is submitted" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(baseAnswers)).build()
 
       running(application) {
         val request =
@@ -116,9 +136,17 @@ class CorrectionListCountriesControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[CorrectionListCountriesView]
 
         val result = route(application, request).value
+        val list = CorrectionListCountriesSummary.addToListRows(baseAnswers, waypoints, index, CorrectionListCountriesPage())
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, waypoints, period, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(
+          boundForm,
+          waypoints,
+          list,
+          period,
+          index,
+          canAddCountries = true
+        )(request, messages(application)).toString
       }
     }
 

@@ -14,32 +14,17 @@
  * limitations under the License.
  */
 
-package forms
+package forms.corrections
 
-import forms.behaviours.BooleanFieldBehaviours
-import play.api.data.FormError
+import forms.mappings.Mappings
+import play.api.data.Form
 
-class CorrectionListCountriesFormProviderSpec extends BooleanFieldBehaviours {
+import javax.inject.Inject
 
-  val requiredKey = "correctionListCountries.error.required"
-  val invalidKey = "error.boolean"
+class CorrectionListCountriesFormProvider @Inject() extends Mappings {
 
-  val form = new CorrectionListCountriesFormProvider()()
-
-  ".value" - {
-
-    val fieldName = "value"
-
-    behave like booleanField(
-      form,
-      fieldName,
-      invalidError = FormError(fieldName, invalidKey)
+  def apply(): Form[Boolean] =
+    Form(
+      "value" -> boolean("correctionListCountries.error.required")
     )
-
-    behave like mandatoryField(
-      form,
-      fieldName,
-      requiredError = FormError(fieldName, requiredKey)
-    )
-  }
 }

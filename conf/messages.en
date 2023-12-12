@@ -205,9 +205,14 @@ undeclaredCountryCorrection.legend = Do you want to add a correction to this cou
 undeclaredCountryCorrection.error.required = Select yes if you want to add a correction to this country
 
 correctionListCountries.title = You have not corrected the VAT amount for any countries
+correctionListCountries.title.singular = You have corrected the VAT amount for 1 country
+correctionListCountries.title.plural = You have corrected the VAT amount for {0} countries
 correctionListCountries.heading = You have not corrected the VAT amount for any countries
+correctionListCountries.heading.singular = You have corrected the VAT amount for 1 country
+correctionListCountries.heading.plural = You have corrected the VAT amount for {0} countries
 correctionListCountries.section = Correction period: {0}
 correctionListCountries.addAnother = Add corrections to VAT for another country?
-correctionListCountries.checkYourAnswersLabel = correctionListCountries
-correctionListCountries.error.required = Select yes if correctionListCountries
-correctionListCountries.change.hidden = CorrectionListCountries
+correctionListCountries.error.required = Select yes if you want to add corrections to VAT for another country
+correctionListCountries.change.hidden = {0}
+correctionListCountries.remove.hidden = {0}
+vatCorrectionsList.maximumReached = You have added corrections to every country

@@ -26,11 +26,11 @@
         button: ButtonGroup
 )
 
-@(form: Form[_], waypoints: Waypoints, period: Period, index: Index)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, period: Period, periodIndex: Index, index: Index)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, messages("correctionCountry.title"))) {
 
-    @formHelper(action = controllers.corrections.routes.CorrectionCountryController.onSubmit(waypoints, index)) {
+    @formHelper(action = controllers.corrections.routes.CorrectionCountryController.onSubmit(waypoints, periodIndex, index)) {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))

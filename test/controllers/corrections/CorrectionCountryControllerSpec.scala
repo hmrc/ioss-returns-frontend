@@ -37,7 +37,7 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
   private val form = formProvider(index, Seq.empty)
   private val country: Country = Arbitrary.arbitrary[Country].sample.value
 
-  lazy val correctionCountryRoute: String = routes.CorrectionCountryController.onPageLoad(waypoints, index).url
+  lazy val correctionCountryRoute: String = routes.CorrectionCountryController.onPageLoad(waypoints, index, index).url
 
   "CorrectionCountry Controller" - {
 
@@ -53,13 +53,13 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[CorrectionCountryView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, waypoints, period, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, waypoints, period, index, index)(request, messages(application)).toString
       }
     }
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = emptyUserAnswers.set(CorrectionCountryPage(period, index), country).success.value
+      val userAnswers = emptyUserAnswers.set(CorrectionCountryPage(index, index), country).success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -71,14 +71,15 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(country), waypoints, period, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form.fill(country), waypoints, period, index, index)(request, messages(application)).toString
       }
     }
 
     "must redirect to the next page when valid data is submitted" in {
 
       val mockSessionRepository = mock[SessionRepository]
-      val updatedAnswers = emptyUserAnswers.set(CorrectionCountryPage(period, index), country).get
+
+      val updatedAnswers = emptyUserAnswers.set(CorrectionCountryPage(index, index), country).get
 
       when(mockSessionRepository.set(updatedAnswers)) thenReturn Future.successful(true)
 
@@ -100,9 +101,10 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
 
         redirectLocation(result).value mustEqual
           CorrectionCountryPage(
-            period,
+            index,
             index
           ).navigate(waypoints, emptyUserAnswers, updatedAnswers).url
+
       }
     }
 
@@ -122,7 +124,7 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, waypoints, period, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, waypoints, period, index, index)(request, messages(application)).toString
       }
     }
 

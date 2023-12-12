@@ -17,11 +17,12 @@
 package queries
 
 import models.Index
+import pages.PageConstants.{corrections, correctionsToCountry}
 import play.api.libs.json.{JsObject, JsPath}
 
-case class DeriveNumberOfCorrections(periodIndex: Index) extends Derivable[List[JsObject], Int] {
+case class DeriveNumberOfCorrections(periodIndex: Index) extends Derivable[Seq[JsObject], Int] {
 
-  override val derive: List[JsObject] => Int = _.size
+  override val derive: Seq[JsObject] => Int = _.size
 
-  override  def path: JsPath = JsPath \ "corrections" \ periodIndex.position \ "correctionsToCountry"
+  override def path: JsPath = JsPath \ corrections \ periodIndex.position \ correctionsToCountry
 }

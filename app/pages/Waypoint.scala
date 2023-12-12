@@ -17,6 +17,7 @@
 package pages
 
 import models.{CheckMode, Mode, NormalMode}
+import pages.corrections.CorrectionListCountriesPage
 
 case class Waypoint(
                      page: WaypointPage,
@@ -30,7 +31,9 @@ object Waypoint {
     Map(
       SoldToCountryListPage.normalModeUrlFragment -> SoldToCountryListPage().waypoint(NormalMode),
       SoldToCountryListPage.checkModeUrlFragment -> SoldToCountryListPage().waypoint(CheckMode),
-      CheckYourAnswersPage.urlFragment -> CheckYourAnswersPage.waypoint
+      CheckYourAnswersPage.urlFragment -> CheckYourAnswersPage.waypoint,
+      CorrectionListCountriesPage.normalModeUrlFragment -> CorrectionListCountriesPage().waypoint(NormalMode),
+      CorrectionListCountriesPage.checkModeUrlFragment -> CorrectionListCountriesPage().waypoint(CheckMode),
     )
 
   def fromString(s: String): Option[Waypoint] =
