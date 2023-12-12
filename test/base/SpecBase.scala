@@ -65,7 +65,7 @@ trait SpecBase
   def completeUserAnswers: UserAnswers = emptyUserAnswers
     .set(SoldGoodsPage, true).success.value
     .set(SoldToCountryPage(index), Country("ES", "Spain")).success.value
-    .set(VatRatesFromCountryPage(index), List(VatRateFromCountry(10, VatRateType.Reduced, arbitraryDate))).success.value
+    .set(VatRatesFromCountryPage(index, index), List(VatRateFromCountry(10, VatRateType.Reduced, arbitraryDate))).success.value
     .set(SalesToCountryPage(index, index), BigDecimal(100)).success.value
     .set(VatOnSalesPage(index, index), VatOnSales(Standard, BigDecimal(20))).success.value
 

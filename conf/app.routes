@@ -59,13 +59,13 @@ POST        /remove-vat-rate-sales-for-country/:countryIndex/:nextVatRateIndex  
 GET         /remaining-vat-rate-from-country/:countryIndex/:nextVatRateIndex          controllers.RemainingVatRateFromCountryController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, countryIndex: Index, nextVatRateIndex: Index)
 POST        /remaining-vat-rate-from-country/:countryIndex/:nextVatRateIndex          controllers.RemainingVatRateFromCountryController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, countryIndex: Index, nextVatRateIndex: Index)
 
-GET        /correction-return-single-period/:index                                    controllers.CorrectionReturnSinglePeriodController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, index: Index)
-POST       /correction-return-single-period/:index                                    controllers.CorrectionReturnSinglePeriodController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, index: Index)
+GET        /correction-return-single-period/:index                                    controllers.corrections.CorrectionReturnSinglePeriodController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, index: Index)
+POST       /correction-return-single-period/:index                                    controllers.corrections.CorrectionReturnSinglePeriodController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, index: Index)
 
-GET        /correction-return-period/:index                                           controllers.CorrectionReturnPeriodController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, index: Index)
-POST       /correction-return-period/:index                                           controllers.CorrectionReturnPeriodController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, index: Index)
+GET        /correction-return-period/:index                                           controllers.corrections.CorrectionReturnPeriodController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, index: Index)
+POST       /correction-return-period/:index                                           controllers.corrections.CorrectionReturnPeriodController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, index: Index)
 
-GET        /no-correction-periods-available                                           controllers.NoOtherCorrectionPeriodsAvailableController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
+GET        /no-correction-periods-available                                           controllers.corrections.NoOtherCorrectionPeriodsAvailableController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
 POST       /no-correction-periods-available                                           controllers.corrections.NoOtherCorrectionPeriodsAvailableController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints)
 
 GET         /correct-previous-return                                                  controllers.corrections.CorrectPreviousReturnController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
