@@ -65,4 +65,11 @@ POST        /correct-previous-return                                            
 GET         /correction-country/:countryIndex                                         controllers.corrections.CorrectionCountryController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, countryIndex: Index)
 POST        /correction-country/:countryIndex                                         controllers.corrections.CorrectionCountryController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, countryIndex: Index)
 
+GET         /country-vat-correction-amount/:countryIndex                                controllers.corrections.VatAmountCorrectionCountryController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, countryIndex: Index)
+POST        /country-vat-correction-amount/:countryIndex                                controllers.corrections.VatAmountCorrectionCountryController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, countryIndex: Index)
 
+GET         /add-new-country/:countryIndex                                              controllers.corrections.UndeclaredCountryCorrectionController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, countryIndex: Index)
+POST        /add-new-country/:countryIndex                                              controllers.corrections.UndeclaredCountryCorrectionController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, countryIndex: Index)
+
+GET         /vat-payable-confirm/:countryIndex                                           controllers.corrections.VatPayableForCountryController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, countryIndex: Index)
+POST        /vat-payable-confirm/:countryIndex                                           controllers.corrections.VatPayableForCountryController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, countryIndex: Index)

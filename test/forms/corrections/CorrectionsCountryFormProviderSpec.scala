@@ -16,7 +16,6 @@
 
 package forms.corrections
 
-import forms.CorrectionCountryFormProvider
 import forms.behaviours.StringFieldBehaviours
 import models.{Country, Index}
 import org.scalacheck.Arbitrary.arbitrary

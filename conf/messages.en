@@ -176,3 +176,30 @@ correctionCountry.change.hidden = which country you sold to
 correctionCountry.hint = You can also add a new country that was not included in your previous return.
 correctionCountry.error.required = Select which country you would like to correct
 correctionCountry.error.duplicate = You selected this country already. Select a different one.
+
+vatPayableForCountry.title = Is the total VAT payable for {0} {1}?
+vatPayableForCountry.heading = Is the total VAT payable for {0} {1}?
+vatPayableForCountry.caption = Correction period: {0}
+vatPayableForCountry.hint = We''ve calculated this total based on your most recent declaration and the correction amount.
+vatPayableForCountry.error.required = Select yes if the total VAT payable for {0} is {1}
+
+vatAmountCorrectionCountry.title = What is your correction for the VAT payable to {0}?
+vatAmountCorrectionCountry.heading = What is your correction for the VAT payable to {0}?
+vatAmountCorrectionCountry.caption = Correction period: {0}
+vatAmountCorrectionCountry.hint = Enter a minus value if you declared too much in your previous return.
+vatAmountCorrectionCountry.previous-amount.hint = Your most recent declaration for this period is {0}.
+vatAmountCorrectionCountry.checkYourAnswersLabel = Correction amount
+vatAmountCorrectionCountry.error.negative = The correction value cannot be less than {0}
+vatAmountCorrectionCountry.error.nonNumeric = Enter your correction for the total VAT payable to {0} using numbers
+vatAmountCorrectionCountry.error.required = Enter your correction for the total VAT payable to {0}
+vatAmountCorrectionCountry.error.wholeNumber = Enter your correction for the total VAT payable to {0} using whole numbers
+vatAmountCorrectionCountry.error.outOfRange = Correction for the total VAT payable must be between {0} and {1}
+vatAmountCorrectionCountry.error.outOfRange.undeclared = Correction for the total VAT payable must be less than {1}
+vatAmountCorrectionCountry.error.nonZero = Correction for the total VAT payable must not be zero
+vatAmountCorrectionCountry.change.hidden = Correction amount
+
+undeclaredCountryCorrection.title = You did not declare any VAT to {0} in your original return
+undeclaredCountryCorrection.heading = You did not declare any VAT to {0} in your original return
+undeclaredCountryCorrection.caption = Correction period: {0}
+undeclaredCountryCorrection.legend = Do you want to add a correction to this country?
+undeclaredCountryCorrection.error.required = Select yes if you want to add a correction to this country
