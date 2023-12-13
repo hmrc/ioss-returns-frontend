@@ -50,7 +50,7 @@
 @layout(pageTitle = title(
     form,
     titleText,
-    Some(messages("correctionListCountries.section"))
+    Some(messages("correctionListCountries.section", period.displayText))
 )) {
 
     @formHelper(action = controllers.corrections.routes.CorrectionListCountriesController.onSubmit(waypoints, periodIndex), Symbol("autoComplete") -> "off") {
@@ -60,7 +60,7 @@
         }
 
         <header class="hmrc-page-heading">
-            <p class="govuk-caption-xl hmrc-caption-l">@messages("correctionListCountries.section")</p>
+            <p class="govuk-caption-xl hmrc-caption-l">@messages("correctionListCountries.section", period.displayText)</p>
             <h1 class="govuk-heading-l">@headingText</h1>
         </header>
 

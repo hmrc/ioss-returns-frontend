@@ -54,7 +54,7 @@ class CorrectionListCountriesController @Inject()(
 
           val canAddCountries = number < Country.euCountriesWithNI.size
           val list = CorrectionListCountriesSummary
-            .addToListRows(request.userAnswers, waypoints, periodIndex, CorrectionListCountriesPage())
+            .addToListRows(request.userAnswers, waypoints, periodIndex, CorrectionListCountriesPage(periodIndex))
 
           Future.successful(Ok(view(form, waypoints, list, period, periodIndex, canAddCountries)))
       }
@@ -71,7 +71,7 @@ class CorrectionListCountriesController @Inject()(
 
           val canAddCountries = number < Country.euCountriesWithNI.size
           val list = CorrectionListCountriesSummary
-            .addToListRows(request.userAnswers, waypoints, periodIndex, CorrectionListCountriesPage())
+            .addToListRows(request.userAnswers, waypoints, periodIndex, CorrectionListCountriesPage(periodIndex))
 
           form.bindFromRequest().fold(
           formWithErrors =>
@@ -79,9 +79,9 @@ class CorrectionListCountriesController @Inject()(
 
           value =>
             for {
-              updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionListCountriesPage(), value))
+              updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionListCountriesPage(periodIndex), value))
               _ <- cc.sessionRepository.set(updatedAnswers)
-            } yield Redirect(CorrectionListCountriesPage().navigate(waypoints, request.userAnswers, updatedAnswers).route)
+            } yield Redirect(CorrectionListCountriesPage(periodIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route)
         )
       }
   }

@@ -32,12 +32,11 @@ object Waypoint {
       SoldToCountryListPage.normalModeUrlFragment -> SoldToCountryListPage().waypoint(NormalMode),
       SoldToCountryListPage.checkModeUrlFragment -> SoldToCountryListPage().waypoint(CheckMode),
       CheckYourAnswersPage.urlFragment -> CheckYourAnswersPage.waypoint,
-      CorrectionListCountriesPage.normalModeUrlFragment -> CorrectionListCountriesPage().waypoint(NormalMode),
-      CorrectionListCountriesPage.checkModeUrlFragment -> CorrectionListCountriesPage().waypoint(CheckMode),
     )
 
   def fromString(s: String): Option[Waypoint] =
     fragments.get(s)
       .orElse(CheckSalesPage.waypointFromString(s))
+      .orElse(CorrectionListCountriesPage.waypointFromString(s))
 
 }

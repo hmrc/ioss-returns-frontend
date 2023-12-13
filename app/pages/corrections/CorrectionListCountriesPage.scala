@@ -16,39 +16,40 @@
 
 package pages.corrections
 
-import models.{Country, Index, UserAnswers}
-import pages.{AddItemPage, JourneyRecoveryPage, Page, QuestionPage, Waypoints}
+import models.{Country, Index, NormalMode, UserAnswers}
+import pages.{AddItemPage, JourneyRecoveryPage, NonEmptyWaypoints, Page, QuestionPage, Waypoint, Waypoints}
 import play.api.libs.json.{JsObject, JsPath}
 import play.api.mvc.Call
 import queries.{Derivable, DeriveNumberOfCorrections}
 
-object CorrectionListCountriesPage {
-  val normalModeUrlFragment: String = "add-correction-list-countries"
-  val checkModeUrlFragment: String = "change-add-correction-list-countries"
-}
 
-final case class CorrectionListCountriesPage(periodIndex: Option[Index] = None) extends AddItemPage(periodIndex) with QuestionPage[Boolean] {
+final case class CorrectionListCountriesPage(periodIndex: Index, countryIndex: Option[Index] = None)
+  extends AddItemPage(countryIndex) with QuestionPage[Boolean] {
 
   override def isTheSamePage(other: Page): Boolean = other match {
     case _: CorrectionListCountriesPage => true
     case _ => false
   }
 
-  override val normalModeUrlFragment: String = CorrectionListCountriesPage.normalModeUrlFragment
-  override val checkModeUrlFragment: String = CorrectionListCountriesPage.checkModeUrlFragment
+  override val normalModeUrlFragment: String = CorrectionListCountriesPage.normalModeUrlFragment(periodIndex)
+  override val checkModeUrlFragment: String = CorrectionListCountriesPage.checkModeUrlFragment(periodIndex)
 
   override def path: JsPath = JsPath \ toString
 
   override def toString: String = "correctionListCountries"
 
-  override def route(waypoints: Waypoints): Call = controllers.corrections.routes.CorrectionListCountriesController.onPageLoad(waypoints, Index(0))
+  override def route(waypoints: Waypoints): Call =
+    controllers.corrections.routes.CorrectionListCountriesController.onPageLoad(waypoints, periodIndex)
+
+  override protected def nextPageCheckMode(waypoints: NonEmptyWaypoints, answers: UserAnswers): Page =
+    nextPageNormalMode(waypoints, answers)
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
     answers.get(this).map {
       case true =>
         index.map { i =>
           if (i.position +1 < Country.euCountriesWithNI.size) {
-            CorrectionCountryPage(Index(0), Index(i.position + 1))
+            CorrectionCountryPage(periodIndex, Index(i.position + 1))
           } else {
             JourneyRecoveryPage
           }
@@ -56,12 +57,33 @@ final case class CorrectionListCountriesPage(periodIndex: Option[Index] = None) 
           .getOrElse {
             answers
               .get(deriveNumberOfItems)
-              .map(n => CorrectionCountryPage(Index(0), Index(n)))
+              .map(n => CorrectionCountryPage(periodIndex, Index(n)))
               .orRecover
           }
       case false =>
         JourneyRecoveryPage
     }.orRecover
 
-  override def deriveNumberOfItems: Derivable[Seq[JsObject], Int] = DeriveNumberOfCorrections(Index(0))
+  override def deriveNumberOfItems: Derivable[Seq[JsObject], Int] = DeriveNumberOfCorrections(periodIndex)
+}
+
+object CorrectionListCountriesPage {
+  def normalModeUrlFragment(periodIndex: Index): String = s"add-correction-list-countries-${periodIndex.display}"
+  def checkModeUrlFragment(periodIndex: Index): String = s"change-add-correction-list-countries-${periodIndex.display}"
+
+  def waypointFromString(s: String): Option[Waypoint] = {
+
+    val normalModePattern = """add-correction-list-countries-(\d{1,3})""".r.anchored
+    val checkModePattern = """change-add-correction-list-countries-(\d{1,3})""".r.anchored
+
+    s match {
+      case normalModePattern(indexDisplay) =>
+        Some(CorrectionListCountriesPage(Index(indexDisplay.toInt - 1), None).waypoint(NormalMode))
+      case checkModePattern(indexDisplay) =>
+        Some(CorrectionListCountriesPage(Index(indexDisplay.toInt - 1), None).waypoint(NormalMode))
+
+      case _ =>
+        None
+    }
+  }
 }
