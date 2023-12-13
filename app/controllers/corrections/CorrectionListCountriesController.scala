@@ -38,7 +38,7 @@ class CorrectionListCountriesController @Inject()(
                                          cc: AuthenticatedControllerComponents,
                                          formProvider: CorrectionListCountriesFormProvider,
                                          view: CorrectionListCountriesView
-                                 )(implicit ec: ExecutionContext) extends FrontendBaseController with CorrectionBaseController with I18nSupport {
+                                 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 

@@ -35,15 +35,15 @@ class VatPayableForCountryControllerSpec extends SpecBase with MockitoSugar {
   private val formProvider = new VatPayableForCountryFormProvider()
   private val form = formProvider(Country("DE", "Germany"), BigDecimal(1000))
 
-  private lazy val vatPayableForCountryRoute = controllers.corrections.routes.VatPayableForCountryController.onPageLoad(waypoints, Index(0)).url
+  private lazy val vatPayableForCountryRoute = controllers.corrections.routes.VatPayableForCountryController.onPageLoad(waypoints, index, Index(0)).url
 
   "VatPayableForCountry Controller" - {
 
     "must return OK and the correct view for a GET" in {
 
       val userAnswers = emptyUserAnswers
-        .set(CorrectionCountryPage(period, index), Country("DE", "Germany")).success.value
-        .set(VatAmountCorrectionCountryPage(period, index), BigDecimal(1000)).success.value
+        .set(CorrectionCountryPage(index, index), Country("DE", "Germany")).success.value
+        .set(VatAmountCorrectionCountryPage(index, index), BigDecimal(1000)).success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers))
         .build()
@@ -56,16 +56,16 @@ class VatPayableForCountryControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[VatPayableForCountryView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, waypoints, Index(0), Country("DE", "Germany"), period, BigDecimal(1000))(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, waypoints, index, Index(0), Country("DE", "Germany"), period, BigDecimal(1000))(request, messages(application)).toString
       }
     }
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
       val userAnswers = emptyUserAnswers
-        .set(VatPayableForCountryPage(period, Index(0)), true).success.value
-        .set(CorrectionCountryPage(period, index), Country("DE", "Germany")).success.value
-        .set(VatAmountCorrectionCountryPage(period, index), BigDecimal(1000)).success.value
+        .set(VatPayableForCountryPage(index, Index(0)), true).success.value
+        .set(CorrectionCountryPage(index, index), Country("DE", "Germany")).success.value
+        .set(VatAmountCorrectionCountryPage(index, index), BigDecimal(1000)).success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers))
         .build()
@@ -81,6 +81,7 @@ class VatPayableForCountryControllerSpec extends SpecBase with MockitoSugar {
         contentAsString(result) mustEqual view(
           form.fill(true),
           waypoints,
+          index,
           Index(0),
           Country("DE", "Germany"),
           period,
@@ -92,8 +93,8 @@ class VatPayableForCountryControllerSpec extends SpecBase with MockitoSugar {
     "must redirect to the next page when valid data is submitted" in {
 
       val userAnswers = emptyUserAnswers
-        .set(CorrectionCountryPage(period, index), Country("DE", "Germany")).success.value
-        .set(VatAmountCorrectionCountryPage(period, index), BigDecimal(1000)).success.value
+        .set(CorrectionCountryPage(index, index), Country("DE", "Germany")).success.value
+        .set(VatAmountCorrectionCountryPage(index, index), BigDecimal(1000)).success.value
 
       val application =
         applicationBuilder(userAnswers = Some(userAnswers))
@@ -105,19 +106,19 @@ class VatPayableForCountryControllerSpec extends SpecBase with MockitoSugar {
             .withFormUrlEncodedBody(("value", "true"))
 
         val result = route(application, request).value
-        val expectedAnswers = userAnswers.set(VatPayableForCountryPage(period, Index(0)), true).success.value
+        val expectedAnswers = userAnswers.set(VatPayableForCountryPage(index, Index(0)), true).success.value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual VatPayableForCountryPage(period, Index(0)).navigate(waypoints, userAnswers, expectedAnswers).url
+        redirectLocation(result).value mustEqual VatPayableForCountryPage(index, Index(0)).navigate(waypoints, userAnswers, expectedAnswers).url
       }
     }
 
     "must return a Bad Request and errors when invalid data is submitted" in {
 
       val userAnswers = emptyUserAnswers
-        .set(VatPayableForCountryPage(period, index), true).success.value
-        .set(CorrectionCountryPage(period, index), Country("DE", "Germany")).success.value
-        .set(VatAmountCorrectionCountryPage(period, index), BigDecimal(1000)).success.value
+        .set(VatPayableForCountryPage(index, index), true).success.value
+        .set(CorrectionCountryPage(index, index), Country("DE", "Germany")).success.value
+        .set(VatAmountCorrectionCountryPage(index, index), BigDecimal(1000)).success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers))
         .build()
@@ -137,6 +138,7 @@ class VatPayableForCountryControllerSpec extends SpecBase with MockitoSugar {
         contentAsString(result) mustEqual view(
           boundForm,
           waypoints,
+          index,
           Index(0),
           Country("DE", "Germany"),
           period,

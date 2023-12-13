@@ -16,22 +16,22 @@
 
 package pages.corrections
 
-import models.{Country, Index, Period, UserAnswers}
+import models.{Country, Index, UserAnswers}
 import pages.PageConstants.{corrections, correctionsToCountry}
 import pages.{Page, QuestionPage, Waypoints}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
-final case class CorrectionCountryPage(period: Period, index: Index) extends QuestionPage[Country] {
+final case class CorrectionCountryPage(periodIndex: Index, index: Index) extends QuestionPage[Country] {
 
   override def path: JsPath =
-    JsPath \ corrections \ period.toString \ correctionsToCountry \ index.position \ toString
+    JsPath \ corrections \ periodIndex.position \ correctionsToCountry \ index.position \ toString
 
   override def toString: String = "correctionCountry"
 
   override def route(waypoints: Waypoints): Call =
-    controllers.corrections.routes.CorrectionCountryController.onPageLoad(waypoints, index)
+    controllers.corrections.routes.CorrectionCountryController.onPageLoad(waypoints, periodIndex, index)
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
-    UndeclaredCountryCorrectionPage(period, index)
+    UndeclaredCountryCorrectionPage(periodIndex, index)
 }

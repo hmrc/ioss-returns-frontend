@@ -28,7 +28,7 @@
     button: ButtonGroup
 )
 
-@(form: Form[_], waypoints: Waypoints, period: Period, countryIndex: Index, country: Country)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, period: Period, periodIndex: Index, countryIndex: Index, country: Country)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(
     form,
@@ -36,7 +36,7 @@
     Some(messages("caption.fromCountry.periodAndCountry", period.displayText, country.name))
 )) {
 
-    @formHelper(action = controllers.corrections.routes.VatAmountCorrectionCountryController.onSubmit(waypoints, countryIndex), Symbol("autoComplete") -> "off") {
+    @formHelper(action = controllers.corrections.routes.VatAmountCorrectionCountryController.onSubmit(waypoints, periodIndex, countryIndex), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))
@@ -56,7 +56,7 @@
         )
 
         @button(
-            messages("site.continue", VatAmountCorrectionCountryPage(period, countryIndex).route(waypoints).url, waypoints)
+            messages("site.continue", VatAmountCorrectionCountryPage(periodIndex, countryIndex).route(waypoints).url, waypoints)
         )
     }
 }

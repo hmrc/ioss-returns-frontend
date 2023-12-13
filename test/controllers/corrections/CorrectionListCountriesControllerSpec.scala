@@ -59,7 +59,7 @@ class CorrectionListCountriesControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         val view = application.injector.instanceOf[CorrectionListCountriesView]
-        val list = CorrectionListCountriesSummary.addToListRows(baseAnswers, waypoints, index, CorrectionListCountriesPage())
+        val list = CorrectionListCountriesSummary.addToListRows(baseAnswers, waypoints, index, CorrectionListCountriesPage(index))
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(
@@ -83,7 +83,7 @@ class CorrectionListCountriesControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[CorrectionListCountriesView]
 
         val result = route(application, request).value
-        val list = CorrectionListCountriesSummary.addToListRows(baseAnswers, waypoints, index, CorrectionListCountriesPage())
+        val list = CorrectionListCountriesSummary.addToListRows(baseAnswers, waypoints, index, CorrectionListCountriesPage(index))
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(
@@ -114,10 +114,10 @@ class CorrectionListCountriesControllerSpec extends SpecBase with MockitoSugar {
         val request = FakeRequest(POST, correctionListCountriesRoute).withFormUrlEncodedBody(("value", "true"))
 
         val result = route(application, request).value
-        val expectedAnswers = emptyUserAnswers.set(CorrectionListCountriesPage(), true).success.value
+        val expectedAnswers = emptyUserAnswers.set(CorrectionListCountriesPage(index), true).success.value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual CorrectionListCountriesPage(Some(index)).navigate(waypoints, emptyUserAnswers, expectedAnswers).url
+        redirectLocation(result).value mustEqual CorrectionListCountriesPage(index, Some(index)).navigate(waypoints, emptyUserAnswers, expectedAnswers).url
       }
     }
 
@@ -135,7 +135,7 @@ class CorrectionListCountriesControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[CorrectionListCountriesView]
 
         val result = route(application, request).value
-        val list = CorrectionListCountriesSummary.addToListRows(baseAnswers, waypoints, index, CorrectionListCountriesPage())
+        val list = CorrectionListCountriesSummary.addToListRows(baseAnswers, waypoints, index, CorrectionListCountriesPage(index))
 
         status(result) mustEqual BAD_REQUEST
         contentAsString(result) mustEqual view(

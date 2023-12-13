@@ -38,43 +38,43 @@ class VatPayableForCountryController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(waypoints: Waypoints, countryIndex: Index): Action[AnyContent] = cc.authAndRequireData().async {
+  def onPageLoad(waypoints: Waypoints, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndRequireData().async {
     // ToDo: Downstream not ready to check Correction Eligibility yet.
     // ToDo: Enhance the auth when ready
     implicit request =>
-      withAmountPeriodAndCountryCorrected(countryIndex) { data => {
+      withAmountPeriodAndCountryCorrected(periodIndex, countryIndex) { data => {
         val (selectedCountry, correctionPeriod, correctionAmount) = data
           val form = formProvider(selectedCountry, correctionAmount)
-          val preparedForm = request.userAnswers.get(VatPayableForCountryPage(correctionPeriod, countryIndex)) match {
+          val preparedForm = request.userAnswers.get(VatPayableForCountryPage(periodIndex, countryIndex)) match {
             case None => form
             case Some(value) => form.fill(value)
           }
-          Future.successful(Ok(view(preparedForm, waypoints, countryIndex, selectedCountry, correctionPeriod, correctionAmount)))
+          Future.successful(Ok(view(preparedForm, waypoints, periodIndex, countryIndex, selectedCountry, correctionPeriod, correctionAmount)))
         }
       }
   }
 
-  def onSubmit(waypoints: Waypoints, countryIndex: Index): Action[AnyContent] =
+  def onSubmit(waypoints: Waypoints, periodIndex: Index, countryIndex: Index): Action[AnyContent] =
     cc.authAndRequireData().async {
       // ToDo: Downstream not ready to check Correction Eligibility yet.
       // ToDo: Enhance the auth when ready
       implicit request =>
-        withAmountPeriodAndCountryCorrected(countryIndex) { data => {
+        withAmountPeriodAndCountryCorrected(periodIndex, countryIndex) { data => {
           val (selectedCountry, correctionPeriod, correctionAmount) = data
             val form = formProvider(selectedCountry, correctionAmount)
             form.bindFromRequest().fold(
               formWithErrors =>
-                Future.successful(BadRequest(view(formWithErrors, waypoints, countryIndex, selectedCountry, correctionPeriod, correctionAmount))),
+                Future.successful(BadRequest(view(formWithErrors, waypoints, periodIndex, countryIndex, selectedCountry, correctionPeriod, correctionAmount))),
               value =>
                 for {
-                  updatedAnswers <- Future.fromTry(request.userAnswers.set(VatPayableForCountryPage(correctionPeriod, countryIndex), value))
-                } yield Redirect(VatPayableForCountryPage(correctionPeriod, countryIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route)
+                  updatedAnswers <- Future.fromTry(request.userAnswers.set(VatPayableForCountryPage(periodIndex, countryIndex), value))
+                } yield Redirect(VatPayableForCountryPage(periodIndex, countryIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route)
             )
           }
         }
     }
 
-  private def withAmountPeriodAndCountryCorrected(countryIndex: Index)
+  private def withAmountPeriodAndCountryCorrected(periodIndex: Index, countryIndex: Index)
                                                  (block: ((Country, Period, BigDecimal)) => Future[Result])
                                                  (
                                                    implicit request: DataRequest[AnyContent]
@@ -82,8 +82,8 @@ class VatPayableForCountryController @Inject()(
     val correctionPeriod = request.userAnswers.period
     //Todo: Change this to correction period when ready
     val result: Option[(Country, Period, BigDecimal)] = for {
-      selectedCountry <- request.userAnswers.get(CorrectionCountryPage(correctionPeriod, countryIndex))
-      correctionAmount <- request.userAnswers.get(VatAmountCorrectionCountryPage(correctionPeriod, countryIndex))
+      selectedCountry <- request.userAnswers.get(CorrectionCountryPage(periodIndex, countryIndex))
+      correctionAmount <- request.userAnswers.get(VatAmountCorrectionCountryPage(periodIndex, countryIndex))
     } yield (selectedCountry, correctionPeriod, correctionAmount)
 
     result

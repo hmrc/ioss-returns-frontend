@@ -16,24 +16,25 @@
 
 package pages.corrections
 
-import models.{Index, Period, UserAnswers}
+import models.{Index, UserAnswers}
 import pages.PageConstants.{corrections, correctionsToCountry}
 import pages.{JourneyRecoveryPage, Page, QuestionPage, Waypoints}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
-case class UndeclaredCountryCorrectionPage(period: Period, countryIndex: Index) extends QuestionPage[Boolean] {
+case class UndeclaredCountryCorrectionPage(periodIndex: Index, countryIndex: Index) extends QuestionPage[Boolean] {
 
-  override def path: JsPath = JsPath \ corrections \ period.toString \ correctionsToCountry \ countryIndex.position \ toString
+  override def path: JsPath = JsPath \ corrections \ periodIndex.position \ correctionsToCountry \ countryIndex.position \ toString
 
   override def toString: String = "undeclaredCountryCorrection"
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
-    answers.get(UndeclaredCountryCorrectionPage(period, countryIndex)) match {
-      case Some(true) => VatAmountCorrectionCountryPage(period, countryIndex)
-      case Some(false) => CorrectionCountryPage(period, countryIndex)
+    answers.get(UndeclaredCountryCorrectionPage(periodIndex, countryIndex)) match {
+      case Some(true) => VatAmountCorrectionCountryPage(periodIndex, countryIndex)
+      case Some(false) => CorrectionCountryPage(periodIndex, countryIndex)
       case _ => JourneyRecoveryPage
     }
 
-  override def route(waypoints: Waypoints): Call = controllers.corrections.routes.UndeclaredCountryCorrectionController.onPageLoad(waypoints, countryIndex)
+  override def route(waypoints: Waypoints): Call =
+    controllers.corrections.routes.UndeclaredCountryCorrectionController.onPageLoad(waypoints, periodIndex,countryIndex)
 }

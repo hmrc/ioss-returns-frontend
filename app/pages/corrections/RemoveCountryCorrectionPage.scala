@@ -17,9 +17,10 @@
 package pages.corrections
 
 import models.{Index, UserAnswers}
-import pages.{Page, QuestionPage, Waypoints}
+import pages.{JourneyRecoveryPage, Page, QuestionPage, Waypoints}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
+import queries.{DeriveNumberOfCorrectionPeriods, DeriveNumberOfCorrections}
 
 case class RemoveCountryCorrectionPage(periodIndex: Index, countryIndex: Index) extends QuestionPage[Boolean] {
 
@@ -31,7 +32,13 @@ case class RemoveCountryCorrectionPage(periodIndex: Index, countryIndex: Index) 
     controllers.corrections.routes.RemoveCountryCorrectionController.onPageLoad(waypoints, periodIndex, countryIndex)
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
-    CorrectPreviousReturnPage
+    answers.get(DeriveNumberOfCorrections(periodIndex)) match {
+      case Some(n) if n > 0 => CorrectionListCountriesPage(periodIndex, Some(countryIndex))
+      case _ => answers.get(DeriveNumberOfCorrectionPeriods) match {
+        case Some(n) if n > 0 => JourneyRecoveryPage //todo navigate to PeriodCorrectionsList Controller
+        case _ => CorrectPreviousReturnPage
+      }
+    }
 
 
 }

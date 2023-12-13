@@ -24,6 +24,7 @@ import pages.corrections.RemoveCountryCorrectionPage
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import queries.{AllCorrectionPeriodsQuery, CorrectionPeriodQuery, CorrectionToCountryQuery, DeriveNumberOfCorrectionPeriods, DeriveNumberOfCorrections}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax.FutureOps
 import views.html.corrections.RemoveCountryCorrectionView
@@ -66,10 +67,37 @@ class RemoveCountryCorrectionController @Inject()(
 
         value =>
           if (value) {
-            for {
-              updatedAnswers <- Future.fromTry(request.userAnswers.remove(RemoveCountryCorrectionPage(periodIndex, countryIndex)))
-              _ <- cc.sessionRepository.set(updatedAnswers)
-            } yield Redirect(RemoveCountryCorrectionPage(periodIndex, countryIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route)
+            Future.fromTry(request.userAnswers.remove(CorrectionToCountryQuery(periodIndex, countryIndex))).flatMap {
+              updatedAnswers =>
+                if (updatedAnswers.get(DeriveNumberOfCorrections(periodIndex)).getOrElse(0) == 0) {
+                  Future.fromTry(updatedAnswers.remove(CorrectionPeriodQuery(periodIndex))).flatMap {
+                    answersWithRemovedPeriod =>
+                      if (answersWithRemovedPeriod.get(DeriveNumberOfCorrectionPeriods).getOrElse(0) == 0) {
+                        for {
+                          answersWithRemovedCorrections <- Future.fromTry(answersWithRemovedPeriod.remove(AllCorrectionPeriodsQuery))
+                          _ <- cc.sessionRepository.set(answersWithRemovedCorrections)
+                        } yield {
+                          Redirect(RemoveCountryCorrectionPage(periodIndex, countryIndex)
+                            .navigate(waypoints, request.userAnswers, answersWithRemovedCorrections).route)
+                        }
+                      } else {
+                        for {
+                          _ <- cc.sessionRepository.set(answersWithRemovedPeriod)
+                        } yield {
+                          Redirect(RemoveCountryCorrectionPage(periodIndex, countryIndex)
+                          .navigate(waypoints, request.userAnswers, answersWithRemovedPeriod).route)
+                        }
+                      }
+                  }
+                } else {
+                  for {
+                    _ <- cc.sessionRepository.set(updatedAnswers)
+                  } yield {
+                    Redirect(RemoveCountryCorrectionPage(periodIndex, countryIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route)
+                  }
+                }
+            }
+
           } else {
             Redirect(RemoveCountryCorrectionPage(periodIndex, countryIndex).navigate(waypoints, request.userAnswers, request.userAnswers).route).toFuture
           }
