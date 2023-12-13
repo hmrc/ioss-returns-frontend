@@ -14,22 +14,14 @@
  * limitations under the License.
  */
 
-package viewmodels.checkAnswers
+package queries
 
-import play.api.i18n.Messages
-import play.twirl.api.HtmlFormat
-import uk.gov.hmrc.domain.Vrn
-import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
-import viewmodels.govuk.summarylist._
-import viewmodels.implicits._
+import models.SalesFromEuWithOptionalVat
+import pages.PageConstants
+import play.api.libs.json.JsPath
 
-object BusinessVRNSummary {
+case object AllSalesFromEuQueryWithOptionalVatQuery extends Gettable[List[SalesFromEuWithOptionalVat]] with Settable[List[SalesFromEuWithOptionalVat]] {
 
-  def row(vrn: Vrn)(implicit messages: Messages): Option[SummaryListRow] = {
-    Some(SummaryListRowViewModel(
-      key = "checkYourAnswers.checkYourAnswersLabel.businessVrn",
-      value = ValueViewModel(HtmlFormat.escape(vrn.vrn).toString),
-      actions = Seq.empty
-    ))
-  }
+//  override def path: JsPath = JsPath \ PageConstants.salesFromEu
+  override def path: JsPath = JsPath \ PageConstants.sales
 }

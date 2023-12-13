@@ -18,6 +18,7 @@ package viewmodels.checkAnswers
 
 import controllers.routes
 import models.UserAnswers
+import pages.Waypoints
 import play.api.i18n.Messages
 import play.twirl.api.HtmlFormat
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
@@ -26,12 +27,12 @@ import viewmodels.implicits._
 
 object ReturnPeriodSummary {
 
-  def row(userAnswers: UserAnswers)(implicit messages: Messages): Option[SummaryListRow] = {
+  def row(userAnswers: UserAnswers, waypoints: Waypoints)(implicit messages: Messages): Option[SummaryListRow] = {
     Some(SummaryListRowViewModel(
-      key = "checkYourAnswers.returnPeriod.checkYourAnswersLabel",
+      key = "checkYourAnswers.checkYourAnswersLabel.returnPeriod",
       value = ValueViewModel(HtmlFormat.escape(userAnswers.period.displayText).toString),
       actions = Seq(
-        ActionItemViewModel("site.change", routes.StartReturnController.onPageLoad(userAnswers.period).url)
+        ActionItemViewModel("site.change", routes.StartReturnController.onPageLoad(waypoints, userAnswers.period).url)
           .withVisuallyHiddenText(messages("startReturn.change.hidden"))
           .withAttribute(("id", "change-return-period"))
       )))

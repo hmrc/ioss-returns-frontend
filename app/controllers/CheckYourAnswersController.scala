@@ -16,28 +16,22 @@
 
 package controllers
 
-import cats.data.Validated.{Invalid, Valid}
 import com.google.inject.Inject
-import connectors.{SaveForLaterConnector, VatReturnConnector}
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
 import models.requests.DataRequest
-import models.{NormalMode, Period}
-import pages.{CheckAnswersPage, CheckYourAnswersPage, Waypoints}
-import pages.CheckYourAnswersPage.waypoint
+import models.{Period, ValidationError}
 import pages.corrections.CorrectPreviousReturnPage
+import pages.{CheckYourAnswersPage, Waypoints}
 import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc._
-import repositories.CachedVatReturnRepository
-import services.corrections.CorrectionService
-import services.exclusions.ExclusionService
-import services.{AuditService, EmailService, RedirectService, SalesAtVatRateService, VatReturnService}
+import queries.AllCorrectionPeriodsQuery
+import services._
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryList
-import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax._
-import viewmodels.checkAnswers.{BusinessNameSummary, BusinessVRNSummary, ReturnPeriodSummary, SoldGoodsFromEuSummary, SoldGoodsSummary, TotalNetValueOfSalesSummary, TotalVatOnSalesSummary}
-import viewmodels.checkAnswers.corrections.CorrectPreviousReturnSummary
+import viewmodels.checkAnswers._
+import viewmodels.checkAnswers.corrections.{CorrectPreviousReturnSummary, CorrectionReturnPeriodSummary}
 import viewmodels.govuk.summarylist._
 import views.html.CheckYourAnswersView
 
@@ -46,28 +40,19 @@ import scala.concurrent.{ExecutionContext, Future}
 class CheckYourAnswersController @Inject()(
                                             cc: AuthenticatedControllerComponents,
                                             service: SalesAtVatRateService,
-                                            exclusionService: ExclusionService,
-                                            view: CheckYourAnswersView,
-                                            vatReturnService: VatReturnService,
-                                            redirectService: RedirectService,
-                                            correctionService: CorrectionService,
-                                            auditService: AuditService,
-                                            emailService: EmailService,
-                                            vatReturnConnector: VatReturnConnector,
-                                            cachedVatReturnRepository: CachedVatReturnRepository,
-                                            saveForLaterConnector: SaveForLaterConnector
+                                            view: CheckYourAnswersView
                                           )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(period: Period, waypoints: Waypoints): Action[AnyContent] = cc.authAndRequireData().async {
+  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
 
-      val errors = redirectService.validate(period)
+      val errors: List[ValidationError] = Nil // TODO
 
-      val businessSummaryList = getBusinessSummaryList(request)
+      val businessSummaryList = getBusinessSummaryList(request, waypoints)
 
-      val salesFromEuSummaryList = getSalesFromEuSummaryList(request)
+      val salesFromEuSummaryList = getSalesFromEuSummaryList(request, waypoints)
 
       val containsCorrections = request.userAnswers.get(AllCorrectionPeriodsQuery).isDefined
 
@@ -79,49 +64,40 @@ class CheckYourAnswersController @Inject()(
       val totalVatOnSales =
         service.getTotalVatOwedAfterCorrections(request.userAnswers)
 
-      val summaryLists = getAllSummaryLists(request, businessSummaryList, salesFromNiSummaryList, salesFromEuSummaryList)
+      val summaryLists = getAllSummaryLists(request, businessSummaryList, salesFromEuSummaryList, waypoints)
 
-      for {
-        currentReturnIsFinal <- exclusionService.currentReturnIsFinal(request.registration, request.userAnswers.period)
-      } yield {
-        Ok(view(
+        Future(Ok(view(
           summaryLists,
           request.userAnswers.period,
           totalVatToCountries,
           totalVatOnSales,
           noPaymentDueCountries,
           containsCorrections,
-          errors.map(_.errorMessage),
-          request.registration.excludedTrader,
-          currentReturnIsFinal
-        ))
-      }
+          errors.map(_.errorMessage))))
   }
 
   private def getAllSummaryLists(
                                   request: DataRequest[AnyContent],
                                   businessSummaryList: SummaryList,
-                                  salesFromNiSummaryList: SummaryList,
-                                  salesFromEuSummaryList: SummaryList
+                                  salesFromEuSummaryList: SummaryList,
+                                  waypoints: Waypoints
                                 )(implicit messages: Messages) =
     if (request.userAnswers.get(CorrectPreviousReturnPage).isDefined) {
       val correctionsSummaryList = SummaryListViewModel(
         rows = Seq(
-          CorrectPreviousReturnSummary.row(request.userAnswers),
-          CorrectionReturnPeriodSummary.getAllRows(request.userAnswers)
+          CorrectPreviousReturnSummary.row(request.userAnswers, waypoints),
+          CorrectionReturnPeriodSummary.getAllRows(request.userAnswers, waypoints)
         ).flatten
       ).withCssClass("govuk-!-margin-bottom-9")
       Seq(
         (None, businessSummaryList),
-        (Some("checkYourAnswers.salesFromNi.heading"), salesFromNiSummaryList),
-        (Some("checkYourAnswers.salesFromEU.heading"), salesFromEuSummaryList),
-        (Some("checkYourAnswers.corrections.heading"), correctionsSummaryList)
+        (Some("checkYourAnswers.sales.heading"), salesFromEuSummaryList),
+        (Some("checkYourAnswers.correction.heading"), correctionsSummaryList)
       )
     } else {
       Seq(
         (None, businessSummaryList),
-        (Some("checkYourAnswers.salesFromNi.heading"), salesFromNiSummaryList),
-        (Some("checkYourAnswers.salesFromEU.heading"), salesFromEuSummaryList)
+        (Some("checkYourAnswers.sales.heading"), salesFromEuSummaryList)
       )
     }
 
@@ -135,105 +111,20 @@ class CheckYourAnswersController @Inject()(
     ).withCssClass("govuk-!-margin-bottom-9")
   }
 
-  private def getBusinessSummaryList(request: DataRequest[AnyContent])(implicit messages: Messages) = {
+  private def getBusinessSummaryList(request: DataRequest[AnyContent], waypoints: Waypoints)(implicit messages: Messages) = {
     SummaryListViewModel(
       rows = Seq(
         BusinessNameSummary.row(request.registrationWrapper),
         BusinessVRNSummary.row(request.vrn),
-        ReturnPeriodSummary.row(request.userAnswers)
+        ReturnPeriodSummary.row(request.userAnswers, waypoints)
       ).flatten
     ).withCssClass("govuk-!-margin-bottom-9")
   }
 
-  def onSubmit(period: Period, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndGetData(period).async {
+  def onSubmit(period: Period, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndGetData().async {
     implicit request =>
 
-      val redirectToFirstError = redirectService.getRedirect(redirectService.validate(period), period).headOption
-
-      (redirectToFirstError, incompletePromptShown) match {
-        case (Some(redirect), true) => Future.successful(Redirect(redirect))
-        case (Some(_), false) => Future.successful(Redirect(routes.CheckYourAnswersController.onPageLoad(period)))
-        case _ =>
-          val validatedVatReturnRequest =
-            vatReturnService.fromUserAnswers(request.userAnswers, request.vrn, period, request.registration)
-
-          val validatedCorrectionRequest = request.userAnswers.get(CorrectPreviousReturnPage).map(_ =>
-            correctionService.fromUserAnswers(request.userAnswers, request.vrn, period, request.registration.commencementDate))
-
-          (validatedVatReturnRequest, validatedCorrectionRequest) match {
-            case (Valid(vatReturnRequest), Some(Valid(correctionRequest))) =>
-              submitReturn(vatReturnRequest, Option(correctionRequest), period)
-            case (Valid(vatReturnRequest), None) =>
-              submitReturn(vatReturnRequest, None, period)
-            case (Invalid(vatReturnErrors), Some(Invalid(correctionErrors))) =>
-              val errors = vatReturnErrors ++ correctionErrors
-              val errorList = errors.toChain.toList
-              val errorMessages = errorList.map(_.errorMessage).mkString("\n")
-              logger.error(s"Unable to create a vat return and correction request from user answers: $errorMessages")
-              Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
-            case (Invalid(errors), _) =>
-              val errorList = errors.toChain.toList
-              val errorMessages = errorList.map(_.errorMessage).mkString("\n")
-              logger.error(s"Unable to create a vat return request from user answers: $errorMessages")
-              Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
-            case (_, Some(Invalid(errors))) =>
-              val errorList = errors.toChain.toList
-              val errorMessages = errorList.map(_.errorMessage).mkString("\n")
-              logger.error(s"Unable to create a Corrections request from user answers: $errorMessages")
-              Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
-          }
-      }
+      Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
   }
 
 }
-
-///*
-// * Copyright 2023 HM Revenue & Customs
-// *
-// * Licensed under the Apache License, Version 2.0 (the "License");
-// * you may not use this file except in compliance with the License.
-// * You may obtain a copy of the License at
-// *
-// *     http://www.apache.org/licenses/LICENSE-2.0
-// *
-// * Unless required by applicable law or agreed to in writing, software
-// * distributed under the License is distributed on an "AS IS" BASIS,
-// * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// * See the License for the specific language governing permissions and
-// * limitations under the License.
-// */
-//
-//package controllers
-//
-//import com.google.inject.Inject
-//import controllers.actions.AuthenticatedControllerComponents
-//import models.CheckMode
-//import pages.{CheckYourAnswersPage, EmptyWaypoints, Waypoint}
-//import play.api.i18n.{I18nSupport, MessagesApi}
-//import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-//import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-//import viewmodels.govuk.summarylist._
-//import views.html.CheckYourAnswersView
-//
-//class CheckYourAnswersController @Inject()(
-//                                            override val messagesApi: MessagesApi,
-//                                            cc: AuthenticatedControllerComponents,
-//                                            view: CheckYourAnswersView
-//                                          ) extends FrontendBaseController with I18nSupport {
-//
-//  protected val controllerComponents: MessagesControllerComponents = cc
-//
-//  def onPageLoad(): Action[AnyContent] = cc.authAndRequireData() {
-//    implicit request =>
-//
-//      val thisPage = CheckYourAnswersPage
-//
-//      val waypoints = EmptyWaypoints.setNextWaypoint(Waypoint(thisPage, CheckMode, CheckYourAnswersPage.urlFragment))
-//
-//      val list = SummaryListViewModel(
-//        rows = Seq.empty
-//      )
-//
-//      Ok(view(list))
-//  }
-//}

@@ -14,22 +14,16 @@
  * limitations under the License.
  */
 
-package viewmodels.checkAnswers
+package models
 
-import play.api.i18n.Messages
-import play.twirl.api.HtmlFormat
-import uk.gov.hmrc.domain.Vrn
-import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
-import viewmodels.govuk.summarylist._
-import viewmodels.implicits._
+import queries.Gettable
 
-object BusinessVRNSummary {
+sealed trait ValidationError {
 
-  def row(vrn: Vrn)(implicit messages: Messages): Option[SummaryListRow] = {
-    Some(SummaryListRowViewModel(
-      key = "checkYourAnswers.checkYourAnswersLabel.businessVrn",
-      value = ValueViewModel(HtmlFormat.escape(vrn.vrn).toString),
-      actions = Seq.empty
-    ))
-  }
+  val errorMessage: String
+}
+
+case class DataMissingError(page: Gettable[_]) extends ValidationError {
+
+  override val errorMessage: String = s"Data missing at ${page.path.toString}"
 }

@@ -27,7 +27,7 @@ object BusinessNameSummary {
 
   def row(registrationWrapper: RegistrationWrapper)(implicit messages: Messages): Option[SummaryListRow] = {
     Some(SummaryListRowViewModel(
-      key = "checkYourAnswers.businessName.checkYourAnswersLabel",
+      key = "checkYourAnswers.checkYourAnswersLabel.businessName",
       value = ValueViewModel(HtmlFormat.escape(registrationWrapper.vatInfo.getName).toString),
       actions = Seq.empty
     ))
