@@ -16,7 +16,7 @@
 
 package forms.corrections
 
-import config.Constants.{maxCurrencyAmount, minCurrencyAmount}
+import config.Constants.maxCurrencyAmount
 import forms.behaviours.DecimalFieldBehaviours
 import org.scalacheck.Gen
 import play.api.data.FormError
@@ -28,7 +28,7 @@ class VatAmountCorrectionCountryFormProviderSpec extends DecimalFieldBehaviours 
 
   private val country = "Country"
 
-  val minimum = minCurrencyAmount
+  val minimum = 0
   val maximum = maxCurrencyAmount
 
   val form = new VatAmountCorrectionCountryFormProvider()(country)
@@ -39,11 +39,6 @@ class VatAmountCorrectionCountryFormProviderSpec extends DecimalFieldBehaviours 
 
     val validDataGeneratorForPositive =
       Gen.choose[BigDecimal](BigDecimal(0.01), maximum)
-        .map(_.setScale(2, RoundingMode.HALF_UP))
-        .map(_.toString)
-
-    val validDataGeneratorForNegative =
-      Gen.choose[BigDecimal](minimum, BigDecimal(-0.01))
         .map(_.setScale(2, RoundingMode.HALF_UP))
         .map(_.toString)
 
@@ -62,28 +57,19 @@ class VatAmountCorrectionCountryFormProviderSpec extends DecimalFieldBehaviours 
       }
     }
 
-    "bind valid data negative" in {
-      forAll(validDataGeneratorForNegative -> "validDataItem") {
-        dataItem: String =>
-          val result = form.bind(Map(fieldName -> dataItem)).apply(fieldName)
-          result.value.value mustBe dataItem
-          result.errors mustBe empty
-      }
-    }
-
     behave like decimalField(
       form,
       fieldName,
-      nonNumericError  = FormError(fieldName, "vatAmountCorrectionCountry.error.nonNumeric", Seq(country)),
+      nonNumericError = FormError(fieldName, "vatAmountCorrectionCountry.error.nonNumeric", Seq(country)),
       invalidNumericError = FormError(fieldName, "vatAmountCorrectionCountry.error.wholeNumber", Seq(country))
     )
 
-    behave like decimalFieldWithRange(
+    behave like decimalFieldWithMinimum(
       form,
       fieldName,
-      minimum       = minimum,
-      maximum       = maximum,
-      expectedError = FormError(fieldName, "vatAmountCorrectionCountry.error.outOfRange.undeclared", Seq(minimum, maximum))
+      minimum = 0,
+
+      expectedError = FormError(fieldName, "vatAmountCorrectionCountry.error.negative", Seq(CurrencyFormatter.currencyFormat(0)))
     )
 
     behave like mandatoryField(
@@ -96,7 +82,7 @@ class VatAmountCorrectionCountryFormProviderSpec extends DecimalFieldBehaviours 
       val form = new VatAmountCorrectionCountryFormProvider()(country)
 
       val result = form.bind(Map(fieldName -> (maximum + 0.01).toString)).apply(fieldName)
-      result.errors mustEqual Seq(FormError(fieldName, "vatAmountCorrectionCountry.error.outOfRange.undeclared", Seq(minimum, maximum)))
+      result.errors mustEqual Seq(FormError(fieldName, "vatAmountCorrectionCountry.error.outOfRange.undeclared", Seq(0, maximum)))
     }
 
 
@@ -104,10 +90,10 @@ class VatAmountCorrectionCountryFormProviderSpec extends DecimalFieldBehaviours 
       val form = new VatAmountCorrectionCountryFormProvider()(country)
 
       val result = form.bind(Map(fieldName -> (maximum + 0.01).toString)).apply(fieldName)
-      result.errors mustEqual Seq(FormError(fieldName, "vatAmountCorrectionCountry.error.outOfRange.undeclared", Seq(minimum, maximum)))
+      result.errors mustEqual Seq(FormError(fieldName, "vatAmountCorrectionCountry.error.outOfRange.undeclared", Seq(0, maximum)))
     }
 
-    "fail when value is below minimum allowed correction" in {
+    "fail when value is negative" in {
 
       val form = new VatAmountCorrectionCountryFormProvider()(country)
 
@@ -115,7 +101,7 @@ class VatAmountCorrectionCountryFormProviderSpec extends DecimalFieldBehaviours 
         dataItem: String =>
           val result = form.bind(Map(fieldName -> dataItem)).apply(fieldName)
           result.value.value mustBe dataItem
-          result.errors mustBe List(FormError(fieldName, "vatAmountCorrectionCountry.error.outOfRange.undeclared", Seq(minimum, maximum)))
+          result.errors mustBe List(FormError(fieldName, "vatAmountCorrectionCountry.error.negative", Seq(CurrencyFormatter.currencyFormat(0))))
       }
     }
   }

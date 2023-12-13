@@ -194,7 +194,7 @@ vatAmountCorrectionCountry.error.nonNumeric = Enter your correction for the tota
 vatAmountCorrectionCountry.error.required = Enter your correction for the total VAT payable to {0}
 vatAmountCorrectionCountry.error.wholeNumber = Enter your correction for the total VAT payable to {0} using whole numbers
 vatAmountCorrectionCountry.error.outOfRange = Correction for the total VAT payable must be between {0} and {1}
-vatAmountCorrectionCountry.error.outOfRange.undeclared = Correction for the total VAT payable must be less than {1}
+vatAmountCorrectionCountry.error.outOfRange.undeclared = Correction for the total VAT payable must be {1} or less
 vatAmountCorrectionCountry.error.nonZero = Correction for the total VAT payable must not be zero
 vatAmountCorrectionCountry.change.hidden = Correction amount
 
