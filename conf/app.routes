@@ -62,6 +62,9 @@ POST        /remaining-vat-rate-from-country/:countryIndex/:nextVatRateIndex    
 GET        /correction-return-single-period/:index                                    controllers.corrections.CorrectionReturnSinglePeriodController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, index: Index)
 POST       /correction-return-single-period/:index                                    controllers.corrections.CorrectionReturnSinglePeriodController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, index: Index)
 
+GET        /correction-return-year/:index                                             controllers.corrections.CorrectionReturnYearController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, index: Index)
+POST       /correction-return-year/:index                                             controllers.corrections.CorrectionReturnYearController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, index: Index)
+
 GET        /correction-return-period/:index                                           controllers.corrections.CorrectionReturnPeriodController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, index: Index)
 POST       /correction-return-period/:index                                           controllers.corrections.CorrectionReturnPeriodController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, index: Index)
 

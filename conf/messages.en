@@ -173,14 +173,14 @@ correctionReturnSinglePeriod.heading = Do you want to correct the VAT amounts in
 correctionReturnSinglePeriod.checkYourAnswersLabel = Do you want to correct the VAT amounts in your {0} return?
 correctionReturnSinglePeriod.error.required = Select yes if you want to correct the VAT amounts in your return
 
-correctionReturnPeriod.title = Which return period do you want to correct?
-correctionReturnPeriod.heading = Which return period do you want to correct?
-correctionReturnPeriod.checkYourAnswersLabel = Which return period do you want to correct?
-correctionReturnPeriod.error.required = Select which period you want to correct
-correctionReturnPeriod.change.hidden = which return period you want to correct
-correctionReturnPeriod.period1 = 1 January to 31 March 2022
-correctionReturnPeriod.period2 = 1 October to 31 December 2021
-correctionReturnPeriod.period3 = 1 July to 30 September 2021
+correctionReturnPeriod.title = Which return do you want to correct?
+correctionReturnPeriod.heading = Which return do you want to correct?
+correctionReturnPeriod.checkYourAnswersLabel = Which return do you want to correct?
+correctionReturnPeriod.error.required = Select which return you want to correct
+correctionReturnPeriod.change.hidden = which return you want to correct
+correctionReturnPeriod.period1 = January
+correctionReturnPeriod.period2 = February
+correctionReturnPeriod.period3 = March
 
 noOtherCorrectionPeriodsAvailable.title = You cannot make a correction to other VAT Import One Stop Shop months
 noOtherCorrectionPeriodsAvailable.heading = You cannot make a correction to other VAT Import One Stop Shop months
@@ -199,6 +199,15 @@ correctionCountry.change.hidden = which country you sold to
 correctionCountry.hint = You can also add a new country that was not included in your previous return.
 correctionCountry.error.required = Select which country you would like to correct
 correctionCountry.error.duplicate = You selected this country already. Select a different one.
+
+correctionReturnYear.title = What is the year of the return you want to correct?
+correctionReturnYear.heading = What is the year of the return you want to correct?
+correctionReturnYear.checkYourAnswersLabel = What is the year of the return you want to correct?
+correctionReturnYear.error.required = Select which year you want to correct
+correctionReturnYear.year1 = 2023
+correctionReturnYear.year2 = 2022
+correctionReturnYear.year3 = 2021
+
 
 vatPayableForCountry.title = Is the total VAT payable for {0} {1}?
 vatPayableForCountry.heading = Is the total VAT payable for {0} {1}?
