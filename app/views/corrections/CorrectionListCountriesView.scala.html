@@ -16,6 +16,7 @@
 
 @import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.{ListItem, Long}
 @import components.ButtonGroup
+@import viewmodels.LegendSize
 
 @this(
     layout: templates.Layout,
@@ -70,7 +71,7 @@
                     field = form("value"),
                     legend = LegendViewModel(
                         HtmlContent(Html(messages("correctionListCountries.addAnother")))
-                    )
+                    ).withSize(LegendSize.Medium)
                 )
             )
         } else {
