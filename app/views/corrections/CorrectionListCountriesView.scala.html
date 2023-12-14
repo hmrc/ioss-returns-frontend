@@ -32,7 +32,6 @@
 
 @titleText = @{
     list.size match {
-        case _ => messages("correctionListCountries.title")
         case 1 => messages("correctionListCountries.title.singular")
         case i => messages("correctionListCountries.title.plural", i)
     }
@@ -40,7 +39,6 @@
 
 @headingText = @{
     list.size match {
-        case _ => messages("correctionListCountries.heading")
         case 1 => messages("correctionListCountries.heading.singular")
         case i => messages("correctionListCountries.heading.plural", i)
     }

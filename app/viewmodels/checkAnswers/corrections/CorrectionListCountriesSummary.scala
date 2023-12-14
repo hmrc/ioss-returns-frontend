@@ -29,7 +29,7 @@ object CorrectionListCountriesSummary  {
 
         ListItem(
           name = correctionToCountry.correctionCountry.name,
-          changeUrl = JourneyRecoveryPage.changeLink(waypoints, sourcePage).url, //TODO navigate to correct page when created
+          changeUrl = JourneyRecoveryPage.changeLink(waypoints, sourcePage).url, //toDo navigate to correction-check-your-answers-page
           removeUrl = controllers.corrections.routes.RemoveCountryCorrectionController.onPageLoad(waypoints, periodIndex, Index(countryIndex)).url
         )
     }

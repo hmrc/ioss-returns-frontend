@@ -204,7 +204,6 @@ undeclaredCountryCorrection.caption = Correction period: {0}
 undeclaredCountryCorrection.legend = Do you want to add a correction to this country?
 undeclaredCountryCorrection.error.required = Select yes if you want to add a correction to this country
 
-correctionListCountries.title = You have not corrected the VAT amount for any countries
 correctionListCountries.title.singular = You have corrected the VAT amount for 1 country
 correctionListCountries.title.plural = You have corrected the VAT amount for {0} countries
 correctionListCountries.heading = You have not corrected the VAT amount for any countries
