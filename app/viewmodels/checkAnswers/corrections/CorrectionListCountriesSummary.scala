@@ -17,6 +17,7 @@
 package viewmodels.checkAnswers.corrections
 
 import models.{Index, UserAnswers}
+import pages.corrections.VatAmountCorrectionCountryPage
 import pages.{AddItemPage, JourneyRecoveryPage, Waypoints}
 import queries.AllCorrectionCountriesQuery
 import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.ListItem
@@ -29,7 +30,7 @@ object CorrectionListCountriesSummary  {
 
         ListItem(
           name = correctionToCountry.correctionCountry.name,
-          changeUrl = JourneyRecoveryPage.changeLink(waypoints, sourcePage).url, //toDo navigate to correction-check-your-answers-page
+          changeUrl = VatAmountCorrectionCountryPage(Index(0), periodIndex).changeLink(waypoints, sourcePage).url,
           removeUrl = controllers.corrections.routes.RemoveCountryCorrectionController.onPageLoad(waypoints, periodIndex, Index(countryIndex)).url
         )
     }
