@@ -17,10 +17,16 @@
 package viewmodels.checkAnswers.corrections
 
 import models.{Index, UserAnswers}
-import pages.corrections.VatAmountCorrectionCountryPage
-import pages.{AddItemPage, JourneyRecoveryPage, Waypoints}
+import pages.corrections.{RemoveCountryCorrectionPage, VatAmountCorrectionCountryPage}
+import pages.{AddItemPage, Waypoints}
+import play.api.i18n.Messages
+import play.twirl.api.HtmlFormat
 import queries.AllCorrectionCountriesQuery
+import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
+import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{SummaryList, SummaryListRow}
+import viewmodels.govuk.summarylist._
 import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.ListItem
+import viewmodels.govuk.all.currencyFormat
 
 object CorrectionListCountriesSummary  {
 
@@ -30,7 +36,7 @@ object CorrectionListCountriesSummary  {
 
         ListItem(
           name = correctionToCountry.correctionCountry.name,
-          changeUrl = VatAmountCorrectionCountryPage(Index(0), periodIndex).changeLink(waypoints, sourcePage).url,
+          changeUrl = VatAmountCorrectionCountryPage(periodIndex, Index(countryIndex)).changeLink(waypoints, sourcePage).url,
           removeUrl = controllers.corrections.routes.RemoveCountryCorrectionController.onPageLoad(waypoints, periodIndex, Index(countryIndex)).url
         )
     }
