@@ -22,6 +22,5 @@ import play.api.libs.json.JsPath
 
 case object AllSalesFromEuQuery extends Gettable[List[SalesFromEu]] with Settable[List[SalesFromEu]] {
 
-//  override def path: JsPath = JsPath \ PageConstants.salesFromEu
   override def path: JsPath = JsPath \ PageConstants.sales
 }

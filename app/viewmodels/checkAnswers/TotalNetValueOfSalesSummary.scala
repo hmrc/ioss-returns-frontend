@@ -32,7 +32,7 @@ object TotalNetValueOfSalesSummary extends CurrencyFormatter {
     totalEUNetValueOfSalesOption.map {
       totalEUNetValueOfSalesOption =>
         SummaryListRowViewModel(
-          key = "netValueOfSalesFromEu.checkYourAnswersLabel",
+          key = "checkYourAnswers.label.netValueOfSales",
           value = ValueViewModel(HtmlContent(currencyFormat(totalEUNetValueOfSalesOption))),
           actions = Seq(
             ActionItemViewModel("site.change", routes.SoldToCountryListController.onPageLoad(waypoints).url)

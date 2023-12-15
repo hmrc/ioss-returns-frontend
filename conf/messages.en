@@ -57,18 +57,21 @@ yourAccount.payment.overdueAmountMaybeOwed = You may still owe VAT for {0}, whic
 
 checkYourAnswers.title = Check Your Answers
 checkYourAnswers.heading = Check Your Answers
-checkYourAnswers.checkYourAnswersLabel.businessName = Business name
-checkYourAnswers.checkYourAnswersLabel.businessVrn = UK VAT registration number
-checkYourAnswers.checkYourAnswersLabel.returnPeriod = Return month
+checkYourAnswers.label.businessName = Business name
+checkYourAnswers.label.businessVrn = UK VAT registration number
+checkYourAnswers.label.returnPeriod = Return month
 checkYourAnswers.sales.heading = Sales to EU countries and Northern Ireland
 checkYourAnswers.salesLabel.l1 = Sales made
-checkYourAnswers.salesLabel.l2 = Sales excluding VAT
-checkYourAnswers.salesLabel.l3 = VAT charged
+checkYourAnswers.label.netValueOfSales = Sales excluding VAT
+checkYourAnswers.label.vatOnSales = VAT charged
 checkYourAnswers.correction.heading = Corrections
 checkYourAnswers.correctionLabel.l1 = Corrections made
 checkYourAnswers.correctionLabel.l2 = Month
 checkYourAnswers.vatOwned.heading = VAT owed
 checkYourAnswers.totalVatPayable.heading = Total VAT payable
+checkYourAnswers.label.country = Country
+checkYourAnswers.label.amount = Amount
+checkYourAnswers.heading.vatOwned = Vat owned
 
 
 journeyRecovery.continue.title = Sorry, there is a problem with the service

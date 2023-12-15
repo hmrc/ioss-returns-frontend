@@ -45,21 +45,27 @@ class SalesAtVatRateService @Inject()() {
   }
 
   def getEuTotalNetSales(userAnswers: UserAnswers): Option[BigDecimal] = {
-    userAnswers.get(AllSalesFromEuQuery).map(allSalesFromEu =>
-      allSalesFromEu.map(
-        _.salesFromCountry.map(_.vatRates.map(_.sales.map(_.netValueOfSales).getOrElse(BigDecimal(0))).sum
+    userAnswers.get(AllSalesQuery).map( allSales =>
+      allSales.flatMap(
+        _.vatRatesFromCountry.toSeq.flatten.map { vatRateFromCountry =>
+          (for {
+            salesAtVatRate <- vatRateFromCountry.salesAtVatRate
+            netValueOfSales <- salesAtVatRate.netValueOfSales
+          } yield netValueOfSales).getOrElse(BigDecimal(0))
+        }
       ).sum
-    ).sum
     )
   }
 
   def getEuTotalVatOnSales(userAnswers: UserAnswers): Option[BigDecimal] = {
-    userAnswers.get(AllSalesFromEuQuery).map(allSalesFromEu =>
-      allSalesFromEu.map (
-        _.salesFromCountry.map (_.vatRates.map(_.sales.map(
-          _.vatOnSales.amount
-        ).getOrElse(BigDecimal(0))).sum
-        ).sum
+    userAnswers.get(AllSalesQuery).map(allSales =>
+      allSales.flatMap(
+        _.vatRatesFromCountry.toSeq.flatten.map { vatRateFromCountry =>
+          (for {
+            salesAtVatRate <- vatRateFromCountry.salesAtVatRate
+            vatOnSales <- salesAtVatRate.vatOnSales
+          } yield vatOnSales.amount).getOrElse(BigDecimal(0))
+        }
       ).sum
     )
   }
@@ -68,8 +74,6 @@ class SalesAtVatRateService @Inject()() {
     getVatOwedToEuCountries(userAnswers).filter(vat => vat.totalVat > 0).map(_.totalVat).sum
 
   def getVatOwedToEuCountries(userAnswers: UserAnswers): List[TotalVatToCountry] = {
-
-
     val vatOwedToEuCountriesFromEu =
       for {
         allSalesFromEu <- userAnswers.get(AllSalesQuery).toList.flatten.zipWithIndex

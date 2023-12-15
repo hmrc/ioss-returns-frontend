@@ -27,7 +27,7 @@ object BusinessVRNSummary {
 
   def row(vrn: Vrn)(implicit messages: Messages): Option[SummaryListRow] = {
     Some(SummaryListRowViewModel(
-      key = "checkYourAnswers.checkYourAnswersLabel.businessVrn",
+      key = "checkYourAnswers.label.businessVrn",
       value = ValueViewModel(HtmlFormat.escape(vrn.vrn).toString),
       actions = Seq.empty
     ))

@@ -20,14 +20,16 @@ import com.google.inject.Inject
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
 import models.requests.DataRequest
-import models.{Period, ValidationError}
+import models.{Index, Period, ValidationError}
 import pages.corrections.CorrectPreviousReturnPage
-import pages.{CheckYourAnswersPage, Waypoints}
+import pages.{CheckYourAnswersPage, DeleteVatRateSalesForCountryPage, Waypoints}
 import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc._
 import queries.AllCorrectionPeriodsQuery
 import services._
-import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryList
+import uk.gov.hmrc.govukfrontend.views.Aliases.Card
+import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
+import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{Actions, CardTitle, SummaryList}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax._
 import viewmodels.checkAnswers._
@@ -88,7 +90,13 @@ class CheckYourAnswersController @Inject()(
           CorrectPreviousReturnSummary.row(request.userAnswers, waypoints),
           CorrectionReturnPeriodSummary.getAllRows(request.userAnswers, waypoints)
         ).flatten
-      ).withCssClass("govuk-!-margin-bottom-9")
+      ).withCard(
+        card = Card(
+          title = Some(CardTitle(content = HtmlContent(messages("checkYourAnswers.correction.heading")))),
+          actions = None
+        )
+      )
+        //.withCssClass("govuk-!-margin-bottom-9").withCard()
       Seq(
         (None, businessSummaryList),
         (Some("checkYourAnswers.sales.heading"), salesFromEuSummaryList),
@@ -108,7 +116,13 @@ class CheckYourAnswersController @Inject()(
         TotalNetValueOfSalesSummary.row(request.userAnswers, service.getEuTotalNetSales(request.userAnswers), waypoints),
         TotalVatOnSalesSummary.row(request.userAnswers, service.getEuTotalVatOnSales(request.userAnswers), waypoints)
       ).flatten
-    ).withCssClass("govuk-!-margin-bottom-9")
+    ).withCard(
+      card = Card(
+        title = Some(CardTitle(content = HtmlContent(messages("checkYourAnswers.sales.heading")))),
+        actions = None
+      )
+    )
+      //.withCssClass("govuk-!-margin-bottom-9")
   }
 
   private def getBusinessSummaryList(request: DataRequest[AnyContent], waypoints: Waypoints)(implicit messages: Messages) = {
@@ -118,7 +132,9 @@ class CheckYourAnswersController @Inject()(
         BusinessVRNSummary.row(request.vrn),
         ReturnPeriodSummary.row(request.userAnswers, waypoints)
       ).flatten
-    ).withCssClass("govuk-!-margin-bottom-9")
+    ).withCard(
+      card = Card()
+    )
   }
 
   def onSubmit(period: Period, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndGetData().async {

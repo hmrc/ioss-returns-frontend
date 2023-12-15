@@ -18,13 +18,16 @@ package models
 
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
+import queries.OptionalSalesAtVatRate
+
 import java.time.LocalDate
 
 final case class VatRateFromCountry(
                           rate: BigDecimal,
                           rateType: VatRateType,
                           validFrom: LocalDate,
-                          validUntil: Option[LocalDate] = None
+                          validUntil: Option[LocalDate] = None,
+                          salesAtVatRate: Option[OptionalSalesAtVatRate]
                         ) {
 
   lazy val rateForDisplay: String = if (rate.isWhole) {
@@ -43,14 +46,16 @@ object VatRateFromCountry {
     (__ \ "rate").read[String].map(r => BigDecimal(r)) and
       (__ \ "rateType").read[VatRateType] and
       (__ \ "validFrom").read[LocalDate] and
-      (__ \ "validUntil").readNullable[LocalDate]
+      (__ \ "validUntil").readNullable[LocalDate] and
+      (__ \ "salesAtVatRate").readNullable[OptionalSalesAtVatRate]
     ) (VatRateFromCountry.apply _)
 
   val decimalReads: Reads[VatRateFromCountry] = (
     (__ \ "rate").read[BigDecimal] and
       (__ \ "rateType").read[VatRateType] and
       (__ \ "validFrom").read[LocalDate] and
-      (__ \ "validUntil").readNullable[LocalDate]
+      (__ \ "validUntil").readNullable[LocalDate] and
+      (__ \ "salesAtVatRate").readNullable[OptionalSalesAtVatRate]
     ) (VatRateFromCountry.apply _)
 
   implicit val reads: Reads[VatRateFromCountry] = decimalReads or stringReads
@@ -64,11 +69,16 @@ object VatRateFromCountry {
           Json.obj("validUntil" -> Json.toJson(v))
       }.getOrElse(Json.obj())
 
+      val salesAtVatRateJson = o.salesAtVatRate.map {
+        v =>
+          Json.obj("salesAtVatRate" -> Json.toJson(v))
+      }.getOrElse(Json.obj())
+
       Json.obj(
         "rate" -> o.rate.toString,
         "rateType" -> Json.toJson(o.rateType),
         "validFrom" -> Json.toJson(o.validFrom)
-      ) ++ validUntilJson
+      ) ++ validUntilJson ++ salesAtVatRateJson
     }
   }
 }
