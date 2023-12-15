@@ -24,12 +24,12 @@
     govukErrorSummary: GovukErrorSummary,
     govukRadios: GovukRadios,
     govukButton: GovukButton,
-    addToList: components.addToList,
+    govukSummaryList: GovukSummaryList,
     govukWarningText: GovukWarningText,
     button: ButtonGroup,
 )
 
-@(form: Form[_], waypoints: Waypoints, list: Seq[ListItem], period: Period, periodIndex: Index, canAddCountries: Boolean)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, list: Seq[SummaryList], period: Period, periodIndex: Index, canAddCountries: Boolean)(implicit request: Request[_], messages: Messages)
 
 @titleText = @{
     list.size match {
@@ -63,7 +63,9 @@
             <h1 class="govuk-heading-l">@headingText</h1>
         </header>
 
-        @addToList(list, itemSize = Long, "vatCorrectionsList.change.hidden", "vatCorrectionsList.remove.hidden")
+        @for(list <- list) {
+            @govukSummaryList(list)
+        }
 
         @if(canAddCountries) {
             @govukRadios(
@@ -79,8 +81,9 @@
             <input type="hidden" name="value" id="value" value="false"/>
         }
 
-        @button(
-            messages("site.continue")
+        @govukButton(
+            ButtonViewModel(messages("site.continue"))
+                .withAttribute("id", "continue")
         )
     }
 }

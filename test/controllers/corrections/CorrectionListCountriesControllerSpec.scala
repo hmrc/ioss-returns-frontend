@@ -26,16 +26,18 @@ import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.mockito.MockitoSugar
 import pages.corrections.{CorrectionCountryPage, CorrectionListCountriesPage}
 import play.api.data.Form
+import play.api.i18n.Messages
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
 import viewmodels.checkAnswers.corrections.CorrectionListCountriesSummary
+import viewmodels.govuk.SummaryListFluency
 import views.html.corrections.CorrectionListCountriesView
 
 import scala.concurrent.Future
 
-class CorrectionListCountriesControllerSpec extends SpecBase with MockitoSugar {
+class CorrectionListCountriesControllerSpec extends SpecBase with SummaryListFluency with MockitoSugar {
 
   val formProvider = new CorrectionListCountriesFormProvider()
   val form: Form[Boolean] = formProvider()
@@ -54,6 +56,7 @@ class CorrectionListCountriesControllerSpec extends SpecBase with MockitoSugar {
       val application = applicationBuilder(userAnswers = Some(baseAnswers)).build()
 
       running(application) {
+        implicit val msgs: Messages = messages(application)
         val request = FakeRequest(GET, correctionListCountriesRoute)
 
         val result = route(application, request).value
@@ -78,6 +81,7 @@ class CorrectionListCountriesControllerSpec extends SpecBase with MockitoSugar {
       val application = applicationBuilder(userAnswers = Some(baseAnswers)).build()
 
       running(application) {
+        implicit val msgs: Messages = messages(application)
         val request = FakeRequest(GET, correctionListCountriesRoute)
 
         val view = application.injector.instanceOf[CorrectionListCountriesView]
@@ -126,9 +130,10 @@ class CorrectionListCountriesControllerSpec extends SpecBase with MockitoSugar {
       val application = applicationBuilder(userAnswers = Some(baseAnswers)).build()
 
       running(application) {
+        implicit val msgs: Messages = messages(application)
         val request =
-          FakeRequest(POST, correctionListCountriesRoute)
-            .withFormUrlEncodedBody(("value", ""))
+        FakeRequest(POST, correctionListCountriesRoute)
+          .withFormUrlEncodedBody(("value", ""))
 
         val boundForm = form.bind(Map("value" -> ""))
 

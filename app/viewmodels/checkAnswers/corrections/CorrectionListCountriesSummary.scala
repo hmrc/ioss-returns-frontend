@@ -17,27 +17,56 @@
 package viewmodels.checkAnswers.corrections
 
 import models.{Index, UserAnswers}
-import pages.corrections.{RemoveCountryCorrectionPage, VatAmountCorrectionCountryPage}
+import pages.corrections.VatAmountCorrectionCountryPage
 import pages.{AddItemPage, Waypoints}
 import play.api.i18n.Messages
-import play.twirl.api.HtmlFormat
 import queries.AllCorrectionCountriesQuery
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
-import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{SummaryList, SummaryListRow}
+import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist._
 import viewmodels.govuk.summarylist._
-import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.ListItem
 import viewmodels.govuk.all.currencyFormat
+import viewmodels.implicits._
 
 object CorrectionListCountriesSummary  {
 
-  def addToListRows(answers: UserAnswers, waypoints: Waypoints, periodIndex: Index, sourcePage: AddItemPage): Seq[ListItem] =
-    answers.get(AllCorrectionCountriesQuery(periodIndex)).getOrElse(List.empty).zipWithIndex.map {
-      case (correctionToCountry, countryIndex) =>
+  def addToListRows(answers: UserAnswers, waypoints: Waypoints, periodIndex: Index, sourcePage: AddItemPage)
+                   (implicit messages: Messages): Seq[SummaryList] = {
 
-        ListItem(
-          name = correctionToCountry.correctionCountry.name,
-          changeUrl = VatAmountCorrectionCountryPage(periodIndex, Index(countryIndex)).changeLink(waypoints, sourcePage).url,
-          removeUrl = controllers.corrections.routes.RemoveCountryCorrectionController.onPageLoad(waypoints, periodIndex, Index(countryIndex)).url
-        )
-    }
+      answers.get(AllCorrectionCountriesQuery(periodIndex)).getOrElse(List.empty).zipWithIndex.flatMap {
+        case (correctionToCountry, countryIndex) =>
+
+          val name = correctionToCountry.correctionCountry.name
+
+          val value = correctionToCountry.countryVatCorrection.map {
+            vatCorrectionAmount =>
+              ValueViewModel(
+                HtmlContent(
+                  currencyFormat(vatCorrectionAmount)
+                )
+              )
+          }.getOrElse(ValueViewModel(HtmlContent("")))
+
+          val countryNameRow = SummaryListRowViewModel(
+            key = name,
+            value = ValueViewModel(HtmlContent("")),
+            actions = List.empty
+          )
+
+          val mainRow = SummaryListRowViewModel(
+            key = messages("correctionListCountries.checkYourAnswersLabel"),
+            value = value,
+            actions = List(
+              ActionItemViewModel(
+                messages("site.change"), VatAmountCorrectionCountryPage(periodIndex, Index(countryIndex))
+                  .changeLink(waypoints, sourcePage).url),
+              ActionItemViewModel(messages("site.remove"), controllers.corrections.routes.RemoveCountryCorrectionController
+                .onPageLoad(waypoints, periodIndex, Index(countryIndex)).url)
+            )
+          )
+
+          val rows = List(countryNameRow, mainRow)
+
+          List(SummaryList(rows))
+      }
+  }
 }
