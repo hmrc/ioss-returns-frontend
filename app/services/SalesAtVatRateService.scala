@@ -16,9 +16,8 @@
 
 package services
 
-import cats.data.OptionT
 import models.{Index, TotalVatToCountry, UserAnswers}
-import queries.{AllCorrectionPeriodsQuery, AllSalesByCountryQuery, AllSalesFromEuQuery, AllSalesFromEuQueryWithOptionalVatQuery, AllSalesQuery, AllVatRatesFromCountryQuery, SalesByCountryQuery}
+import queries.{AllCorrectionPeriodsQuery, AllSalesByCountryQuery, AllSalesQuery}
 
 import javax.inject.Inject
 
