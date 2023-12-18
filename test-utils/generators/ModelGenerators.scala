@@ -312,4 +312,28 @@ trait ModelGenerators {
     } yield RegistrationWrapper(vatInfo, registration)
   }
 
+  implicit val arbitraryObligationDetails: Arbitrary[EtmpObligationDetails] =
+    Arbitrary {
+      for {
+        status <- Gen.oneOf(EtmpObligationsFulfilmentStatus.values)
+        periodKey <- arbitrary[String]
+      } yield EtmpObligationDetails(
+        status = status,
+        periodKey = periodKey
+      )
+    }
+
+  implicit val arbitraryObligations: Arbitrary[EtmpObligations] =
+    Arbitrary {
+      for {
+        referenceNumber <- arbitrary[String]
+        obligationDetails <- Gen.listOfN(3, arbitrary[EtmpObligationDetails])
+      } yield {
+        EtmpObligations(
+          referenceNumber = referenceNumber,
+          referenceType = "IOSS",
+          obligationDetails = obligationDetails
+        )
+      }
+    }
 }

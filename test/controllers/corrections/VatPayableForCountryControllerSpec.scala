@@ -19,16 +19,11 @@ package controllers.corrections
 import base.SpecBase
 import forms.corrections.VatPayableForCountryFormProvider
 import models.{Country, Index}
-import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
 import pages.corrections.{CorrectionCountryPage, VatAmountCorrectionCountryPage, VatPayableForCountryPage}
-import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import views.html.corrections.VatPayableForCountryView
-
-import scala.concurrent.Future
 
 class VatPayableForCountryControllerSpec extends SpecBase with MockitoSugar {
 
