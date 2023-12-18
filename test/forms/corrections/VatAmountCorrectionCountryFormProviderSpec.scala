@@ -20,6 +20,7 @@ import config.Constants.maxCurrencyAmount
 import forms.behaviours.DecimalFieldBehaviours
 import org.scalacheck.Gen
 import play.api.data.FormError
+import utils.CurrencyFormatter
 
 import scala.math.BigDecimal.RoundingMode
 
