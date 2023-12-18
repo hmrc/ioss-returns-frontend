@@ -44,6 +44,16 @@ trait Constraints {
         }
     }
 
+  protected def maximumValueWithCurrency(maximum: BigDecimal, errorKey: String): Constraint[BigDecimal] =
+    Constraint {
+      input =>
+        if (input <= maximum) {
+          Valid
+        } else {
+          Invalid(errorKey, 0, maximum)
+        }
+    }
+
   protected def nonZero(errorKey: String): Constraint[BigDecimal] =
     Constraint {
       case value if value == BigDecimal(0) =>
