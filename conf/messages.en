@@ -65,13 +65,12 @@ checkYourAnswers.salesLabel.l1 = Sales made
 checkYourAnswers.label.netValueOfSales = Sales excluding VAT
 checkYourAnswers.label.vatOnSales = VAT charged
 checkYourAnswers.correction.heading = Corrections
-checkYourAnswers.correctionLabel.l1 = Corrections made
+checkYourAnswers.label.correctionsMade = Corrections made
 checkYourAnswers.correctionLabel.l2 = Month
-checkYourAnswers.vatOwned.heading = VAT owed
 checkYourAnswers.totalVatPayable.heading = Total VAT payable
 checkYourAnswers.label.country = Country
 checkYourAnswers.label.amount = Amount
-checkYourAnswers.heading.vatOwned = Vat owned
+checkYourAnswers.heading.vatOwned = VAT owed
 
 
 journeyRecovery.continue.title = Sorry, there is a problem with the service

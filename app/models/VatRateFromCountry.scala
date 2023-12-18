@@ -27,7 +27,7 @@ final case class VatRateFromCountry(
                           rateType: VatRateType,
                           validFrom: LocalDate,
                           validUntil: Option[LocalDate] = None,
-                          salesAtVatRate: Option[OptionalSalesAtVatRate]
+                          salesAtVatRate: Option[OptionalSalesAtVatRate] = None
                         ) {
 
   lazy val rateForDisplay: String = if (rate.isWhole) {

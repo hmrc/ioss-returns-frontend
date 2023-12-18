@@ -39,7 +39,7 @@ class VatRateFromCountrySpec extends AnyFreeSpec with Matchers with ScalaCheckPr
         "validFrom" -> "2021-07-01"
       )
 
-      val expectedVatRate = VatRateFromCountry(BigDecimal(1.0), Standard, LocalDate.of(2021, 7, 1))
+      val expectedVatRate = VatRateFromCountry(BigDecimal(1.0), Standard, LocalDate.of(2021, 7, 1), None, None)
       json.validate[VatRateFromCountry] mustEqual JsSuccess(expectedVatRate)
     }
 
@@ -51,13 +51,13 @@ class VatRateFromCountrySpec extends AnyFreeSpec with Matchers with ScalaCheckPr
         "validFrom" -> "2021-07-01"
       )
 
-      val expectedVatRate = VatRateFromCountry(BigDecimal(1.0), Standard, LocalDate.of(2021, 7, 1))
+      val expectedVatRate = VatRateFromCountry(BigDecimal(1.0), Standard, LocalDate.of(2021, 7, 1), None, None)
       json.validate[VatRateFromCountry] mustEqual JsSuccess(expectedVatRate)
     }
 
     "must serialise with the rate as a string" in {
 
-      val vatRate = VatRateFromCountry(BigDecimal(1.0), Standard, LocalDate.of(2021, 7, 1))
+      val vatRate = VatRateFromCountry(BigDecimal(1.0), Standard, LocalDate.of(2021, 7, 1), None, None)
 
       val expectedJson = Json.obj(
         "rate" -> "1.0",
@@ -70,7 +70,7 @@ class VatRateFromCountrySpec extends AnyFreeSpec with Matchers with ScalaCheckPr
 
     "must serialise and deserialise when validUntil is present" in {
 
-      val vatRate = VatRateFromCountry(BigDecimal(1.0), Standard, LocalDate.of(2021, 7, 1), Some(LocalDate.of(2022, 1, 1)))
+      val vatRate = VatRateFromCountry(BigDecimal(1.0), Standard, LocalDate.of(2021, 7, 1), Some(LocalDate.of(2022, 1, 1)), None)
 
       Json.toJson(vatRate).validate[VatRateFromCountry] mustEqual JsSuccess(vatRate)
     }

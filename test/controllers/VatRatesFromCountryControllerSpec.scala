@@ -173,7 +173,8 @@ class VatRatesFromCountryControllerSpec extends SpecBase with MockitoSugar with 
           rate = vatRatesFromCountry.head.rate,
           rateType = vatRatesFromCountry.head.rateType,
           validFrom = vatRatesFromCountry.head.validFrom,
-          validUntil = vatRatesFromCountry.head.validUntil
+          validUntil = vatRatesFromCountry.head.validUntil,
+          salesAtVatRate = None
         )
       )
 

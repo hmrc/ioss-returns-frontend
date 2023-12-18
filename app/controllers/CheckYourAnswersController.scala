@@ -99,8 +99,9 @@ class CheckYourAnswersController @Inject()(
         //.withCssClass("govuk-!-margin-bottom-9").withCard()
       Seq(
         (None, businessSummaryList),
-        (Some("checkYourAnswers.sales.heading"), salesFromEuSummaryList),
-        (Some("checkYourAnswers.correction.heading"), correctionsSummaryList)
+        (None, salesFromEuSummaryList),
+//        (Some("checkYourAnswers.correction.heading"), correctionsSummaryList)
+        (None, correctionsSummaryList)
       )
     } else {
       Seq(
