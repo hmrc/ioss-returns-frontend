@@ -40,47 +40,47 @@ class CorrectionCountryController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndRequireData() {
+  def onPageLoad(waypoints: Waypoints, periodIndex: Index, index: Index): Action[AnyContent] = cc.authAndRequireData() {
     implicit request =>
 
       val period = request.userAnswers.period
       val form = formProvider(
         index,
-        request.userAnswers.get(AllCorrectionCountriesQuery(period))
+        request.userAnswers.get(AllCorrectionCountriesQuery(periodIndex))
           .getOrElse(Seq.empty)
           .map(_.correctionCountry)
       )
 
-      val preparedForm = request.userAnswers.get(CorrectionCountryPage(period, index)) match {
+      val preparedForm = request.userAnswers.get(CorrectionCountryPage(periodIndex, index)) match {
         case None => form
         case Some(value) => form.fill(value)
       }
 
-      Ok(view(preparedForm, waypoints, period, index))
+      Ok(view(preparedForm, waypoints, period, periodIndex, index))
   }
 
-  def onSubmit(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndRequireData().async {
+  def onSubmit(waypoints: Waypoints, periodIndex: Index, index: Index): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
 
       val period = request.userAnswers.period
 
       val form = formProvider(
         index,
-        request.userAnswers.get(AllCorrectionCountriesQuery(period))
+        request.userAnswers.get(AllCorrectionCountriesQuery(periodIndex))
           .getOrElse(Seq.empty)
           .map(_.correctionCountry)
       )
 
       form.bindFromRequest().fold(
         formWithErrors =>
-          BadRequest(view(formWithErrors, waypoints, period, index)).toFuture
+          BadRequest(view(formWithErrors, waypoints, period, periodIndex, index)).toFuture
         ,
         value =>
           for {
             updatedAnswers <-
-              Future.fromTry(request.userAnswers.set(CorrectionCountryPage(period, index), value))
+              Future.fromTry(request.userAnswers.set(CorrectionCountryPage(periodIndex, index), value))
             _ <- cc.sessionRepository.set(updatedAnswers)
-          } yield Redirect(CorrectionCountryPage(period, index).navigate(waypoints, request.userAnswers, updatedAnswers).route)
+          } yield Redirect(CorrectionCountryPage(periodIndex, index).navigate(waypoints, request.userAnswers, updatedAnswers).route)
       )
   }
 }

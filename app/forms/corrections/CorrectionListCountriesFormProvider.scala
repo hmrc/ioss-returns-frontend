@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
-package queries
+package forms.corrections
 
-import models.Index
-import models.corrections.CorrectionToCountry
-import pages.PageConstants.{corrections, correctionsToCountry}
-import play.api.libs.json.JsPath
+import forms.mappings.Mappings
+import play.api.data.Form
 
-final case class AllCorrectionCountriesQuery(periodIndex: Index) extends Gettable[List[CorrectionToCountry]] with Settable[List[CorrectionToCountry]] {
+import javax.inject.Inject
 
-  override def path: JsPath = JsPath \ corrections \ periodIndex.position \ correctionsToCountry
+class CorrectionListCountriesFormProvider @Inject() extends Mappings {
 
+  def apply(): Form[Boolean] =
+    Form(
+      "value" -> boolean("correctionListCountries.error.required")
+    )
 }
-

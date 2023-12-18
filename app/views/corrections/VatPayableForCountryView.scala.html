@@ -26,11 +26,11 @@
     button: ButtonGroup,
 )
 
-@(form: Form[_], waypoints: Waypoints, countryIndex: Index, selectedCountry: Country, correctionPeriod: Period, newAmount: BigDecimal)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, periodIndex:Index, countryIndex: Index, selectedCountry: Country, correctionPeriod: Period, newAmount: BigDecimal)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, messages("vatPayableForCountry.title", selectedCountry.name, currencyFormat(newAmount)))) {
 
-    @formHelper(action = controllers.corrections.routes.VatPayableForCountryController.onSubmit(waypoints, countryIndex), 'autoComplete -> "off") {
+    @formHelper(action = controllers.corrections.routes.VatPayableForCountryController.onSubmit(waypoints, periodIndex, countryIndex), 'autoComplete -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))
@@ -45,6 +45,6 @@
             ).withHint(HintViewModel(HtmlContent(Html(messages("vatPayableForCountry.hint")))))
         )
 
-        @button(messages("site.continue",  VatPayableForCountryPage(correctionPeriod, countryIndex).route(waypoints).url, waypoints))
+        @button(messages("site.continue",  VatPayableForCountryPage(periodIndex, countryIndex).route(waypoints).url, waypoints))
     }
 }

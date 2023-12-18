@@ -203,3 +203,20 @@ undeclaredCountryCorrection.heading = You did not declare any VAT to {0} in your
 undeclaredCountryCorrection.caption = Correction period: {0}
 undeclaredCountryCorrection.legend = Do you want to add a correction to this country?
 undeclaredCountryCorrection.error.required = Select yes if you want to add a correction to this country
+
+correctionListCountries.title.singular = You have corrected the VAT amount for 1 country
+correctionListCountries.title.plural = You have corrected the VAT amount for {0} countries
+correctionListCountries.heading = You have not corrected the VAT amount for any countries
+correctionListCountries.heading.singular = You have corrected the VAT amount for 1 country
+correctionListCountries.heading.plural = You have corrected the VAT amount for {0} countries
+correctionListCountries.section = Correction period: {0}
+correctionListCountries.addAnother = Add corrections to VAT for another country?
+correctionListCountries.error.required = Select yes if you want to add corrections to VAT for another country
+correctionListCountries.change.hidden = {0}
+correctionListCountries.remove.hidden = {0}
+correctionListCountries.maximumReached = You have added corrections to every country
+correctionListCountries.checkYourAnswersLabel = Correction amount
+
+removeCountryCorrection.title = Are you sure you want to remove this correction?
+removeCountryCorrection.heading = Are you sure you want to remove this correction?
+removeCountryCorrection.error.required = Select yes if you want to remove this correction

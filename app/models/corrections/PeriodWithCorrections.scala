@@ -14,16 +14,13 @@
  * limitations under the License.
  */
 
-package queries
+package models.corrections
 
-import models.Index
-import models.corrections.CorrectionToCountry
-import pages.PageConstants.{corrections, correctionsToCountry}
-import play.api.libs.json.JsPath
+import models.Period
+import play.api.libs.json.{Format, Json}
 
-final case class AllCorrectionCountriesQuery(periodIndex: Index) extends Gettable[List[CorrectionToCountry]] with Settable[List[CorrectionToCountry]] {
+case class PeriodWithCorrections(correctionReturnPeriod: Period, correctionsToCountry: Option[List[CorrectionToCountry]])
 
-  override def path: JsPath = JsPath \ corrections \ periodIndex.position \ correctionsToCountry
-
+object PeriodWithCorrections {
+  implicit val format: Format[PeriodWithCorrections] = Json.format[PeriodWithCorrections]
 }
-

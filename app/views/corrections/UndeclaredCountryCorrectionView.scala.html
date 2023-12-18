@@ -27,11 +27,11 @@
     button: ButtonGroup
 )
 
-@(form: Form[_], waypoints: Waypoints, correctionPeriod: Period, country: Country, countryIndex: Index)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, correctionPeriod: Period, country: Country, periodIndex:Index, countryIndex: Index)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, messages("undeclaredCountryCorrection.title"))) {
 
-    @formHelper(action = controllers.corrections.routes.UndeclaredCountryCorrectionController.onSubmit(waypoints, countryIndex), 'autoComplete -> "off") {
+    @formHelper(action = controllers.corrections.routes.UndeclaredCountryCorrectionController.onSubmit(waypoints, periodIndex, countryIndex), 'autoComplete -> "off") {
 
 
         @if(form.errors.nonEmpty) {
@@ -55,7 +55,7 @@
         )
 
         @button(
-            messages("site.continue", UndeclaredCountryCorrectionPage(correctionPeriod, countryIndex).route(waypoints).url, waypoints)
+            messages("site.continue", UndeclaredCountryCorrectionPage(periodIndex, countryIndex).route(waypoints).url, waypoints)
         )
     }
 }

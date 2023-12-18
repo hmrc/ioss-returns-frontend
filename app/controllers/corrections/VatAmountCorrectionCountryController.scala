@@ -43,7 +43,7 @@ class VatAmountCorrectionCountryController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(waypoints: Waypoints, countryIndex: Index): Action[AnyContent] =
+  def onPageLoad(waypoints: Waypoints, periodIndex: Index, countryIndex: Index): Action[AnyContent] =
     cc.authAndRequireData().async {
       // ToDo: Downstream not ready to check Correction Eligibility yet.
       // ToDo: Enhance the auth when ready
@@ -52,48 +52,48 @@ class VatAmountCorrectionCountryController @Inject()(
         val period = request.userAnswers.period
         //Todo: Change this to correction period when ready
 
-        withCountryCorrected(waypoints, period, countryIndex) {
+        withCountryCorrected(waypoints, period, periodIndex, countryIndex) {
           country =>
             val form: Form[BigDecimal] = formProvider(country.name)
 
-            val preparedForm = request.userAnswers.get(VatAmountCorrectionCountryPage(period, countryIndex)) match {
+            val preparedForm = request.userAnswers.get(VatAmountCorrectionCountryPage(periodIndex, countryIndex)) match {
               case None => form
               case Some(value) => form.fill(value)
             }
-            Future.successful((Ok(view(preparedForm, waypoints, period, countryIndex, country))))
+            Future.successful((Ok(view(preparedForm, waypoints, period, periodIndex, countryIndex, country))))
         }
 
     }
 
-  def onSubmit(waypoints: Waypoints, countryIndex: Index): Action[AnyContent] =
+  def onSubmit(waypoints: Waypoints, periodIndex: Index, countryIndex: Index): Action[AnyContent] =
     cc.authAndRequireData().async {
       // ToDo: Downstream not ready to check Correction Eligibility yet.
       // ToDo: Enhance the auth when ready
       implicit request => {
         val period = request.userAnswers.period
         //Todo: Change this to correction period when ready
-        withCountryCorrected(waypoints, period, countryIndex) {
+        withCountryCorrected(waypoints, period, periodIndex, countryIndex) {
           country=>
             val form: Form[BigDecimal] = formProvider(country.name)
 
             form.bindFromRequest().fold(
               formWithErrors =>
-                BadRequest(view(formWithErrors, waypoints, period, countryIndex, country)).toFuture,
+                BadRequest(view(formWithErrors, waypoints, period, periodIndex, countryIndex, country)).toFuture,
               value =>
                 for {
-                  updatedAnswers <- Future.fromTry(request.userAnswers.set(VatAmountCorrectionCountryPage(period, countryIndex), value))
+                  updatedAnswers <- Future.fromTry(request.userAnswers.set(VatAmountCorrectionCountryPage(periodIndex, countryIndex), value))
                   _ <- cc.sessionRepository.set(updatedAnswers)
-                } yield Redirect(VatAmountCorrectionCountryPage(period, countryIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route)
+                } yield Redirect(VatAmountCorrectionCountryPage(periodIndex, countryIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route)
             )
         }
       }
     }
 
 
-  private def withCountryCorrected(waypoints: Waypoints, period: Period, index: Index)
+  private def withCountryCorrected(waypoints: Waypoints, period: Period, periodIndex: Index, index: Index)
                                   (block: Country => Future[Result])
                                   (implicit request: DataRequest[AnyContent]): Future[Result] =
-      request.userAnswers.get(CorrectionCountryPage(period, index))
+      request.userAnswers.get(CorrectionCountryPage(periodIndex, index))
         .fold({
           Future.successful(
             Redirect(
@@ -104,13 +104,13 @@ class VatAmountCorrectionCountryController @Inject()(
               ).route))
         }
         )(country =>
-          request.userAnswers.get(UndeclaredCountryCorrectionPage(period, index)) match {
+          request.userAnswers.get(UndeclaredCountryCorrectionPage(periodIndex, index)) match {
               case Some(true) =>
                 block(country)
               case _ =>
                 Future.successful(
                   Redirect(
-                    UndeclaredCountryCorrectionPage(period, index).route(waypoints)
+                    UndeclaredCountryCorrectionPage(periodIndex, index).route(waypoints)
                   )
                 )
           })

@@ -16,14 +16,12 @@
 
 package queries
 
-import models.Index
-import models.corrections.CorrectionToCountry
-import pages.PageConstants.{corrections, correctionsToCountry}
-import play.api.libs.json.JsPath
+import pages.PageConstants.corrections
+import play.api.libs.json.{JsObject, JsPath}
 
-final case class AllCorrectionCountriesQuery(periodIndex: Index) extends Gettable[List[CorrectionToCountry]] with Settable[List[CorrectionToCountry]] {
+case object DeriveNumberOfCorrectionPeriods extends Derivable[Seq[JsObject], Int] {
 
-  override def path: JsPath = JsPath \ corrections \ periodIndex.position \ correctionsToCountry
+  override val derive: Seq[JsObject] => Int = _.size
 
+  override def path: JsPath = JsPath \ corrections
 }
-
