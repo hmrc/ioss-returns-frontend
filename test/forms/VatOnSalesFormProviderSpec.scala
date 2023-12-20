@@ -31,7 +31,7 @@ import java.time.LocalDate
 
 class VatOnSalesFormProviderSpec extends DecimalFieldBehaviours {
 
-  private val vatRate            = VatRateFromCountry(1, VatRateType.Standard, LocalDate.now, None, None)
+  private val vatRate            = VatRateFromCountry(1, VatRateType.Standard, LocalDate.now)
   private val netSales           = BigDecimal(1)
   private val standardVatOnSales = BigDecimal(1)
 

@@ -45,10 +45,10 @@ class VatRateServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfterE
 
           val rates: Map[String, Seq[VatRateFromCountry]] = Map(
             country.code -> Seq(
-              VatRateFromCountry(BigDecimal(0), Standard, period.firstDay.minusDays(1), None, None),
-              VatRateFromCountry(BigDecimal(1), Reduced, period.firstDay, None, None),
-              VatRateFromCountry(BigDecimal(2), Reduced, period.lastDay, None, None),
-              VatRateFromCountry(BigDecimal(3), Reduced, period.lastDay.plusDays(1), None, None)
+              VatRateFromCountry(BigDecimal(0), Standard, period.firstDay.minusDays(1)),
+              VatRateFromCountry(BigDecimal(1), Reduced, period.firstDay),
+              VatRateFromCountry(BigDecimal(2), Reduced, period.lastDay),
+              VatRateFromCountry(BigDecimal(3), Reduced, period.lastDay.plusDays(1))
             )
           )
           val ratesBytes = Json.toJson(rates).toString.getBytes

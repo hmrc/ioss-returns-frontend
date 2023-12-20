@@ -17,30 +17,18 @@
 package controllers
 
 import base.SpecBase
-import models.{Country, UserAnswers, VatOnSales, VatOnSalesChoice, VatRateFromCountry, VatRateType}
 import org.mockito.Mockito
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
-import pages._
 import pages.corrections.CorrectPreviousReturnPage
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import queries.OptionalSalesAtVatRate
 import services.SalesAtVatRateService
 import viewmodels.govuk.SummaryListFluency
 
 class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with SummaryListFluency with BeforeAndAfterEach {
 
   private val salesAtVatRateService = mock[SalesAtVatRateService]
-
-  val vatRates = List(VatRateFromCountry(BigDecimal(20), VatRateType.Standard, arbitraryDate, None, Some(OptionalSalesAtVatRate(Some(BigDecimal(100)), Some(VatOnSales(VatOnSalesChoice.Standard, BigDecimal(100)))))))
-
-  def answers: UserAnswers = emptyUserAnswers
-    .set(SoldGoodsPage, true).success.value
-    .set(SoldToCountryPage(index), Country("HR", "Croatia")).success.value
-    .set(VatRatesFromCountryPage(index, index), vatRates).success.value
-    .set(SalesToCountryPage(index, index), BigDecimal(100)).success.value
-    .set(VatOnSalesPage(index, index), VatOnSales(VatOnSalesChoice.Standard, BigDecimal(20))).success.value
 
   override def beforeEach(): Unit = {
     Mockito.reset(salesAtVatRateService)
@@ -52,7 +40,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
     "when correct previous return is false / empty" - {
       "must return OK and the correct view for a GET" in {
 
-        val application = applicationBuilder(userAnswers = Some(answers.set(CorrectPreviousReturnPage, false).success.value))
+        val application = applicationBuilder(userAnswers = Some(completeUserAnswers.set(CorrectPreviousReturnPage, false).success.value))
           .build()
 
         running(application) {
@@ -76,7 +64,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
       "must return OK and the correct view for a GET when the correction choice was NO " in {
 
-        val application = applicationBuilder(userAnswers = Some(answers.set(CorrectPreviousReturnPage, false).success.value))
+        val application = applicationBuilder(userAnswers = Some(completeUserAnswers.set(CorrectPreviousReturnPage, false).success.value))
           .build()
 
         running(application) {
@@ -105,7 +93,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
       "must contain VAT declared to EU countries after corrections heading if there were corrections and all totals are positive" in {
 
-        val application = applicationBuilder(userAnswers = Some(answers.set(CorrectPreviousReturnPage, true).success.value))
+        val application = applicationBuilder(userAnswers = Some(completeUserAnswers.set(CorrectPreviousReturnPage, true).success.value))
           .build()
 
         running(application) {
@@ -129,7 +117,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
       "must contain VAT declared where no payment is due heading if there were negative totals after corrections" in {
 
-        val application = applicationBuilder(userAnswers = Some(answers.set(CorrectPreviousReturnPage, true).success.value))
+        val application = applicationBuilder(userAnswers = Some(completeUserAnswers.set(CorrectPreviousReturnPage, true).success.value))
           .build()
 
         running(application) {

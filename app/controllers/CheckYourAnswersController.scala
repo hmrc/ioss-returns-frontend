@@ -59,9 +59,9 @@ class CheckYourAnswersController @Inject()(
       val containsCorrections = request.userAnswers.get(AllCorrectionPeriodsQuery).isDefined
 
       val totalVatToCountries =
-        service.getVatOwedToEuCountries(request.userAnswers).filter(vat => vat.totalVat > 0)
+        service.getVatOwedToCountries(request.userAnswers).filter(vat => vat.totalVat > 0)
       val noPaymentDueCountries =
-        service.getVatOwedToEuCountries(request.userAnswers).filter(vat => vat.totalVat <= 0)
+        service.getVatOwedToCountries(request.userAnswers).filter(vat => vat.totalVat <= 0)
 
       val totalVatOnSales =
         service.getTotalVatOwedAfterCorrections(request.userAnswers)
@@ -114,8 +114,8 @@ class CheckYourAnswersController @Inject()(
     SummaryListViewModel(
       rows = Seq(
         SoldGoodsSummary.row(request.userAnswers, waypoints, CheckYourAnswersPage),
-        TotalNetValueOfSalesSummary.row(request.userAnswers, service.getEuTotalNetSales(request.userAnswers), waypoints),
-        TotalVatOnSalesSummary.row(request.userAnswers, service.getEuTotalVatOnSales(request.userAnswers), waypoints)
+        TotalNetValueOfSalesSummary.row(request.userAnswers, service.getTotalNetSales(request.userAnswers), waypoints),
+        TotalVatOnSalesSummary.row(request.userAnswers, service.getTotalVatOnSales(request.userAnswers), waypoints)
       ).flatten
     ).withCard(
       card = Card(
