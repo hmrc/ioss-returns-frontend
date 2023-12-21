@@ -127,8 +127,6 @@ class CheckYourAnswersController @Inject()(
         BusinessVRNSummary.row(request.vrn),
         ReturnPeriodSummary.row(request.userAnswers, waypoints)
       ).flatten
-    ).withCard(
-      card = Card()
     )
   }
 

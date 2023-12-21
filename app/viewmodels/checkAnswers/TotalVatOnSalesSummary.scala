@@ -33,7 +33,7 @@ object TotalVatOnSalesSummary extends CurrencyFormatter {
       totalVatOnSales =>
         SummaryListRowViewModel(
           key = "checkYourAnswers.label.vatOnSales",
-          value = ValueViewModel(HtmlContent(currencyFormat(totalVatOnSales))),
+          value = ValueViewModel(HtmlContent(currencyFormat(totalVatOnSales))).withCssClass("govuk-table__cell--numeric"),
           actions = Seq(
             ActionItemViewModel("site.change", routes.SoldToCountryListController.onPageLoad(waypoints).url)
               .withVisuallyHiddenText(messages("soldGoodsFromEu.changeEUVAT.hidden"))
