@@ -21,8 +21,8 @@ import play.api.mvc.{PathBindable, QueryStringBindable}
 import uk.gov.hmrc.govukfrontend.views.Aliases.Text
 import uk.gov.hmrc.govukfrontend.views.viewmodels.radios.RadioItem
 
-import java.time.{LocalDate, Month}
 import java.time.format.TextStyle
+import java.time.{Clock, LocalDate, Month}
 import java.util.Locale
 import scala.util.Try
 import scala.util.matching.Regex
@@ -30,6 +30,34 @@ import scala.util.matching.Regex
 final case class Period(year: Int, month: Month) {
   val firstDay: LocalDate = LocalDate.of(year, month, 1)
   val lastDay: LocalDate = firstDay.plusMonths(3).minusDays(1)
+  val paymentDeadline: LocalDate = firstDay.plusMonths(4).minusDays(1)
+
+  def isOverdue(clock: Clock): Boolean = {
+    paymentDeadline.isBefore(LocalDate.now(clock))
+  }
+
+  def toEtmpPeriodString: String = {
+    val lastYearDigits = year.toString.substring(2)
+
+    s"$lastYearDigits${toEtmpMonthString(month)}"
+  }
+
+  private def toEtmpMonthString(month: Month): String = {
+    month match {
+      case Month.JANUARY => "AA"
+      case Month.FEBRUARY => "AB"
+      case Month.MARCH => "AC"
+      case Month.APRIL => "AD"
+      case Month.MAY => "AE"
+      case Month.JUNE => "AF"
+      case Month.JULY => "AG"
+      case Month.AUGUST => "AH"
+      case Month.SEPTEMBER => "AI"
+      case Month.OCTOBER => "AJ"
+      case Month.NOVEMBER => "AK"
+      case Month.DECEMBER => "AL"
+    }
+  }
 
   def displayText: String =
     s"${month.getDisplayName(TextStyle.FULL, Locale.ENGLISH)} ${year}"
@@ -53,6 +81,29 @@ object Period {
       case _ =>
         None
     }
+
+  def fromKey(key: String): Period = {
+    val yearLast2 = key.take(2)
+    val month = key.drop(2)
+    Period(s"20$yearLast2".toInt, fromEtmpMonthString(month))
+  }
+
+  private def fromEtmpMonthString(keyMonth: String): Month = {
+    keyMonth match {
+      case "AA" => Month.JANUARY
+      case "AB" => Month.FEBRUARY
+      case "AC" => Month.MARCH
+      case "AD" => Month.APRIL
+      case "AE" => Month.MAY
+      case "AF" => Month.JUNE
+      case "AG" => Month.JULY
+      case "AH" => Month.AUGUST
+      case "AI" => Month.SEPTEMBER
+      case "AJ" => Month.OCTOBER
+      case "AK" => Month.NOVEMBER
+      case "AL" => Month.DECEMBER
+    }
+  }
 
   implicit val monthReads: Reads[Month] = {
     Reads.at[Int](__ \ "month")

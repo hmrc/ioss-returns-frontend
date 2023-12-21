@@ -10,6 +10,7 @@ site.start = Start now
 site.startAgain = Start again
 site.signIn = Sign in
 site.govuk = GOV.UK
+site.to = to
 
 date.day = Day
 date.month = Month
@@ -220,3 +221,8 @@ correctionListCountries.checkYourAnswersLabel = Correction amount
 removeCountryCorrection.title = Are you sure you want to remove this correction?
 removeCountryCorrection.heading = Are you sure you want to remove this correction?
 removeCountryCorrection.error.required = Select yes if you want to remove this correction
+
+whichVatPeriodToPay.title = Which VAT period do you want to pay?
+whichVatPeriodToPay.heading = Which VAT period do you want to pay?
+whichVatPeriodToPay.amountKnown = You owe <b>£{0}</b> for {1}
+whichVatPeriodToPay.error.required = Select a period to pay

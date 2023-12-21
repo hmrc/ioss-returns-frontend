@@ -14,27 +14,15 @@
  * limitations under the License.
  */
 
-package models.etmp
+package models.payments
 
 import models.Period
 import play.api.libs.json.{Json, OFormat}
+import uk.gov.hmrc.domain.Vrn
 
-case class EtmpObligations(
-                            referenceNumber: String,
-                            referenceType: String,
-                            obligationDetails: Seq[EtmpObligationDetails]
-                          )
+case class PaymentRequest(vrn: Vrn, period: PaymentPeriod, amountInPence: Long)
 
-object EtmpObligations {
+object PaymentRequest {
 
-  implicit val format: OFormat[EtmpObligations] = Json.format[EtmpObligations]
-
-  implicit class FromEtmpObligationsToPeriods(etmpObligations: EtmpObligations) {
-    def getPeriods(): List[Period] = {
-      etmpObligations.obligationDetails
-        .filter(_.status == EtmpObligationsFulfilmentStatus.Open)
-        .map(p => Period.fromKey(p.periodKey))
-        .toList
-    }
-  }
+  implicit val format: OFormat[PaymentRequest] = Json.format[PaymentRequest]
 }

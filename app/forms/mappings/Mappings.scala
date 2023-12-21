@@ -17,9 +17,10 @@
 package forms.mappings
 
 import java.time.LocalDate
-import play.api.data.FieldMapping
+import play.api.data.{FieldMapping, FormError}
 import play.api.data.Forms.of
-import models.Enumerable
+import models.{Enumerable, Period}
+import play.api.data.format.Formatter
 
 trait Mappings extends Formatters with Constraints {
 
@@ -58,4 +59,21 @@ trait Mappings extends Formatters with Constraints {
                            args: Seq[String] = Seq.empty): FieldMapping[LocalDate] =
     of(new LocalDateFormatter(invalidKey, allRequiredKey, twoRequiredKey, requiredKey, args))
 
+  protected def period(requiredKey: String = "error.required",
+                       invalidKey: String = "error.invalidPeriod",
+                       args: Seq[String] = Seq.empty): FieldMapping[Period] =
+    of(periodFormatter(requiredKey, invalidKey, args))
+  //Todo: Check Below
+  private def periodFormatter(requiredKey: String, invalidKey: String, args: Seq[String] = Seq.empty): Formatter[Period] =
+    new Formatter[Period] {
+
+      private val baseFormatter = stringFormatter(requiredKey, args)
+
+      override def bind(key: String, data: Map[String, String]): Either[Seq[FormError], Period] =
+        baseFormatter
+          .bind(key, data)
+          .right.flatMap { s => Period.fromString(s).toRight(Seq(FormError(key, invalidKey, args))) }
+
+      def unbind(key: String, value: Period) = Map(key -> value.toString)
+    }
 }
