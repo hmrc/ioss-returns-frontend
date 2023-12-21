@@ -25,7 +25,7 @@
     button: ButtonGroup
 )
 
-@(form: Form[_], waypoints: Waypoints, period: Period, allReturnYears: Seq[Period], periodIndex: Index)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, period: Period, obligationYears: Seq[RadioItem], periodIndex: Index)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, messages("correctionReturnYear.title"))) {
 
@@ -39,7 +39,7 @@
             RadiosViewModel(
                 field = form("value"),
                 legend = LegendViewModel(messages("correctionReturnYear.heading")).asPageHeading(),
-                items = CorrectionReturnYear.options
+                items = obligationYears
             )
         )
 

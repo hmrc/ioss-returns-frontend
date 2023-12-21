@@ -16,12 +16,12 @@
 
 package pages.corrections
 
-import models.{Index, Period, UserAnswers}
+import models.{Index, UserAnswers}
 import pages.{JourneyRecoveryPage, Page, QuestionPage, Waypoints}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
-case class CorrectionReturnYearPage(index: Index) extends QuestionPage[Period] {
+case class CorrectionReturnYearPage(index: Index) extends QuestionPage[Int] {
 
   override def path: JsPath = JsPath \ toString
 

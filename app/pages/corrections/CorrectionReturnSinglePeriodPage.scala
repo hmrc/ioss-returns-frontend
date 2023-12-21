@@ -17,7 +17,7 @@
 package pages.corrections
 
 import models.{Index, UserAnswers}
-import pages.{CorrectionCountryPage, JourneyRecoveryPage, Page, QuestionPage, Waypoints}
+import pages.{JourneyRecoveryPage, Page, QuestionPage, Waypoints}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
@@ -32,7 +32,7 @@ case class CorrectionReturnSinglePeriodPage(index: Index) extends QuestionPage[B
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
     answers.get(CorrectionReturnSinglePeriodPage(index)) match {
-      case Some(true) => CorrectionCountryPage(answers.period, index)
+      case Some(true) => CorrectionCountryPage(Index(0), index)
       case Some(false) => NoOtherCorrectionPeriodsAvailablePage
       case _ => JourneyRecoveryPage
 

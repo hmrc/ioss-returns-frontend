@@ -17,15 +17,19 @@
 package controllers.corrections
 
 import controllers.actions._
-import forms.CorrectionReturnYearFormProvider
-import models.{Index, Period}
+import forms.corrections.CorrectionReturnYearFormProvider
+import models.Index
 import pages.Waypoints
 import pages.corrections.CorrectionReturnYearPage
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import queries.corrections.{AllCorrectionPeriodQuery, DeriveCompletedCorrectionPeriods}
+import services.ObligationsService
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import uk.gov.hmrc.play.http.HeaderCarrierConverter
+import utils.ConvertPeriodKey
+import utils.FutureSyntax.FutureOps
 import views.html.corrections.CorrectionReturnYearView
 
 import javax.inject.Inject
@@ -35,26 +39,33 @@ class CorrectionReturnYearController @Inject()(
                                          override val messagesApi: MessagesApi,
                                          cc: AuthenticatedControllerComponents,
                                          formProvider: CorrectionReturnYearFormProvider,
+                                         obligationService: ObligationsService,
                                          view: CorrectionReturnYearView
                                  )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndRequireData() {
+  def onPageLoad(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
 
       val period = request.userAnswers.period
 
-      val correctionYears: List[Period] = request.userAnswers.get(DeriveCompletedCorrectionPeriods).getOrElse(List.empty)
+      implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
 
-      val form: Form[Period] = formProvider(index, correctionYears)
+      val openObligations = obligationService.getOpenObligations(request.iossNumber)
 
-      val preparedForm = request.userAnswers.get(CorrectionReturnYearPage(index)) match {
-        case None => form
-        case Some(value) => form.fill(value)
+      openObligations.map { obligations =>
+        val periodKeys = obligations.map(obligation => ConvertPeriodKey.yearFromEtmpPeriodKey(obligation.periodKey))
+
+        val form: Form[Int] = formProvider(index, periodKeys)
+        val preparedForm = request.userAnswers.get(CorrectionReturnYearPage(index)) match {
+          case None => form
+          case Some(value) => form.fill(value)
+        }
+
+        Ok(view(preparedForm, waypoints, period, utils.ItemsHelper.radioButtonItems(periodKeys), index))
       }
 
-      Ok(view(preparedForm, waypoints, period, correctionYears, index))
   }
 
   def onSubmit(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndRequireData().async {
@@ -62,19 +73,24 @@ class CorrectionReturnYearController @Inject()(
 
       val period = request.userAnswers.period
 
-      val correctionYears: List[Period] = request.userAnswers.get(DeriveCompletedCorrectionPeriods).getOrElse(List.empty)
+      val openObligations = obligationService.getOpenObligations(request.iossNumber)
 
-      val form: Form[Period] = formProvider(index, correctionYears)
+      openObligations.flatMap { obligations =>
+        val periodKeys = obligations.map(obligation => ConvertPeriodKey.yearFromEtmpPeriodKey(obligation.periodKey))
 
-      form.bindFromRequest().fold(
-        formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, waypoints, period, correctionYears, index))),
+        val form: Form[Int] = formProvider(index, periodKeys)
 
-        value =>
-          for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionReturnYearPage(index), value))
-            _              <- cc.sessionRepository.set(updatedAnswers)
-          } yield Redirect(CorrectionReturnYearPage(index).navigate(waypoints, request.userAnswers, updatedAnswers).route)
-      )
+        form.bindFromRequest().fold(
+          formWithErrors =>
+
+            BadRequest(view(formWithErrors, waypoints, period, utils.ItemsHelper.radioButtonItems(periodKeys), index)).toFuture,
+
+          value =>
+            for {
+              updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionReturnYearPage(index), value))
+              _ <- cc.sessionRepository.set(updatedAnswers)
+            } yield Redirect(CorrectionReturnYearPage(index).navigate(waypoints, request.userAnswers, updatedAnswers).route)
+        )
+      }
   }
 }

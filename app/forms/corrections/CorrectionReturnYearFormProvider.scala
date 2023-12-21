@@ -14,17 +14,18 @@
  * limitations under the License.
  */
 
-package forms
+package forms.corrections
+
+import forms.mappings.Mappings
+import models.Index
+import play.api.data.Form
 
 import javax.inject.Inject
-import forms.mappings.Mappings
-import models.{Index, Period}
-import play.api.data.Form
 
 class CorrectionReturnYearFormProvider @Inject() extends Mappings {
 
-  def apply(index: Index, correctionYears: Seq[Period]): Form[Period] =
+  def apply(index: Index, correctionYears: Seq[Int]): Form[Int] =
     Form(
-      "value" -> period("correctionReturnYear.error.required")
+      "value" -> int("correctionReturnYear.error.required")
     )
 }

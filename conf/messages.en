@@ -204,9 +204,7 @@ correctionReturnYear.title = What is the year of the return you want to correct?
 correctionReturnYear.heading = What is the year of the return you want to correct?
 correctionReturnYear.checkYourAnswersLabel = What is the year of the return you want to correct?
 correctionReturnYear.error.required = Select which year you want to correct
-correctionReturnYear.year1 = 2023
-correctionReturnYear.year2 = 2022
-correctionReturnYear.year3 = 2021
+correctionReturnYear.error.invalid = Select which year you want to correct
 
 
 vatPayableForCountry.title = Is the total VAT payable for {0} {1}?

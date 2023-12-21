@@ -25,8 +25,8 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.{OptionValues, TryValues}
-import pages.corrections.{CorrectPreviousReturnPage, CorrectionReturnPeriodPage}
-import pages.{CorrectionCountryPage, EmptyWaypoints, SalesToCountryPage, SoldGoodsPage, SoldToCountryPage, VatOnSalesPage, VatRatesFromCountryPage, Waypoints}
+import pages.corrections.{CorrectPreviousReturnPage, CorrectionReturnPeriodPage, CorrectionReturnYearPage}
+import pages.{EmptyWaypoints, SalesToCountryPage, SoldGoodsPage, SoldToCountryPage, VatOnSalesPage, VatRatesFromCountryPage, Waypoints}
 import play.api.Application
 import play.api.i18n.{Messages, MessagesApi}
 import play.api.inject.bind
@@ -72,7 +72,7 @@ trait SpecBase
 
   val completedUserAnswersWithCorrections: UserAnswers = completeUserAnswers
     .set(CorrectPreviousReturnPage, true).success.value
-    .set(CorrectionReturnPeriodPage(index), period).success.value
+    .set(CorrectionReturnYearPage(index), 2023).success.value
 
   def messages(app: Application): Messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
 

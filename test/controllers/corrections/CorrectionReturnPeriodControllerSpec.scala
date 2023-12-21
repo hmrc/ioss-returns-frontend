@@ -105,7 +105,7 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
         val expectedAnswers = emptyUserAnswers.set(CorrectionReturnPeriodPage(index), Period(2021, Month.OCTOBER)).success.value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.corrections.routes.CorrectionCountryController.onPageLoad(waypoints, index).url
+        redirectLocation(result).value mustEqual controllers.corrections.routes.CorrectionCountryController.onPageLoad(waypoints, index, index).url
         verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
       }
     }

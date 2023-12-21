@@ -16,16 +16,13 @@
 
 package forms.corrections
 
-import forms.CorrectionReturnYearFormProvider
 import forms.behaviours.OptionFieldBehaviours
-import models.{Index, Period}
+import models.Index
 import play.api.data.FormError
-
-import java.time.Month
 
 class CorrectionReturnYearFormProviderSpec extends OptionFieldBehaviours {
 
-  val testPeriods: Seq[Period] = Seq(Period(2021, Month.OCTOBER))
+  val testPeriods: Seq[Int] = Seq(2021, 2022, 2023)
   val index: Index = Index(0)
 
   val form = new CorrectionReturnYearFormProvider()(index, Seq.empty)
@@ -35,11 +32,11 @@ class CorrectionReturnYearFormProviderSpec extends OptionFieldBehaviours {
     val fieldName = "value"
     val requiredKey = "correctionReturnYear.error.required"
 
-    behave like optionsField[Period](
+    behave like optionsField[Int](
       form,
       fieldName,
       validValues = testPeriods,
-      invalidError = FormError(fieldName, "error.invalidPeriod")
+      invalidError = FormError(fieldName, "error.nonNumeric")
     )
 
     behave like mandatoryField(

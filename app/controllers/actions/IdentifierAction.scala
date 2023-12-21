@@ -55,24 +55,24 @@ class IdentifierAction @Inject()(
     ).retrieve( Retrievals.credentials and
       Retrievals.allEnrolments and
       Retrievals.affinityGroup and
-      Retrievals.groupIdentifier and
       Retrievals.confidenceLevel and
       Retrievals.credentialRole ) {
 
-      case Some(credentials) ~ enrolments ~ Some(Organisation) ~ Some(groupId) ~ _ ~ Some(credentialRole) if credentialRole == User =>
+      case Some(credentials) ~ enrolments ~ Some(Organisation) ~ _ ~ Some(credentialRole) if credentialRole == User =>
         (findVrnFromEnrolments(enrolments), findIossNumberFromEnrolments(enrolments), hasIossEnrolment(enrolments)) match {
           case (Some(vrn), Some(iossNumber), true) =>
-            getSuccessfulResponse(request, credentials, vrn, groupId, iossNumber)
+            println(s"pulled iossNumber from enrolments ${iossNumber}")
+            getSuccessfulResponse(request, credentials, vrn, iossNumber)
           case _ => throw InsufficientEnrolments()
         }
 
-      case _ ~ _ ~ Some(Organisation) ~ _ ~ _ ~ Some(credentialRole) if credentialRole == Assistant =>
+      case _ ~ _ ~ Some(Organisation) ~ _ ~ Some(credentialRole) if credentialRole == Assistant =>
         throw UnsupportedCredentialRole()
 
-      case Some(credentials) ~ enrolments ~ Some(Individual) ~ Some(groupId) ~ confidence ~ _ =>
+      case Some(credentials) ~ enrolments ~ Some(Individual) ~ confidence ~ _ =>
         (findVrnFromEnrolments(enrolments), findIossNumberFromEnrolments(enrolments), hasIossEnrolment(enrolments)) match {
           case (Some(vrn), Some(iossNumber), true) =>
-            checkConfidenceAndGetResponse(request, credentials, vrn, iossNumber, groupId, confidence)
+            checkConfidenceAndGetResponse(request, credentials, vrn, iossNumber, confidence)
           case _ =>
             throw InsufficientEnrolments()
         }
@@ -92,8 +92,7 @@ class IdentifierAction @Inject()(
                                         request: Request[A],
                                         credentials: Credentials,
                                         vrn: Vrn,
-                                        iossNumber: String,
-                                        groupId: String
+                                        iossNumber: String
                                       ): Future[Either[Result, IdentifierRequest[A]]] = {
     val identifierRequest = IdentifierRequest(request, credentials, vrn, iossNumber)
     Right(identifierRequest).toFuture
@@ -104,11 +103,10 @@ class IdentifierAction @Inject()(
                                                 credentials: Credentials,
                                                 vrn: Vrn,
                                                 iossNumber: String,
-                                                groupId: String,
                                                 confidence: ConfidenceLevel
                                               ): Future[Either[Result, IdentifierRequest[A]]] = {
     if (confidence >= ConfidenceLevel.L200) {
-      getSuccessfulResponse(request, credentials, vrn, iossNumber, groupId)
+      getSuccessfulResponse(request, credentials, vrn, iossNumber)
     } else {
       throw InsufficientConfidenceLevel()
     }
