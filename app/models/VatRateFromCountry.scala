@@ -64,7 +64,6 @@ object VatRateFromCountry {
           Json.obj("validUntil" -> Json.toJson(v))
       }.getOrElse(Json.obj())
 
-      println ("===== " + o.toString)
       Json.obj(
         "rate" -> o.rate.toString,
         "rateType" -> Json.toJson(o.rateType),

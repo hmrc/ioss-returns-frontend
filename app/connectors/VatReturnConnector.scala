@@ -33,25 +33,4 @@ class VatReturnConnector @Inject()(config: Configuration, httpClient: HttpClient
   def getObligations(iossNumber: String)(implicit hc: HeaderCarrier): Future[EtmpObligations] =
     httpClient.GET[EtmpObligations](url = s"$baseUrl/obligations/$iossNumber")
 
-  def submit(vatReturnRequest: VatReturnRequest)(implicit hc: HeaderCarrier): Future[VatReturnResponse] = {
-    val url = s"$baseUrl/vat-returns"
-
-    httpClient.POST[VatReturnRequest, VatReturnResponse](url, vatReturnRequest)
-  }
-
-  def submitWithCorrections(vatReturnRequest: VatReturnWithCorrectionRequest)(implicit hc: HeaderCarrier): Future[VatReturnWithCorrectionResponse] = {
-    val url = s"$baseUrl/vat-return-with-corrections"
-
-    httpClient.POST[VatReturnWithCorrectionRequest, VatReturnWithCorrectionResponse](url, vatReturnRequest)
-  }
-
-  def get(period: Period)(implicit hc: HeaderCarrier): Future[VatReturnResponse] = {
-    val url = s"$baseUrl/vat-returns/period/${period.toString}"
-
-    httpClient.GET[VatReturnResponse](url)
-  }
-
-  def getSavedExternalEntry()(implicit hc: HeaderCarrier): Future[ExternalEntryUrlResponse] = {
-    httpClient.GET[ExternalEntryUrlResponse](s"$baseUrl/external-entry")
-  }
 }

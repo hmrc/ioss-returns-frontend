@@ -39,13 +39,11 @@ class SalesAtVatRateService @Inject()() {
   def getTotalVatOnSales(userAnswers: UserAnswers): Option[BigDecimal] = {
     userAnswers.get(FooAllSalesQuery).map { allSales =>
       allSales.flatMap { x =>
-        println("===== country: " + x.country.toString)
         x.vatRatesFromCountry.toSeq.flatten.map { vatRateFromCountry =>
           (for {
             salesAtVatRate <- vatRateFromCountry.salesAtVatRate
             vatOnSales <- salesAtVatRate.vatOnSales
           } yield {
-            println ("===== amount: " + vatOnSales.amount)
             vatOnSales.amount
           }).getOrElse(BigDecimal(0))
         }
