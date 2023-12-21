@@ -17,14 +17,14 @@
 package services
 
 import models.{Index, TotalVatToCountry, UserAnswers}
-import queries.{AllCorrectionPeriodsQuery, AllSalesByCountryQuery, AllSalesQuery, FooAllSalesQuery}
+import queries.{AllCorrectionPeriodsQuery, AllSalesByCountryQuery, AllSalesQuery, AllSalesWithTotalAndVatQuery}
 
 import javax.inject.Inject
 
 class SalesAtVatRateService @Inject()() {
 
   def getTotalNetSales(userAnswers: UserAnswers): Option[BigDecimal] = {
-    userAnswers.get(FooAllSalesQuery).map( allSales =>
+    userAnswers.get(AllSalesWithTotalAndVatQuery).map(allSales =>
       allSales.flatMap(
         _.vatRatesFromCountry.toSeq.flatten.map { vatRateFromCountry =>
           (for {
@@ -37,7 +37,7 @@ class SalesAtVatRateService @Inject()() {
   }
 
   def getTotalVatOnSales(userAnswers: UserAnswers): Option[BigDecimal] = {
-    userAnswers.get(FooAllSalesQuery).map { allSales =>
+    userAnswers.get(AllSalesWithTotalAndVatQuery).map { allSales =>
       allSales.flatMap { x =>
         x.vatRatesFromCountry.toSeq.flatten.map { vatRateFromCountry =>
           (for {
@@ -57,7 +57,7 @@ class SalesAtVatRateService @Inject()() {
   def getVatOwedToCountries(userAnswers: UserAnswers): List[TotalVatToCountry] = {
     val vatOwedToCountriesFromEu =
       for {
-        allSales <- userAnswers.get(FooAllSalesQuery).toList.flatten.zipWithIndex
+        allSales <- userAnswers.get(AllSalesWithTotalAndVatQuery).toList.flatten.zipWithIndex
         salesFromCountry = allSales._1.country
         salesToCountry <- userAnswers.get(AllSalesByCountryQuery(Index(allSales._2))).toSeq
         vatRate <- salesToCountry.vatRatesFromCountry.toSeq.flatten

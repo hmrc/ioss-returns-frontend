@@ -19,7 +19,7 @@ package queries
 import pages.PageConstants
 import play.api.libs.json.JsPath
 
-case object FooAllSalesQuery extends Gettable[List[SalesToCountryWithOptionalSales]] with Settable[List[SalesToCountryWithOptionalSales]] {
+case object AllSalesWithTotalAndVatQuery extends Gettable[List[SalesToCountryWithOptionalSales]] with Settable[List[SalesToCountryWithOptionalSales]] {
 
   override def path: JsPath = JsPath \ PageConstants.sales
 }

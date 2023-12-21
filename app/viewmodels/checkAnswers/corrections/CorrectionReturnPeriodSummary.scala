@@ -40,8 +40,6 @@ object CorrectionReturnPeriodSummary {
         actions = Seq(
           ActionItemViewModel(
             "site.change",
-//            controllers.corrections.routes.VatPeriodCorrectionsListController
-//              .onPageLoad(CheckMode, answers.period).url
             controllers.corrections.routes.CorrectPreviousReturnController
               .onPageLoad(waypoints).url
           ).withVisuallyHiddenText(messages("correctionReturnPeriod.change.hidden"))

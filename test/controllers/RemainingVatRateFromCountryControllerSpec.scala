@@ -71,7 +71,7 @@ class RemainingVatRateFromCountryControllerSpec extends SpecBase with MockitoSug
       )
   )
 
-  val completedUserAnswers: UserAnswers = emptyUserAnswers
+  val answers: UserAnswers = emptyUserAnswers
     .set(SoldGoodsPage, true).success.value
     .set(SoldToCountryPage(index), country).success.value
     .set(VatRatesFromCountryPage(index, index), currentlyAnsweredVatRates).success.value
@@ -94,7 +94,7 @@ class RemainingVatRateFromCountryControllerSpec extends SpecBase with MockitoSug
 
       when(mockVatRateService.getRemainingVatRatesForCountry(any(), any(), any())) thenReturn Seq(remainingVatRate)
 
-      val application = applicationBuilder(userAnswers = Some(completedUserAnswers))
+      val application = applicationBuilder(userAnswers = Some(answers))
         .overrides(bind[VatRateService].toInstance(mockVatRateService))
         .build()
 
@@ -116,7 +116,7 @@ class RemainingVatRateFromCountryControllerSpec extends SpecBase with MockitoSug
 
       when(mockVatRateService.getRemainingVatRatesForCountry(any(), any(), any())) thenReturn Seq(remainingVatRate)
 
-      val userAnswers = completedUserAnswers.set(RemainingVatRateFromCountryPage(index, index), true).success.value
+      val userAnswers = answers.set(RemainingVatRateFromCountryPage(index, index), true).success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers))
         .overrides(bind[VatRateService].toInstance(mockVatRateService))
@@ -145,7 +145,7 @@ class RemainingVatRateFromCountryControllerSpec extends SpecBase with MockitoSug
       when(mockSessionRepository.set(any())) thenReturn true.toFuture
 
       val application =
-        applicationBuilder(userAnswers = Some(completedUserAnswers))
+        applicationBuilder(userAnswers = Some(answers))
           .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
           .overrides(bind[VatRateService].toInstance(mockVatRateService))
           .build()
@@ -157,12 +157,12 @@ class RemainingVatRateFromCountryControllerSpec extends SpecBase with MockitoSug
 
         val result = route(application, request).value
 
-        val expectedAnswers = completedUserAnswers
+        val expectedAnswers = answers
           .set(RemainingVatRateFromCountryPage(index, index), true).success.value
           .set(AllSalesByCountryQuery(index), vatRatesAndSales).success.value
 
         status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe RemainingVatRateFromCountryPage(index, index).navigate(waypoints, completedUserAnswers, expectedAnswers).url
+        redirectLocation(result).value mustBe RemainingVatRateFromCountryPage(index, index).navigate(waypoints, answers, expectedAnswers).url
         verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
       }
     }
@@ -171,7 +171,7 @@ class RemainingVatRateFromCountryControllerSpec extends SpecBase with MockitoSug
 
       when(mockVatRateService.getRemainingVatRatesForCountry(any(), any(), any())) thenReturn Seq(remainingVatRate)
 
-      val application = applicationBuilder(userAnswers = Some(completedUserAnswers))
+      val application = applicationBuilder(userAnswers = Some(answers))
         .overrides(bind[VatRateService].toInstance(mockVatRateService))
         .build()
 
