@@ -177,10 +177,9 @@ correctionReturnPeriod.title = Which return do you want to correct?
 correctionReturnPeriod.heading = Which return do you want to correct?
 correctionReturnPeriod.checkYourAnswersLabel = Which return do you want to correct?
 correctionReturnPeriod.error.required = Select which return you want to correct
+correctionReturnPeriod.error.invalid = Select which return you want to correct
 correctionReturnPeriod.change.hidden = which return you want to correct
-correctionReturnPeriod.period1 = January
-correctionReturnPeriod.period2 = February
-correctionReturnPeriod.period3 = March
+
 
 noOtherCorrectionPeriodsAvailable.title = You cannot make a correction to other VAT Import One Stop Shop months
 noOtherCorrectionPeriodsAvailable.heading = You cannot make a correction to other VAT Import One Stop Shop months

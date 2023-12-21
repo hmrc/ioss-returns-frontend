@@ -25,6 +25,16 @@ object ConvertPeriodKey {
     s"20${periodKey.substring(0, 2)}".toInt
   }
 
+  def monthFromEtmpPeriodKey(periodKey: String): Month = {
+    val monthKey = periodKey.substring(2, 4)
+    fromEtmpMonthString(monthKey)
+  }
+
+  def monthNameFromEtmpPeriodKey(periodKey: String): String = {
+    val month = monthFromEtmpPeriodKey(periodKey)
+    month.toString.toLowerCase.capitalize
+  }
+
   def fromEtmpMonthString(monthKey: String): Month = {
     monthKey match {
       case "AA" => JANUARY

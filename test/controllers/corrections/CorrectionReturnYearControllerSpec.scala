@@ -20,7 +20,7 @@ import base.SpecBase
 import controllers.routes
 import forms.corrections.CorrectionReturnYearFormProvider
 import models.etmp.{EtmpObligationDetails, EtmpObligationsFulfilmentStatus}
-import models.{Index, Period}
+import models.Index
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito
@@ -34,11 +34,9 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
 import services.ObligationsService
-import uk.gov.hmrc.http.HeaderCarrier
 import utils.FutureSyntax.FutureOps
 import views.html.corrections.CorrectionReturnYearView
 
-import java.time.Month
 import scala.concurrent.Future
 
 class CorrectionReturnYearControllerSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {

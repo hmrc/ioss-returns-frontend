@@ -19,7 +19,7 @@ package controllers.corrections
 import base.SpecBase
 import controllers.routes
 import forms.corrections.CorrectionReturnPeriodFormProvider
-import models.{Index, Period}
+import models.etmp.{EtmpObligationDetails, EtmpObligationsFulfilmentStatus}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito.{times, verify, when}
@@ -30,18 +30,34 @@ import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
+import services.ObligationsService
+import utils.ConvertPeriodKey
+import utils.FutureSyntax.FutureOps
 import views.html.corrections.CorrectionReturnPeriodView
 
-import java.time.Month
 import scala.concurrent.Future
 
 class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
 
+  private val periodKeys = Seq("23AK", "23AL")
+
+  private val monthNames: Seq[String] = periodKeys.map(ConvertPeriodKey.monthNameFromEtmpPeriodKey)
+
+  private val obligationService: ObligationsService = mock[ObligationsService]
+
+  private val etmpObligationDetails: Seq[EtmpObligationDetails] = Seq(
+    EtmpObligationDetails(
+      status = EtmpObligationsFulfilmentStatus.Open,
+      periodKey = "23AL"
+    ),
+    EtmpObligationDetails(
+      status = EtmpObligationsFulfilmentStatus.Open,
+      periodKey = "23AK"
+    )
+  )
 
   private val formProvider = new CorrectionReturnPeriodFormProvider()
-  private val form: Form[Period] = formProvider(index, Seq.empty)
-
-  private val periodSequence = Seq(Period(2021, Month.OCTOBER), Period(2021, Month.DECEMBER), Period(2022, Month.MARCH))
+  private val form: Form[String] = formProvider(index, Seq.empty)
 
   private lazy val correctionReturnPeriodRoute: String = controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(waypoints, index).url
 
@@ -49,7 +65,11 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
 
     "must return OK and the correct view for a GET" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      when(obligationService.getOpenObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(bind[ObligationsService].toInstance(obligationService))
+        .build()
 
       running(application) {
         val request = FakeRequest(GET, correctionReturnPeriodRoute)
@@ -59,15 +79,18 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[CorrectionReturnPeriodView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, waypoints, period, periodSequence, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(
+          form, waypoints, period, utils.ItemsHelper.radioButtonMonthItems(monthNames), index)(request, messages(application)).toString
       }
     }
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = emptyUserAnswers.set(CorrectionReturnPeriodPage(Index(0)), Period(2021, Month.OCTOBER)).success.value
+      when(obligationService.getOpenObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
 
-      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(bind[ObligationsService].toInstance(obligationService))
+        .build()
 
       running(application) {
         val request = FakeRequest(GET, correctionReturnPeriodRoute)
@@ -77,7 +100,8 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, waypoints, period, periodSequence, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(
+          form, waypoints, period, utils.ItemsHelper.radioButtonMonthItems(monthNames), index)(request, messages(application)).toString
       }
 
     }
@@ -87,22 +111,23 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
 
       val mockSessionRepository = mock[SessionRepository]
 
+      when(obligationService.getOpenObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
+
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
       val application =
         applicationBuilder(userAnswers = Some(emptyUserAnswers))
-          .overrides(
-            bind[SessionRepository].toInstance(mockSessionRepository)
-          )
+          .overrides(bind[ObligationsService].toInstance(obligationService))
+          .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
           .build()
 
       running(application) {
         val request =
           FakeRequest(POST, correctionReturnPeriodRoute)
-            .withFormUrlEncodedBody(("value", Period(2021, Month.OCTOBER).toString))
+            .withFormUrlEncodedBody(("value", "DECEMBER"))
 
         val result = route(application, request).value
-        val expectedAnswers = emptyUserAnswers.set(CorrectionReturnPeriodPage(index), Period(2021, Month.OCTOBER)).success.value
+        val expectedAnswers = emptyUserAnswers.set(CorrectionReturnPeriodPage(index), "DECEMBER").success.value
 
         status(result) mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual controllers.corrections.routes.CorrectionCountryController.onPageLoad(waypoints, index, index).url
@@ -112,7 +137,11 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
 
     "must return a Bad Request and errors when invalid data is submitted" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      when(obligationService.getOpenObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(bind[ObligationsService].toInstance(obligationService))
+        .build()
 
       running(application) {
         val request =
@@ -126,7 +155,8 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, waypoints, period, periodSequence, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(
+          boundForm, waypoints, period, utils.ItemsHelper.radioButtonMonthItems(monthNames), index)(request, messages(application)).toString
       }
     }
 

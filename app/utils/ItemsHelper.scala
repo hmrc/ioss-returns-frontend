@@ -32,6 +32,7 @@ import uk.gov.hmrc.govukfrontend.views.viewmodels.checkboxes.CheckboxItem
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.Text
 import uk.gov.hmrc.govukfrontend.views.viewmodels.radios.RadioItem
 
+
 object ItemsHelper {
 
   def getDerivedItems(waypoints: Waypoints, derivable: Derivable[Seq[JsObject], Int])(block: Int => Future[Result])
@@ -80,6 +81,16 @@ object ItemsHelper {
           content = Text(years.toString),
           value   = Some(years.toString),
           id      = Some(s"value_$years")
+        )
+    }
+
+  def radioButtonMonthItems(obligationMonths: Seq[String]): Seq[RadioItem] =
+    obligationMonths.map {
+      case (months) =>
+        RadioItem(
+          content = Text(months),
+          value   = Some(months),
+          id      = Some(s"value_$months")
         )
     }
 }

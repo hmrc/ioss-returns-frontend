@@ -16,7 +16,7 @@
 
 package forms.mappings
 
-import java.time.LocalDate
+import java.time.{LocalDate, Month}
 import play.api.data.FieldMapping
 import play.api.data.Forms.of
 import models.{Enumerable, Period}
@@ -63,4 +63,10 @@ trait Mappings extends Formatters with Constraints {
                        invalidKey: String = "error.invalidPeriod",
                        args: Seq[String] = Seq.empty): FieldMapping[Period] =
     of(periodFormatter(requiredKey, invalidKey, args))
+
+  protected def month(
+                       requiredKey: String = "error.required",
+                       invalidKey: String = "error.invalid",
+                       args: Seq[String] = Seq.empty): FieldMapping[Month] =
+    of(monthFormatter(requiredKey, invalidKey, args))
 }
