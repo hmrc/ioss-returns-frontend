@@ -57,9 +57,9 @@ class SalesAtVatRateService @Inject()() {
   def getVatOwedToCountries(userAnswers: UserAnswers): List[TotalVatToCountry] = {
     val vatOwedToCountriesFromEu =
       for {
-        allSales <- userAnswers.get(AllSalesWithTotalAndVatQuery).toList.flatten.zipWithIndex
-        salesFromCountry = allSales._1.country
-        salesToCountry <- userAnswers.get(AllSalesByCountryQuery(Index(allSales._2))).toSeq
+        (allSales, index) <- userAnswers.get(AllSalesWithTotalAndVatQuery).toList.flatten.zipWithIndex
+        salesFromCountry = allSales.country
+        salesToCountry <- userAnswers.get(AllSalesByCountryQuery(Index(index))).toSeq
         vatRate <- salesToCountry.vatRatesFromCountry.toSeq.flatten
       } yield TotalVatToCountry(salesFromCountry, vatRate.salesAtVatRate.flatMap(_.vatOnSales.map(_.amount)).getOrElse(BigDecimal(0)))
 

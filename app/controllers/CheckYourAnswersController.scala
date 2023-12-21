@@ -58,10 +58,7 @@ class CheckYourAnswersController @Inject()(
 
       val containsCorrections = request.userAnswers.get(AllCorrectionPeriodsQuery).isDefined
 
-      val totalVatToCountries =
-        service.getVatOwedToCountries(request.userAnswers).filter(vat => vat.totalVat > 0)
-      val noPaymentDueCountries =
-        service.getVatOwedToCountries(request.userAnswers).filter(vat => vat.totalVat <= 0)
+      val (noPaymentDueCountries, totalVatToCountries) = service.getVatOwedToCountries(request.userAnswers).partition(vat => vat.totalVat <= 0)
 
       val totalVatOnSales =
         service.getTotalVatOwedAfterCorrections(request.userAnswers)
@@ -96,11 +93,9 @@ class CheckYourAnswersController @Inject()(
           actions = None
         )
       )
-        //.withCssClass("govuk-!-margin-bottom-9").withCard()
       Seq(
         (None, businessSummaryList),
         (None, salesFromEuSummaryList),
-//        (Some("checkYourAnswers.correction.heading"), correctionsSummaryList)
         (None, correctionsSummaryList)
       )
     } else {
@@ -123,7 +118,6 @@ class CheckYourAnswersController @Inject()(
         actions = None
       )
     )
-      //.withCssClass("govuk-!-margin-bottom-9")
   }
 
   private def getBusinessSummaryList(request: DataRequest[AnyContent], waypoints: Waypoints)(implicit messages: Messages) = {
