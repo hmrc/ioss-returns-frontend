@@ -17,29 +17,29 @@
 package connectors
 
 import config.Service
-import connectors.EtmpDisplayVatReturnHttpParser._
-import models.Period
-import models.etmp.EtmpObligations
-import models.etmp.EtmpObligations._
-import play.api.{Configuration, Logging}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions}
+import logging.Logging
+import models.financialdata.FinancialData
+import models.financialdata.FinancialData._
+import play.api.Configuration
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
 
+import java.time.LocalDate
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
-class VatReturnConnector @Inject()(config: Configuration, httpClient: HttpClient)
-                                  (implicit ec: ExecutionContext) extends HttpErrorFunctions with Logging {
+
+class FinancialDataConnector @Inject()(
+                                        http: HttpClient,
+                                        config: Configuration
+                                      )(implicit ec: ExecutionContext) extends Logging {
 
   private val baseUrl = config.get[Service]("microservice.services.ioss-returns")
 
-  def get(period: Period)(implicit hc: HeaderCarrier): Future[EtmpDisplayVatReturnResponse] = {
-    def url = s"$baseUrl/return/$period"
+  private def financialDataUrl(date: LocalDate) = s"$baseUrl/financial-data/get/${date.toString()}"
 
-    httpClient.GET[EtmpDisplayVatReturnResponse](
+  def getFinancialData(date: LocalDate)(implicit hc: HeaderCarrier): Future[FinancialData] = {
+    val url = financialDataUrl(date)
+    http.GET[FinancialData](
       url
     )
-  }
-
-  def getObligations(iossNumber: String)(implicit hc: HeaderCarrier): Future[EtmpObligations] = {
-    httpClient.GET[EtmpObligations](url = s"$baseUrl/obligations/$iossNumber")
   }
 }
