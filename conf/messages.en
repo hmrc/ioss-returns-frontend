@@ -226,3 +226,6 @@ whichVatPeriodToPay.title = Which VAT period do you want to pay?
 whichVatPeriodToPay.heading = Which VAT period do you want to pay?
 whichVatPeriodToPay.amountKnown = You owe <b>£{0}</b> for {1}
 whichVatPeriodToPay.error.required = Select a period to pay
+
+notificationBanner.title = Important
+notificationBanner.text = We cannot get your latest payment records due to a technical issue. Try again later.
