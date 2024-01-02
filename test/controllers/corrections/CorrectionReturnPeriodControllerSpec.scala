@@ -19,12 +19,13 @@ package controllers.corrections
 import base.SpecBase
 import controllers.routes
 import forms.corrections.CorrectionReturnPeriodFormProvider
+import models.Index
 import models.etmp.{EtmpObligationDetails, EtmpObligationsFulfilmentStatus}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
-import pages.corrections.CorrectionReturnPeriodPage
+import pages.corrections.{CorrectionReturnPeriodPage, CorrectionReturnYearPage}
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.test.FakeRequest
@@ -39,7 +40,9 @@ import scala.concurrent.Future
 
 class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
 
-  private val periodKeys = Seq("23AK", "23AL")
+  private val periodKeys = Seq("23AL", "23AK")
+
+  val selectedYear = emptyUserAnswers.set(CorrectionReturnYearPage(Index(0)), 2023).success.value
 
   private val monthNames: Seq[String] = periodKeys.map(ConvertPeriodKey.monthNameFromEtmpPeriodKey)
 
@@ -67,7 +70,7 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
 
       when(obligationService.getOpenObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+      val application = applicationBuilder(userAnswers = Some(selectedYear))
         .overrides(bind[ObligationsService].toInstance(obligationService))
         .build()
 
@@ -88,7 +91,7 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
 
       when(obligationService.getOpenObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+      val application = applicationBuilder(userAnswers = Some(selectedYear))
         .overrides(bind[ObligationsService].toInstance(obligationService))
         .build()
 
@@ -139,7 +142,7 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
 
       when(obligationService.getOpenObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+      val application = applicationBuilder(userAnswers = Some(selectedYear))
         .overrides(bind[ObligationsService].toInstance(obligationService))
         .build()
 

@@ -30,13 +30,12 @@ class CorrectionReturnPeriodFormProviderSpec extends OptionFieldBehaviours {
 
     val fieldName = "value"
     val requiredKey = "correctionReturnPeriod.error.required"
-    val invalidError = "error.invalid"
 
     behave like optionsField[String](
       form,
       fieldName,
       validValues  = testPeriods,
-      invalidError = FormError(fieldName, invalidError)
+      invalidError = FormError(fieldName, "error.invalid")
     )
 
     behave like mandatoryField(

@@ -24,8 +24,11 @@ import javax.inject.Inject
 
 class CorrectionReturnPeriodFormProvider @Inject() extends Mappings {
 
+  val validValues: Seq[String] = Seq("JANUARY","FEBRUARY","MARCH","APRIL","MAY","JUNE","JULY","AUGUST","SEPTEMBER","OCTOBER","NOVEMBER", "DECEMBER")
+
   def apply(index: Index, existingAnswers: Seq[String]): Form[String] =
     Form(
       "value" -> text("correctionReturnPeriod.error.required")
+        .verifying("error.invalid", value => validValues.contains(value.toUpperCase))
     )
 }
