@@ -18,7 +18,7 @@ package services
 
 import base.SpecBase
 import models.VatOnSalesChoice.Standard
-import models.{Country, Index, TotalVatToCountry, VatOnSales, VatRateType}
+import models.{Country, Index, TotalVatToCountry, VatOnSales, VatOnSalesChoice, VatRateType}
 import org.scalatestplus.mockito.MockitoSugar
 import pages.corrections.CorrectionCountryPage
 import pages.{SalesToCountryPage, SoldGoodsPage, SoldToCountryPage, VatOnSalesPage, VatRatesFromCountryPage}
@@ -324,26 +324,28 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar {
 
     }
 
-/*
+// Will uncomment these after the correction ticket is done
+
     "getTotalVatOwedAfterCorrections" - {
 
+      // remove the ones that split out EU vs NI either sales exists or they don't and either corrections exist or they don't
       "when corrections exist" - {
-
+        // remove
         "must return correct total when NI and EU sales exist" in {
           
           service.getTotalVatOwedAfterCorrections(completeUserAnswers) mustBe BigDecimal(1020)
         }
-
+        // remove
         "must return zero when total NI and EU sales don't exist" in {
           
           service.getTotalVatOwedAfterCorrections(emptyUserAnswers) mustBe BigDecimal(0)
         }
-
+        // remove
         "must return total when NI exists and EU sales don't exist" in {
           
           service.getTotalVatOwedAfterCorrections(completeUserAnswers) mustBe BigDecimal(1000)
         }
-
+        // remove
         "must return total when NI doesn't exist and EU does exist" in {
           
           val answers = emptyUserAnswers
@@ -423,42 +425,45 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar {
 
       }
 
-
-
       "when corrections is empty" - {
-
+        // remove
         "must return correct total when NI and EU sales exist" in {
-          
-          service.getTotalVatOwedAfterCorrections(completeUserAnswers) mustBe BigDecimal(1020)
-        }
 
-        "must return zero when total NI and EU sales don't exist" in {
+          val answers = completeUserAnswers
+            .set(SalesToCountryPage(index1, index), BigDecimal(100)).success.value
+            .set(VatOnSalesPage(index1, index), VatOnSales(VatOnSalesChoice.Standard, BigDecimal(1000))).success.value
+
+          service.getTotalVatOwedAfterCorrections(answers) mustBe BigDecimal(1020)
+        }
+        // remove
+        "must return zero when no countries exist" in {
           
           service.getTotalVatOwedAfterCorrections(emptyUserAnswers) mustBe BigDecimal(0)
         }
-
+        // remove
         "must return total when NI exists and EU sales don't exist" in {
           
           service.getTotalVatOwedAfterCorrections(completeSalesFromNIUserAnswers) mustBe BigDecimal(1000)
         }
-
+        // remove
         "must return total when NI doesn't exist and EU does exist" in {
           
           val answers = emptyUserAnswers
             .set(SoldGoodsPage, true).success.value
             .set(SoldToCountryPage(index0), Country("HR", "Croatia")).success.value
-            .set(CountryOfConsumptionFromEuPage(index0, index0), Country("BE", "Belgium")).success.value
             .set(VatRatesFromCountryPage(index0, index0), List(twentyPercentVatRate)).success.value
-            .set(SalesToCountryPage(index0, index0, index0), BigDecimal(100)).success.value
-            .set(VatOnSalesPage(index0, index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
+            .set(SalesToCountryPage(index0, index0), BigDecimal(100)).success.value
+            .set(VatOnSalesPage(index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
 
           service.getTotalVatOwedAfterCorrections(answers) mustBe BigDecimal(20)
         }
+
+
       }
 
 
     }
-*/
+
 
   }
 }

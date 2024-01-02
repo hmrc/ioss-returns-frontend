@@ -16,7 +16,7 @@
 
 package viewmodels.checkAnswers.corrections
 
-import models.{CheckMode, UserAnswers}
+import models.UserAnswers
 import pages.Waypoints
 import play.api.i18n.Messages
 import queries.AllCorrectionPeriodsQuery

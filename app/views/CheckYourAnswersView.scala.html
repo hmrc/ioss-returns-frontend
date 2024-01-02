@@ -57,6 +57,7 @@
  @if(containsCorrections) {
   <p class="govuk-table__caption--l">@messages("checkYourAnswers.vatOwedToEuCountriesAfterCorrections.heading")</p>
   @if(noPaymentDueCountries.nonEmpty) {
+    hello
    <table class="govuk-table">
     <caption class="govuk-table__caption">
      <p class="govuk-table__caption--m">@messages("checkYourAnswers.noPaymentsDue.heading")</p>
@@ -88,7 +89,7 @@
      @if(containsCorrections) {
       <p class="govuk-table__caption--m govuk-summary-card__title-wrapper">@messages("checkYourAnswers.vatOwedToEuCountriesAfterCorrections.caption")</p>
      } else {
-      <p class="govuk-summary-card__title-wrapper">@messages("checkYourAnswers.heading.vatOwned")</p>
+      <p class="govuk-summary-card__title-wrapper  govuk-!-margin-0">@messages("checkYourAnswers.heading.vatOwned")</p>
      }
      </td>
     </tr>
