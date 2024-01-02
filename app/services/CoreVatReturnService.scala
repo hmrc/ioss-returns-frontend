@@ -18,18 +18,18 @@ package services
 
 import connectors.VatReturnConnector
 import logging.Logging
-import models.{Country, UserAnswers}
 import models.core._
 import models.corrections.PeriodWithCorrections
 import models.requests.DataRequest
+import models.{Country, UserAnswers}
 import play.api.http.Status.CREATED
 import queries.{AllCorrectionPeriodsQuery, AllSalesWithTotalAndVatQuery, VatRateWithOptionalSalesFromCountry}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import utils.Formatters.generateVatReturnReference
 
-import java.time.{Clock, Instant}
 import java.time.temporal.ChronoUnit
+import java.time.{Clock, Instant}
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -38,18 +38,26 @@ class CoreVatReturnService @Inject()(
                                       salesAtVatRateService: SalesAtVatRateService,
                                       clock: Clock)(implicit ec: ExecutionContext) extends Logging {
 
-  def submitCoreVatReturn(userAnswers: UserAnswers)(implicit request: DataRequest[_]): Future[Boolean] = {
+  /**
+   *
+   * @param userAnswers
+   * @param request
+   * @return = the remaining amount owed
+   */
+  def submitCoreVatReturn(userAnswers: UserAnswers)(implicit request: DataRequest[_]): Future[BigDecimal] = {
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
-    returnConnector.submit(buildCoreVatReturn(userAnswers)).map {
+
+    val totalAmountVatDueGBP = salesAtVatRateService.getTotalVatOwedAfterCorrections(userAnswers)
+    returnConnector.submit(buildCoreVatReturn(userAnswers, totalAmountVatDueGBP)).map {
       case response if response.status == CREATED =>
         logger.info("Successful core vat return submission")
-        true
+        totalAmountVatDueGBP
       case response => logger.error(s"Got error while submitting VAT return ${response.status} with body ${response.body}")
         throw new Exception(s"Error while submitting VAT return ${response.status} with body ${response.body}")
     }
   }
 
-  private def buildCoreVatReturn(userAnswers: UserAnswers)(implicit request: DataRequest[_]): CoreVatReturn = {
+  private def buildCoreVatReturn(userAnswers: UserAnswers, totalAmountVatDueGBP: BigDecimal)(implicit request: DataRequest[_]): CoreVatReturn = {
     val vatReturnReference = generateVatReturnReference(request.iossNumber, request.userAnswers.period)
 
     val instantNow = Instant.now(clock).truncatedTo(ChronoUnit.MILLIS)
@@ -63,15 +71,12 @@ class CoreVatReturnService @Inject()(
       ),
       period = CorePeriod(
         userAnswers.period.year,
-        userAnswers.period.month.getValue match {
-          case monthValue if monthValue < 10 => s"0$monthValue"
-          case monthValue => monthValue.toString
-        }
+        userAnswers.period.zeroPaddedMonth
       ),
       startDate = userAnswers.period.firstDay,
       endDate = userAnswers.period.lastDay,
       submissionDateTime = instantNow,
-      totalAmountVatDueGBP = salesAtVatRateService.getTotalVatOwedAfterCorrections(userAnswers),
+      totalAmountVatDueGBP = totalAmountVatDueGBP,
       msconSupplies = getAllMsconSupplies(userAnswers),
       changeDate = request.registrationWrapper.registration.adminUse.changeDate
     )
@@ -139,10 +144,7 @@ class CoreVatReturnService @Inject()(
     allCorrectionsWithCountry.map { correctionPeriodWithCountry =>
       val correctionPeriod = CorePeriod(
         correctionPeriodWithCountry.correctionReturnPeriod.year,
-        correctionPeriodWithCountry.correctionReturnPeriod.month.getValue match {
-          case monthValue if monthValue < 10 => s"0$monthValue"
-          case monthValue => monthValue.toString
-        }
+        correctionPeriodWithCountry.correctionReturnPeriod.zeroPaddedMonth
       )
 
       val correctionAmount = correctionPeriodWithCountry

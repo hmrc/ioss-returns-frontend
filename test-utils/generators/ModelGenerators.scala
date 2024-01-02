@@ -342,4 +342,39 @@ trait ModelGenerators {
         )))
       }
     }
+
+
+//  implicit val arbitraryEtmpVatReturn: Arbitrary[EtmpVatReturn] =
+//    Arbitrary {
+//      for {
+//        returnReference <- arbitrary[String]
+//        periodKey <- arbitrary[String]
+//        returnPeriodFrom <- arbitrary[LocalDate]
+//        returnPeriodTo <- arbitrary[LocalDate]
+//        totalVATGoodsSuppliedGBP <- arbitrary[BigDecimal]
+//        totalVATAmountPayable <- arbitrary[BigDecimal]
+//        totalVATAmountPayableAllSpplied <- arbitrary[BigDecimal]
+//        totalVATAmountFromCorrectionGBP <- arbitrary[BigDecimal]
+//        totalVATAmountDueForAllMSEUR <- arbitrary[BigDecimal]
+//        paymentReference <- arbitrary[String]
+//      } yield {
+//        EtmpVatReturn(
+//          returnReference = returnReference,
+//          periodKey = periodKey,
+//          returnPeriodFrom = returnPeriodFrom,
+//          returnPeriodTo = returnPeriodTo,
+//          goodsSupplied = List.empty,
+//          totalVATGoodsSuppliedGBP = totalVATGoodsSuppliedGBP,
+//          totalVATAmountPayable = totalVATAmountPayable,
+//          totalVATAmountPayableAllSpplied = totalVATAmountPayableAllSpplied,
+//          correctionPreviousVATReturn = List.empty,
+//          totalVATAmountFromCorrectionGBP = totalVATAmountFromCorrectionGBP,
+//          balanceOfVATDueForMS = List.empty,
+//          totalVATAmountDueForAllMSEUR = totalVATAmountDueForAllMSEUR,
+//          paymentReference = paymentReference
+//        )
+//      }
+//    }
+
+
 }

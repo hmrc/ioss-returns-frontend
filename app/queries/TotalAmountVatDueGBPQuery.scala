@@ -14,15 +14,12 @@
  * limitations under the License.
  */
 
-package pages
+package queries
 
-object PageConstants {
+import pages.PageConstants
+import play.api.libs.json.JsPath
 
-  val sales: String = "sales"
-  val successful: String = "successful"
-  val vatRates: String = "vatRatesFromCountry"
-  val salesAtVatRate: String = "salesAtVatRate"
-  val netValueOfSales: String = "netValueOfSales"
-  val corrections: String = "corrections"
-  val correctionsToCountry: String = "correctionsToCountry"
+case object TotalAmountVatDueGBPQuery extends Gettable[BigDecimal] with Settable[BigDecimal] {
+
+  override def path: JsPath = JsPath \ PageConstants.successful
 }

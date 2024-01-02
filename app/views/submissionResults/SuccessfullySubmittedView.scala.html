@@ -15,6 +15,7 @@
  *@
 
 @import pages.EmptyWaypoints
+@import java.time.format.DateTimeFormatter
 
 @this(
         layout: templates.Layout,
@@ -22,22 +23,41 @@
         govukPanel: GovukPanel
 )
 
-@(returnReference: String, nilReturn: Boolean, period: Period)(implicit request: Request[_], messages: Messages)
+@(returnReference: String, nilReturn: Boolean, period: Period, owedAmount: String)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = titleNoForm(messages("successfullySubmitted.title"))) {
+    @layout(pageTitle = titleNoForm(messages("successfullySubmitted.title")), showBackLink =false) {
 
-  @govukPanel(Panel(
-    title = Text(messages("successfullySubmitted.title")),
-    content = HtmlContent(messages("successfullySubmitted.heading", returnReference))
-  ))
+        @govukPanel(Panel(
+            title = Text(messages("successfullySubmitted.title")),
+            content = HtmlContent(messages("successfullySubmitted.heading", returnReference))
+        ))
 
-  @if(nilReturn) {
-    <p class="govuk-body">@messages("successfullySubmitted.noVatOwed", period.displayText)</p>
-  }
+        @if(nilReturn) {
+            <p class="govuk-body">@messages("successfullySubmitted.noVatOwed", period.displayText)</p>
+        } else {
+            <h2 class="govuk-heading-m govuk-!-margin-top-6" id="how-pay">@messages("successfullySubmitted.payVatOwed")</h2>
+            <p class="govuk-body">
+            @Html(messages("successfullySubmitted.payPeriodAmount", period.lastDay.format(DateTimeFormatter.ofPattern("d MMMM u")), owedAmount))
+            </p>
 
-  <p class="govuk-body">
-    <a href="@routes.YourAccountController.onPageLoad(EmptyWaypoints).url" class="govuk-link govuk-link--no-visited-state">
-    @messages("successfullySubmitted.next.info.returnToAccount")
-    </a>
-  </p>
-}
+            <p class="govuk-body"> @messages("successfullySubmitted.howToPay")</p>
+
+            <a href="payments/amount-to-pay.html" class="govuk-button" rel="external" title="This will open in a new tab or window">
+               @messages("successfullySubmitted.payNow")
+            </a>
+
+            <p class="govuk-body">
+                @{messages("successfullySubmitted.payDeadline", period.paymentDeadline.format(DateTimeFormatter.ofPattern("d MMMM u")))}
+            </p>
+
+            <p class="govuk-body">
+                @messages("successfullySubmitted.euLatePaymentWarning")
+            </p>
+        }
+
+        <p class="govuk-body">
+            <a href="@routes.YourAccountController.onPageLoad(EmptyWaypoints).url" class="govuk-link govuk-link--no-visited-state">
+            @messages("successfullySubmitted.next.info.returnToAccount")
+            </a>
+        </p>
+    }
