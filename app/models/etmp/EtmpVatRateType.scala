@@ -14,15 +14,22 @@
  * limitations under the License.
  */
 
-package pages
+package models.etmp
 
-object PageConstants {
+import models.{Enumerable, WithName}
 
-  val sales: String = "sales"
-  val successful: String = "successful"
-  val vatRates: String = "vatRatesFromCountry"
-  val salesAtVatRate: String = "salesAtVatRate"
-  val netValueOfSales: String = "netValueOfSales"
-  val corrections: String = "corrections"
-  val correctionsToCountry: String = "correctionsToCountry"
+sealed trait EtmpVatRateType
+
+object EtmpVatRateType extends  Enumerable.Implicits {
+  case object StandardVatRate extends WithName("STANDARD") with EtmpVatRateType
+
+  case object ReducedVatRate extends WithName("REDUCED") with EtmpVatRateType
+
+  val values: Seq[EtmpVatRateType] = Seq(
+    StandardVatRate,
+    ReducedVatRate
+  )
+
+  implicit val enumerable: Enumerable[EtmpVatRateType] =
+    Enumerable(values.map(v => v.toString -> v): _*)
 }

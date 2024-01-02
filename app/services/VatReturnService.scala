@@ -14,15 +14,22 @@
  * limitations under the License.
  */
 
-package pages
+package services
 
-object PageConstants {
+import connectors.VatReturnConnector
+import logging.Logging
+import models.Period
+import models.etmp.{EtmpObligationDetails, EtmpObligationsFulfilmentStatus, EtmpVatReturn}
+import uk.gov.hmrc.http.HeaderCarrier
 
-  val sales: String = "sales"
-  val successful: String = "successful"
-  val vatRates: String = "vatRatesFromCountry"
-  val salesAtVatRate: String = "salesAtVatRate"
-  val netValueOfSales: String = "netValueOfSales"
-  val corrections: String = "corrections"
-  val correctionsToCountry: String = "correctionsToCountry"
+import javax.inject.Inject
+import scala.concurrent.{ExecutionContext, Future}
+
+class VatReturnService @Inject()(vatReturnConnector: VatReturnConnector)
+                                (implicit ec: ExecutionContext, hc: HeaderCarrier) extends Logging {
+
+  def getVatReturn(period: Period): Future[EtmpVatReturn] = {
+    vatReturnConnector.getVatReturn(period)
+  }
+
 }

@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 
-package pages
+package queries
 
-object PageConstants {
+import models.CoreVatReturn
+import pages.PageConstants
+import play.api.libs.json.JsPath
 
-  val sales: String = "sales"
-  val successful: String = "successful"
-  val vatRates: String = "vatRatesFromCountry"
-  val salesAtVatRate: String = "salesAtVatRate"
-  val netValueOfSales: String = "netValueOfSales"
-  val corrections: String = "corrections"
-  val correctionsToCountry: String = "correctionsToCountry"
+case object CoreVatReturnQuery extends Gettable[CoreVatReturn] with Settable[CoreVatReturn] {
+
+  override def path: JsPath = JsPath \ PageConstants.successful
 }
