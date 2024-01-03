@@ -42,11 +42,9 @@ final case class CheckSalesPage(countryIndex: Index, vatRateIndex: Option[Index]
   override val normalModeUrlFragment: String = CheckSalesPage.normalModeUrlFragment(countryIndex)
   override val checkModeUrlFragment: String = CheckSalesPage.checkModeUrlFragment(countryIndex)
 
-  override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page = {
-    println("check sales nextPageNormalMode")
+  override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
     answers.get(this).map {
-      case true => {
-        println("check sales nextPageNormalMode true")
+      case true =>
         vatRateIndex
           .map(i => determinePageRedirect(answers, countryIndex, Index(i.position + 1)))
           .getOrElse {
@@ -54,20 +52,16 @@ final case class CheckSalesPage(countryIndex: Index, vatRateIndex: Option[Index]
               .get(deriveNumberOfItems)
               .map(n => determinePageRedirect(answers, countryIndex, Index(n)))
               .orRecover
-          }}
-      case false => {
-        println("check sales nextPageNormalMode false")
+          }
+      case false =>
         SoldToCountryListPage(index)
-      }
     }.orRecover
-  }
 
   override protected def nextPageCheckMode(waypoints: NonEmptyWaypoints, answers: UserAnswers): Page =
     nextPageNormalMode(waypoints, answers)
 
 
   private def determinePageRedirect(answers: UserAnswers, countryIndex: Index, vatRateIndex: Index): Page = {
-    println("check sales determinePageRedirect")
     answers.get(RemainingVatRatesFromCountryQuery(countryIndex)).flatMap {
       case vatRatesFromCountry if vatRatesFromCountry.size == 1 =>
         Some(RemainingVatRateFromCountryPage(countryIndex, vatRateIndex))
@@ -97,11 +91,9 @@ object CheckSalesPage {
 
     s match {
       case normalModePattern(indexDisplay) =>
-        println ("==== normal ")
         Some(CheckSalesPage(Index(indexDisplay.toInt - 1), None).waypoint(NormalMode))
 
       case checkModePattern(indexDisplay) =>
-        println ("==== check ")
         Some(CheckSalesPage(Index(indexDisplay.toInt - 1), None).waypoint(CheckMode))
 
       case _ =>
