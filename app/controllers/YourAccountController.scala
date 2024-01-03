@@ -39,7 +39,6 @@ class YourAccountController @Inject()(
 
   def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetRegistration {
     implicit request =>
-      println(s"Ioss Number: ${request.iossNumber}")
 
       Ok(view(request.registrationWrapper.vatInfo.getName, request.iossNumber, appConfig.amendRegistrationUrl))
   }

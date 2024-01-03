@@ -61,7 +61,6 @@ class IdentifierAction @Inject()(
       case Some(credentials) ~ enrolments ~ Some(Organisation) ~ _ ~ Some(credentialRole) if credentialRole == User =>
         (findVrnFromEnrolments(enrolments), findIossNumberFromEnrolments(enrolments), hasIossEnrolment(enrolments)) match {
           case (Some(vrn), Some(iossNumber), true) =>
-            println(s"pulled iossNumber from enrolments ${iossNumber}")
             getSuccessfulResponse(request, credentials, vrn, iossNumber)
           case _ => throw InsufficientEnrolments()
         }
