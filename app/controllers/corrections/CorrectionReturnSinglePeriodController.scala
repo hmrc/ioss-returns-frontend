@@ -24,7 +24,9 @@ import pages.corrections.CorrectionReturnSinglePeriodPage
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import services.ObligationsService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.ConvertPeriodKey
 import utils.FutureSyntax.FutureOps
 import views.html.corrections.CorrectionReturnSinglePeriodView
 
@@ -35,6 +37,7 @@ class CorrectionReturnSinglePeriodController @Inject()(
                                          override val messagesApi: MessagesApi,
                                          cc: AuthenticatedControllerComponents,
                                          formProvider: CorrectionReturnSinglePeriodFormProvider,
+                                         obligationService: ObligationsService,
                                          view: CorrectionReturnSinglePeriodView
                                  )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
@@ -47,12 +50,22 @@ class CorrectionReturnSinglePeriodController @Inject()(
 
       val period = request.userAnswers.period
 
-      val preparedForm = request.userAnswers.get(CorrectionReturnSinglePeriodPage(index)) match {
-        case None => form
-        case Some(value) => form.fill(value)
-      }
+      val openObligations = obligationService.getOpenObligations(request.iossNumber)
 
-      Ok(view(preparedForm, waypoints, period, index)).toFuture
+      openObligations.flatMap { obligations =>
+        val periodKeys = obligations.map(obligation => ConvertPeriodKey.yearFromEtmpPeriodKey(obligation.periodKey))
+
+        val correctionMonths = obligations.map (obligation => ConvertPeriodKey.monthNameFromEtmpPeriodKey(obligation.periodKey))
+
+        val monthAndYear = s"${correctionMonths.mkString(", ")} ${periodKeys.mkString(", ")}"
+
+        val preparedForm = request.userAnswers.get(CorrectionReturnSinglePeriodPage(index)) match {
+          case None => form
+          case Some(value) => form.fill(value)
+        }
+
+        Ok(view(preparedForm, waypoints, period, monthAndYear, index)).toFuture
+      }
   }
 
   def onSubmit(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndRequireData().async {
@@ -60,15 +73,25 @@ class CorrectionReturnSinglePeriodController @Inject()(
 
       val period = request.userAnswers.period
 
-      form.bindFromRequest().fold(
-        formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, waypoints, period, index))),
+      val openObligations = obligationService.getOpenObligations(request.iossNumber)
 
-        value =>
-          for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionReturnSinglePeriodPage(index), value))
-            _              <- cc.sessionRepository.set(updatedAnswers)
-          } yield Redirect(CorrectionReturnSinglePeriodPage(index).navigate(waypoints, request.userAnswers, updatedAnswers).route)
-      )
+      openObligations.flatMap { obligations =>
+        val periodKeys = obligations.map(obligation => ConvertPeriodKey.yearFromEtmpPeriodKey(obligation.periodKey))
+
+        val correctionMonths = obligations.map (obligation => ConvertPeriodKey.monthNameFromEtmpPeriodKey(obligation.periodKey))
+
+        val monthAndYear = s"${correctionMonths.mkString(", ")} ${periodKeys.mkString(", ")}"
+
+        form.bindFromRequest().fold(
+          formWithErrors =>
+            Future.successful(BadRequest(view(formWithErrors, waypoints, period, monthAndYear, index))),
+
+          value =>
+            for {
+              updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionReturnSinglePeriodPage(index), value))
+              _ <- cc.sessionRepository.set(updatedAnswers)
+            } yield Redirect(CorrectionReturnSinglePeriodPage(index).navigate(waypoints, request.userAnswers, updatedAnswers).route)
+        )
+      }
   }
 }

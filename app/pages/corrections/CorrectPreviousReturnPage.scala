@@ -36,10 +36,10 @@ case object CorrectPreviousReturnPage extends QuestionPage[Boolean] {
 
     answers.get(CorrectPreviousReturnPage) match {
       case Some(true) if correctedPeriods > 0 => CheckYourAnswersPage
-      case Some(true) => if (correctedPeriods > 1) { //todo uncorrectedPeriods when API is
+      case Some(true) => if (correctedPeriods > 1) {
         CorrectionReturnYearPage(Index(0))
       } else {
-        CorrectionReturnYearPage(Index(0))
+        CorrectionReturnSinglePeriodPage(Index(0))
       }
       case Some(false) => CheckYourAnswersPage
       case _ => JourneyRecoveryPage

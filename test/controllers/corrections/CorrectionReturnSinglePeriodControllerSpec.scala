@@ -19,6 +19,7 @@ package controllers.corrections
 import base.SpecBase
 import controllers.routes
 import forms.corrections.CorrectionReturnSinglePeriodFormProvider
+import models.etmp.{EtmpObligationDetails, EtmpObligationsFulfilmentStatus}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito.{times, verify, when}
@@ -29,12 +30,33 @@ import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
+import services.ObligationsService
+import utils.ConvertPeriodKey
+import utils.FutureSyntax.FutureOps
 import views.html.corrections.CorrectionReturnSinglePeriodView
 
 import scala.concurrent.Future
 
 class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSugar {
 
+
+  private val periodKeys = Seq("23AK")
+
+  private val periodYear: Seq[Int] = periodKeys.map { periodYear =>
+    s"20${periodYear.substring(0, 2)}".toInt
+  }
+
+  private val monthName: Seq[String] = periodKeys.map(ConvertPeriodKey.monthNameFromEtmpPeriodKey)
+
+  private val monthAndYear = s"${monthName.mkString(", ")} ${periodYear.mkString(", ")}"
+  private val obligationService: ObligationsService = mock[ObligationsService]
+
+  private val etmpObligationDetails: Seq[EtmpObligationDetails] = Seq(
+    EtmpObligationDetails(
+      status = EtmpObligationsFulfilmentStatus.Open,
+      periodKey = "23AK"
+    )
+  )
   val formProvider = new CorrectionReturnSinglePeriodFormProvider()
   val form: Form[Boolean] = formProvider()
 
@@ -44,7 +66,11 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
 
     "must return OK and the correct view for a GET" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      when(obligationService.getOpenObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(bind[ObligationsService].toInstance(obligationService))
+        .build()
 
       running(application) {
         val request = FakeRequest(GET, correctionReturnSinglePeriodRoute)
@@ -54,15 +80,18 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
         val view = application.injector.instanceOf[CorrectionReturnSinglePeriodView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form,waypoints, period, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form,waypoints, period, monthAndYear, index)(request, messages(application)).toString
       }
     }
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
+      when(obligationService.getOpenObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
+
       val userAnswers = emptyUserAnswers.set(CorrectionReturnSinglePeriodPage(index), true).success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers))
+        .overrides(bind[ObligationsService].toInstance(obligationService))
         .build()
 
       running(application) {
@@ -73,7 +102,7 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(true), waypoints, period, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form.fill(true), waypoints, period, monthAndYear, index)(request, messages(application)).toString
       }
     }
 
@@ -81,13 +110,14 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
 
       val mockSessionRepository = mock[SessionRepository]
 
+      when(obligationService.getOpenObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
+
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
       val application =
         applicationBuilder(userAnswers = Some(emptyUserAnswers))
-          .overrides(
-            bind[SessionRepository].toInstance(mockSessionRepository)
-          )
+          .overrides(bind[ObligationsService].toInstance(obligationService))
+          .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
           .build()
 
       running(application) {
@@ -106,7 +136,11 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
 
     "must return a Bad Request and errors when invalid data is submitted" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      when(obligationService.getOpenObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(bind[ObligationsService].toInstance(obligationService))
+        .build()
 
       running(application) {
         val request =
@@ -120,7 +154,7 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, waypoints, period, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, waypoints, period, monthAndYear, index)(request, messages(application)).toString
       }
     }
 
