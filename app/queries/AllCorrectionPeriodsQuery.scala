@@ -18,7 +18,6 @@ package queries
 
 import models.corrections.PeriodWithCorrections
 import pages.PageConstants.corrections
-import pages.PageConstants._
 import play.api.libs.json.JsPath
 
 case object AllCorrectionPeriodsQuery extends Gettable[List[PeriodWithCorrections]] with Settable[List[PeriodWithCorrections]] {

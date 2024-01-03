@@ -20,16 +20,16 @@ import com.google.inject.Inject
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
 import models.requests.DataRequest
-import models.{Index, Period, ValidationError}
+import models.{Period, ValidationError}
 import pages.corrections.CorrectPreviousReturnPage
-import pages.{CheckYourAnswersPage, DeleteVatRateSalesForCountryPage, Waypoints}
+import pages.{CheckYourAnswersPage, Waypoints}
 import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc._
 import queries.AllCorrectionPeriodsQuery
 import services._
 import uk.gov.hmrc.govukfrontend.views.Aliases.Card
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
-import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{Actions, CardTitle, SummaryList}
+import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{CardTitle, SummaryList}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax._
 import viewmodels.checkAnswers._

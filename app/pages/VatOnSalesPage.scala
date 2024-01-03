@@ -18,7 +18,7 @@ package pages
 
 import controllers.routes
 import models.{Index, UserAnswers, VatOnSales}
-import pages.PageConstants.{salesAtVatRate, vatRates}
+import pages.PageConstants.salesAtVatRate
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 import queries.Gettable
@@ -56,13 +56,9 @@ case class VatOnSalesPage(countryIndex: Index, vatRateIndex: Index) extends Ques
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page = {
     answers.get(VatRatesFromCountryPage(countryIndex, vatRateIndex)).map {
       rates =>
-        println("=== rate size 2222222: " + rates.size)
-        println("=== vat rate position 2222222: " + vatRateIndex.position)
         if (rates.size > vatRateIndex.position + 1) {
-          println("=== sales to country page 222222: ")
           SalesToCountryPage(countryIndex, vatRateIndex + 1)
         } else {
-          println("==== check sales page")
           CheckSalesPage(countryIndex)
         }
     }.getOrElse(JourneyRecoveryPage)

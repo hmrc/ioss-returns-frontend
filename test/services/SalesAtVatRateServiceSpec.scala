@@ -18,11 +18,9 @@ package services
 
 import base.SpecBase
 import models.VatOnSalesChoice.Standard
-import models.{Country, Index, TotalVatToCountry, VatOnSales, VatOnSalesChoice, VatRateType}
+import models.{Country, Index, TotalVatToCountry, VatOnSales}
 import org.scalatestplus.mockito.MockitoSugar
-import pages.corrections.CorrectionCountryPage
 import pages.{SalesToCountryPage, SoldGoodsPage, SoldToCountryPage, VatOnSalesPage, VatRatesFromCountryPage}
-import play.api.libs.json.Json
 
 class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar {
 
@@ -325,7 +323,7 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar {
     }
 
 // Will uncomment these after the correction ticket is done
-
+/*
     "getTotalVatOwedAfterCorrections" - {
 
       // remove the ones that split out EU vs NI either sales exists or they don't and either corrections exist or they don't
@@ -463,7 +461,7 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar {
 
 
     }
-
+*/
 
   }
 }

@@ -17,7 +17,7 @@
 package services
 
 import models.{Index, TotalVatToCountry, UserAnswers}
-import queries.{AllCorrectionPeriodsQuery, AllSalesByCountryQuery, AllSalesQuery, AllSalesWithTotalAndVatQuery}
+import queries.{AllCorrectionPeriodsQuery, AllSalesByCountryQuery, AllSalesWithTotalAndVatQuery}
 
 import javax.inject.Inject
 

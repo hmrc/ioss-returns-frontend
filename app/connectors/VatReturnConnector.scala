@@ -18,7 +18,6 @@ package connectors
 
 import config.Service
 import models.etmp.EtmpObligations
-import models.Period
 import play.api.Configuration
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions}
 
@@ -32,5 +31,4 @@ class VatReturnConnector @Inject()(config: Configuration, httpClient: HttpClient
 
   def getObligations(iossNumber: String)(implicit hc: HeaderCarrier): Future[EtmpObligations] =
     httpClient.GET[EtmpObligations](url = s"$baseUrl/obligations/$iossNumber")
-
 }

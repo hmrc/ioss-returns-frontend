@@ -64,17 +64,16 @@ class SoldGoodsController @Inject()(
         formWithErrors =>
           BadRequest(view(formWithErrors, waypoints, period)).toFuture,
 
-        value =>
+        success = value =>
           for {
-            updatedAnswers <- {
-              val updateAnswer = for {
-                answer <- request.userAnswers.set(SoldGoodsPage, value)
-                an <- {
-                  if (value) Try(answer) else answer.remove(AllSalesQuery)
-                }
-              } yield an
-              Future.fromTry(updateAnswer)
-            }
+            updatedAnswers <- Future.fromTry {
+                for {
+                  updateSoldGoodsPageAnswer <- request.userAnswers.set(SoldGoodsPage, value)
+                  maybeUpdateSalesAnswer <- {
+                    if (value) Try(updateSoldGoodsPageAnswer) else updateSoldGoodsPageAnswer.remove(AllSalesQuery)
+                  }
+                } yield maybeUpdateSalesAnswer
+              }
             _ <- cc.sessionRepository.set(updatedAnswers)
           } yield Redirect(SoldGoodsPage.navigate(waypoints, request.userAnswers, updatedAnswers).route)
       )
