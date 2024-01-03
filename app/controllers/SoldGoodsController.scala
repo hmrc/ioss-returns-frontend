@@ -22,12 +22,14 @@ import pages.{SoldGoodsPage, Waypoints}
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import queries.AllSalesQuery
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax.FutureOps
 import views.html.SoldGoodsView
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
 
 class SoldGoodsController @Inject()(
                                      override val messagesApi: MessagesApi,
@@ -64,7 +66,15 @@ class SoldGoodsController @Inject()(
 
         value =>
           for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(SoldGoodsPage, value))
+            updatedAnswers <- {
+              val updateAnswer = for {
+                answer <- request.userAnswers.set(SoldGoodsPage, value)
+                an <- {
+                  if (value) Try(answer) else answer.remove(AllSalesQuery)
+                }
+              } yield an
+              Future.fromTry(updateAnswer)
+            }
             _ <- cc.sessionRepository.set(updatedAnswers)
           } yield Redirect(SoldGoodsPage.navigate(waypoints, request.userAnswers, updatedAnswers).route)
       )
