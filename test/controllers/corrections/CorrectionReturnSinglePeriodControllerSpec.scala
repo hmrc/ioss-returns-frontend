@@ -40,15 +40,13 @@ import scala.concurrent.Future
 class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSugar {
 
 
-  private val periodKeys = Seq("23AK")
+  private val periodKey = "23AK"
 
-  private val periodYear: Seq[Int] = periodKeys.map { periodYear =>
-    s"20${periodYear.substring(0, 2)}".toInt
-  }
+  private val periodYear: Int = s"20${periodKey.substring(0, 2)}".toInt
 
-  private val monthName: Seq[String] = periodKeys.map(ConvertPeriodKey.monthNameFromEtmpPeriodKey)
+  private val monthName: String = ConvertPeriodKey.monthNameFromEtmpPeriodKey(periodKey)
 
-  private val monthAndYear = s"${monthName.mkString(", ")} ${periodYear.mkString(", ")}"
+  private val monthAndYear = s"$monthName $periodYear"
   private val obligationService: ObligationsService = mock[ObligationsService]
 
   private val etmpObligationDetails: Seq[EtmpObligationDetails] = Seq(
