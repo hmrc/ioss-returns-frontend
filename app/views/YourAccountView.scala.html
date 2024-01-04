@@ -23,7 +23,8 @@
 @(
   businessName: String,
   iossNumber: String,
-  changeYourRegistrationUrl: String
+  changeYourRegistrationUrl: String,
+  cancelYourRequestToLeaveUrl: String
 )(implicit request: Request[_], messages: Messages)
 
 @layout(
@@ -61,9 +62,14 @@
         <h2 class="govuk-heading-m">@messages("yourAccount.details.heading")</h2>
 
         <p class="govuk-body">
-          <a class="govuk-link" href="@changeYourRegistrationUrl"
-          id="change-your-registration">
+          <a class="govuk-link" href="@changeYourRegistrationUrl" id="change-your-registration">
             @messages("yourAccount.details.changeYourRegistration")
+          </a>
+        </p>
+
+        <p class="govuk-body">
+          <a class="govuk-link" href="@cancelYourRequestToLeaveUrl" id="cancel-your-request-to-leave">
+            @messages("yourAccount.details.cancelYourRequestToLeave")
           </a>
         </p>
       </div>

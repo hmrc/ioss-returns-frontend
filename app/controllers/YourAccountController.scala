@@ -40,6 +40,6 @@ class YourAccountController @Inject()(
   def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetRegistration {
     implicit request =>
 
-      Ok(view(request.registrationWrapper.vatInfo.getName, request.iossNumber, appConfig.amendRegistrationUrl))
+      Ok(view(request.registrationWrapper.vatInfo.getName, request.iossNumber, appConfig.amendRegistrationUrl, appConfig.cancelYourRequestToLeaveUrl))
   }
 }

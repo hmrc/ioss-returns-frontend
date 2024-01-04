@@ -43,6 +43,7 @@ yourAccount.yourReturns.startReturn = Start your {0} return
 yourAccount.payment.heading = Payments
 yourAccount.details.heading = Details
 yourAccount.details.changeYourRegistration = Change your registration
+yourAccount.details.cancelYourRequestToLeave = Cancel your request to leave
 
 checkYourAnswers.title = Check Your Answers
 checkYourAnswers.heading = Check Your Answers

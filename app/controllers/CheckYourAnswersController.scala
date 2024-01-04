@@ -39,8 +39,6 @@ class CheckYourAnswersController @Inject()(
 
       val thisPage = CheckYourAnswersPage
 
-      val waypoints = EmptyWaypoints.setNextWaypoint(Waypoint(thisPage, CheckMode, CheckYourAnswersPage.urlFragment))
-
       val list = SummaryListViewModel(
         rows = Seq.empty
       )
