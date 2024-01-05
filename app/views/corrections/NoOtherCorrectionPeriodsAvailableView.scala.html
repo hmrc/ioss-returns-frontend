@@ -24,11 +24,14 @@
 
 @layout(pageTitle = titleNoForm(messages("noOtherCorrectionPeriodsAvailable.title"))) {
 
-    <h1 class="govuk-heading-l">@messages("noOtherCorrectionPeriodsAvailable.heading")</h1>
+    @formHelper(action = controllers.corrections.routes.NoOtherCorrectionPeriodsAvailableController.onSubmit(), 'autoComplete -> "off") {
 
-    <p class="govuk-body">@messages("noOtherCorrectionPeriodsAvailable.paragraph")</p>
+        <h1 class="govuk-heading-l">@messages("noOtherCorrectionPeriodsAvailable.heading")</h1>
 
-    @govukButton(
-       ButtonViewModel(messages("site.continue")).withAttribute(("id", "continue"))
-    )
+        <p class="govuk-body">@messages("noOtherCorrectionPeriodsAvailable.paragraph")</p>
+
+        @govukButton(
+           ButtonViewModel(messages("site.continue")).withAttribute(("id", "continue"))
+        )
+    }
 }
