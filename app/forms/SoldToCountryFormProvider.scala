@@ -30,7 +30,7 @@ class SoldToCountryFormProvider @Inject() extends Mappings {
     Form(
       "value" -> text("soldToCountry.error.required")
         .verifying("soldToCountry.error.required", value => countries.exists(_.code == value))
-        .transform[Country](value => Country.euCountries.find(_.code == value).get, _.code)
+        .transform[Country](value => countries.find(_.code == value).get, _.code)
         .verifying(notADuplicate(index, existingAnswers, "soldToCountry.error.duplicate"))
     )
   }

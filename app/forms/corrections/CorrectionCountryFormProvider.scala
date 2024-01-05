@@ -31,7 +31,7 @@ class CorrectionCountryFormProvider @Inject() extends Mappings {
     Form(
       "value" -> text("correctionCountry.error.required")
         .verifying("correctionCountry.error.required", value => countries.exists(_.code == value))
-        .transform[Country](value => Country.euCountries.find(_.code == value).get, _.code)
+        .transform[Country](value => countries.find(_.code == value).get, _.code)
         .verifying(notADuplicate(index, existingAnswers, "correctionCountry.error.duplicate"))
     )
   }
