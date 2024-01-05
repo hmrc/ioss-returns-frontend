@@ -66,6 +66,7 @@ class CheckYourAnswersController @Inject()(
       val summaryLists = getAllSummaryLists(request, businessSummaryList, salesFromEuSummaryList, waypoints)
 
         Future(Ok(view(
+          waypoints,
           summaryLists,
           request.userAnswers.period,
           totalVatToCountries,
@@ -130,7 +131,7 @@ class CheckYourAnswersController @Inject()(
     )
   }
 
-  def onSubmit(period: Period, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndGetData().async {
+  def onSubmit(waypoints: Waypoints, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndGetData().async {
     implicit request =>
 
       Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
