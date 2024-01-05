@@ -15,14 +15,17 @@
  *@
 
 @import java.time.Month
+@import viewmodels._
 
 @this(
-    layout: templates.Layout
+    layout: templates.Layout,
+    govukWarningText: GovukWarningText
 )
 
 @(
   businessName: String,
   iossNumber: String,
+  paymentsViewModel: PaymentsViewModel,
   changeYourRegistrationUrl: String
 )(implicit request: Request[_], messages: Messages)
 
@@ -53,6 +56,25 @@
     <div class="tile tile-no-border">
       <div id="payments" class="tile-body">
         <h2 class="govuk-heading-m push--top">@messages("yourAccount.payment.heading")</h2>
+        @for(warningText <- paymentsViewModel.warning){
+          @govukWarningText(WarningText(iconFallbackText = Option(messages("site.warning")), content = Text(warningText) ))
+        }
+        @for(section <- paymentsViewModel.sections){
+          @for(sectionHeading <- section.heading){
+              <h3 class="govuk-heading-s push--top">@sectionHeading</h3>
+          }
+
+          @for(paragraph <- section.contents){
+              <p class="govuk-body">
+                  @Html(paragraph)
+              </p>
+          }
+        }
+        @for(link <- paymentsViewModel.link){
+          <p class="govuk-body">
+              <a class="govuk-link" href="@link.url" id="@link.id">@link.linkText</a>
+          </p>
+        }
       </div>
     </div>
 

@@ -10,6 +10,7 @@ site.start = Start now
 site.startAgain = Start again
 site.signIn = Sign in
 site.govuk = GOV.UK
+site.to = to
 
 date.day = Day
 date.month = Month
@@ -43,6 +44,16 @@ yourAccount.yourReturns.startReturn = Start your {0} return
 yourAccount.payment.heading = Payments
 yourAccount.details.heading = Details
 yourAccount.details.changeYourRegistration = Change your registration
+yourAccount.payment.heading = Payments
+yourAccount.payment.dueHeading = Due Payments
+yourAccount.payment.overdueHeading = Overdue Payments
+yourAccount.payment.pendingPayments = There may be a delay in showing your payments
+yourAccount.payment.nothingOwed = You do not owe anything right now.
+yourAccount.payment.makeAPayment = Make a payment
+yourAccount.payment.dueAmountOwed = You owe <span class="govuk-body govuk-!-font-weight-bold">{0}</span> for {1}. You must pay this by {2}.
+yourAccount.payment.dueAmountMaybeOwed = You may still owe VAT for {0}. You must pay this by {1}.
+yourAccount.payment.overdueAmountOwed = You owe <span class="govuk-body govuk-!-font-weight-bold">{0}</span> for {1}, which was due by {2}.
+yourAccount.payment.overdueAmountMaybeOwed = You may still owe VAT for {0}, which was due by {1}.
 
 checkYourAnswers.title = Check Your Answers
 checkYourAnswers.heading = Check Your Answers

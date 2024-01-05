@@ -16,13 +16,14 @@
 
 package models
 
+import play.api.i18n.Messages
 import play.api.libs.json._
 import play.api.mvc.{PathBindable, QueryStringBindable}
 import uk.gov.hmrc.govukfrontend.views.Aliases.Text
 import uk.gov.hmrc.govukfrontend.views.viewmodels.radios.RadioItem
 
 import java.time.{LocalDate, Month}
-import java.time.format.TextStyle
+import java.time.format.{DateTimeFormatter, TextStyle}
 import java.util.Locale
 import scala.util.Try
 import scala.util.matching.Regex
@@ -30,9 +31,14 @@ import scala.util.matching.Regex
 final case class Period(year: Int, month: Month) {
   val firstDay: LocalDate = LocalDate.of(year, month, 1)
   val lastDay: LocalDate = firstDay.plusMonths(3).minusDays(1)
+  private val firstMonthFormatter = DateTimeFormatter.ofPattern("MMMM")
+  private val lastMonthYearFormatter = DateTimeFormatter.ofPattern("MMMM yyyy")
 
   def displayText: String =
     s"${month.getDisplayName(TextStyle.FULL, Locale.ENGLISH)} ${year}"
+
+  def displayShortText(implicit messages: Messages): String =
+    s"${firstDay.format(firstMonthFormatter)} ${messages("site.to")} ${lastDay.format(lastMonthYearFormatter)}"
 
   override def toString: String = s"$year-M${month.getValue}"
 }
