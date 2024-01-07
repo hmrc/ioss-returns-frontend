@@ -20,7 +20,8 @@ import base.SpecBase
 import controllers.routes
 import forms.corrections.CorrectPreviousReturnFormProvider
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.when
+import org.mockito.ArgumentMatchersSugar.eqTo
+import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
 import pages.corrections.CorrectPreviousReturnPage
 import play.api.data.Form
@@ -94,9 +95,11 @@ class CorrectPreviousReturnControllerSpec extends SpecBase with MockitoSugar {
             .withFormUrlEncodedBody(("value", "true"))
 
         val result = route(application, request).value
+        val expectedAnswers = emptyUserAnswers.set(CorrectPreviousReturnPage, true).success.value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(waypoints).url
+        redirectLocation(result).value mustEqual CorrectPreviousReturnPage.navigate(waypoints, emptyUserAnswers, expectedAnswers).url
+        verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
       }
     }
 

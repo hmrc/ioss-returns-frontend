@@ -18,8 +18,10 @@ package forms.mappings
 
 import play.api.data.FormError
 import play.api.data.format.Formatter
-import models.Enumerable
+import models.{Enumerable, Period}
 
+import java.time.Month
+import java.time.format.{DateTimeFormatter, DateTimeParseException}
 import scala.util.control.Exception.nonFatalCatch
 
 trait Formatters {
@@ -120,5 +122,39 @@ trait Formatters {
 
       override def unbind(key: String, value: A): Map[String, String] =
         baseFormatter.unbind(key, value.toString)
+    }
+
+  private[mappings] def periodFormatter(requiredKey: String, invalidKey: String, args: Seq[String] = Seq.empty): Formatter[Period] =
+    new Formatter[Period] {
+
+      private val baseFormatter = stringFormatter(requiredKey, args)
+
+      override def bind(key: String, data: Map[String, String]): Either[Seq[FormError], Period] =
+        baseFormatter
+          .bind(key, data)
+          .right.flatMap { s => Period.fromString(s).toRight(Seq(FormError(key, invalidKey, args))) }
+
+      def unbind(key: String, value: Period) = Map(key -> value.toString)
+    }
+
+  private[mappings] def monthFormatter(requiredKey: String, invalidKey: String, args: Seq[String] = Seq.empty): Formatter[Month] =
+    new Formatter[Month] {
+
+      private val baseFormatter = stringFormatter(requiredKey, args)
+      private val monthFormat = DateTimeFormatter.ofPattern("MMMM")
+
+      override def bind(key: String, data: Map[String, String]): Either[Seq[FormError], Month] =
+        baseFormatter
+          .bind(key,data)
+          .map { value =>
+            try {
+              Right(Month.from(monthFormat.parse(value)))
+            } catch {
+              case _: DateTimeParseException =>
+                Left(Seq(FormError(key, invalidKey, args)))
+            }
+          } .getOrElse(Left(Seq(FormError(key, invalidKey, args))))
+
+      override def unbind(key: String, value: Month): Map[String, String] = Map(key -> monthFormat.format(value))
     }
 }

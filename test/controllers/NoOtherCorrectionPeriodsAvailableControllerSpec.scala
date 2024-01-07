@@ -19,25 +19,25 @@ package controllers
 import base.SpecBase
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import views.html.NoOtherPeriodsAvailableView
+import views.html.corrections.NoOtherCorrectionPeriodsAvailableView
 
-class NoOtherPeriodsAvailableControllerSpec extends SpecBase {
+class NoOtherCorrectionPeriodsAvailableControllerSpec extends SpecBase {
 
-  "CannotStartReturns Controller" - {
+  "NoOtherCorrectionPeriodsAvailable Controller" - {
 
     "must return OK and the correct view for a GET" in {
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
       running(application) {
-        val request = FakeRequest(GET, routes.NoOtherPeriodsAvailableController.onPageLoad(waypoints).url)
+        val request = FakeRequest(GET, controllers.corrections.routes.NoOtherCorrectionPeriodsAvailableController.onPageLoad().url)
 
         val result = route(application, request).value
 
-        val view = application.injector.instanceOf[NoOtherPeriodsAvailableView]
+        val view = application.injector.instanceOf[NoOtherCorrectionPeriodsAvailableView]
 
-        status(result) mustBe OK
-        contentAsString(result) mustBe view(waypoints)(request, messages(application)).toString
+        status(result) mustEqual OK
+        contentAsString(result) mustEqual view(waypoints)(request, messages(application)).toString
       }
     }
   }

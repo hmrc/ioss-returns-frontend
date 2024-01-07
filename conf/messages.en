@@ -179,6 +179,28 @@ correctPreviousReturn.checkYourAnswersLabel = Corrections
 correctPreviousReturn.error.required = Select yes if you want to correct a previous return
 correctPreviousReturn.change.hidden = if you want to correct a previous return
 
+correctionReturnSinglePeriod.title = Do you want to correct the VAT amounts in your {0} return?
+correctionReturnSinglePeriod.heading = Do you want to correct the VAT amounts in your {0} return?
+correctionReturnSinglePeriod.checkYourAnswersLabel = Do you want to correct the VAT amounts in your {0} return?
+correctionReturnSinglePeriod.error.required = Select yes if you want to correct the VAT amounts in your return
+
+correctionReturnPeriod.title = Which return do you want to correct?
+correctionReturnPeriod.heading = Which return do you want to correct?
+correctionReturnPeriod.checkYourAnswersLabel = Which return do you want to correct?
+correctionReturnPeriod.error.required = Select which return you want to correct
+correctionReturnPeriod.error.invalid = Select which return you want to correct
+correctionReturnPeriod.change.hidden = which return you want to correct
+
+
+noOtherCorrectionPeriodsAvailable.title = You cannot make a correction to other VAT Import One Stop Shop months
+noOtherCorrectionPeriodsAvailable.heading = You cannot make a correction to other VAT Import One Stop Shop months
+noOtherCorrectionPeriodsAvailable.paragraph = You can only make corrections for months that have ended.
+
+correctionCountry.checkYourAnswersLabel = Country sold to
+correctionCountry.change.hidden = which country you sold to
+
+caption.fromCountry.periodAndCountry = {0} sales to {1}
+
 correctionCountry.title = Which country would you like to correct?
 correctionCountry.heading = Which country would you like to correct?
 correctionCountry.caption = Correction period: {0}
@@ -187,6 +209,13 @@ correctionCountry.change.hidden = which country you sold to
 correctionCountry.hint = You can also add a new country that was not included in your previous return.
 correctionCountry.error.required = Select which country you would like to correct
 correctionCountry.error.duplicate = You selected this country already. Select a different one.
+
+correctionReturnYear.title = What is the year of the return you want to correct?
+correctionReturnYear.heading = What is the year of the return you want to correct?
+correctionReturnYear.checkYourAnswersLabel = What is the year of the return you want to correct?
+correctionReturnYear.error.required = Select which year you want to correct
+correctionReturnYear.error.invalid = Select which year you want to correct
+
 
 vatPayableForCountry.title = Is the total VAT payable for {0} {1}?
 vatPayableForCountry.heading = Is the total VAT payable for {0} {1}?

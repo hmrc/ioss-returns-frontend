@@ -30,6 +30,8 @@ import scala.concurrent.{ExecutionContext, Future}
 import viewmodels.govuk.checkbox._
 import uk.gov.hmrc.govukfrontend.views.viewmodels.checkboxes.CheckboxItem
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.Text
+import uk.gov.hmrc.govukfrontend.views.viewmodels.radios.RadioItem
+
 
 object ItemsHelper {
 
@@ -69,6 +71,26 @@ object ItemsHelper {
           fieldId = "value",
           index = index,
           value = vatRate.rate.toString
+        )
+    }
+
+  def radioButtonItems(obligationYears: Seq[Int]): Seq[RadioItem] =
+    obligationYears.map {
+      case (years) =>
+        RadioItem(
+          content = Text(years.toString),
+          value   = Some(years.toString),
+          id      = Some(s"value_$years")
+        )
+    }
+
+  def radioButtonMonthItems(obligationMonths: Seq[String]): Seq[RadioItem] =
+    obligationMonths.map {
+      case (months) =>
+        RadioItem(
+          content = Text(months),
+          value   = Some(months),
+          id      = Some(s"value_$months")
         )
     }
 }
