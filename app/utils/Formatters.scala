@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,22 +14,12 @@
  * limitations under the License.
  */
 
-package pages
+package utils
 
-import controllers.routes
-import models.UserAnswers
-import play.api.mvc.Call
+import java.time.format.DateTimeFormatter
 
-case object CheckYourAnswersPage extends CheckAnswersPage {
+object Formatters {
 
-  override def isTheSamePage(other: Page): Boolean = other match {
-    case CheckYourAnswersPage => true
-    case _ => false
-  }
-
-  override val urlFragment: String = "check-your-answers"
-
-  override def route(waypoints: Waypoints): Call =
-    routes.CheckYourAnswersController.onPageLoad()
+  val etmpDateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX")
 
 }

@@ -59,6 +59,8 @@ trait SpecBase
   val twentyPercentVatRate = VatRateFromCountry(20, VatRateType.Reduced, arbitrary[LocalDate].sample.value)
   val fivePercentVatRate = VatRateFromCountry(5, VatRateType.Reduced, arbitrary[LocalDate].sample.value)
 
+  val registrationWrapper: RegistrationWrapper = Arbitrary.arbitrary[RegistrationWrapper].sample.value
+
   val arbitraryDate: LocalDate = datesBetween(LocalDate.of(2023, 3, 1), LocalDate.of(2025, 12, 31)).sample.value
   val arbitraryInstant: Instant = arbitraryDate.atStartOfDay(ZoneId.systemDefault).toInstant
   val stubClockAtArbitraryDate: Clock = Clock.fixed(arbitraryInstant, ZoneId.systemDefault)
@@ -81,7 +83,7 @@ trait SpecBase
   protected def applicationBuilder(
                                     userAnswers: Option[UserAnswers] = None,
                                     clock: Option[Clock] = None,
-                                    registration: RegistrationWrapper = Arbitrary.arbitrary[RegistrationWrapper].sample.value
+                                    registration: RegistrationWrapper = registrationWrapper
                                   ): GuiceApplicationBuilder = {
     val clockToBind = clock.getOrElse(stubClockAtArbitraryDate)
 

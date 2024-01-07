@@ -1,5 +1,5 @@
-/*
- * Copyright 2023 HM Revenue & Customs
+@*
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,24 +12,16 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ *@
 
-package pages
+@this(
+        layout: templates.Layout,
+        govukButton: GovukButton
+)
 
-import controllers.routes
-import models.UserAnswers
-import play.api.mvc.Call
+@()(implicit request: Request[_], messages: Messages)
 
-case object CheckYourAnswersPage extends CheckAnswersPage {
+@layout(pageTitle = titleNoForm(messages("successfullySubmitted.title"))) {
 
-  override def isTheSamePage(other: Page): Boolean = other match {
-    case CheckYourAnswersPage => true
-    case _ => false
-  }
-
-  override val urlFragment: String = "check-your-answers"
-
-  override def route(waypoints: Waypoints): Call =
-    routes.CheckYourAnswersController.onPageLoad()
-
+    <h1 class="govuk-heading-xl">@messages("successfullySubmitted.heading")</h1>
 }

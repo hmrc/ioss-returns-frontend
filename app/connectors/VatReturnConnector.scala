@@ -17,9 +17,10 @@
 package connectors
 
 import config.Service
+import models.core.CoreVatReturn
 import models.etmp.EtmpObligations
 import play.api.Configuration
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions, HttpResponse}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -31,4 +32,12 @@ class VatReturnConnector @Inject()(config: Configuration, httpClient: HttpClient
 
   def getObligations(iossNumber: String)(implicit hc: HeaderCarrier): Future[EtmpObligations] =
     httpClient.GET[EtmpObligations](url = s"$baseUrl/obligations/$iossNumber")
+
+  def submit(coreVatReturn: CoreVatReturn)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+    httpClient.POST[CoreVatReturn, HttpResponse](
+      s"$baseUrl/return",
+      coreVatReturn
+    )
+
+  }
 }

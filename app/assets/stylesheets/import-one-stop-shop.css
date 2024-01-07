@@ -58,3 +58,7 @@ html[data-useragent*='MSIE 10.0'] .flex-container .tile {
     margin-bottom: 0;
 }
 
+.red-background {
+    background-color: #d4351c;
+}
+
