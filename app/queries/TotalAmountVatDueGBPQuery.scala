@@ -16,11 +16,10 @@
 
 package queries
 
-import models.CoreVatReturn
 import pages.PageConstants
 import play.api.libs.json.JsPath
 
-case object CoreVatReturnQuery extends Gettable[CoreVatReturn] with Settable[CoreVatReturn] {
+case object TotalAmountVatDueGBPQuery extends Gettable[BigDecimal] with Settable[BigDecimal] {
 
   override def path: JsPath = JsPath \ PageConstants.successful
 }

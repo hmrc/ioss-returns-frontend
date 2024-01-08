@@ -39,7 +39,7 @@ class SuccessfullySubmittedControllerSpec extends SpecBase {
         val view = application.injector.instanceOf[SuccessfullySubmittedView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(returnReference, nilReturn = false, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(returnReference, nilReturn = false, period, "")(request, messages(application)).toString
       }
     }
   }

@@ -20,7 +20,8 @@ import controllers.actions._
 import pages.SoldGoodsPage
 import pages.corrections.CorrectPreviousReturnPage
 import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
+import queries.TotalAmountVatDueGBPQuery
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.Formatters.generateVatReturnReference
 import views.html.submissionResults.SuccessfullySubmittedView
@@ -38,7 +39,18 @@ class SuccessfullySubmittedController @Inject()(
   def onPageLoad: Action[AnyContent] = cc.authAndRequireData() {
     implicit request =>
       val returnReference = generateVatReturnReference(request.iossNumber, request.userAnswers.period)
-      val nilReturn = (!request.userAnswers.get(SoldGoodsPage).get) && (!request.userAnswers.get(CorrectPreviousReturnPage).get)
-      Ok(view(returnReference, nilReturn, request.userAnswers.period))
+
+     {for {
+       hasSoldGoods <- request.userAnswers.get(SoldGoodsPage)
+       correctPreviousReturnsBack <- request.userAnswers.get(CorrectPreviousReturnPage)
+       totalOwed <- request.userAnswers.get(TotalAmountVatDueGBPQuery)
+       nilReturn = !hasSoldGoods && !correctPreviousReturnsBack
+      } yield (
+        Ok(view(returnReference, nilReturn, request.userAnswers.period, totalOwed.toString))
+      )}.getOrElse{
+       //throw new RuntimeException("SoldGoodsPage or CorrectPreviousReturnPage have not been set")
+
+       Ok(view(returnReference, false, request.userAnswers.period, "ddsddddd"))
+     }
   }
 }
