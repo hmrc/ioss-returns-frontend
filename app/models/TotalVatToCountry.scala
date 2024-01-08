@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-package utils
+package models
 
-trait CurrencyFormatter {
-  def currencyFormat(amt: BigDecimal): String = f"&pound;$amt%,1.2f".replace(".00","")
+import play.api.libs.json.{Json, OFormat}
 
-  def currencyFormatWithAccuracy(amt: BigDecimal): String = f"&pound;$amt%,1.2f"
+case class TotalVatToCountry(country: Country, totalVat: BigDecimal)
+
+object TotalVatToCountry {
+
+  implicit val format: OFormat[TotalVatToCountry] = Json.format[TotalVatToCountry]
 }
-
-object CurrencyFormatter extends CurrencyFormatter

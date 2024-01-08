@@ -18,33 +18,123 @@ package controllers
 
 import com.google.inject.Inject
 import controllers.actions.AuthenticatedControllerComponents
-import models.CheckMode
-import pages.{CheckYourAnswersPage, EmptyWaypoints, Waypoint}
-import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import logging.Logging
+import models.requests.DataRequest
+import models.{Period, ValidationError}
+import pages.corrections.CorrectPreviousReturnPage
+import pages.{CheckYourAnswersPage, Waypoints}
+import play.api.i18n.{I18nSupport, Messages}
+import play.api.mvc._
+import queries.AllCorrectionPeriodsQuery
+import services._
+import uk.gov.hmrc.govukfrontend.views.Aliases.Card
+import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
+import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{CardTitle, SummaryList}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.FutureSyntax._
+import viewmodels.checkAnswers._
+import viewmodels.checkAnswers.corrections.{CorrectPreviousReturnSummary, CorrectionReturnPeriodSummary}
 import viewmodels.govuk.summarylist._
 import views.html.CheckYourAnswersView
 
+import scala.concurrent.{ExecutionContext, Future}
+
 class CheckYourAnswersController @Inject()(
-                                            override val messagesApi: MessagesApi,
                                             cc: AuthenticatedControllerComponents,
+                                            service: SalesAtVatRateService,
                                             view: CheckYourAnswersView
-                                          ) extends FrontendBaseController with I18nSupport {
+                                          )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(): Action[AnyContent] = cc.authAndRequireData() {
+  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
 
-      val thisPage = CheckYourAnswersPage
+      val errors: List[ValidationError] = Nil // TODO
 
-      val waypoints = EmptyWaypoints.setNextWaypoint(Waypoint(thisPage, CheckMode, CheckYourAnswersPage.urlFragment))
+      val businessSummaryList = getBusinessSummaryList(request, waypoints)
 
-      val list = SummaryListViewModel(
-        rows = Seq.empty
-      )
+      val salesFromEuSummaryList = getSalesFromEuSummaryList(request, waypoints)
 
-      Ok(view(list))
+      val containsCorrections = request.userAnswers.get(AllCorrectionPeriodsQuery).isDefined
+
+      val (noPaymentDueCountries, totalVatToCountries) = service.getVatOwedToCountries(request.userAnswers).partition(vat => vat.totalVat <= 0)
+
+      val totalVatOnSales =
+        service.getTotalVatOwedAfterCorrections(request.userAnswers)
+
+      val summaryLists = getAllSummaryLists(request, businessSummaryList, salesFromEuSummaryList, waypoints)
+
+        Future(Ok(view(
+          waypoints,
+          summaryLists,
+          request.userAnswers.period,
+          totalVatToCountries,
+          totalVatOnSales,
+          noPaymentDueCountries,
+          containsCorrections,
+          errors.map(_.errorMessage))))
   }
+
+  private def getAllSummaryLists(
+                                  request: DataRequest[AnyContent],
+                                  businessSummaryList: SummaryList,
+                                  salesFromEuSummaryList: SummaryList,
+                                  waypoints: Waypoints
+                                )(implicit messages: Messages) =
+    if (request.userAnswers.get(CorrectPreviousReturnPage).isDefined) {
+      val correctionsSummaryList = SummaryListViewModel(
+        rows = Seq(
+          CorrectPreviousReturnSummary.row(request.userAnswers, waypoints),
+          CorrectionReturnPeriodSummary.getAllRows(request.userAnswers, waypoints)
+        ).flatten
+      ).withCard(
+        card = Card(
+          title = Some(CardTitle(content = HtmlContent(messages("checkYourAnswers.correction.heading")))),
+          actions = None
+        )
+      )
+      Seq(
+        (None, businessSummaryList),
+        (None, salesFromEuSummaryList),
+        (None, correctionsSummaryList)
+      )
+    } else {
+      Seq(
+        (None, businessSummaryList),
+        (Some("checkYourAnswers.sales.heading"), salesFromEuSummaryList)
+      )
+    }
+
+  private def getSalesFromEuSummaryList(request: DataRequest[AnyContent], waypoints: Waypoints)(implicit messages: Messages) = {
+    SummaryListViewModel(
+      rows = Seq(
+        SoldGoodsSummary.row(request.userAnswers, waypoints, CheckYourAnswersPage),
+        TotalNetValueOfSalesSummary.row(request.userAnswers, service.getTotalNetSales(request.userAnswers), waypoints),
+        TotalVatOnSalesSummary.row(request.userAnswers, service.getTotalVatOnSales(request.userAnswers), waypoints)
+      ).flatten
+    ).withCard(
+      card = Card(
+        title = Some(CardTitle(content = HtmlContent(messages("checkYourAnswers.sales.heading")))),
+        actions = None
+      )
+    )
+  }
+
+  private def getBusinessSummaryList(request: DataRequest[AnyContent], waypoints: Waypoints)(implicit messages: Messages) = {
+    SummaryListViewModel(
+      rows = Seq(
+        BusinessNameSummary.row(request.registrationWrapper),
+        BusinessVRNSummary.row(request.vrn),
+        ReturnPeriodSummary.row(request.userAnswers, waypoints)
+      ).flatten
+    )
+  }
+
+  def onSubmit(waypoints: Waypoints, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndGetData().async {
+    implicit request =>
+
+      Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
+  }
+
 }

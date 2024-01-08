@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package utils
+package queries
 
-trait CurrencyFormatter {
-  def currencyFormat(amt: BigDecimal): String = f"&pound;$amt%,1.2f".replace(".00","")
+import pages.PageConstants
+import play.api.libs.json.JsPath
 
-  def currencyFormatWithAccuracy(amt: BigDecimal): String = f"&pound;$amt%,1.2f"
+case object AllSalesWithTotalAndVatQuery extends Gettable[List[SalesToCountryWithOptionalSales]] with Settable[List[SalesToCountryWithOptionalSales]] {
+
+  override def path: JsPath = JsPath \ PageConstants.sales
 }
-
-object CurrencyFormatter extends CurrencyFormatter

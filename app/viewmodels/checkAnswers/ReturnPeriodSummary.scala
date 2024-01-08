@@ -16,28 +16,25 @@
 
 package viewmodels.checkAnswers
 
+import controllers.routes
 import models.UserAnswers
-import pages.{CheckAnswersPage, SoldGoodsPage, Waypoints}
+import pages.Waypoints
 import play.api.i18n.Messages
+import play.twirl.api.HtmlFormat
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
 import viewmodels.govuk.summarylist._
 import viewmodels.implicits._
 
-object SoldGoodsSummary  {
+object ReturnPeriodSummary {
 
-  def row(answers: UserAnswers, waypoints: Waypoints, sourcePage: CheckAnswersPage)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(SoldGoodsPage).map {
-      answer =>
-
-        val value = if (answer) "site.yes" else "site.no"
-
-        SummaryListRowViewModel(
-          key     = "soldGoods.checkYourAnswersLabel",
-          value   = ValueViewModel(value).withCssClass("govuk-table__cell--numeric"),
-          actions = Seq(
-            ActionItemViewModel("site.change", SoldGoodsPage.changeLink(waypoints, sourcePage).url)
-              .withVisuallyHiddenText(messages("soldGoods.change.hidden"))
-          )
-        )
-    }
+  def row(userAnswers: UserAnswers, waypoints: Waypoints)(implicit messages: Messages): Option[SummaryListRow] = {
+    Some(SummaryListRowViewModel(
+      key = "checkYourAnswers.label.returnPeriod",
+      value = ValueViewModel(HtmlFormat.escape(userAnswers.period.displayText).toString).withCssClass("govuk-table__cell--numeric govuk-!-padding-right-0"),
+      actions = Seq(
+        ActionItemViewModel("site.change", routes.StartReturnController.onPageLoad(waypoints, userAnswers.period).url)
+          .withVisuallyHiddenText(messages("startReturn.change.hidden"))
+          .withAttribute(("id", "change-return-period"))
+      )))
+  }
 }

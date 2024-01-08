@@ -16,28 +16,20 @@
 
 package viewmodels.checkAnswers
 
-import models.UserAnswers
-import pages.{CheckAnswersPage, SoldGoodsPage, Waypoints}
+import models.RegistrationWrapper
 import play.api.i18n.Messages
+import play.twirl.api.HtmlFormat
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
 import viewmodels.govuk.summarylist._
 import viewmodels.implicits._
 
-object SoldGoodsSummary  {
+object BusinessNameSummary {
 
-  def row(answers: UserAnswers, waypoints: Waypoints, sourcePage: CheckAnswersPage)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(SoldGoodsPage).map {
-      answer =>
-
-        val value = if (answer) "site.yes" else "site.no"
-
-        SummaryListRowViewModel(
-          key     = "soldGoods.checkYourAnswersLabel",
-          value   = ValueViewModel(value).withCssClass("govuk-table__cell--numeric"),
-          actions = Seq(
-            ActionItemViewModel("site.change", SoldGoodsPage.changeLink(waypoints, sourcePage).url)
-              .withVisuallyHiddenText(messages("soldGoods.change.hidden"))
-          )
-        )
-    }
+  def row(registrationWrapper: RegistrationWrapper)(implicit messages: Messages): Option[SummaryListRow] = {
+    Some(SummaryListRowViewModel(
+      key = "checkYourAnswers.label.businessName",
+      value = ValueViewModel(HtmlFormat.escape(registrationWrapper.vatInfo.getName).toString).withCssClass("govuk-table__cell--numeric"),
+      actions = Seq.empty
+    ))
+  }
 }

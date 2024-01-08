@@ -16,28 +16,31 @@
 
 package viewmodels.checkAnswers
 
-import models.UserAnswers
-import pages.{CheckAnswersPage, SoldGoodsPage, Waypoints}
+import controllers.routes
+import models.{CheckMode, UserAnswers}
+import pages.Waypoints
 import play.api.i18n.Messages
+import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
+import utils.CurrencyFormatter
 import viewmodels.govuk.summarylist._
 import viewmodels.implicits._
 
-object SoldGoodsSummary  {
+object TotalVatOnSalesSummary extends CurrencyFormatter {
 
-  def row(answers: UserAnswers, waypoints: Waypoints, sourcePage: CheckAnswersPage)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(SoldGoodsPage).map {
-      answer =>
-
-        val value = if (answer) "site.yes" else "site.no"
-
+  def row(answers: UserAnswers, totalVatOnSalesOption: Option[BigDecimal], waypoints: Waypoints)(implicit messages: Messages): Option[SummaryListRow] = {
+    totalVatOnSalesOption.map {
+      totalVatOnSales =>
         SummaryListRowViewModel(
-          key     = "soldGoods.checkYourAnswersLabel",
-          value   = ValueViewModel(value).withCssClass("govuk-table__cell--numeric"),
+          key = "checkYourAnswers.label.vatOnSales",
+          value = ValueViewModel(HtmlContent(currencyFormat(totalVatOnSales))).withCssClass("govuk-table__cell--numeric"),
           actions = Seq(
-            ActionItemViewModel("site.change", SoldGoodsPage.changeLink(waypoints, sourcePage).url)
-              .withVisuallyHiddenText(messages("soldGoods.change.hidden"))
+            ActionItemViewModel("site.change", routes.SoldToCountryListController.onPageLoad(waypoints).url)
+              .withVisuallyHiddenText(messages("soldGoodsFromEu.changeEUVAT.hidden"))
+              .withAttribute(("id", "change-vat-charged-eu"))
+
           )
         )
     }
+  }
 }

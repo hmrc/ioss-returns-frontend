@@ -16,35 +16,38 @@
 
 package viewmodels.checkAnswers.corrections
 
-import models.{Index, UserAnswers}
+import models.UserAnswers
 import pages.Waypoints
-import pages.corrections.CorrectionReturnPeriodPage
 import play.api.i18n.Messages
-import play.twirl.api.HtmlFormat
+import queries.AllCorrectionPeriodsQuery
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
 import viewmodels.govuk.summarylist._
 import viewmodels.implicits._
 
-object CorrectionReturnPeriodSummary  {
+object CorrectionReturnPeriodSummary {
 
-  def row(answers: UserAnswers, waypoints: Waypoints, index: Index)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(CorrectionReturnPeriodPage(index)).map {
-      answer =>
+  def getAllRows(answers: UserAnswers, waypoints: Waypoints)(implicit messages: Messages): Option[SummaryListRow] = {
+    val periods =
+      answers.get(AllCorrectionPeriodsQuery).getOrElse(List.empty).map {
+        correction => correction.correctionReturnPeriod.displayText
+      }
 
-        val value = ValueViewModel(
-          HtmlContent(
-            HtmlFormat.escape(messages(s"correctionReturnPeriod.$answer"))
-          )
+    if(periods.nonEmpty) {
+      Some(SummaryListRowViewModel(
+        key = messages("checkYourAnswers.correctionReturnPeriod.checkYourAnswersLabel"),
+        value = ValueViewModel(HtmlContent(periods.mkString("</br>"))),
+        actions = Seq(
+          ActionItemViewModel(
+            "site.change",
+            controllers.corrections.routes.CorrectPreviousReturnController
+              .onPageLoad(waypoints).url
+          ).withVisuallyHiddenText(messages("correctionReturnPeriod.change.hidden"))
+            .withAttribute(("id", "change-correction-periods"))
         )
-
-        SummaryListRowViewModel(
-          key     = "correctionReturnPeriod.checkYourAnswersLabel",
-          value   = value,
-          actions = Seq(
-            ActionItemViewModel("site.change", controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(waypoints, index).url)
-              .withVisuallyHiddenText(messages("correctionReturnPeriod.change.hidden"))
-          )
-        )
+      ))
+    } else {
+      None
     }
+  }
 }

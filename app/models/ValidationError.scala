@@ -14,12 +14,16 @@
  * limitations under the License.
  */
 
-package utils
+package models
 
-trait CurrencyFormatter {
-  def currencyFormat(amt: BigDecimal): String = f"&pound;$amt%,1.2f".replace(".00","")
+import queries.Gettable
 
-  def currencyFormatWithAccuracy(amt: BigDecimal): String = f"&pound;$amt%,1.2f"
+sealed trait ValidationError {
+
+  val errorMessage: String
 }
 
-object CurrencyFormatter extends CurrencyFormatter
+case class DataMissingError(page: Gettable[_]) extends ValidationError {
+
+  override val errorMessage: String = s"Data missing at ${page.path.toString}"
+}
