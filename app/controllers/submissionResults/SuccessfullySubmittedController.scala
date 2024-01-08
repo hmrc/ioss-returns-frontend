@@ -17,9 +17,12 @@
 package controllers.submissionResults
 
 import controllers.actions._
+import pages.SoldGoodsPage
+import pages.corrections.CorrectPreviousReturnPage
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.Formatters.generateVatReturnReference
 import views.html.submissionResults.SuccessfullySubmittedView
 
 import javax.inject.Inject
@@ -32,8 +35,10 @@ class SuccessfullySubmittedController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad: Action[AnyContent] = cc.authAndGetRegistration {
+  def onPageLoad: Action[AnyContent] = cc.authAndRequireData() {
     implicit request =>
-      Ok(view())
+      val returnReference = generateVatReturnReference(request.iossNumber, request.userAnswers.period)
+      val nilReturn = (!request.userAnswers.get(SoldGoodsPage).get) && (!request.userAnswers.get(CorrectPreviousReturnPage).get)
+      Ok(view(returnReference, nilReturn, request.userAnswers.period))
   }
 }

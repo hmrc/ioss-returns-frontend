@@ -18,9 +18,9 @@ package services
 
 import base.SpecBase
 import connectors.VatReturnConnector
-import models.core.{CoreMsconSupply, CorePeriod, CoreSupply, CoreTraderId, CoreVatReturn}
-import models.requests.{DataRequest, RegistrationRequest}
 import models.{Country, TotalVatToCountry}
+import models.core._
+import models.requests.DataRequest
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito.{reset, times, verify, when}
@@ -30,7 +30,6 @@ import play.api.http.Status.CREATED
 import play.api.mvc.AnyContent
 import play.api.test.FakeRequest
 import uk.gov.hmrc.auth.core.retrieve.Credentials
-import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.HttpResponse
 
 import java.time.Instant
@@ -75,7 +74,7 @@ class CoreVatReturnServiceSpec extends SpecBase with BeforeAndAfterEach {
         vatReturnReferenceNumber = expectedVatReturnReference,
         version = Instant.now(stubClockAtArbitraryDate),
         traderId = CoreTraderId(iossNumber, "XI"),
-        period = CorePeriod(period.year, period.month.getValue),
+        period = CorePeriod(period.year, s"0${period.month.getValue}"),
         startDate = period.firstDay,
         endDate = period.lastDay,
         submissionDateTime = Instant.now(stubClockAtArbitraryDate),

@@ -16,10 +16,23 @@
 
 package utils
 
+import models.Period
+
 import java.time.format.DateTimeFormatter
 
 object Formatters {
 
   val etmpDateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX")
+
+  def generateVatReturnReference(iossNumber: String, period: Period): String = {
+    val vatReturnPeriodString = {
+      val yearValue = period.year
+      period.month.getValue match {
+        case monthValue if monthValue < 10 => s"M0$monthValue.$yearValue"
+        case monthValue => s"M$monthValue.$yearValue"
+      }
+    }
+    s"XI/${iossNumber}/$vatReturnPeriodString"
+  }
 
 }

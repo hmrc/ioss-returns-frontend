@@ -21,11 +21,12 @@ import logging.Logging
 import models.{Country, UserAnswers}
 import models.core._
 import models.corrections.PeriodWithCorrections
-import models.requests.{DataRequest, RegistrationRequest}
+import models.requests.DataRequest
 import play.api.http.Status.CREATED
 import queries.{AllCorrectionPeriodsQuery, AllSalesWithTotalAndVatQuery, VatRateWithOptionalSalesFromCountry}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
+import utils.Formatters.generateVatReturnReference
 
 import java.time.{Clock, Instant}
 import java.time.temporal.ChronoUnit
@@ -49,14 +50,7 @@ class CoreVatReturnService @Inject()(
   }
 
   private def buildCoreVatReturn(userAnswers: UserAnswers)(implicit request: DataRequest[_]): CoreVatReturn = {
-    val vatReturnPeriodString = {
-      val yearValue = userAnswers.period.year
-      userAnswers.period.month.getValue match {
-        case monthValue if monthValue < 10 => s"M0$monthValue.$yearValue"
-        case monthValue => s"M$monthValue.$yearValue"
-      }
-    }
-    val vatReturnReference = s"XI/${request.iossNumber}/$vatReturnPeriodString"
+    val vatReturnReference = generateVatReturnReference(request.iossNumber, request.userAnswers.period)
 
     val instantNow = Instant.now(clock).truncatedTo(ChronoUnit.MILLIS)
 
@@ -69,7 +63,10 @@ class CoreVatReturnService @Inject()(
       ),
       period = CorePeriod(
         userAnswers.period.year,
-        userAnswers.period.month.getValue
+        userAnswers.period.month.getValue match {
+          case monthValue if monthValue < 10 => s"0$monthValue"
+          case monthValue => monthValue.toString
+        }
       ),
       startDate = userAnswers.period.firstDay,
       endDate = userAnswers.period.lastDay,
@@ -142,7 +139,10 @@ class CoreVatReturnService @Inject()(
     allCorrectionsWithCountry.map { correctionPeriodWithCountry =>
       val correctionPeriod = CorePeriod(
         correctionPeriodWithCountry.correctionReturnPeriod.year,
-        correctionPeriodWithCountry.correctionReturnPeriod.month.getValue
+        correctionPeriodWithCountry.correctionReturnPeriod.month.getValue match {
+          case monthValue if monthValue < 10 => s"0$monthValue"
+          case monthValue => monthValue.toString
+        }
       )
 
       val correctionAmount = correctionPeriodWithCountry

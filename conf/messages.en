@@ -276,8 +276,10 @@ removeCountryCorrection.title = Are you sure you want to remove this correction?
 removeCountryCorrection.heading = Are you sure you want to remove this correction?
 removeCountryCorrection.error.required = Select yes if you want to remove this correction
 
-successfullySubmitted.title = successfullySubmitted
-successfullySubmitted.heading = successfullySubmitted
+successfullySubmitted.title = Return submitted
+successfullySubmitted.heading = Your return reference is <strong>{0}</strong>
+successfullySubmitted.noVatOwed = You do not owe any VAT for {0}.
+successfullySubmitted.next.info.returnToAccount = Back to your account
 
 returnSubmissionFailure.title = We have a problem with our service right now
 returnSubmissionFailure.heading = We have not received your return

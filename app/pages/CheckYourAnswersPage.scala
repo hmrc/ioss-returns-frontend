@@ -17,7 +17,6 @@
 package pages
 
 import controllers.routes
-import models.UserAnswers
 import play.api.mvc.Call
 
 case object CheckYourAnswersPage extends CheckAnswersPage {

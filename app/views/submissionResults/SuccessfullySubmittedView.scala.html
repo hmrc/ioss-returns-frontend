@@ -14,14 +14,30 @@
  * limitations under the License.
  *@
 
+@import pages.EmptyWaypoints
+
 @this(
         layout: templates.Layout,
-        govukButton: GovukButton
+        govukButton: GovukButton,
+        govukPanel: GovukPanel
 )
 
-@()(implicit request: Request[_], messages: Messages)
+@(returnReference: String, nilReturn: Boolean, period: Period)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(messages("successfullySubmitted.title"))) {
 
-    <h1 class="govuk-heading-xl">@messages("successfullySubmitted.heading")</h1>
+  @govukPanel(Panel(
+    title = Text(messages("successfullySubmitted.title")),
+    content = HtmlContent(messages("successfullySubmitted.heading", returnReference))
+  ))
+
+  @if(nilReturn) {
+    <p class="govuk-body">@messages("successfullySubmitted.noVatOwed", period.displayText)</p>
+  }
+
+  <p class="govuk-body">
+    <a href="@routes.YourAccountController.onPageLoad(EmptyWaypoints).url" class="govuk-link govuk-link--no-visited-state">
+    @messages("successfullySubmitted.next.info.returnToAccount")
+    </a>
+  </p>
 }
