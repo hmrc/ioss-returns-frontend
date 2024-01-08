@@ -29,7 +29,7 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import viewmodels.PaymentsViewModel
 import views.html.YourAccountView
 
-import java.time.LocalDate
+import java.time.{Clock, LocalDate}
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
@@ -37,6 +37,7 @@ class YourAccountController @Inject()(
                                        cc: AuthenticatedControllerComponents,
                                        paymentsService: PaymentsService,
                                        view: YourAccountView,
+                                       clock: Clock,
                                        appConfig: FrontendAppConfig
                                      )(implicit ec: ExecutionContext)
 
@@ -48,7 +49,7 @@ class YourAccountController @Inject()(
     implicit request =>
       val cancelYourRequestToLeaveUrl = request.registrationWrapper.registration.exclusions.sortBy(_.effectiveDate).lastOption match {
         case Some(exclusion) if Seq(NoLongerSupplies, VoluntarilyLeaves, TransferringMSID).contains(exclusion.exclusionReason) &&
-          LocalDate.now().isBefore(exclusion.effectiveDate) => Some(appConfig.cancelYourRequestToLeaveUrl)
+          LocalDate.now(clock).isBefore(exclusion.effectiveDate) => Some(appConfig.cancelYourRequestToLeaveUrl)
         case _ => None
       }
 

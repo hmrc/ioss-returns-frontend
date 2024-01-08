@@ -102,7 +102,12 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
     "must return OK with cancelYourRequestToLeave link when a trader is excluded" in {
       val registrationWrapper: RegistrationWrapper = arbitrary[RegistrationWrapper].sample.value
 
-      val exclusion = EtmpExclusion(NoLongerSupplies, LocalDate.now().plusDays(2), LocalDate.now().minusDays(1), false)
+      val exclusion = EtmpExclusion(
+        NoLongerSupplies,
+        LocalDate.now(stubClockAtArbitraryDate).plusDays(2),
+        LocalDate.now(stubClockAtArbitraryDate).minusDays(1),
+        false
+      )
       val registrationWrapperEmptyExclusions: RegistrationWrapper =
         registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq(exclusion)))
 
