@@ -290,7 +290,7 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar {
       "when the corrections is empty" - {
 
         "must return correct total vat to eu countries for one country with one vat rate" in {
-          
+
           val ua = emptyUserAnswers
             .set(SoldGoodsPage,true).success.value
             .set(SoldToCountryPage(index0), Country("BE", "Belgium")).success.value
@@ -304,7 +304,7 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar {
         }
 
         "must return correct total vat to eu countries for one country with multiple vat rates" in {
-          
+
           val answers = emptyUserAnswers
             .set(SoldGoodsPage,true).success.value
             .set(SoldToCountryPage(index0), Country("BE", "Belgium")).success.value
@@ -340,7 +340,7 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar {
         }
         // remove
         "must return total when NI exists and EU sales don't exist" in {
-          
+
           service.getTotalVatOwedAfterCorrections(completeUserAnswers) mustBe BigDecimal(1000)
         }
         // remove

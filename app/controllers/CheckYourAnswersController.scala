@@ -20,9 +20,9 @@ import com.google.inject.Inject
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
 import models.requests.DataRequest
-import models.{Period, ValidationError}
-import pages.corrections.CorrectPreviousReturnPage
+import models.ValidationError
 import pages.{CheckYourAnswersPage, Waypoints}
+import pages.corrections.CorrectPreviousReturnPage
 import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc._
 import queries.AllCorrectionPeriodsQuery
@@ -31,9 +31,8 @@ import uk.gov.hmrc.govukfrontend.views.Aliases.Card
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{CardTitle, SummaryList}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import utils.FutureSyntax._
 import viewmodels.checkAnswers._
-import viewmodels.checkAnswers.corrections.{CorrectPreviousReturnSummary, CorrectionReturnPeriodSummary}
+import viewmodels.checkAnswers.corrections.{CorrectionReturnPeriodSummary, CorrectPreviousReturnSummary}
 import viewmodels.govuk.summarylist._
 import views.html.CheckYourAnswersView
 
@@ -41,7 +40,8 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class CheckYourAnswersController @Inject()(
                                             cc: AuthenticatedControllerComponents,
-                                            service: SalesAtVatRateService,
+                                            salesAtVatRateService: SalesAtVatRateService,
+                                            coreVatReturnService: CoreVatReturnService,
                                             view: CheckYourAnswersView
                                           )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
@@ -58,10 +58,10 @@ class CheckYourAnswersController @Inject()(
 
       val containsCorrections = request.userAnswers.get(AllCorrectionPeriodsQuery).isDefined
 
-      val (noPaymentDueCountries, totalVatToCountries) = service.getVatOwedToCountries(request.userAnswers).partition(vat => vat.totalVat <= 0)
+      val (noPaymentDueCountries, totalVatToCountries) = salesAtVatRateService.getVatOwedToCountries(request.userAnswers).partition(vat => vat.totalVat <= 0)
 
       val totalVatOnSales =
-        service.getTotalVatOwedAfterCorrections(request.userAnswers)
+        salesAtVatRateService.getTotalVatOwedAfterCorrections(request.userAnswers)
 
       val summaryLists = getAllSummaryLists(request, businessSummaryList, salesFromEuSummaryList, waypoints)
 
@@ -74,6 +74,19 @@ class CheckYourAnswersController @Inject()(
           noPaymentDueCountries,
           containsCorrections,
           errors.map(_.errorMessage))))
+  }
+
+  def onSubmit(waypoints: Waypoints, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndRequireData().async {
+    implicit request =>
+
+      coreVatReturnService.submitCoreVatReturn(request.userAnswers).map {
+        case true => Redirect(controllers.submissionResults.routes.SuccessfullySubmittedController.onPageLoad().url)
+        case _ => Redirect(controllers.submissionResults.routes.ReturnSubmissionFailureController.onPageLoad().url)
+      }.recover {
+        case e: Exception =>
+          logger.error(s"Error while submitting VAT return ${e.getMessage}", e)
+          Redirect(controllers.submissionResults.routes.ReturnSubmissionFailureController.onPageLoad().url)
+      }
   }
 
   private def getAllSummaryLists(
@@ -110,8 +123,8 @@ class CheckYourAnswersController @Inject()(
     SummaryListViewModel(
       rows = Seq(
         SoldGoodsSummary.row(request.userAnswers, waypoints, CheckYourAnswersPage),
-        TotalNetValueOfSalesSummary.row(request.userAnswers, service.getTotalNetSales(request.userAnswers), waypoints),
-        TotalVatOnSalesSummary.row(request.userAnswers, service.getTotalVatOnSales(request.userAnswers), waypoints)
+        TotalNetValueOfSalesSummary.row(request.userAnswers, salesAtVatRateService.getTotalNetSales(request.userAnswers), waypoints),
+        TotalVatOnSalesSummary.row(request.userAnswers, salesAtVatRateService.getTotalVatOnSales(request.userAnswers), waypoints)
       ).flatten
     ).withCard(
       card = Card(
@@ -131,10 +144,5 @@ class CheckYourAnswersController @Inject()(
     )
   }
 
-  def onSubmit(waypoints: Waypoints, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndGetData().async {
-    implicit request =>
-
-      Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
-  }
 
 }

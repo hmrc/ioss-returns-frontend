@@ -17,7 +17,6 @@
 package pages
 
 import controllers.routes
-import models.UserAnswers
 import play.api.mvc.Call
 
 case object CheckYourAnswersPage extends CheckAnswersPage {
@@ -32,6 +31,4 @@ case object CheckYourAnswersPage extends CheckAnswersPage {
   override def route(waypoints: Waypoints): Call =
     routes.CheckYourAnswersController.onPageLoad()
 
-  override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
-    ??? // TODO
 }

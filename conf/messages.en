@@ -275,3 +275,14 @@ correctionListCountries.checkYourAnswersLabel = Correction amount
 removeCountryCorrection.title = Are you sure you want to remove this correction?
 removeCountryCorrection.heading = Are you sure you want to remove this correction?
 removeCountryCorrection.error.required = Select yes if you want to remove this correction
+
+successfullySubmitted.title = Return submitted
+successfullySubmitted.heading = Your return reference is <strong>{0}</strong>
+successfullySubmitted.noVatOwed = You do not owe any VAT for {0}.
+successfullySubmitted.next.info.returnToAccount = Back to your account
+
+returnSubmissionFailure.title = We have a problem with our service right now
+returnSubmissionFailure.heading = We have not received your return
+returnSubmissionFailure.tryAgainLater = Please try again later.
+returnSubmissionFailure.contactUs = If the problem continues, you can email us at <a class="govuk-link" href="mailto:vatoss.contact@hmrc.gov.uk">vatoss.contact@hmrc.gov.uk</a>
+returnSubmissionFailure.next.info.returnToAccount = Back to your account
