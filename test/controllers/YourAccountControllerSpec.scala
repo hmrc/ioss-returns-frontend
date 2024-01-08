@@ -17,13 +17,19 @@
 package controllers
 
 import base.SpecBase
+import config.FrontendAppConfig
 import generators.Generators
 import models.RegistrationWrapper
+import models.etmp.EtmpExclusion
+import models.etmp.EtmpExclusionReason.NoLongerSupplies
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import views.html.YourAccountView
+
+import java.time.LocalDate
 
 class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generators with BeforeAndAfterEach {
 
@@ -47,5 +53,61 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
       }
     }
 
+    "must return OK with no cancelYourRequestToLeave link when a trader is not excluded" in {
+      val registrationWrapper: RegistrationWrapper = arbitrary[RegistrationWrapper].sample.value
+
+      val registrationWrapperEmptyExclusions: RegistrationWrapper =
+        registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWrapperEmptyExclusions)
+        .build()
+
+      running(application) {
+
+        val request = FakeRequest(GET, routes.YourAccountController.onPageLoad(waypoints).url)
+
+        val result = route(application, request).value
+
+        val view = application.injector.instanceOf[YourAccountView]
+        val appConfig = application.injector.instanceOf[FrontendAppConfig]
+
+        status(result) mustBe OK
+        contentAsString(result) mustBe view(
+          registrationWrapper.vatInfo.getName,
+          iossNumber,
+          appConfig.amendRegistrationUrl,
+          None
+        )(request, messages(application)).toString
+      }
+    }
+
+    "must return OK with cancelYourRequestToLeave link when a trader is excluded" in {
+      val registrationWrapper: RegistrationWrapper = arbitrary[RegistrationWrapper].sample.value
+
+      val exclusion = EtmpExclusion(NoLongerSupplies, LocalDate.now().plusDays(2), LocalDate.now().minusDays(1), false)
+      val registrationWrapperEmptyExclusions: RegistrationWrapper =
+        registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq(exclusion)))
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWrapperEmptyExclusions)
+        .build()
+
+      running(application) {
+
+        val request = FakeRequest(GET, routes.YourAccountController.onPageLoad(waypoints).url)
+
+        val result = route(application, request).value
+
+        val view = application.injector.instanceOf[YourAccountView]
+        val appConfig = application.injector.instanceOf[FrontendAppConfig]
+
+        status(result) mustBe OK
+        contentAsString(result) mustBe view(
+          registrationWrapper.vatInfo.getName,
+          iossNumber,
+          appConfig.amendRegistrationUrl,
+          Some(appConfig.cancelYourRequestToLeaveUrl)
+        )(request, messages(application)).toString
+      }
+    }
   }
 }

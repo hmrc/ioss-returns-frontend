@@ -24,7 +24,7 @@
   businessName: String,
   iossNumber: String,
   changeYourRegistrationUrl: String,
-  cancelYourRequestToLeaveUrl: String
+  cancelYourRequestToLeaveUrl: Option[String]
 )(implicit request: Request[_], messages: Messages)
 
 @layout(
@@ -67,11 +67,13 @@
           </a>
         </p>
 
-        <p class="govuk-body">
-          <a class="govuk-link" href="@cancelYourRequestToLeaveUrl" id="cancel-your-request-to-leave">
-            @messages("yourAccount.details.cancelYourRequestToLeave")
-          </a>
-        </p>
+        @cancelYourRequestToLeaveUrl.map { url =>
+          <p class="govuk-body">
+            <a class="govuk-link" href="@url" id="cancel-your-request-to-leave">
+              @messages("yourAccount.details.cancelYourRequestToLeave")
+            </a>
+          </p>
+        }
       </div>
     </div>
   </div>

@@ -19,12 +19,14 @@ package controllers
 import config.FrontendAppConfig
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
+import models.etmp.EtmpExclusionReason.{NoLongerSupplies, Reversal, TransferringMSID, VoluntarilyLeaves}
 import pages.Waypoints
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.YourAccountView
 
+import java.time.LocalDate
 import javax.inject.Inject
 
 class YourAccountController @Inject()(
@@ -39,7 +41,11 @@ class YourAccountController @Inject()(
 
   def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetRegistration {
     implicit request =>
-
-      Ok(view(request.registrationWrapper.vatInfo.getName, request.iossNumber, appConfig.amendRegistrationUrl, appConfig.cancelYourRequestToLeaveUrl))
+      val cancelYourRequestToLeaveUrl = request.registrationWrapper.registration.exclusions.sortBy(_.effectiveDate).lastOption match {
+        case Some(exclusion) if Seq(NoLongerSupplies, VoluntarilyLeaves, TransferringMSID).contains(exclusion.exclusionReason) &&
+          LocalDate.now().isBefore(exclusion.effectiveDate) => Some(appConfig.cancelYourRequestToLeaveUrl)
+        case _ => None
+      }
+      Ok(view(request.registrationWrapper.vatInfo.getName, request.iossNumber, appConfig.amendRegistrationUrl, cancelYourRequestToLeaveUrl))
   }
 }
