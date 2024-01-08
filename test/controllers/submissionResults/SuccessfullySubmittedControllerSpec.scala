@@ -27,7 +27,9 @@ class SuccessfullySubmittedControllerSpec extends SpecBase {
 
     "must return OK and the correct view for a GET" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(completeUserAnswers)).build()
+
+      val returnReference = s"XI/${iossNumber}/M0${period.month.getValue}.${period.year}"
 
       running(application) {
         val request = FakeRequest(GET, routes.SuccessfullySubmittedController.onPageLoad().url)
@@ -37,7 +39,7 @@ class SuccessfullySubmittedControllerSpec extends SpecBase {
         val view = application.injector.instanceOf[SuccessfullySubmittedView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view()(request, messages(application)).toString
+        contentAsString(result) mustEqual view(returnReference, nilReturn = false, period)(request, messages(application)).toString
       }
     }
   }
