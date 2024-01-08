@@ -30,7 +30,7 @@ import scala.util.matching.Regex
 
 final case class Period(year: Int, month: Month) {
   val firstDay: LocalDate = LocalDate.of(year, month, 1)
-  val lastDay: LocalDate = firstDay.plusMonths(3).minusDays(1)
+  val lastDay: LocalDate = firstDay.plusMonths(1).minusDays(1)
   private val firstMonthFormatter = DateTimeFormatter.ofPattern("MMMM")
   private val lastMonthYearFormatter = DateTimeFormatter.ofPattern("MMMM yyyy")
 

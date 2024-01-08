@@ -27,57 +27,38 @@
 
     @layout(pageTitle = titleNoForm(messages("successfullySubmitted.title"))) {
 
-            @govukPanel(Panel(
-                title = Text(messages("successfullySubmitted.title")),
-                content = HtmlContent(messages("successfullySubmitted.heading", returnReference))
-            ))
+        @govukPanel(Panel(
+            title = Text(messages("successfullySubmitted.title")),
+            content = HtmlContent(messages("successfullySubmitted.heading", returnReference))
+        ))
 
-            @if(nilReturn) {
-                <p class="govuk-body">@messages("successfullySubmitted.noVatOwed", period.displayText)</p>
-            } else {
-                <h2 class="govuk-heading-m govuk-!-margin-top-6" id="how-pay">Pay VAT owed</h2>
-                <p class="govuk-body">
-                    For <span id="dateRange">@period.lastDay.format(DateTimeFormatter.ofPattern("d MMMM u"))</span>
-                    , you owe
-                    <span class="govuk-!-font-weight-bold">£@owedAmount. </span><br>
-                </p>
-
-                <p class="govuk-body"> You can pay by corporate card or bank transfer.</p>
-
-                <a href="payments/amount-to-pay.html" class="govuk-button" rel="external" title="This will open in a new tab or window">
-                    Pay now </a>
-
-
-                <p class="govuk-body">
-                    You need to pay by 31 October 2021.
-                </p>
-
-                <p class="govuk-body">
-                    EU countries can charge you interest or penalties for late payments.
-                </p>
-            }
-
+        @if(nilReturn) {
+            <p class="govuk-body">@messages("successfullySubmitted.noVatOwed", period.displayText)</p>
+        } else {
+            <h2 class="govuk-heading-m govuk-!-margin-top-6" id="how-pay">Pay VAT owed</h2>
             <p class="govuk-body">
-                <a href="@routes.YourAccountController.onPageLoad(EmptyWaypoints).url" class="govuk-link govuk-link--no-visited-state">
-                @messages("successfullySubmitted.next.info.returnToAccount")
-                </a>
+                For <span id="dateRange">@period.lastDay.format(DateTimeFormatter.ofPattern("d MMMM u"))</span>, you owe
+                <span class="govuk-!-font-weight-bold">£@owedAmount</span>.<br>
             </p>
 
+            <p class="govuk-body"> You can pay by corporate card or bank transfer.</p>
 
-        moooooooooooooooooooooooooooooo
+            <a href="payments/amount-to-pay.html" class="govuk-button" rel="external" title="This will open in a new tab or window">
+                Pay now </a>
 
-        @* @govukPanel(Panel(*@
-        @* title = Text(messages("successfullySubmitted.title")),*@
-        @* content = HtmlContent(messages("successfullySubmitted.heading", returnReference))*@
-        @* ))*@
 
-        @* @if(nilReturn) {*@
-        @* <p class="govuk-body">@messages("successfullySubmitted.noVatOwed", period.displayText)</p>*@
-        @* }*@
+            <p class="govuk-body">
+                You need to pay by @{period.paymentDeadline.format(DateTimeFormatter.ofPattern("d MMMM u"))}.
+            </p>
 
-        @* <p class="govuk-body">*@
-        @* <a href="@routes.YourAccountController.onPageLoad(EmptyWaypoints).url" class="govuk-link govuk-link--no-visited-state">*@
-        @* @messages("successfullySubmitted.next.info.returnToAccount")*@
-        @* </a>*@
-        @* </p>*@
+            <p class="govuk-body">
+                EU countries can charge you interest or penalties for late payments.
+            </p>
+        }
+
+        <p class="govuk-body">
+            <a href="@routes.YourAccountController.onPageLoad(EmptyWaypoints).url" class="govuk-link govuk-link--no-visited-state">
+            @messages("successfullySubmitted.next.info.returnToAccount")
+            </a>
+        </p>
     }
