@@ -35,7 +35,6 @@ import viewmodels.PaymentsViewModel
 import views.html.YourAccountView
 
 import java.time.LocalDate
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generators with BeforeAndAfterEach {
