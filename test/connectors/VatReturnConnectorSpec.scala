@@ -70,31 +70,5 @@ class VatReturnConnectorSpec extends SpecBase
         }
       }
     }
-
-    ".getVatReturn" - {
-
-      "must return OK with a payload of ETMP Vat Return" in {
-        val getObligationsUrl: String = s"/ioss-returns/get/${period.year}-M${period.month.getValue}"
-
-        val app = application
-
-        running(app) {
-          val connector = app.injector.instanceOf[VatReturnConnector]
-
-          val responseBody = Json.toJson(etmpVatReturn).toString()
-
-          server.stubFor(
-            get(urlEqualTo(getObligationsUrl))
-              .willReturn(ok()
-                .withBody(responseBody)
-              )
-          )
-
-          val result = connector.getVatReturn(period).futureValue
-
-          result mustBe etmpVatReturn
-        }
-      }
-    }
   }
 }

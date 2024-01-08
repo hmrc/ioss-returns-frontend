@@ -40,5 +40,4 @@ class ObligationsService @Inject()(vatReturnConnector: VatReturnConnector)
     }
   }
 
-  def getVatReturn(period: Period): Future[EtmpVatReturn] = vatReturnConnector.getVatReturn(period)
 }
