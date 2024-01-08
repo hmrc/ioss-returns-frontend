@@ -22,14 +22,21 @@ import generators.Generators
 import models.RegistrationWrapper
 import models.etmp.EtmpExclusion
 import models.etmp.EtmpExclusionReason.NoLongerSupplies
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.when
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
+import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import services.PaymentsService
+import viewmodels.PaymentsViewModel
 import views.html.YourAccountView
 
 import java.time.LocalDate
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generators with BeforeAndAfterEach {
 
@@ -59,8 +66,19 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
       val registrationWrapperEmptyExclusions: RegistrationWrapper =
         registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
 
+
+      val mockPaymentsService = mock[PaymentsService]
+
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWrapperEmptyExclusions)
+        .overrides(
+          bind[PaymentsService].toInstance(mockPaymentsService)
+        )
         .build()
+
+
+      val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty)(messages(application))
+      when(mockPaymentsService.getUnpaidPayments(any())(any(), any())).thenReturn(Future.successful(List.empty))
+
 
       running(application) {
 
@@ -75,6 +93,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         contentAsString(result) mustBe view(
           registrationWrapper.vatInfo.getName,
           iossNumber,
+          paymentsViewModel,
           appConfig.amendRegistrationUrl,
           None
         )(request, messages(application)).toString
@@ -88,8 +107,16 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
       val registrationWrapperEmptyExclusions: RegistrationWrapper =
         registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq(exclusion)))
 
+      val mockPaymentsService = mock[PaymentsService]
+
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWrapperEmptyExclusions)
+        .overrides(
+          bind[PaymentsService].toInstance(mockPaymentsService)
+        )
         .build()
+
+      val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty)(messages(application))
+      when(mockPaymentsService.getUnpaidPayments(any())(any(), any())).thenReturn(Future.successful(List.empty))
 
       running(application) {
 
@@ -104,6 +131,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         contentAsString(result) mustBe view(
           registrationWrapper.vatInfo.getName,
           iossNumber,
+          paymentsViewModel,
           appConfig.amendRegistrationUrl,
           Some(appConfig.cancelYourRequestToLeaveUrl)
         )(request, messages(application)).toString

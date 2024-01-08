@@ -21,6 +21,7 @@ import models.{Index, UserAnswers, VatOnSales}
 import pages.PageConstants.salesAtVatRate
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
+import queries.Gettable
 
 case class VatOnSalesPage(countryIndex: Index, vatRateIndex: Index) extends QuestionPage[VatOnSales] {
 
@@ -29,6 +30,28 @@ case class VatOnSalesPage(countryIndex: Index, vatRateIndex: Index) extends Ques
   override def toString: String = "vatOnSales"
 
   override def route(waypoints: Waypoints): Call = routes.VatOnSalesController.onPageLoad(waypoints, countryIndex, vatRateIndex)
+
+
+  override protected def nextPageCheckMode(waypoints: NonEmptyWaypoints, answers: UserAnswers): Page = {
+    nextPageNormalMode(waypoints, answers, answers) match {
+      case questionPage: Page with Gettable[_] =>
+
+        questionPage match {
+          case _: CheckSalesPage =>
+            questionPage
+
+          case _ =>
+            if (answers.isDefined(questionPage)) {
+              waypoints.next.page
+            } else {
+              questionPage
+            }
+
+          case otherPage =>
+            otherPage
+        }
+    }
+  }
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page = {
     answers.get(VatRatesFromCountryPage(countryIndex, vatRateIndex)).map {

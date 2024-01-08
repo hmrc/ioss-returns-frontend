@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,30 +14,32 @@
  * limitations under the License.
  */
 
-package controllers
+package controllers.submissionResults
 
 import base.SpecBase
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import views.html.NoOtherPeriodsAvailableView
+import views.html.submissionResults.SuccessfullySubmittedView
 
-class NoOtherPeriodsAvailableControllerSpec extends SpecBase {
+class SuccessfullySubmittedControllerSpec extends SpecBase {
 
-  "CannotStartReturns Controller" - {
+  "SuccessfullySubmitted Controller" - {
 
     "must return OK and the correct view for a GET" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(completeUserAnswers)).build()
+
+      val returnReference = s"XI/${iossNumber}/M0${period.month.getValue}.${period.year}"
 
       running(application) {
-        val request = FakeRequest(GET, routes.NoOtherPeriodsAvailableController.onPageLoad(waypoints).url)
+        val request = FakeRequest(GET, routes.SuccessfullySubmittedController.onPageLoad().url)
 
         val result = route(application, request).value
 
-        val view = application.injector.instanceOf[NoOtherPeriodsAvailableView]
+        val view = application.injector.instanceOf[SuccessfullySubmittedView]
 
-        status(result) mustBe OK
-        contentAsString(result) mustBe view(waypoints)(request, messages(application)).toString
+        status(result) mustEqual OK
+        contentAsString(result) mustEqual view(returnReference, nilReturn = false, period)(request, messages(application)).toString
       }
     }
   }

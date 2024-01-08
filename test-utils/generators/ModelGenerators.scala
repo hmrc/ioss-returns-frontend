@@ -45,13 +45,21 @@ trait ModelGenerators {
       } yield VatOnSales(choice, amount)
     }
 
+  implicit lazy val salesAtVatRate: Arbitrary[OptionalSalesAtVatRate] =
+    Arbitrary{
+      for {
+        netValueOfSales <- arbitrary[BigDecimal]
+         vatOnSales <- arbitraryVatOnSales.arbitrary
+      } yield OptionalSalesAtVatRate(Some(netValueOfSales), Some(vatOnSales))
+    }
+
   implicit def arbitraryVatRateFromCountry: Arbitrary[VatRateFromCountry] =
     Arbitrary {
       for {
         rate <- Gen.choose[BigDecimal](BigDecimal(1), BigDecimal(100))
         rateType <- Gen.oneOf(VatRateType.values)
         validFrom <- datesBetween(LocalDate.of(2021, 7, 1), LocalDate.of(2100, 1, 1))
-      } yield VatRateFromCountry(rate.setScale(2, RoundingMode.HALF_EVEN), rateType, validFrom)
+      } yield VatRateFromCountry(rate.setScale(2, RoundingMode.HALF_EVEN), rateType, validFrom, Some(validFrom.plusYears(1)))
     }
 
   implicit val arbitraryOptionalSalesAtVatRate: Arbitrary[OptionalSalesAtVatRate] =

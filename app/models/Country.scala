@@ -265,6 +265,9 @@ object Country {
   val euCountrySelectItems: Seq[SelectItem] =
     selectItems(euCountries)
 
+  val euCountryWithNISelectItems: Seq[SelectItem] =
+    selectItems(euCountriesWithNI)
+
   def selectItems(countries: Seq[Country]): Seq[SelectItem] =
     SelectItem(value = None, text = "Select a country") +:
       countries.map {

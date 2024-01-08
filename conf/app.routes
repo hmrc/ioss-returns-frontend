@@ -12,7 +12,8 @@ GET         /refresh-session                                                    
 
 GET         /there-is-a-problem                                                       controllers.JourneyRecoveryController.onPageLoad(continueUrl: Option[RedirectUrl] ?= None)
 
-GET         /check-your-answers                                                       controllers.CheckYourAnswersController.onPageLoad()
+GET         /check-your-answers                                                       controllers.CheckYourAnswersController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
+POST        /check-your-answers                                                       controllers.CheckYourAnswersController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, incompletePromptShown:Boolean)
 
 GET         /account/sign-out-survey                                                  controllers.auth.AuthController.signOut
 GET         /account/sign-out                                                         controllers.auth.AuthController.signOutNoSurvey
@@ -59,6 +60,18 @@ POST        /remove-vat-rate-sales-for-country/:countryIndex/:nextVatRateIndex  
 GET         /remaining-vat-rate-from-country/:countryIndex/:nextVatRateIndex          controllers.RemainingVatRateFromCountryController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, countryIndex: Index, nextVatRateIndex: Index)
 POST        /remaining-vat-rate-from-country/:countryIndex/:nextVatRateIndex          controllers.RemainingVatRateFromCountryController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, countryIndex: Index, nextVatRateIndex: Index)
 
+GET        /correction-return-single-period/:index                                    controllers.corrections.CorrectionReturnSinglePeriodController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, index: Index)
+POST       /correction-return-single-period/:index                                    controllers.corrections.CorrectionReturnSinglePeriodController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, index: Index)
+
+GET        /correction-return-year/:index                                             controllers.corrections.CorrectionReturnYearController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, index: Index)
+POST       /correction-return-year/:index                                             controllers.corrections.CorrectionReturnYearController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, index: Index)
+
+GET        /correction-return-period/:index                                           controllers.corrections.CorrectionReturnPeriodController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, index: Index)
+POST       /correction-return-period/:index                                           controllers.corrections.CorrectionReturnPeriodController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, index: Index)
+
+GET        /no-correction-periods-available                                           controllers.corrections.NoOtherCorrectionPeriodsAvailableController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
+POST       /no-correction-periods-available                                           controllers.corrections.NoOtherCorrectionPeriodsAvailableController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints)
+
 GET         /correct-previous-return                                                  controllers.corrections.CorrectPreviousReturnController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
 POST        /correct-previous-return                                                  controllers.corrections.CorrectPreviousReturnController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints)
 
@@ -68,14 +81,18 @@ POST        /correction-country/:periodIndex/:countryIndex                      
 GET         /country-vat-correction-amount/:periodIndex/:countryIndex                 controllers.corrections.VatAmountCorrectionCountryController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, periodIndex: Index, countryIndex: Index)
 POST        /country-vat-correction-amount/:periodIndex/:countryIndex                 controllers.corrections.VatAmountCorrectionCountryController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, periodIndex: Index, countryIndex: Index)
 
-GET        /remove-country-correction/:periodIndex/:countryIndex                      controllers.corrections.RemoveCountryCorrectionController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, periodIndex: Index, countryIndex: Index)
-POST       /remove-country-correction/:periodIndex/:countryIndex                      controllers.corrections.RemoveCountryCorrectionController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, periodIndex: Index, countryIndex: Index)
+GET         /remove-country-correction/:periodIndex/:countryIndex                     controllers.corrections.RemoveCountryCorrectionController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, periodIndex: Index, countryIndex: Index)
+POST        /remove-country-correction/:periodIndex/:countryIndex                     controllers.corrections.RemoveCountryCorrectionController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, periodIndex: Index, countryIndex: Index)
 
 GET         /add-new-country/:periodIndex/:countryIndex                               controllers.corrections.UndeclaredCountryCorrectionController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, periodIndex: Index, countryIndex: Index)
 POST        /add-new-country/:periodIndex/:countryIndex                               controllers.corrections.UndeclaredCountryCorrectionController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, periodIndex: Index, countryIndex: Index)
 
-GET         /vat-payable-confirm/:periodIndex/:countryIndex                          controllers.corrections.VatPayableForCountryController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, periodIndex: Index, countryIndex: Index)
-POST        /vat-payable-confirm/:periodIndex/:countryIndex                          controllers.corrections.VatPayableForCountryController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, periodIndex: Index, countryIndex: Index)
+GET         /vat-payable-confirm/:periodIndex/:countryIndex                           controllers.corrections.VatPayableForCountryController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, periodIndex: Index, countryIndex: Index)
+POST        /vat-payable-confirm/:periodIndex/:countryIndex                           controllers.corrections.VatPayableForCountryController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, periodIndex: Index, countryIndex: Index)
 
-GET        /correction-list-countries/:periodIndex                                    controllers.corrections.CorrectionListCountriesController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, periodIndex: Index)
-POST       /correction-list-countries/:periodIndex                                    controllers.corrections.CorrectionListCountriesController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, periodIndex: Index)
+GET         /correction-list-countries/:periodIndex                                   controllers.corrections.CorrectionListCountriesController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, periodIndex: Index)
+POST        /correction-list-countries/:periodIndex                                   controllers.corrections.CorrectionListCountriesController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, periodIndex: Index)
+
+GET         /successfully-submitted                                                   controllers.submissionResults.SuccessfullySubmittedController.onPageLoad()
+
+GET         /submission-failure                                                       controllers.submissionResults.ReturnSubmissionFailureController.onPageLoad()

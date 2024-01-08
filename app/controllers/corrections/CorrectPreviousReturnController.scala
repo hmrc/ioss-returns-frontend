@@ -65,7 +65,9 @@ class CorrectPreviousReturnController @Inject()(
           for {
             updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectPreviousReturnPage, value))
             _              <- cc.sessionRepository.set(updatedAnswers)
-          } yield Redirect(CorrectPreviousReturnPage.navigate(waypoints, request.userAnswers, updatedAnswers).route)
+          } yield {
+            Redirect(CorrectPreviousReturnPage.navigate(waypoints, request.userAnswers, updatedAnswers).route)
+          }
       )
   }
 }

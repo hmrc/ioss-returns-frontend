@@ -25,15 +25,15 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class ObligationsService @Inject()(vatReturnConnector: VatReturnConnector)
-                                  (implicit ec: ExecutionContext, hc: HeaderCarrier) extends Logging {
+                                  (implicit ec: ExecutionContext) extends Logging {
 
-  def getOpenObligations(iossNumber: String): Future[Seq[EtmpObligationDetails]] = {
+  def getOpenObligations(iossNumber: String)(implicit hc: HeaderCarrier): Future[Seq[EtmpObligationDetails]] = {
     vatReturnConnector.getObligations(iossNumber).map { etmpObligations =>
       etmpObligations.obligationDetails.filter(_.status == EtmpObligationsFulfilmentStatus.Open)
     }
   }
 
-  def getFulfilledObligations(iossNumber: String): Future[Seq[EtmpObligationDetails]] = {
+  def getFulfilledObligations(iossNumber: String)(implicit hc: HeaderCarrier): Future[Seq[EtmpObligationDetails]] = {
     vatReturnConnector.getObligations(iossNumber).map { etmpObligations =>
       etmpObligations.obligationDetails.filter(_.status == EtmpObligationsFulfilmentStatus.Fulfilled)
     }
