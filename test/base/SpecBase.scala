@@ -17,7 +17,8 @@
 package base
 
 import controllers.actions._
-import generators.Generators
+import generators.{Generators, UserAnswersGenerator}
+import models.{Index, Period, RegistrationWrapper, UserAnswers}
 import models.{Country, Index, Period, RegistrationWrapper, UserAnswers, VatOnSales, VatOnSalesChoice, VatRateFromCountry, VatRateType}
 import org.scalacheck.Arbitrary
 import org.scalacheck.Arbitrary._
@@ -44,6 +45,7 @@ trait SpecBase
     with OptionValues
     with ScalaFutures
     with IntegrationPatience
+    with UserAnswersGenerator
     with Generators {
 
   val userAnswersId: String = "12345-credId"
