@@ -76,7 +76,7 @@ class CorrectionReturnYearController @Inject()(
       val openObligations = obligationService.getOpenObligations(request.iossNumber)
 
       openObligations.flatMap { obligations =>
-        val periodKeys = obligations.map(obligation => ConvertPeriodKey.yearFromEtmpPeriodKey(obligation.periodKey))
+        val periodKeys = obligations.map(obligation => ConvertPeriodKey.yearFromEtmpPeriodKey(obligation.periodKey)).distinct
 
         val form: Form[Int] = formProvider(index, periodKeys)
 
