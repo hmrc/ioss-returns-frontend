@@ -178,7 +178,7 @@ class CorrectionReturnYearControllerSpec extends SpecBase with MockitoSugar with
 
         status(result) mustEqual BAD_REQUEST
         contentAsString(result) mustEqual view(
-          boundForm, waypoints, period, utils.ItemsHelper.radioButtonItems(periodYears), index)(request, messages(application)).toString
+          boundForm, waypoints, period, utils.ItemsHelper.radioButtonItems(distinctPeriodYears), index)(request, messages(application)).toString
       }
     }
 

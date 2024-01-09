@@ -27,6 +27,5 @@ class CorrectionReturnYearFormProvider @Inject() extends Mappings {
   def apply(index: Index, correctionYears: Seq[Int]): Form[Int] =
     Form(
       "value" -> int("correctionReturnYear.error.required")
-        .verifying("correctionReturnYear.error.required", value => correctionYears.contains(value))
     )
 }
