@@ -58,7 +58,6 @@
  @if(containsCorrections) {
   <p class="govuk-table__caption--l">@messages("checkYourAnswers.vatOwedToEuCountriesAfterCorrections.heading")</p>
   @if(noPaymentDueCountries.nonEmpty) {
-    hello
    <table class="govuk-table">
     <caption class="govuk-table__caption">
      <p class="govuk-table__caption--m">@messages("checkYourAnswers.noPaymentsDue.heading")</p>
@@ -98,13 +97,13 @@
    <tbody class="govuk-table__body">
     <tr class="govuk-table__row">
      <th scope="col" class="govuk-table__header govuk-!-width-one-third govuk-!-padding-left-5">@messages("checkYourAnswers.label.country")</th>
-     <th scope="col" class="govuk-table__header govuk-!-padding-left-5">@messages("checkYourAnswers.label.amount")</th>
+     <th scope="col" class="govuk-table__header" style="text-align:right; padding-right: 200px">@messages("checkYourAnswers.label.amount")</th>
     </tr>
 
    @for(totalVatToCountry <- totalVatToCountries) {
     <tr class="govuk-table__row govuk-summary-card__content ">
      <td class="govuk-table__cell govuk-!-padding-5">@totalVatToCountry.country.name</td>
-     <td class="govuk-table__cell govuk-!-padding-5">@Html(currencyFormat(totalVatToCountry.totalVat))</td>
+     <td class="govuk-table__cell" style="text-align:right; padding-right: 200px">@Html(currencyFormat(totalVatToCountry.totalVat))</td>
     </tr>
    }
    </tbody>
@@ -112,13 +111,14 @@
  }
 
  <dl class="govuk-summary-list govuk-!-margin-bottom-9 govuk-summary-card">
-  <div class="govuk-summary-card__title-wrapper">
-   <dt class="govuk-summary-list__key govuk-heading-m govuk-!-width-one-third">
+  <div class="govuk-summary-card__title-wrapper" style="padding-bottom: 2px">
+   <dd class="govuk-summary-list__key govuk-heading-m govuk-!-width-one-third">
    @messages("checkYourAnswers.totalVatPayable.heading")
-   </dt>
-   <dd class="govuk-summary-list__value">
+   </dd>
+   <dd class="govuk-summary-list__value govuk-!-padding-right-0 govuk-!-font-size-24">
    @Html(currencyFormatWithAccuracy(totalVatOnSales))
    </dd>
+   <dd></dd>
   </div>
  </dl>
 
