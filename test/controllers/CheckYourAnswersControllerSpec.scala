@@ -186,10 +186,8 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
       }
 
       "when the user answered all necessary data and submission of the return fails" in {
-        val remainingAmount = BigDecimal("2.22")
-
         when(mockCoreVatReturnService.submitCoreVatReturn(any())(any())) thenReturn
-          Future.successful(remainingAmount)
+          Future.failed(new RuntimeException("Failed submission"))
 
         val application = applicationBuilder(userAnswers = Some(completeUserAnswers))
           .overrides(bind[CoreVatReturnService].toInstance(mockCoreVatReturnService))

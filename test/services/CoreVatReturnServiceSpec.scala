@@ -56,7 +56,7 @@ class CoreVatReturnServiceSpec extends SpecBase with BeforeAndAfterEach {
   }
 
   "CoreVatReturnService" - {
-    "must correctly convert a vat return and submit it" in {
+    "must correctly convert a vat return and submit it returning still owed amount" in {
 
       val total = BigDecimal(734964.25)
 
@@ -100,7 +100,7 @@ class CoreVatReturnServiceSpec extends SpecBase with BeforeAndAfterEach {
         changeDate = registrationWrapper.registration.adminUse.changeDate
       )
 
-      service.submitCoreVatReturn(completeUserAnswers).futureValue mustBe true
+      service.submitCoreVatReturn(completeUserAnswers).futureValue mustBe total
       verify(mockReturnConnector, times(1)).submit(eqTo(expectedCoreVatReturn))(any())
 
     }
