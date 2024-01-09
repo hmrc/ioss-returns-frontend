@@ -30,15 +30,21 @@ import scala.util.matching.Regex
 
 final case class Period(year: Int, month: Month) {
   val firstDay: LocalDate = LocalDate.of(year, month, 1)
-  val lastDay: LocalDate = firstDay.plusMonths(3).minusDays(1)
+  val lastDay: LocalDate = firstDay.plusMonths(1).minusDays(1)
   private val firstMonthFormatter = DateTimeFormatter.ofPattern("MMMM")
   private val lastMonthYearFormatter = DateTimeFormatter.ofPattern("MMMM yyyy")
+
+  val paymentDeadline: LocalDate =
+    firstDay.plusMonths(2).minusDays(1)
 
   def displayText: String =
     s"${month.getDisplayName(TextStyle.FULL, Locale.ENGLISH)} ${year}"
 
   def displayShortText(implicit messages: Messages): String =
     s"${firstDay.format(firstMonthFormatter)} ${messages("site.to")} ${lastDay.format(lastMonthYearFormatter)}"
+
+  def zeroPaddedMonth: String =
+    "%02d".format(month.getValue)
 
   override def toString: String = s"$year-M${month.getValue}"
 }

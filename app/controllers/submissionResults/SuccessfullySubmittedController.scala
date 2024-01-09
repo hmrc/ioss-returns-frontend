@@ -20,25 +20,37 @@ import controllers.actions._
 import pages.SoldGoodsPage
 import pages.corrections.CorrectPreviousReturnPage
 import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
+import queries.TotalAmountVatDueGBPQuery
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.Formatters.generateVatReturnReference
 import views.html.submissionResults.SuccessfullySubmittedView
 
 import javax.inject.Inject
+import scala.math.BigDecimal.RoundingMode
 
 class SuccessfullySubmittedController @Inject()(
-                                       override val messagesApi: MessagesApi,
-                                       cc: AuthenticatedControllerComponents,
-                                       view: SuccessfullySubmittedView
-                                     ) extends FrontendBaseController with I18nSupport {
+                                                 override val messagesApi: MessagesApi,
+                                                 cc: AuthenticatedControllerComponents,
+                                                 view: SuccessfullySubmittedView
+                                               ) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
   def onPageLoad: Action[AnyContent] = cc.authAndRequireData() {
     implicit request =>
       val returnReference = generateVatReturnReference(request.iossNumber, request.userAnswers.period)
-      val nilReturn = (!request.userAnswers.get(SoldGoodsPage).get) && (!request.userAnswers.get(CorrectPreviousReturnPage).get)
-      Ok(view(returnReference, nilReturn, request.userAnswers.period))
+      val hasSoldGoods = request.userAnswers.get(SoldGoodsPage)
+        .getOrElse(throw new RuntimeException("SoldGoodsPage has not been set in answers"))
+
+      lazy val correctPreviousReturnsBack = request.userAnswers.get(CorrectPreviousReturnPage)
+        .getOrElse(throw new RuntimeException("CorrectPreviousReturnPage has not been set in answers"))
+
+      val nilReturn = !hasSoldGoods && !correctPreviousReturnsBack
+
+      val totalOwed = request.userAnswers.get(TotalAmountVatDueGBPQuery)
+        .getOrElse(throw new RuntimeException("TotalAmountVatDueGBPQuery has not been set in answers"))
+
+      Ok(view(returnReference, nilReturn = nilReturn, period = request.userAnswers.period, owedAmount = totalOwed.setScale(2, RoundingMode.HALF_EVEN).toString))
   }
 }

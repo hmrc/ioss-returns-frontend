@@ -27,11 +27,9 @@ object Formatters {
   def generateVatReturnReference(iossNumber: String, period: Period): String = {
     val vatReturnPeriodString = {
       val yearValue = period.year
-      period.month.getValue match {
-        case monthValue if monthValue < 10 => s"M0$monthValue.$yearValue"
-        case monthValue => s"M$monthValue.$yearValue"
-      }
+      s"M${period.zeroPaddedMonth}.$yearValue"
     }
+
     s"XI/${iossNumber}/$vatReturnPeriodString"
   }
 

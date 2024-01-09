@@ -14,15 +14,16 @@
  * limitations under the License.
  */
 
-package pages
+package models.etmp
 
-object PageConstants {
+import play.api.libs.json.{Format, Json}
 
-  val sales: String = "sales"
-  val successful: String = "successful"
-  val vatRates: String = "vatRatesFromCountry"
-  val salesAtVatRate: String = "salesAtVatRate"
-  val netValueOfSales: String = "netValueOfSales"
-  val corrections: String = "corrections"
-  val correctionsToCountry: String = "correctionsToCountry"
+case class EtmpVatReturnBalanceOfVatDue(
+                                         msOfConsumption: String,
+                                         totalVATDueGBP: BigDecimal,
+                                         totalVATEUR: BigDecimal
+                                       )
+
+object EtmpVatReturnBalanceOfVatDue {
+  implicit val format: Format[EtmpVatReturnBalanceOfVatDue] = Json.format[EtmpVatReturnBalanceOfVatDue]
 }

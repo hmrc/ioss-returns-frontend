@@ -16,9 +16,16 @@
 
 package config
 
+import models.Period
+
+import java.time.Month
+
 object Constants {
 
     val maxCurrencyAmount: BigDecimal = 1000000000
     val minCurrencyAmount: BigDecimal = -1000000000
+
+    // Hard coded period until we work that bit out
+    val currentPeriod: Period = Period(2023, Month.OCTOBER)
 
 }

@@ -18,7 +18,8 @@ package services
 
 import connectors.VatReturnConnector
 import logging.Logging
-import models.etmp.{EtmpObligationDetails, EtmpObligationsFulfilmentStatus}
+import models.Period
+import models.etmp.{EtmpObligationDetails, EtmpObligationsFulfilmentStatus, EtmpVatReturn}
 import uk.gov.hmrc.http.HeaderCarrier
 
 import javax.inject.Inject
@@ -38,4 +39,5 @@ class ObligationsService @Inject()(vatReturnConnector: VatReturnConnector)
       etmpObligations.obligationDetails.filter(_.status == EtmpObligationsFulfilmentStatus.Fulfilled)
     }
   }
+
 }
