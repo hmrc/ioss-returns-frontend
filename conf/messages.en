@@ -279,7 +279,7 @@ removeCountryCorrection.error.required = Select yes if you want to remove this c
 successfullySubmitted.title = Return submitted
 successfullySubmitted.heading = Your return reference is <strong>{0}</strong>
 successfullySubmitted.noVatOwed = You do not owe any VAT for {0}.
-successfullySubmitted.payVatOwed = Pay VAT owed.
+successfullySubmitted.payVatOwed = Pay VAT owed
 successfullySubmitted.payPeriodAmount = For <span id="dateRange">{0}</span>, you owe <span class="govuk-!-font-weight-bold">£{1}</span>.
 successfullySubmitted.howToPay = You can pay by corporate card or bank transfer.
 successfullySubmitted.payNow =  Pay now
