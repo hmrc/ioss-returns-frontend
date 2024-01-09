@@ -30,28 +30,27 @@ import javax.inject.Inject
 import scala.math.BigDecimal.RoundingMode
 
 class SuccessfullySubmittedController @Inject()(
-                                       override val messagesApi: MessagesApi,
-                                       cc: AuthenticatedControllerComponents,
-                                       view: SuccessfullySubmittedView
-                                     ) extends FrontendBaseController with I18nSupport {
+                                                 override val messagesApi: MessagesApi,
+                                                 cc: AuthenticatedControllerComponents,
+                                                 view: SuccessfullySubmittedView
+                                               ) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
   def onPageLoad: Action[AnyContent] = cc.authAndRequireData() {
     implicit request =>
       val returnReference = generateVatReturnReference(request.iossNumber, request.userAnswers.period)
+      val hasSoldGoods = request.userAnswers.get(SoldGoodsPage)
+        .getOrElse(throw new RuntimeException("SoldGoodsPage has not been set in answers"))
 
-     {for {
-       hasSoldGoods <- request.userAnswers.get(SoldGoodsPage)
-       correctPreviousReturnsBack <- request.userAnswers.get(CorrectPreviousReturnPage)
-       totalOwed <- request.userAnswers.get(TotalAmountVatDueGBPQuery)
-       nilReturn = !hasSoldGoods && !correctPreviousReturnsBack
-      } yield (
-        Ok(view(returnReference, nilReturn, request.userAnswers.period, totalOwed.setScale(2, RoundingMode.HALF_EVEN).toString))
-      )}.getOrElse{
-       //throw new RuntimeException("SoldGoodsPage or CorrectPreviousReturnPage have not been set")
+      val correctPreviousReturnsBack = request.userAnswers.get(CorrectPreviousReturnPage)
+        .getOrElse(throw new RuntimeException("CorrectPreviousReturnPage has not been set in answers"))
 
-       Ok(view(returnReference, false, request.userAnswers.period, "ddsddddd"))
-     }
+      val totalOwed = request.userAnswers.get(TotalAmountVatDueGBPQuery)
+        .getOrElse(throw new RuntimeException("TotalAmountVatDueGBPQuery has not been set in answers"))
+
+      val nilReturn = !hasSoldGoods && !correctPreviousReturnsBack
+
+      Ok(view(returnReference, nilReturn, request.userAnswers.period, totalOwed.setScale(2, RoundingMode.HALF_EVEN).toString))
   }
 }
