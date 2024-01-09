@@ -40,16 +40,16 @@ class SuccessfullySubmittedController @Inject()(
   def onPageLoad: Action[AnyContent] = cc.authAndRequireData() {
     implicit request =>
       val returnReference = generateVatReturnReference(request.iossNumber, request.userAnswers.period)
-      val hasSoldGoods = request.userAnswers.get(SoldGoodsPage)
+      lazy val hasSoldGoods = request.userAnswers.get(SoldGoodsPage)
         .getOrElse(throw new RuntimeException("SoldGoodsPage has not been set in answers"))
 
-      val correctPreviousReturnsBack = request.userAnswers.get(CorrectPreviousReturnPage)
+      lazy  val correctPreviousReturnsBack = request.userAnswers.get(CorrectPreviousReturnPage)
         .getOrElse(throw new RuntimeException("CorrectPreviousReturnPage has not been set in answers"))
+
+      val nilReturn = !hasSoldGoods && !correctPreviousReturnsBack
 
       val totalOwed = request.userAnswers.get(TotalAmountVatDueGBPQuery)
         .getOrElse(throw new RuntimeException("TotalAmountVatDueGBPQuery has not been set in answers"))
-
-      val nilReturn = !hasSoldGoods && !correctPreviousReturnsBack
 
       Ok(view(returnReference, nilReturn, request.userAnswers.period, totalOwed.setScale(2, RoundingMode.HALF_EVEN).toString))
   }

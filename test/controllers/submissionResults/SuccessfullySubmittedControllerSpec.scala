@@ -19,7 +19,10 @@ package controllers.submissionResults
 import base.SpecBase
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import queries.TotalAmountVatDueGBPQuery
 import views.html.submissionResults.SuccessfullySubmittedView
+
+import scala.math.BigDecimal.RoundingMode
 
 class SuccessfullySubmittedControllerSpec extends SpecBase {
 
@@ -27,7 +30,9 @@ class SuccessfullySubmittedControllerSpec extends SpecBase {
 
     "must return OK and the correct view for a GET" in {
 
-      val application = applicationBuilder(userAnswers = Some(completeUserAnswers)).build()
+      val totalOwed = BigDecimal("200.52")
+      val answersWithOwedVat = completeUserAnswers.set(TotalAmountVatDueGBPQuery, totalOwed).success.value
+      val application = applicationBuilder(userAnswers = Some(answersWithOwedVat)).build()
 
       val returnReference = s"XI/${iossNumber}/M0${period.month.getValue}.${period.year}"
 
@@ -39,7 +44,8 @@ class SuccessfullySubmittedControllerSpec extends SpecBase {
         val view = application.injector.instanceOf[SuccessfullySubmittedView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(returnReference, nilReturn = false, period, "")(request, messages(application)).toString
+        val formattedTotalOwed = totalOwed.setScale(2, RoundingMode.HALF_EVEN).toString
+        contentAsString(result) mustEqual view(returnReference, nilReturn = false, period, formattedTotalOwed)(request, messages(application)).toString
       }
     }
   }
