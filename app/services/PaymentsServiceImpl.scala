@@ -23,12 +23,16 @@ import uk.gov.hmrc.http.HeaderCarrier
 import java.time.{LocalDate, Month}
 import scala.concurrent.{ExecutionContext, Future}
 
-class PaymentsService { //Todo: To be replaced by the PaymentService of VEIOSS-435
-  def getUnpaidPayments(iossNumber: String)(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[List[Payment]] =
+class PaymentsServiceImpl extends PaymentsService { //Todo: To be replaced by the PaymentService of VEIOSS-435
+  override def getUnpaidPayments(iossNumber: String)(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[List[Payment]] =
     Future.successful(
       List[Payment](
         Payment(Period.apply(2022, Month.MAY), 234, LocalDate.now().minusYears(1), PaymentStatus.Partial),
         Payment(Period.apply(2023, Month.DECEMBER), 234, LocalDate.now().plusMonths(1), PaymentStatus.Partial)
       )
     )
+}
+
+trait PaymentsService {
+  def getUnpaidPayments(iossNumber: String)(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[List[Payment]]
 }

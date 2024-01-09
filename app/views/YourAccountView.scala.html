@@ -26,7 +26,9 @@
   businessName: String,
   iossNumber: String,
   paymentsViewModel: PaymentsViewModel,
-  changeYourRegistrationUrl: String
+  changeYourRegistrationUrl: String,
+  leaveThisServiceUrl: Option[String],
+  cancelYourRequestToLeaveUrl: Option[String]
 )(implicit request: Request[_], messages: Messages)
 
 @layout(
@@ -83,11 +85,26 @@
         <h2 class="govuk-heading-m">@messages("yourAccount.details.heading")</h2>
 
         <p class="govuk-body">
-          <a class="govuk-link" href="@changeYourRegistrationUrl"
-          id="change-your-registration">
+          <a class="govuk-link" href="@changeYourRegistrationUrl" id="change-your-registration">
             @messages("yourAccount.details.changeYourRegistration")
           </a>
         </p>
+
+        @leaveThisServiceUrl.map { url =>
+          <p class="govuk-body">
+            <a class="govuk-link" href="@url" id="leave-scheme">
+              @messages("yourAccount.details.leaveThisService")
+            </a>
+          </p>
+        }
+
+        @cancelYourRequestToLeaveUrl.map { url =>
+          <p class="govuk-body">
+            <a class="govuk-link" href="@url" id="cancel-your-request-to-leave">
+              @messages("yourAccount.details.cancelYourRequestToLeave")
+            </a>
+          </p>
+        }
       </div>
     </div>
   </div>
