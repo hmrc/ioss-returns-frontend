@@ -27,6 +27,7 @@ import utils.Formatters.generateVatReturnReference
 import views.html.submissionResults.SuccessfullySubmittedView
 
 import javax.inject.Inject
+import scala.math.BigDecimal.RoundingMode
 
 class SuccessfullySubmittedController @Inject()(
                                        override val messagesApi: MessagesApi,
@@ -46,7 +47,7 @@ class SuccessfullySubmittedController @Inject()(
        totalOwed <- request.userAnswers.get(TotalAmountVatDueGBPQuery)
        nilReturn = !hasSoldGoods && !correctPreviousReturnsBack
       } yield (
-        Ok(view(returnReference, nilReturn, request.userAnswers.period, totalOwed.toString))
+        Ok(view(returnReference, nilReturn, request.userAnswers.period, totalOwed.setScale(2, RoundingMode.HALF_EVEN).toString))
       )}.getOrElse{
        //throw new RuntimeException("SoldGoodsPage or CorrectPreviousReturnPage have not been set")
 
