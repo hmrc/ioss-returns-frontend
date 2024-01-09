@@ -59,7 +59,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
       }
     }
 
-    "must return OK with no cancelYourRequestToLeave link when a trader is not excluded" in {
+    "must return OK with leaveThisService link and without cancelYourRequestToLeave link when a trader is not excluded" in {
       val registrationWrapper: RegistrationWrapper = arbitrary[RegistrationWrapper].sample.value
 
       val registrationWrapperEmptyExclusions: RegistrationWrapper =
@@ -94,12 +94,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           iossNumber,
           paymentsViewModel,
           appConfig.amendRegistrationUrl,
+          Some(appConfig.leaveThisServiceUrl),
           None
         )(request, messages(application)).toString
       }
     }
 
-    "must return OK with cancelYourRequestToLeave link when a trader is excluded" in {
+    "must return OK with cancelYourRequestToLeave link and without leaveThisService link when a trader is excluded" in {
       val registrationWrapper: RegistrationWrapper = arbitrary[RegistrationWrapper].sample.value
 
       val exclusion = EtmpExclusion(
@@ -137,6 +138,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           iossNumber,
           paymentsViewModel,
           appConfig.amendRegistrationUrl,
+          None,
           Some(appConfig.cancelYourRequestToLeaveUrl)
         )(request, messages(application)).toString
       }

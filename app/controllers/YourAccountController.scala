@@ -19,7 +19,8 @@ package controllers
 import config.FrontendAppConfig
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
-import models.etmp.EtmpExclusionReason.{NoLongerSupplies, TransferringMSID, VoluntarilyLeaves}
+import models.etmp.EtmpExclusion
+import models.etmp.EtmpExclusionReason.{NoLongerSupplies, Reversal, TransferringMSID, VoluntarilyLeaves}
 import models.payments.Payment
 import pages.Waypoints
 import play.api.i18n.I18nSupport
@@ -47,10 +48,19 @@ class YourAccountController @Inject()(
 
   def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request =>
-      val cancelYourRequestToLeaveUrl = request.registrationWrapper.registration.exclusions.sortBy(_.effectiveDate).lastOption match {
+
+      val lastExclusion: Option[EtmpExclusion] = request.registrationWrapper.registration.exclusions.maxByOption(_.effectiveDate)
+
+      val cancelYourRequestToLeaveUrl = lastExclusion match {
         case Some(exclusion) if Seq(NoLongerSupplies, VoluntarilyLeaves, TransferringMSID).contains(exclusion.exclusionReason) &&
           LocalDate.now(clock).isBefore(exclusion.effectiveDate) => Some(appConfig.cancelYourRequestToLeaveUrl)
         case _ => None
+      }
+
+      val leaveThisServiceUrl = if (lastExclusion.isEmpty || lastExclusion.exists(_.exclusionReason == Reversal)) {
+        Some(appConfig.leaveThisServiceUrl)
+      } else {
+        None
       }
 
       paymentsService.getUnpaidPayments(request.iossNumber).map(payments => {
@@ -60,6 +70,7 @@ class YourAccountController @Inject()(
           request.iossNumber,
           paymentsViewModel,
           appConfig.amendRegistrationUrl,
+          leaveThisServiceUrl,
           cancelYourRequestToLeaveUrl
         ))
       })

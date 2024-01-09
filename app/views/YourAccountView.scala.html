@@ -27,6 +27,7 @@
   iossNumber: String,
   paymentsViewModel: PaymentsViewModel,
   changeYourRegistrationUrl: String,
+  leaveThisServiceUrl: Option[String],
   cancelYourRequestToLeaveUrl: Option[String]
 )(implicit request: Request[_], messages: Messages)
 
@@ -88,6 +89,14 @@
             @messages("yourAccount.details.changeYourRegistration")
           </a>
         </p>
+
+        @leaveThisServiceUrl.map { url =>
+          <p class="govuk-body">
+            <a class="govuk-link" href="@url" id="leave-scheme">
+              @messages("yourAccount.details.leaveThisService")
+            </a>
+          </p>
+        }
 
         @cancelYourRequestToLeaveUrl.map { url =>
           <p class="govuk-body">
