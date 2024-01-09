@@ -22,7 +22,7 @@ import play.api.libs.json.JsPath
 import play.api.mvc.Call
 import queries.corrections.DeriveCompletedCorrectionPeriods
 
-case object CorrectPreviousReturnPage extends QuestionPage[Boolean] {
+case class CorrectPreviousReturnPage(etmpObligationDetails: Int) extends QuestionPage[Boolean] {
 
   override def path: JsPath = JsPath \ toString
 
@@ -34,9 +34,9 @@ case object CorrectPreviousReturnPage extends QuestionPage[Boolean] {
 
     val correctedPeriods: Int = answers.get(DeriveCompletedCorrectionPeriods).map(_.size).getOrElse(0)
 
-    answers.get(CorrectPreviousReturnPage) match {
+    answers.get(CorrectPreviousReturnPage(etmpObligationDetails)) match {
       case Some(true) if correctedPeriods > 0 => CheckYourAnswersPage
-      case Some(true) => if (correctedPeriods > 1) {
+      case Some(true) => if (etmpObligationDetails > 1) {
         CorrectionReturnYearPage(Index(0))
       } else {
         CorrectionReturnSinglePeriodPage(Index(0))

@@ -33,6 +33,6 @@ case object SoldGoodsPage extends QuestionPage[Boolean] {
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
     answers.get(this).map {
       case true => SoldToCountryPage(Index(0)) // TODO should it always be Index(0)?
-      case false => CorrectPreviousReturnPage
+      case false => CorrectPreviousReturnPage(0)
     }.orRecover
 }

@@ -95,7 +95,7 @@ class CheckYourAnswersController @Inject()(
                                   salesFromEuSummaryList: SummaryList,
                                   waypoints: Waypoints
                                 )(implicit messages: Messages) =
-    if (request.userAnswers.get(CorrectPreviousReturnPage).isDefined) {
+    if (request.userAnswers.get(CorrectPreviousReturnPage(0)).isDefined) {
       val correctionsSummaryList = SummaryListViewModel(
         rows = Seq(
           CorrectPreviousReturnSummary.row(request.userAnswers, waypoints),

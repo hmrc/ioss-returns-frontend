@@ -47,7 +47,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
       "when correct previous return is false / empty" - {
         "must return OK and the correct view for a GET" in {
 
-          val application = applicationBuilder(userAnswers = Some(completeUserAnswers.set(CorrectPreviousReturnPage, false).success.value))
+          val application = applicationBuilder(userAnswers = Some(completeUserAnswers.set(CorrectPreviousReturnPage(0), false).success.value))
             .build()
 
           running(application) {
@@ -71,7 +71,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
         "must return OK and the correct view for a GET when the correction choice was NO " in {
 
-          val application = applicationBuilder(userAnswers = Some(completeUserAnswers.set(CorrectPreviousReturnPage, false).success.value))
+          val application = applicationBuilder(userAnswers = Some(completeUserAnswers.set(CorrectPreviousReturnPage(0), false).success.value))
             .build()
 
           running(application) {
@@ -100,7 +100,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
         "must contain VAT declared to EU countries after corrections heading if there were corrections and all totals are positive" in {
 
-          val application = applicationBuilder(userAnswers = Some(completeUserAnswers.set(CorrectPreviousReturnPage, true).success.value))
+          val application = applicationBuilder(userAnswers = Some(completeUserAnswers.set(CorrectPreviousReturnPage(0), true).success.value))
             .build()
 
           running(application) {
@@ -124,7 +124,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
         "must contain VAT declared where no payment is due heading if there were negative totals after corrections" in {
 
-          val application = applicationBuilder(userAnswers = Some(completeUserAnswers.set(CorrectPreviousReturnPage, true).success.value))
+          val application = applicationBuilder(userAnswers = Some(completeUserAnswers.set(CorrectPreviousReturnPage(0), true).success.value))
             .build()
 
           running(application) {

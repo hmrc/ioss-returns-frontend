@@ -57,7 +57,7 @@ class EligibleSalesJourneySpec extends AnyFreeSpec with JourneyHelpers with Spec
     startingFrom(SoldGoodsPage, answers = initialAnswers)
       .run(
         submitAnswer(SoldGoodsPage, false),
-        pageMustBe(CorrectPreviousReturnPage)
+        pageMustBe(CorrectPreviousReturnPage(0))
       )
   }
 
@@ -83,7 +83,7 @@ class EligibleSalesJourneySpec extends AnyFreeSpec with JourneyHelpers with Spec
       .run(
         submitAnswer(SoldGoodsPage, true) +:
           generateSales :+
-          pageMustBe(CorrectPreviousReturnPage): _*
+          pageMustBe(CorrectPreviousReturnPage(0)): _*
       )
   }
 

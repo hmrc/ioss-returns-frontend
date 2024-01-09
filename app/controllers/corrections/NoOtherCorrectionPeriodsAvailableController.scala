@@ -51,7 +51,7 @@ class NoOtherCorrectionPeriodsAvailableController @Inject()(
 
       if(completedCorrectionPeriods.isEmpty) {
         val cleanup = for {
-          updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectPreviousReturnPage, false))
+          updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectPreviousReturnPage(0), false))
           _              <- cc.sessionRepository.set(updatedAnswers)
         } yield Redirect(controllers.routes.CheckYourAnswersController.onPageLoad())
 
