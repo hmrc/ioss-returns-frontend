@@ -60,7 +60,7 @@ class CorrectionReturnPeriodController @Inject()(
 
         val form: Form[String] = formProvider(index, correctionMonths)
 
-        val preparedForm = request.userAnswers.get(CorrectionReturnPeriodPage(index)) match {
+        val preparedForm = request.userAnswers.get(CorrectionReturnPeriodPage[String](index)) match {
           case None => form
           case Some(value) => form.fill(value)
         }
