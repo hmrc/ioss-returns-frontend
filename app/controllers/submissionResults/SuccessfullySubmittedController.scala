@@ -43,7 +43,7 @@ class SuccessfullySubmittedController @Inject()(
       val hasSoldGoods = request.userAnswers.get(SoldGoodsPage)
         .getOrElse(throw new RuntimeException("SoldGoodsPage has not been set in answers"))
 
-      lazy  val correctPreviousReturnsBack = request.userAnswers.get(CorrectPreviousReturnPage)
+      lazy val correctPreviousReturnsBack = request.userAnswers.get(CorrectPreviousReturnPage)
         .getOrElse(throw new RuntimeException("CorrectPreviousReturnPage has not been set in answers"))
 
       val nilReturn = !hasSoldGoods && !correctPreviousReturnsBack
