@@ -47,7 +47,6 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
           .set(SoldGoodsPage, soldGoodsPage).success.value
           .set(CorrectPreviousReturnPage, correctPreviousReturnPage).success.value
 
-
         val application = applicationBuilder(userAnswers = Some(answersWithOwedVat)).build()
 
         val returnReference = s"XI/${iossNumber}/M0${period.month.getValue}.${period.year}"
