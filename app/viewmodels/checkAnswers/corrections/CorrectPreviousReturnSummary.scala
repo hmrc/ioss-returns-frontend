@@ -27,7 +27,7 @@ import viewmodels.implicits._
 object CorrectPreviousReturnSummary  {
 
   def row(answers: UserAnswers, waypoints: Waypoints)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(CorrectPreviousReturnPage).map {
+    answers.get(CorrectPreviousReturnPage(0)).map {
       answer =>
 
         val value = if (answer) "site.yes" else "site.no"

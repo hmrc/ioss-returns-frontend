@@ -47,6 +47,8 @@ class CorrectionReturnYearControllerSpec extends SpecBase with MockitoSugar with
     s"20${periodYear.substring(0, 2)}".toInt
   }
 
+  private val distinctPeriodYears = periodYears.distinct
+
   private val obligationService: ObligationsService = mock[ObligationsService]
 
   private val etmpObligationDetails: Seq[EtmpObligationDetails] = Seq(
@@ -94,7 +96,7 @@ class CorrectionReturnYearControllerSpec extends SpecBase with MockitoSugar with
         status(result) mustEqual OK
 
         contentAsString(result) mustEqual view(
-            form, waypoints, period, utils.ItemsHelper.radioButtonItems(periodYears), index)(request, messages(application)).toString
+            form, waypoints, period, utils.ItemsHelper.radioButtonItems(distinctPeriodYears), index)(request, messages(application)).toString
       }
     }
 
@@ -117,7 +119,7 @@ class CorrectionReturnYearControllerSpec extends SpecBase with MockitoSugar with
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(
-          form, waypoints, period, utils.ItemsHelper.radioButtonItems(periodYears), index)(request, messages(application)).toString
+          form, waypoints, period, utils.ItemsHelper.radioButtonItems(distinctPeriodYears), index)(request, messages(application)).toString
       }
     }
 

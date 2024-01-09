@@ -75,7 +75,7 @@ trait SpecBase
     .set(VatOnSalesPage(index, index), VatOnSales(VatOnSalesChoice.Standard, BigDecimal(20))).success.value
 
   val completedUserAnswersWithCorrections: UserAnswers = completeUserAnswers
-    .set(CorrectPreviousReturnPage, true).success.value
+    .set(CorrectPreviousReturnPage(0), true).success.value
     .set(CorrectionReturnYearPage(index), 2023).success.value
 
   def messages(app: Application): Messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())

@@ -19,6 +19,7 @@ package controllers.corrections
 import base.SpecBase
 import controllers.routes
 import forms.corrections.CorrectPreviousReturnFormProvider
+import models.etmp.{EtmpObligationDetails, EtmpObligationsFulfilmentStatus}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito.{times, verify, when}
@@ -29,11 +30,37 @@ import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
+import services.ObligationsService
+import utils.FutureSyntax.FutureOps
 import views.html.corrections.CorrectPreviousReturnView
 
 import scala.concurrent.Future
 
 class CorrectPreviousReturnControllerSpec extends SpecBase with MockitoSugar {
+
+  private val obligationService: ObligationsService = mock[ObligationsService]
+
+  private val singleEtmpObligationDetails: Seq[EtmpObligationDetails] = Seq(
+    EtmpObligationDetails(
+      status = EtmpObligationsFulfilmentStatus.Open,
+      periodKey = "23AL"
+    )
+  )
+
+  private val etmpObligationDetails: Seq[EtmpObligationDetails] = Seq(
+    EtmpObligationDetails(
+      status = EtmpObligationsFulfilmentStatus.Open,
+      periodKey = "23AL"
+    ),
+    EtmpObligationDetails(
+      status = EtmpObligationsFulfilmentStatus.Open,
+      periodKey = "23AK"
+    ),
+    EtmpObligationDetails(
+      status = EtmpObligationsFulfilmentStatus.Open,
+      periodKey = "22AK"
+    )
+  )
 
   val formProvider = new CorrectPreviousReturnFormProvider()
   val form: Form[Boolean] = formProvider()
@@ -44,7 +71,11 @@ class CorrectPreviousReturnControllerSpec extends SpecBase with MockitoSugar {
 
     "must return OK and the correct view for a GET" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      when(obligationService.getOpenObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(bind[ObligationsService].toInstance(obligationService))
+        .build()
 
       running(application) {
         val request = FakeRequest(GET, correctPreviousReturnRoute)
@@ -60,9 +91,13 @@ class CorrectPreviousReturnControllerSpec extends SpecBase with MockitoSugar {
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = emptyUserAnswers.set(CorrectPreviousReturnPage, true).success.value
+      when(obligationService.getOpenObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
 
-      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+      val userAnswers = emptyUserAnswers.set(CorrectPreviousReturnPage(0), true).success.value
+
+      val application = applicationBuilder(userAnswers = Some(userAnswers))
+        .overrides(bind[ObligationsService].toInstance(obligationService))
+        .build()
 
       running(application) {
         val request = FakeRequest(GET, correctPreviousReturnRoute)
@@ -76,7 +111,9 @@ class CorrectPreviousReturnControllerSpec extends SpecBase with MockitoSugar {
       }
     }
 
-    "must redirect to the next page when valid data is submitted" in {
+    "must redirect to the multiple period page when valid data is submitted" in {
+
+      when(obligationService.getOpenObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
 
       val mockSessionRepository = mock[SessionRepository]
 
@@ -84,9 +121,8 @@ class CorrectPreviousReturnControllerSpec extends SpecBase with MockitoSugar {
 
       val application =
         applicationBuilder(userAnswers = Some(emptyUserAnswers))
-          .overrides(
-            bind[SessionRepository].toInstance(mockSessionRepository)
-          )
+          .overrides(bind[ObligationsService].toInstance(obligationService))
+          .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
           .build()
 
       running(application) {
@@ -95,17 +131,49 @@ class CorrectPreviousReturnControllerSpec extends SpecBase with MockitoSugar {
             .withFormUrlEncodedBody(("value", "true"))
 
         val result = route(application, request).value
-        val expectedAnswers = emptyUserAnswers.set(CorrectPreviousReturnPage, true).success.value
+        val expectedAnswers = emptyUserAnswers.set(CorrectPreviousReturnPage(0), true).success.value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual CorrectPreviousReturnPage.navigate(waypoints, emptyUserAnswers, expectedAnswers).url
+        redirectLocation(result).value mustEqual CorrectPreviousReturnPage(3).navigate(waypoints, emptyUserAnswers, expectedAnswers).url
+        verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
+      }
+    }
+
+    "must redirect to the single period page when valid data is submitted" in {
+
+      when(obligationService.getOpenObligations(any())(any())) thenReturn singleEtmpObligationDetails.toFuture
+
+      val mockSessionRepository = mock[SessionRepository]
+
+      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+
+      val application =
+        applicationBuilder(userAnswers = Some(emptyUserAnswers))
+          .overrides(bind[ObligationsService].toInstance(obligationService))
+          .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
+          .build()
+
+      running(application) {
+        val request =
+          FakeRequest(POST, correctPreviousReturnRoute)
+            .withFormUrlEncodedBody(("value", "true"))
+
+        val result = route(application, request).value
+        val expectedAnswers = emptyUserAnswers.set(CorrectPreviousReturnPage(0), true).success.value
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual CorrectPreviousReturnPage(0).navigate(waypoints, emptyUserAnswers, expectedAnswers).url
         verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
       }
     }
 
     "must return a Bad Request and errors when invalid data is submitted" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      when(obligationService.getOpenObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(bind[ObligationsService].toInstance(obligationService))
+        .build()
 
       running(application) {
         val request =
