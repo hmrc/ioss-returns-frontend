@@ -87,7 +87,6 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
             contentAsString(result).contains("Sales made") mustBe true
             contentAsString(result).contains("Sales excluding VAT") mustBe true
             contentAsString(result).contains("Corrections") mustBe true
-            //          contentAsString(result).contains("Corrections made") mustBe true
             contentAsString(result).contains("VAT owed") mustBe true
             contentAsString(result).contains("Total VAT payable") mustBe true
           }
@@ -116,7 +115,6 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
             contentAsString(result).contains("Sales made") mustBe true
             contentAsString(result).contains("Sales excluding VAT") mustBe true
             contentAsString(result).contains("Corrections") mustBe true
-            //          contentAsString(result).contains("Corrections made") mustBe true
             contentAsString(result).contains("VAT owed") mustBe true
             contentAsString(result).contains("Total VAT payable") mustBe true
           }
@@ -140,7 +138,6 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
             contentAsString(result).contains("Sales made") mustBe true
             contentAsString(result).contains("Sales excluding VAT") mustBe true
             contentAsString(result).contains("Corrections") mustBe true
-            //          contentAsString(result).contains("Corrections made") mustBe true
             contentAsString(result).contains("VAT owed") mustBe true
             contentAsString(result).contains("Total VAT payable") mustBe true
           }

@@ -33,7 +33,7 @@ object SoldGoodsSummary  {
 
         SummaryListRowViewModel(
           key     = "soldGoods.checkYourAnswersLabel",
-          value   = ValueViewModel(value).withCssClass("govuk-table__cell--numeric"),
+          value   = ValueViewModel(value).withCssClass("govuk-table__cell--numeric").withCssClass("govuk-!-padding-right-9"),
           actions = Seq(
             ActionItemViewModel("site.change", SoldGoodsPage.changeLink(waypoints, sourcePage).url)
               .withVisuallyHiddenText(messages("soldGoods.change.hidden"))

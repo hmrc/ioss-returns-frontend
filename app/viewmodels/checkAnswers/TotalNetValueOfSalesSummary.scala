@@ -33,7 +33,7 @@ object TotalNetValueOfSalesSummary extends CurrencyFormatter {
       totalNetValueOfSalesOption =>
         SummaryListRowViewModel(
           key = "checkYourAnswers.label.netValueOfSales",
-          value = ValueViewModel(HtmlContent(currencyFormat(totalNetValueOfSalesOption))).withCssClass("govuk-table__cell--numeric"),
+          value = ValueViewModel(HtmlContent(currencyFormatWithAccuracy(totalNetValueOfSalesOption))).withCssClass("govuk-table__cell--numeric").withCssClass("govuk-!-padding-right-9"),
           actions = Seq(
             ActionItemViewModel("site.change", routes.SoldToCountryListController.onPageLoad(waypoints).url)
               .withVisuallyHiddenText(messages("soldGoodsFromEu.changeEUSales.hidden"))
