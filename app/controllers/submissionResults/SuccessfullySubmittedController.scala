@@ -51,6 +51,6 @@ class SuccessfullySubmittedController @Inject()(
       val totalOwed = request.userAnswers.get(TotalAmountVatDueGBPQuery)
         .getOrElse(throw new RuntimeException("TotalAmountVatDueGBPQuery has not been set in answers"))
 
-      Ok(view(returnReference, nilReturn, request.userAnswers.period, totalOwed.setScale(2, RoundingMode.HALF_EVEN).toString))
+      Ok(view(returnReference, nilReturn = nilReturn, period = request.userAnswers.period, owedAmount = totalOwed.setScale(2, RoundingMode.HALF_EVEN).toString))
   }
 }

@@ -17,6 +17,9 @@
 package controllers.submissionResults
 
 import base.SpecBase
+import org.scalatest.prop.TableDrivenPropertyChecks
+import pages.SoldGoodsPage
+import pages.corrections.CorrectPreviousReturnPage
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import queries.TotalAmountVatDueGBPQuery
@@ -24,28 +27,43 @@ import views.html.submissionResults.SuccessfullySubmittedView
 
 import scala.math.BigDecimal.RoundingMode
 
-class SuccessfullySubmittedControllerSpec extends SpecBase {
+class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPropertyChecks {
 
   "SuccessfullySubmitted Controller" - {
 
     "must return OK and the correct view for a GET" in {
+      val options = Table(
+        ("SoldGoodsPage", "CorrectPreviousReturnPage", "nilReturn"),
+        (false, false, true),
+        (true, false, false),
+        (false, true, false),
+        (true, true, false)
+      )
 
-      val totalOwed = BigDecimal("200.52")
-      val answersWithOwedVat = completeUserAnswers.set(TotalAmountVatDueGBPQuery, totalOwed).success.value
-      val application = applicationBuilder(userAnswers = Some(answersWithOwedVat)).build()
+      forAll(options) { (soldGoodsPage, correctPreviousReturnPage, nilReturn) =>
+        val totalOwed = BigDecimal("200.52")
+        val answersWithOwedVat = completeUserAnswers
+          .set(TotalAmountVatDueGBPQuery, totalOwed).success.value
+          .set(SoldGoodsPage, soldGoodsPage).success.value
+          .set(CorrectPreviousReturnPage, correctPreviousReturnPage).success.value
 
-      val returnReference = s"XI/${iossNumber}/M0${period.month.getValue}.${period.year}"
 
-      running(application) {
-        val request = FakeRequest(GET, routes.SuccessfullySubmittedController.onPageLoad().url)
+        val application = applicationBuilder(userAnswers = Some(answersWithOwedVat)).build()
 
-        val result = route(application, request).value
+        val returnReference = s"XI/${iossNumber}/M0${period.month.getValue}.${period.year}"
 
-        val view = application.injector.instanceOf[SuccessfullySubmittedView]
+        running(application) {
+          val request = FakeRequest(GET, routes.SuccessfullySubmittedController.onPageLoad().url)
 
-        status(result) mustEqual OK
-        val formattedTotalOwed = totalOwed.setScale(2, RoundingMode.HALF_EVEN).toString
-        contentAsString(result) mustEqual view(returnReference, nilReturn = false, period, formattedTotalOwed)(request, messages(application)).toString
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[SuccessfullySubmittedView]
+
+          status(result) mustEqual OK
+          val formattedTotalOwed = totalOwed.setScale(2, RoundingMode.HALF_EVEN).toString
+          contentAsString(result) mustEqual view(returnReference, nilReturn = nilReturn, period, formattedTotalOwed)(request, messages(application)).toString
+        }
+
       }
     }
   }
