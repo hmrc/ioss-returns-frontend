@@ -80,7 +80,7 @@ object ItemsHelper {
         RadioItem(
           content = Text(years.toString),
           value   = Some(years.toString),
-          id      = Some(s"value_$years")
+          id      = Some(s"value")
         )
     }
 
@@ -90,7 +90,7 @@ object ItemsHelper {
         RadioItem(
           content = Text(months),
           value   = Some(months),
-          id      = Some(s"value_$months")
+          id      = Some(s"value")
         )
     }
 }
