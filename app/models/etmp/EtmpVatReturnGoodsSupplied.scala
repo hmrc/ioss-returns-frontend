@@ -19,7 +19,7 @@ package models.etmp
 import play.api.libs.json.{Json, OFormat}
 
 case class EtmpVatReturnGoodsSupplied(
-                                       msOfConsumption: String,
+                                       msOfConsumption: String, // TODO country?
                                        vatRateType: EtmpVatRateType,
                                        taxableAmountGBP: BigDecimal,
                                        vatAmountGBP: BigDecimal
