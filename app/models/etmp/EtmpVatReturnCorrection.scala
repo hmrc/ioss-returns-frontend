@@ -16,15 +16,18 @@
 
 package models.etmp
 
-import play.api.libs.json.{Format, Json}
+import play.api.libs.json.{Json, OFormat}
 
 case class EtmpVatReturnCorrection(
                                     periodKey: String,
                                     periodFrom: String,
                                     periodTo: String,
-                                    msOfConsumption: String
+                                    msOfConsumption: String,
+                                    totalVATAmountCorrectionGBP: BigDecimal,
+                                    totalVATAmountCorrectionEUR: BigDecimal
                                   )
 
 object EtmpVatReturnCorrection {
-  implicit val format: Format[EtmpVatReturnCorrection] = Json.format[EtmpVatReturnCorrection]
+
+  implicit val format: OFormat[EtmpVatReturnCorrection] = Json.format[EtmpVatReturnCorrection]
 }

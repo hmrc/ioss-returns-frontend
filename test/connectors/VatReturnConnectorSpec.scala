@@ -24,6 +24,7 @@ import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.Application
 import play.api.libs.json.Json
 import play.api.test.Helpers.running
+import testUtils.EtmpVatReturnData.etmpVatReturn
 import uk.gov.hmrc.http.HeaderCarrier
 
 class VatReturnConnectorSpec extends SpecBase
@@ -66,6 +67,33 @@ class VatReturnConnectorSpec extends SpecBase
           val result = connector.getObligations(iossNumber).futureValue
 
           result mustBe etmpObligations
+        }
+      }
+    }
+
+    ".get" - {
+
+      val getReturnUrl: String = s"/ioss-returns/return/$period"
+
+      "must return OK with a payload of ETMP VAT Return" in {
+
+        val app = application
+
+        running(app) {
+          val connector = app.injector.instanceOf[VatReturnConnector]
+
+          val responseBody = Json.toJson(etmpVatReturn).toString()
+
+          server.stubFor(
+            get(urlEqualTo(getReturnUrl))
+              .willReturn(ok()
+                .withBody(responseBody)
+              )
+          )
+
+          val result = connector.get(period).futureValue
+
+          result mustBe etmpVatReturn
         }
       }
     }

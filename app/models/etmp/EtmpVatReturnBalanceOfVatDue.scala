@@ -16,7 +16,7 @@
 
 package models.etmp
 
-import play.api.libs.json.{Format, Json}
+import play.api.libs.json.{Json, OFormat}
 
 case class EtmpVatReturnBalanceOfVatDue(
                                          msOfConsumption: String,
@@ -25,5 +25,6 @@ case class EtmpVatReturnBalanceOfVatDue(
                                        )
 
 object EtmpVatReturnBalanceOfVatDue {
-  implicit val format: Format[EtmpVatReturnBalanceOfVatDue] = Json.format[EtmpVatReturnBalanceOfVatDue]
+
+  implicit val format: OFormat[EtmpVatReturnBalanceOfVatDue] = Json.format[EtmpVatReturnBalanceOfVatDue]
 }

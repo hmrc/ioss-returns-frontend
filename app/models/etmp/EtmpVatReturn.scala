@@ -16,7 +16,7 @@
 
 package models.etmp
 
-import play.api.libs.json.{Format, Json}
+import play.api.libs.json.{Json, OFormat}
 
 import java.time.LocalDate
 
@@ -32,10 +32,11 @@ case class EtmpVatReturn(
                           correctionPreviousVATReturn: Seq[EtmpVatReturnCorrection],
                           totalVATAmountFromCorrectionGBP: BigDecimal,
                           balanceOfVATDueForMS: Seq[EtmpVatReturnBalanceOfVatDue],
-                          totalVATAmountDueForAllMSEUR: BigDecimal,
+                          totalVATAmountDueForAllMSGBP: BigDecimal,
                           paymentReference: String
                         )
 
 object EtmpVatReturn {
-  implicit val format: Format[EtmpVatReturn] = Json.format[EtmpVatReturn]
+
+  implicit val format: OFormat[EtmpVatReturn] = Json.format[EtmpVatReturn]
 }
