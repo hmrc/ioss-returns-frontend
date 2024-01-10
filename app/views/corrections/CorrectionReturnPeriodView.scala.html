@@ -32,7 +32,7 @@
     @formHelper(action = controllers.corrections.routes.CorrectionReturnPeriodController.onSubmit(waypoints, periodIndex), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
-            @govukErrorSummary(ErrorSummaryViewModel(form, errorLinkOverrides = Map("value" -> "value")))
+            @govukErrorSummary(ErrorSummaryViewModel(form, errorLinkOverrides = Map("value" -> s"value_${obligationMonths.head.value.getOrElse(0)}")))
         }
 
         @govukRadios(
