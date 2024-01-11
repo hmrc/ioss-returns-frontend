@@ -38,7 +38,7 @@ class SuccessfullySubmittedController @Inject()(
   def onPageLoad: Action[AnyContent] = cc.authAndRequireData() {
     implicit request =>
       val returnReference = generateVatReturnReference(request.iossNumber, request.userAnswers.period)
-      val nilReturn = (!request.userAnswers.get(SoldGoodsPage).get) && (!request.userAnswers.get(CorrectPreviousReturnPage).get)
+      val nilReturn = (!request.userAnswers.get(SoldGoodsPage).get) && (!request.userAnswers.get(CorrectPreviousReturnPage(0)).get)
       Ok(view(returnReference, nilReturn, request.userAnswers.period))
   }
 }

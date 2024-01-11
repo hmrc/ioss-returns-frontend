@@ -57,7 +57,7 @@ final case class SoldToCountryListPage(override val index: Option[Index] = None)
           .map(n => SoldToCountryPage(Index(n)))
           .orRecover
       case false =>
-        CorrectPreviousReturnPage
+        CorrectPreviousReturnPage(0)
     }.orRecover
   }
 
