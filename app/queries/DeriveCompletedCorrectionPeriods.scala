@@ -14,12 +14,21 @@
  * limitations under the License.
  */
 
-package models.corrections
+package queries
 
 import models.Period
-import play.api.libs.json.{Format, Json}
-case class PeriodWithCorrections(correctionReturnPeriod: Period, correctionsToCountry: Option[List[CorrectionToCountry]])
+import models.corrections.PeriodWithCorrections
+import models.corrections.PeriodWithCorrections._
+import pages.PageConstants
+import play.api.libs.json.{JsObject, JsPath}
 
-object PeriodWithCorrections {
-  implicit val format: Format[PeriodWithCorrections] = Json.format[PeriodWithCorrections]
+case object DeriveCompletedCorrectionPeriods extends Derivable[List[JsObject], List[Period]] {
+
+  override val derive: List[JsObject] => List[Period] = {
+    _.flatMap(x => x.asOpt[PeriodWithCorrections])
+      .filter(_.correctionsToCountry.isDefined)
+      .map(_.correctionReturnPeriod)
+  }
+
+  override def path: JsPath = JsPath \ PageConstants.corrections
 }

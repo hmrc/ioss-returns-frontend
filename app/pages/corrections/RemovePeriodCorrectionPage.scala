@@ -16,27 +16,23 @@
 
 package pages.corrections
 
-import models.{Index, UserAnswers}
-import pages.{JourneyRecoveryPage, Page, QuestionPage, Waypoints}
+import models.{CheckMode, Index, NormalMode, UserAnswers}
+import pages.{Page, PageAndWaypoints, QuestionPage, Waypoints}
 import play.api.libs.json.JsPath
-
 import play.api.mvc.Call
+import queries.DeriveNumberOfCorrectionPeriods
 
+case class RemovePeriodCorrectionPage(periodIndex: Index) extends QuestionPage[Boolean] {
 
+  override def path: JsPath = JsPath \ toString
 
-
-case class CorrectionReturnPeriodPage[T](index: Index) extends QuestionPage[T] {
-
-  override def path: JsPath = JsPath \ "corrections" \ index.position \ toString
-
-  override def toString: String = "correctionReturnPeriod"
-
-  override def route(waypoints: Waypoints): Call =
-    controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(waypoints, index)
+  override def toString: String = "removePeriodCorrection"
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
-    answers.get(CorrectionReturnPeriodPage[String](index)) match {
-      case Some(_) => CorrectionCountryPage(Index(0), index)
-      case _ => JourneyRecoveryPage
+    answers.get(DeriveNumberOfCorrectionPeriods) match {
+      case Some(numberOfPeriods) if numberOfPeriods > 0 => VatPeriodCorrectionsListPage(answers.period, false) //Todo: Addanother??
+      case _ => CorrectPreviousReturnPage(0) //Todo?
     }
+
+  override def route(waypoints: Waypoints): Call = controllers.corrections.routes.RemovePeriodCorrectionController.onPageLoad(waypoints, periodIndex)
 }
