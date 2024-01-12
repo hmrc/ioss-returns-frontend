@@ -14,12 +14,17 @@
  * limitations under the License.
  */
 
-package models.corrections
+package forms.corrections
 
-import models.Period
-import play.api.libs.json.{Format, Json}
-case class PeriodWithCorrections(correctionReturnPeriod: Period, correctionsToCountry: Option[List[CorrectionToCountry]])
+import forms.mappings.Mappings
+import play.api.data.Form
 
-object PeriodWithCorrections {
-  implicit val format: Format[PeriodWithCorrections] = Json.format[PeriodWithCorrections]
+import javax.inject.Inject
+
+class RemovePeriodCorrectionFormProvider @Inject() extends Mappings {
+
+  def apply(): Form[Boolean] =
+    Form(
+      "value" -> boolean("removePeriodCorrection.error.required")
+    )
 }

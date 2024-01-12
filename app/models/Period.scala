@@ -16,6 +16,7 @@
 
 package models
 
+import models.Period.toEtmpMonthString
 import play.api.i18n.Messages
 import play.api.libs.json._
 import play.api.mvc.{PathBindable, QueryStringBindable}
@@ -30,7 +31,8 @@ import scala.util.matching.Regex
 
 final case class Period(year: Int, month: Month) {
   val firstDay: LocalDate = LocalDate.of(year, month, 1)
-  val lastDay: LocalDate = firstDay.plusMonths(3).minusDays(1)
+  val lastDay: LocalDate = firstDay.plusMonths(1).minusDays(1)
+
   private val firstMonthFormatter = DateTimeFormatter.ofPattern("MMMM")
   private val lastMonthYearFormatter = DateTimeFormatter.ofPattern("MMMM yyyy")
 
@@ -39,6 +41,18 @@ final case class Period(year: Int, month: Month) {
 
   def displayShortText(implicit messages: Messages): String =
     s"${firstDay.format(firstMonthFormatter)} ${messages("site.to")} ${lastDay.format(lastMonthYearFormatter)}"
+
+  private val firstDayFormatter = DateTimeFormatter.ofPattern("d MMMM")
+  private val lastDayFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy")
+
+  def displayLongText(implicit messages: Messages): String =
+    s"${firstDay.format(firstDayFormatter)} ${messages("site.to")} ${lastDay.format(lastDayFormatter)}"
+
+  def toEtmpPeriodString: String = {
+    val lastYearDigits = year.toString.substring(2)
+
+    s"$lastYearDigits${toEtmpMonthString(month)}"
+  }
 
   override def toString: String = s"$year-M${month.getValue}"
 }
@@ -107,5 +121,45 @@ object Period {
         value = Some(value.toString),
         id = Some(s"value_$index")
       )
+  }
+//Todo: Remove before rebase from VEIOSS-435 as it's not merged yet. (already there)
+  def fromKey(key: String): Period = {
+    val yearLast2 = key.take(2)
+    val month = key.drop(2)
+    Period(s"20$yearLast2".toInt, fromEtmpMonthString(month))
+  }
+
+  private def toEtmpMonthString(month: Month): String = {
+    month match {
+      case Month.JANUARY => "AA"
+      case Month.FEBRUARY => "AB"
+      case Month.MARCH => "AC"
+      case Month.APRIL => "AD"
+      case Month.MAY => "AE"
+      case Month.JUNE => "AF"
+      case Month.JULY => "AG"
+      case Month.AUGUST => "AH"
+      case Month.SEPTEMBER => "AI"
+      case Month.OCTOBER => "AJ"
+      case Month.NOVEMBER => "AK"
+      case Month.DECEMBER => "AL"
+    }
+  }
+
+  private def fromEtmpMonthString(keyMonth: String): Month = {
+    keyMonth match {
+      case "AA" => Month.JANUARY
+      case "AB" => Month.FEBRUARY
+      case "AC" => Month.MARCH
+      case "AD" => Month.APRIL
+      case "AE" => Month.MAY
+      case "AF" => Month.JUNE
+      case "AG" => Month.JULY
+      case "AH" => Month.AUGUST
+      case "AI" => Month.SEPTEMBER
+      case "AJ" => Month.OCTOBER
+      case "AK" => Month.NOVEMBER
+      case "AL" => Month.DECEMBER
+    }
   }
 }
