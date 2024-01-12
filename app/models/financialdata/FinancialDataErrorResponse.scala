@@ -14,18 +14,10 @@
  * limitations under the License.
  */
 
-package models.etmp
+package models.financialdata
 
-import models.Period
-import play.api.libs.json.{Json, OFormat}
-
-case class EtmpObligations(
-                            referenceNumber: String,
-                            referenceType: String,
-                            obligationDetails: Seq[EtmpObligationDetails]
-                          )
-
-object EtmpObligations {
-
-  implicit val format: OFormat[EtmpObligations] = Json.format[EtmpObligations]
+sealed trait FinancialDataErrorResponse {
+  val body: String
 }
+
+final case class UnexpectedResponseStatus(status: Int, body: String) extends FinancialDataErrorResponse

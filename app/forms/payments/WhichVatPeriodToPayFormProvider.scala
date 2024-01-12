@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package models.etmp
+package forms.payments
 
+import forms.mappings.Mappings
 import models.Period
-import play.api.libs.json.{Json, OFormat}
+import play.api.data.Form
 
-case class EtmpObligations(
-                            referenceNumber: String,
-                            referenceType: String,
-                            obligationDetails: Seq[EtmpObligationDetails]
-                          )
+import javax.inject.Inject
 
-object EtmpObligations {
+class WhichVatPeriodToPayFormProvider @Inject() extends Mappings {
 
-  implicit val format: OFormat[EtmpObligations] = Json.format[EtmpObligations]
+  def apply(): Form[Period] =
+    Form(
+      "value" -> period("whichVatPeriodToPay.error.required")
+    )
 }

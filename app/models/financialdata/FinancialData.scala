@@ -14,18 +14,20 @@
  * limitations under the License.
  */
 
-package models.etmp
+package models.financialdata
 
-import models.Period
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.{Format, Json}
 
-case class EtmpObligations(
-                            referenceNumber: String,
-                            referenceType: String,
-                            obligationDetails: Seq[EtmpObligationDetails]
-                          )
+import java.time.ZonedDateTime
 
-object EtmpObligations {
+final case class FinancialData(
+                                idType: Option[String],
+                                idNumber: Option[String],
+                                regimeType: Option[String],
+                                processingDate: ZonedDateTime,
+                                financialTransactions: Option[Seq[FinancialTransaction]]
+                              )
 
-  implicit val format: OFormat[EtmpObligations] = Json.format[EtmpObligations]
+object FinancialData {
+  implicit val format: Format[FinancialData] = Json.format[FinancialData]
 }

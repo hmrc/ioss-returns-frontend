@@ -16,16 +16,20 @@
 
 package models.etmp
 
-import models.Period
-import play.api.libs.json.{Json, OFormat}
+import models.{Enumerable, WithName}
 
-case class EtmpObligations(
-                            referenceNumber: String,
-                            referenceType: String,
-                            obligationDetails: Seq[EtmpObligationDetails]
-                          )
+sealed trait EtmpVatRateType
 
-object EtmpObligations {
+object EtmpVatRateType extends  Enumerable.Implicits {
+  case object StandardVatRate extends WithName("STANDARD") with EtmpVatRateType
 
-  implicit val format: OFormat[EtmpObligations] = Json.format[EtmpObligations]
+  case object ReducedVatRate extends WithName("REDUCED") with EtmpVatRateType
+
+  val values: Seq[EtmpVatRateType] = Seq(
+    StandardVatRate,
+    ReducedVatRate
+  )
+
+  implicit val enumerable: Enumerable[EtmpVatRateType] =
+    Enumerable(values.map(v => v.toString -> v): _*)
 }

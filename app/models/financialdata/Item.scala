@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package models.etmp
+package models.financialdata
 
-import models.Period
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.{Format, Json}
 
-case class EtmpObligations(
-                            referenceNumber: String,
-                            referenceType: String,
-                            obligationDetails: Seq[EtmpObligationDetails]
-                          )
+final case class Item(
+                       amount: Option[BigDecimal],
+                       clearingReason: Option[String],
+                       paymentReference: Option[String],
+                       paymentAmount: Option[BigDecimal],
+                       paymentMethod: Option[String]
+                     )
 
-object EtmpObligations {
-
-  implicit val format: OFormat[EtmpObligations] = Json.format[EtmpObligations]
+object Item {
+  implicit val format: Format[Item] = Json.format[Item]
 }

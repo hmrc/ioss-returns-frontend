@@ -16,7 +16,6 @@
 
 package models
 
-import models.Period.toEtmpMonthString
 import play.api.i18n.Messages
 import play.api.libs.json._
 import play.api.mvc.{PathBindable, QueryStringBindable}
@@ -35,6 +34,31 @@ final case class Period(year: Int, month: Month) {
 
   private val firstMonthFormatter = DateTimeFormatter.ofPattern("MMMM")
   private val lastMonthYearFormatter = DateTimeFormatter.ofPattern("MMMM yyyy")
+  val paymentDeadline: LocalDate =
+    firstDay.plusMonths(2).minusDays(1)
+
+  def toEtmpPeriodString: String = {
+    val lastYearDigits = year.toString.substring(2)
+
+    s"$lastYearDigits${toEtmpMonthString(month)}"
+  }
+
+  private def toEtmpMonthString(month: Month): String = {
+    month match {
+      case Month.JANUARY => "AA"
+      case Month.FEBRUARY => "AB"
+      case Month.MARCH => "AC"
+      case Month.APRIL => "AD"
+      case Month.MAY => "AE"
+      case Month.JUNE => "AF"
+      case Month.JULY => "AG"
+      case Month.AUGUST => "AH"
+      case Month.SEPTEMBER => "AI"
+      case Month.OCTOBER => "AJ"
+      case Month.NOVEMBER => "AK"
+      case Month.DECEMBER => "AL"
+    }
+  }
 
   def displayText: String =
     s"${month.getDisplayName(TextStyle.FULL, Locale.ENGLISH)} ${year}"
@@ -47,12 +71,6 @@ final case class Period(year: Int, month: Month) {
 
   def displayLongText(implicit messages: Messages): String =
     s"${firstDay.format(firstDayFormatter)} ${messages("site.to")} ${lastDay.format(lastDayFormatter)}"
-
-  def toEtmpPeriodString: String = {
-    val lastYearDigits = year.toString.substring(2)
-
-    s"$lastYearDigits${toEtmpMonthString(month)}"
-  }
 
   override def toString: String = s"$year-M${month.getValue}"
 }
@@ -73,6 +91,12 @@ object Period {
       case _ =>
         None
     }
+
+  def fromKey(key: String): Period = {
+    val yearLast2 = key.take(2)
+    val month = key.drop(2)
+    Period(s"20$yearLast2".toInt, fromEtmpMonthString(month))
+  }
 
   implicit val monthReads: Reads[Month] = {
     Reads.at[Int](__ \ "month")
@@ -121,12 +145,6 @@ object Period {
         value = Some(value.toString),
         id = Some(s"value_$index")
       )
-  }
-//Todo: Remove before rebase from VEIOSS-435 as it's not merged yet. (already there)
-  def fromKey(key: String): Period = {
-    val yearLast2 = key.take(2)
-    val month = key.drop(2)
-    Period(s"20$yearLast2".toInt, fromEtmpMonthString(month))
   }
 
   private def toEtmpMonthString(month: Month): String = {
