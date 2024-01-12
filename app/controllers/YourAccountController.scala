@@ -46,8 +46,8 @@ class YourAccountController @Inject()(
   def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request =>
 
-      paymentsService.getUnpaidPayments(request.iossNumber).map(payments => {
-        val paymentsViewModel = PaymentsViewModel(payments.filter(isDue), payments.filterNot(isDue))
+      paymentsService.prepareFinancialData().map(payments => {
+        val paymentsViewModel = PaymentsViewModel(payments.duePayments, payments.overduePayments)
         Ok(view(request.registrationWrapper.vatInfo.getName, request.iossNumber, paymentsViewModel, appConfig.amendRegistrationUrl))
       })
   }

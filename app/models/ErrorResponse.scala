@@ -14,18 +14,14 @@
  * limitations under the License.
  */
 
-package models.etmp
+package models
 
-import models.Period
-import play.api.libs.json.{Json, OFormat}
-
-case class EtmpObligations(
-                            referenceNumber: String,
-                            referenceType: String,
-                            obligationDetails: Seq[EtmpObligationDetails]
-                          )
-
-object EtmpObligations {
-
-  implicit val format: OFormat[EtmpObligations] = Json.format[EtmpObligations]
+sealed trait ErrorResponse {
+  val body: String
 }
+
+case object InvalidJson extends ErrorResponse {
+  override val body = "Invalid JSON received"
+}
+
+case class UnexpectedResponseStatus(status: Int, body: String) extends ErrorResponse

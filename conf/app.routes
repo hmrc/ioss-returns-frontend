@@ -105,3 +105,6 @@ POST        /remove-period-correction/:periodIndex                              
 GET         /successfully-submitted                                                   controllers.submissionResults.SuccessfullySubmittedController.onPageLoad()
 
 GET         /submission-failure                                                       controllers.submissionResults.ReturnSubmissionFailureController.onPageLoad()
+
+GET         /outstanding-payments                                                     controllers.payments.WhichVatPeriodToPayController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
+POST        /outstanding-payments                                                     controllers.payments.WhichVatPeriodToPayController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints)

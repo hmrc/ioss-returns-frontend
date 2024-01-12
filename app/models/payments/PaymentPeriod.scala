@@ -14,18 +14,26 @@
  * limitations under the License.
  */
 
-package models.etmp
+package models.payments
 
-import models.Period
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.{Json, OFormat, Reads, Writes, __}
 
-case class EtmpObligations(
-                            referenceNumber: String,
-                            referenceType: String,
-                            obligationDetails: Seq[EtmpObligationDetails]
-                          )
+import java.time.Month
 
-object EtmpObligations {
+final case class PaymentPeriod(year: Int, month: Month)
 
-  implicit val format: OFormat[EtmpObligations] = Json.format[EtmpObligations]
+
+object PaymentPeriod {
+
+  implicit val monthReads: Reads[Month] = {
+    Reads.at[Int](__ \ "month")
+      .map(Month.of)
+  }
+
+  implicit val monthWrites: Writes[Month] = {
+    Writes.at[Int](__ \ "month")
+      .contramap(_.getValue)
+  }
+
+  implicit val format: OFormat[PaymentPeriod] = Json.format[PaymentPeriod]
 }

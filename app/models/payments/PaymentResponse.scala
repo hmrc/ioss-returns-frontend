@@ -14,18 +14,16 @@
  * limitations under the License.
  */
 
-package models.etmp
+package models.payments
 
-import models.Period
 import play.api.libs.json.{Json, OFormat}
 
-case class EtmpObligations(
-                            referenceNumber: String,
-                            referenceType: String,
-                            obligationDetails: Seq[EtmpObligationDetails]
-                          )
+case class PaymentResponse(
+                           journeyId: String,
+                           nextUrl: String
+                         )
 
-object EtmpObligations {
-
-  implicit val format: OFormat[EtmpObligations] = Json.format[EtmpObligations]
+object PaymentResponse {
+  implicit val format: OFormat[PaymentResponse] = Json.format[PaymentResponse]
 }
+
