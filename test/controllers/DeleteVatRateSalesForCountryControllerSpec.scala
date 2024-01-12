@@ -106,9 +106,9 @@ class DeleteVatRateSalesForCountryControllerSpec extends SpecBase with MockitoSu
 
       when(mockSessionRepository.set(any())) thenReturn true.toFuture
 
-      val updatedAnswer = baseAnswers.set(VatRatesFromCountryPage(index, index.+(1)), List[VatRateFromCountry](vatRateFromCountry)).success.value
-        .set(SalesToCountryPage(index, index.+(1)), salesValue).success.value
-        .set(VatOnSalesPage(index, index.+(1)), vatOnSalesValue).success.value
+      val updatedAnswer = baseAnswers.set(VatRatesFromCountryPage(index, index + 1), List[VatRateFromCountry](vatRateFromCountry)).success.value
+        .set(SalesToCountryPage(index, index + 1), salesValue).success.value
+        .set(VatOnSalesPage(index, index + 1), vatOnSalesValue).success.value
 
       val application =
         applicationBuilder(userAnswers = Some(updatedAnswer))
