@@ -108,3 +108,4 @@ GET         /submission-failure                                                 
 
 GET         /outstanding-payments                                                     controllers.payments.WhichVatPeriodToPayController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
 POST        /outstanding-payments                                                     controllers.payments.WhichVatPeriodToPayController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints)
+GET        /interceptUnusablEmail                       controllers.InterceptUnusableEmailController.onPageLoad()

@@ -26,6 +26,7 @@ case class EtmpSchemeDetails(
                               contactName: String,
                               businessTelephoneNumber: String,
                               businessEmailId: String,
+                              unusableStatus: Boolean,
                               nonCompliantReturns: Option[String],
                               nonCompliantPayments: Option[String]
                             )
