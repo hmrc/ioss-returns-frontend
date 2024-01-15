@@ -16,8 +16,14 @@
 
 package views
 
+import models.Period
+import models.payments.{Payment, PaymentStatus}
 import play.api.data.Form
 import play.api.i18n.Messages
+import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
+import uk.gov.hmrc.govukfrontend.views.viewmodels.radios.RadioItem
+
+import java.time.format.DateTimeFormatter
 
 object ViewUtils {
 
@@ -33,4 +39,32 @@ object ViewUtils {
   def errorPrefix(form: Form[_])(implicit messages: Messages): String = {
     if (form.hasErrors || form.hasGlobalErrors) messages("error.browser.title.prefix") else ""
   }
+
+  def options(payments: Seq[Payment])(implicit messages: Messages): Seq[RadioItem] = {
+
+    lazy val hasUnknownPayments: Boolean = payments.exists(_.paymentStatus == PaymentStatus.Unknown)
+
+    def getLabel(payment: Payment): String =
+      if (hasUnknownPayments) {
+        payment.period.displayText
+      } else {
+        messages("whichVatPeriodToPay.amountKnown", payment.amountOwed, displayShortText(payment.period))
+      }
+
+    payments.zipWithIndex.map {
+      case (value, index) =>
+        RadioItem(
+          content = HtmlContent(getLabel(value)),
+          value = Some(value.period.toString),
+          id = Some(s"value_$index")
+        )
+    }
+  }
+
+  private val firstMonthFormatter = DateTimeFormatter.ofPattern("MMMM")
+  private val lastMonthYearFormatter = DateTimeFormatter.ofPattern("MMMM yyyy")
+
+  def displayShortText(period: Period)(implicit messages: Messages): String =
+    s"${period.firstDay.format(firstMonthFormatter)} ${messages("site.to")} ${period.lastDay.format(lastMonthYearFormatter)}"
+
 }

@@ -32,7 +32,7 @@
     @formHelper(action = controllers.corrections.routes.CorrectionReturnYearController.onSubmit(waypoints, periodIndex), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
-            @govukErrorSummary(ErrorSummaryViewModel(form, errorLinkOverrides = Map("value" -> "value_0")))
+            @govukErrorSummary(ErrorSummaryViewModel(form, errorLinkOverrides = Map("value" -> s"value_${obligationYears.head.value.getOrElse(0)}")))
         }
 
         @govukRadios(
@@ -43,8 +43,8 @@
             )
         )
 
-        @govukButton(
-            ButtonViewModel(messages("site.continue"))
+        @button(
+            messages("site.continue", period, controllers.corrections.routes.CorrectionReturnYearController.onPageLoad(waypoints, periodIndex).url)
         )
     }
 }

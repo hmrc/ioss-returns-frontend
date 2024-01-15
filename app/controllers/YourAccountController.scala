@@ -21,7 +21,6 @@ import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
 import models.etmp.EtmpExclusion
 import models.etmp.EtmpExclusionReason.{NoLongerSupplies, Reversal, TransferringMSID, VoluntarilyLeaves}
-import models.payments.Payment
 import pages.Waypoints
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -63,8 +62,8 @@ class YourAccountController @Inject()(
         None
       }
 
-      paymentsService.getUnpaidPayments(request.iossNumber).map(payments => {
-        val paymentsViewModel = PaymentsViewModel(payments.filter(isDue), payments.filterNot(isDue))
+      paymentsService.prepareFinancialData().map(payments => {
+        val paymentsViewModel = PaymentsViewModel(payments.duePayments, payments.overduePayments)
         Ok(view(
           request.registrationWrapper.vatInfo.getName,
           request.iossNumber,
@@ -74,9 +73,5 @@ class YourAccountController @Inject()(
           cancelYourRequestToLeaveUrl
         ))
       })
-  }
-
-  private def isDue(payment: Payment): Boolean = {
-    payment.period.lastDay.isAfter(LocalDate.now().minusDays(1))
   }
 }

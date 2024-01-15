@@ -25,7 +25,7 @@ import play.api.mvc.Call
 
 
 
-case class CorrectionReturnPeriodPage(index: Index) extends QuestionPage[String] {
+case class CorrectionReturnPeriodPage[T](index: Index) extends QuestionPage[T] {
 
   override def path: JsPath = JsPath \ "corrections" \ index.position \ toString
 
@@ -35,7 +35,7 @@ case class CorrectionReturnPeriodPage(index: Index) extends QuestionPage[String]
     controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(waypoints, index)
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
-    answers.get(CorrectionReturnPeriodPage(index)) match {
+    answers.get(CorrectionReturnPeriodPage[String](index)) match {
       case Some(_) => CorrectionCountryPage(Index(0), index)
       case _ => JourneyRecoveryPage
     }

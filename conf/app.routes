@@ -93,6 +93,18 @@ POST        /vat-payable-confirm/:periodIndex/:countryIndex                     
 GET         /correction-list-countries/:periodIndex                                   controllers.corrections.CorrectionListCountriesController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, periodIndex: Index)
 POST        /correction-list-countries/:periodIndex                                   controllers.corrections.CorrectionListCountriesController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, periodIndex: Index)
 
+GET         /:period/vat-correction-periods                                           controllers.corrections.VatPeriodCorrectionsListController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, period: Period)
+POST        /:period/vat-correction-periods                                           controllers.corrections.VatPeriodCorrectionsListController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, period: Period, incompletePromptShown: Boolean)
+
+GET         /:period/vat-correction-periods-add                                       controllers.corrections.VatPeriodCorrectionsListWithFormController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, period: Period)
+POST        /:period/vat-correction-periods-add                                       controllers.corrections.VatPeriodCorrectionsListWithFormController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, period: Period, incompletePromptShown: Boolean)
+
+GET         /remove-period-correction/:periodIndex                                    controllers.corrections.RemovePeriodCorrectionController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, periodIndex: Index)
+POST        /remove-period-correction/:periodIndex                                    controllers.corrections.RemovePeriodCorrectionController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, periodIndex: Index)
+
 GET         /successfully-submitted                                                   controllers.submissionResults.SuccessfullySubmittedController.onPageLoad()
 
 GET         /submission-failure                                                       controllers.submissionResults.ReturnSubmissionFailureController.onPageLoad()
+
+GET         /outstanding-payments                                                     controllers.payments.WhichVatPeriodToPayController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
+POST        /outstanding-payments                                                     controllers.payments.WhichVatPeriodToPayController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints)

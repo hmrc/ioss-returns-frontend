@@ -17,16 +17,16 @@
 package base
 
 import controllers.actions._
-import generators.Generators
+import generators.{Generators, UserAnswersGenerator}
 import models.{Country, Index, Period, RegistrationWrapper, UserAnswers, VatOnSales, VatOnSalesChoice, VatRateFromCountry, VatRateType}
 import org.scalacheck.Arbitrary
 import org.scalacheck.Arbitrary._
-import org.scalatest.{OptionValues, TryValues}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
+import org.scalatest.{OptionValues, TryValues}
+import pages.corrections.{CorrectPreviousReturnPage, CorrectionReturnYearPage}
 import pages.{EmptyWaypoints, SalesToCountryPage, SoldGoodsPage, SoldToCountryPage, VatOnSalesPage, VatRatesFromCountryPage, Waypoints}
-import pages.corrections.{CorrectionReturnYearPage, CorrectPreviousReturnPage}
 import play.api.Application
 import play.api.i18n.{Messages, MessagesApi}
 import play.api.inject.bind
@@ -44,6 +44,7 @@ trait SpecBase
     with OptionValues
     with ScalaFutures
     with IntegrationPatience
+    with UserAnswersGenerator
     with Generators {
 
   val userAnswersId: String = "12345-credId"
@@ -75,7 +76,7 @@ trait SpecBase
     .set(VatOnSalesPage(index, index), VatOnSales(VatOnSalesChoice.Standard, BigDecimal(20))).success.value
 
   val completedUserAnswersWithCorrections: UserAnswers = completeUserAnswers
-    .set(CorrectPreviousReturnPage, true).success.value
+    .set(CorrectPreviousReturnPage(0), true).success.value
     .set(CorrectionReturnYearPage(index), 2023).success.value
 
   def messages(app: Application): Messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())

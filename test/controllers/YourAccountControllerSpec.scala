@@ -19,9 +19,10 @@ package controllers
 import base.SpecBase
 import config.FrontendAppConfig
 import generators.Generators
-import models.RegistrationWrapper
+import models.{Period, RegistrationWrapper}
 import models.etmp.EtmpExclusion
 import models.etmp.EtmpExclusionReason.NoLongerSupplies
+import models.payments.{Payment, PaymentStatus, PrepareData}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalacheck.Arbitrary.arbitrary
@@ -34,7 +35,7 @@ import services.PaymentsService
 import viewmodels.PaymentsViewModel
 import views.html.YourAccountView
 
-import java.time.LocalDate
+import java.time.{LocalDate, Month}
 import scala.concurrent.Future
 
 class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generators with BeforeAndAfterEach {
@@ -43,10 +44,31 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
     "should display your account view" - {
       "when registration wrapper is present" in {
-
+        val now = LocalDate.now()
+        val periodOverdue1 = Period(now.minusYears(1).getYear, Month.JANUARY)
+        val periodOverdue2 = Period(now.minusYears(1).getYear, Month.FEBRUARY)
+        val periodDue1 = Period(now.getYear, now.getMonth.plus(1))
+        val periodDue2 = Period(now.getYear, now.getMonth.plus(2))
+        val paymentOverdue1 = Payment(periodOverdue1, 10, periodOverdue1.paymentDeadline, PaymentStatus.Unpaid)
+        val paymentOverdue2 = Payment(periodOverdue2, 10, periodOverdue2.paymentDeadline, PaymentStatus.Unpaid)
+        val paymentDue1 = Payment(periodDue1, 10, periodDue1.paymentDeadline, PaymentStatus.Unpaid)
+        val paymentDue2 = Payment(periodDue2, 10, periodDue2.paymentDeadline, PaymentStatus.Unpaid)
+        val prepareData = PrepareData(List(paymentDue1, paymentDue2),
+          List(paymentOverdue1, paymentOverdue2),
+          List(paymentDue1,
+            paymentDue2,
+            paymentOverdue1,
+            paymentOverdue2
+          ).map(_.amountOwed).sum,
+          List(paymentOverdue1, paymentOverdue2).map(_.amountOwed).sum,
+          iossNumber)
         val registrationWrapper: RegistrationWrapper = arbitrary[RegistrationWrapper].sample.value
+        val paymentsService = mock[PaymentsService]
+        when(paymentsService.prepareFinancialData()(any(), any())) thenReturn
+          Future.successful(prepareData)
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWrapper)
+          .overrides(bind[PaymentsService].to(paymentsService))
           .build()
 
         running(application) {
@@ -66,18 +88,18 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
 
 
-      val mockPaymentsService = mock[PaymentsService]
+      val paymentsService = mock[PaymentsService]
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWrapperEmptyExclusions)
         .overrides(
-          bind[PaymentsService].toInstance(mockPaymentsService)
+          bind[PaymentsService].toInstance(paymentsService)
         )
         .build()
 
 
       val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty)(messages(application))
-      when(mockPaymentsService.getUnpaidPayments(any())(any(), any())).thenReturn(Future.successful(List.empty))
-
+      when(paymentsService.prepareFinancialData()(any(), any())) thenReturn
+        Future.successful(PrepareData(List.empty, List.empty, 0, 0, iossNumber))
 
       running(application) {
 
@@ -112,16 +134,17 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
       val registrationWrapperEmptyExclusions: RegistrationWrapper =
         registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq(exclusion)))
 
-      val mockPaymentsService = mock[PaymentsService]
+      val paymentsService = mock[PaymentsService]
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWrapperEmptyExclusions)
         .overrides(
-          bind[PaymentsService].toInstance(mockPaymentsService)
+          bind[PaymentsService].toInstance(paymentsService)
         )
         .build()
 
       val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty)(messages(application))
-      when(mockPaymentsService.getUnpaidPayments(any())(any(), any())).thenReturn(Future.successful(List.empty))
+      when(paymentsService.prepareFinancialData()(any(), any())) thenReturn
+        Future.successful(PrepareData(List.empty, List.empty, 0, 0, iossNumber))
 
       running(application) {
 

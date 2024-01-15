@@ -16,23 +16,38 @@
 
 package services
 
+import connectors.PaymentHttpParser.ReturnPaymentResponse
+import connectors.{FinancialDataConnector, PaymentConnector}
 import models.Period
-import models.payments.{Payment, PaymentStatus}
+import models.payments._
+import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.HeaderCarrier
 
-import java.time.{LocalDate, Month}
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class PaymentsServiceImpl extends PaymentsService { //Todo: To be replaced by the PaymentService of VEIOSS-435
-  override def getUnpaidPayments(iossNumber: String)(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[List[Payment]] =
-    Future.successful(
-      List[Payment](
-        Payment(Period.apply(2022, Month.MAY), 234, LocalDate.now().minusYears(1), PaymentStatus.Partial),
-        Payment(Period.apply(2023, Month.DECEMBER), 234, LocalDate.now().plusMonths(1), PaymentStatus.Partial)
+class PaymentsServiceImpl @Inject()(
+                                 financialDataConnector: FinancialDataConnector,
+                                 paymentConnector: PaymentConnector
+                               ) extends PaymentsService {
+  def prepareFinancialData()(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[PrepareData] = {
+    financialDataConnector.prepareFinancialData()
+  }
+
+  def makePayment(vrn: Vrn, period: Period, payment: Payment)(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[ReturnPaymentResponse] = {
+    val paymentRequest =
+      PaymentRequest(
+        vrn,
+        PaymentPeriod(period.year, period.month),
+        (payment.amountOwed * 100).longValue
       )
-    )
+
+    paymentConnector.submit(paymentRequest)
+  }
 }
 
 trait PaymentsService {
-  def getUnpaidPayments(iossNumber: String)(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[List[Payment]]
+  def prepareFinancialData()(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[PrepareData]
+
+  def makePayment(vrn: Vrn, period: Period, payment: Payment)(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[ReturnPaymentResponse]
 }
