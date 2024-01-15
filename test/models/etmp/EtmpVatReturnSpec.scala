@@ -30,6 +30,7 @@ class EtmpVatReturnSpec extends SpecBase {
 
       val json = Json.obj(
         "returnReference" -> genEtmpVatReturn.returnReference,
+        "returnVersion" -> genEtmpVatReturn.returnVersion,
         "periodKey" -> genEtmpVatReturn.periodKey,
         "returnPeriodFrom" -> genEtmpVatReturn.returnPeriodFrom,
         "returnPeriodTo" -> genEtmpVatReturn.returnPeriodTo,
@@ -46,6 +47,7 @@ class EtmpVatReturnSpec extends SpecBase {
 
       val expectedResult = EtmpVatReturn(
         returnReference = genEtmpVatReturn.returnReference,
+        returnVersion = genEtmpVatReturn.returnVersion,
         periodKey = genEtmpVatReturn.periodKey,
         returnPeriodFrom = genEtmpVatReturn.returnPeriodFrom,
         returnPeriodTo = genEtmpVatReturn.returnPeriodTo,

@@ -151,6 +151,4 @@ class CheckYourAnswersController @Inject()(
       ).flatten
     )
   }
-
-
 }

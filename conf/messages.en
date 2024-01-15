@@ -75,7 +75,6 @@ checkYourAnswers.label.country = Country
 checkYourAnswers.label.amount = Amount
 checkYourAnswers.heading.vatOwned = VAT owed
 
-
 journeyRecovery.continue.title = Sorry, there is a problem with the service
 journeyRecovery.continue.heading = Sorry, there is a problem with the service
 journeyRecovery.continue.guidance = [Add content to explain how to proceed.]
@@ -316,6 +315,37 @@ returnSubmissionFailure.heading = We have not received your return
 returnSubmissionFailure.tryAgainLater = Please try again later.
 returnSubmissionFailure.contactUs = If the problem continues, you can email us at <a class="govuk-link" href="mailto:vatoss.contact@hmrc.gov.uk">vatoss.contact@hmrc.gov.uk</a>
 returnSubmissionFailure.next.info.returnToAccount = Back to your account
+
+submittedReturnForPeriod.title = Submitted return for {0}
+submittedReturnForPeriod.heading = Submitted return for {0}
+submittedReturnForPeriod.summary = Summary
+submittedReturnForPeriod.details = Details
+submittedReturnForPeriod.payNow = Pay now
+
+submittedReturnForPeriod.summary.vatDeclared = VAT declared
+submittedReturnForPeriod.summary.amountPaid = Amount paid
+submittedReturnForPeriod.summary.remainingAmount = Amount left to pay
+submittedReturnForPeriod.summary.submittedDate = Return submitted
+submittedReturnForPeriod.summary.paymentDueDate = Payment due by
+submittedReturnForPeriod.summary.returnReference = Return reference
+submittedReturnForPeriod.summary.paymentReference = Payment reference
+
+submittedReturnForPeriod.salesToEuNi.title = Sales to EU countries and Northern Ireland
+submittedReturnForPeriod.salesToEuNi.allNetSales = Sales excluding VAT
+submittedReturnForPeriod.salesToEuNi.allVatOnSales = VAT charged
+
+submittedReturnForPeriod.corrections.title = Corrections
+submittedReturnForPeriod.corrections.vatDeclarationNotDue = VAT declared where no payment is due
+submittedReturnForPeriod.corrections.p1 = EU countries and Northern Ireland are responsible for refunding any overpayments.
+submittedReturnForPeriod.corrections.country = {0}
+
+submittedReturnForPeriod.vatOwed.title = VAT owed
+submittedReturnForPeriod.vatOwed.titleWithCorrections = VAT owed (including corrections)
+
+submittedReturnForPeriod.totalVat.title = Total VAT payable
+
+submittedReturnForPeriod.breadcrumbs.yourAccount = Your IOSS account
+submittedReturnForPeriod.breadcrumbs.submittedReturns = Submitted returns
 
 whichVatPeriodToPay.title = Which VAT period do you want to pay?
 whichVatPeriodToPay.heading = Which VAT period do you want to pay?

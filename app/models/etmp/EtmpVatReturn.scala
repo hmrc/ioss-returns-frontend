@@ -18,10 +18,11 @@ package models.etmp
 
 import play.api.libs.json.{Json, OFormat}
 
-import java.time.LocalDate
+import java.time.{LocalDate, LocalDateTime}
 
 case class EtmpVatReturn(
                           returnReference: String,
+                          returnVersion: LocalDateTime,
                           periodKey: String,
                           returnPeriodFrom: LocalDate,
                           returnPeriodTo: LocalDate,

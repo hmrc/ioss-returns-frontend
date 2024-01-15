@@ -21,7 +21,7 @@ import models.etmp._
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Gen
 
-import java.time.LocalDate
+import java.time.{LocalDate, LocalDateTime}
 
 object EtmpVatReturnData extends SpecBase {
 
@@ -30,30 +30,31 @@ object EtmpVatReturnData extends SpecBase {
   private val amountOfBalanceOfVATDueForMS: Int = Gen.oneOf(List(1, 2, 3)).sample.value
 
   val etmpVatReturnGoodsSupplied: EtmpVatReturnGoodsSupplied = EtmpVatReturnGoodsSupplied(
-    msOfConsumption = arbitrary[String].sample.value,
+    msOfConsumption = arbitraryCountry.arbitrary.sample.value.code,
     vatRateType = Gen.oneOf(EtmpVatRateType.values).sample.value,
     taxableAmountGBP = arbitrary[BigDecimal].sample.value,
     vatAmountGBP = arbitrary[BigDecimal].sample.value
   )
 
   val etmpVatReturnCorrection: EtmpVatReturnCorrection = EtmpVatReturnCorrection(
-    periodKey = arbitrary[String].sample.value,
+    periodKey = arbitraryPeriodKey.arbitrary.sample.value,
     periodFrom = arbitrary[String].sample.value,
     periodTo = arbitrary[String].sample.value,
-    msOfConsumption = arbitrary[String].sample.value,
+    msOfConsumption = arbitraryCountry.arbitrary.sample.value.code,
     totalVATAmountCorrectionGBP = arbitrary[BigDecimal].sample.value,
     totalVATAmountCorrectionEUR = arbitrary[BigDecimal].sample.value
   )
 
   val etmpVatReturnBalanceOfVatDue: EtmpVatReturnBalanceOfVatDue = EtmpVatReturnBalanceOfVatDue(
-    msOfConsumption = arbitrary[String].sample.value,
+    msOfConsumption = arbitraryCountry.arbitrary.sample.value.code,
     totalVATDueGBP = arbitrary[BigDecimal].sample.value,
     totalVATEUR = arbitrary[BigDecimal].sample.value
   )
 
   val etmpVatReturn: EtmpVatReturn = EtmpVatReturn(
     returnReference = arbitrary[String].sample.value,
-    periodKey = arbitrary[String].sample.value,
+    returnVersion = arbitrary[LocalDateTime].sample.value,
+    periodKey = arbitraryPeriodKey.arbitrary.sample.value,
     returnPeriodFrom = arbitrary[LocalDate].sample.value,
     returnPeriodTo = arbitrary[LocalDate].sample.value,
     goodsSupplied = Gen.listOfN(amountOfGoodsSupplied, etmpVatReturnGoodsSupplied).sample.value,

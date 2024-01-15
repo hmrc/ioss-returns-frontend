@@ -97,6 +97,15 @@ trait ModelGenerators {
       } yield Period(year, quarter)
     }
 
+   val arbitraryPeriodKey: Arbitrary[String] = {
+    Arbitrary {
+      for {
+        year <- Gen.choose(2022, 2099).map(_.toString)
+        monthKey <- Gen.oneOf("AA", "AB", "AC", "AD", "AE", "AF", "AG", "AH", "AI", "AJ", "AK", "AL")
+      } yield s"${year.substring(2, 4)}$monthKey"
+    }
+  }
+
   implicit lazy val arbitraryBic: Arbitrary[Bic] = {
     val asciiCodeForA = 65
     val asciiCodeForN = 78

@@ -278,4 +278,5 @@ object Country {
           )
       }
 
+  def getCountryName(countryCode: String): String = euCountries.filter(_.code == countryCode).map(_.name).head
 }
