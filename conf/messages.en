@@ -318,8 +318,8 @@ whichVatPeriodToPay.error.required = Select a period to pay
 notificationBanner.title = Important
 notificationBanner.text = We cannot get your latest payment records due to a technical issue. Try again later.
 
-interceptUnusableEmail.title = We're having trouble sending you emails
-interceptUnusableEmail.heading = We're having trouble sending you emails
+interceptUnusableEmail.title = We''re having trouble sending you emails
+interceptUnusableEmail.heading = We''re having trouble sending you emails
 interceptUnusableEmail.p1 = The address you gave us, {0}, is not receiving our emails.
 interceptUnusableEmail.p2 = Your mailbox could be full or the email account may not be active.
 interceptUnusableEmail.p3 = You must have a valid email address to use this service.
