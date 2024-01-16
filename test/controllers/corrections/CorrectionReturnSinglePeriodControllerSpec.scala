@@ -51,7 +51,7 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
 
   private val etmpObligationDetails: Seq[EtmpObligationDetails] = Seq(
     EtmpObligationDetails(
-      status = EtmpObligationsFulfilmentStatus.Open,
+      status = EtmpObligationsFulfilmentStatus.Fulfilled,
       periodKey = "23AK"
     )
   )
@@ -64,7 +64,7 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
 
     "must return OK and the correct view for a GET" in {
 
-      when(obligationService.getOpenObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
+      when(obligationService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(bind[ObligationsService].toInstance(obligationService))
@@ -84,7 +84,7 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      when(obligationService.getOpenObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
+      when(obligationService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
 
       val userAnswers = emptyUserAnswers.set(CorrectionReturnSinglePeriodPage(index), true).success.value
 
@@ -108,7 +108,7 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
 
       val mockSessionRepository = mock[SessionRepository]
 
-      when(obligationService.getOpenObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
+      when(obligationService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
 
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
@@ -134,7 +134,7 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
 
     "must return a Bad Request and errors when invalid data is submitted" in {
 
-      when(obligationService.getOpenObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
+      when(obligationService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(bind[ObligationsService].toInstance(obligationService))

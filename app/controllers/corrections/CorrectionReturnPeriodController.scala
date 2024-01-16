@@ -47,11 +47,11 @@ class CorrectionReturnPeriodController @Inject()(
 
       val period = request.userAnswers.period
 
-      val openObligations = obligationService.getOpenObligations(request.iossNumber)
+      val fulfilledObligations = obligationService.getFulfilledObligations(request.iossNumber)
 
       val selectedYear = request.userAnswers.get(CorrectionReturnYearPage(index)).getOrElse(0)
 
-      openObligations.map { obligations =>
+      fulfilledObligations.map { obligations =>
         val obligationYears = obligations.filter(obligation => ConvertPeriodKey.yearFromEtmpPeriodKey(obligation.periodKey) == selectedYear)
 
         val correctionMonths = obligationYears.map { obligation =>
@@ -74,10 +74,10 @@ class CorrectionReturnPeriodController @Inject()(
 
       val period = request.userAnswers.period
 
-      val openObligations = obligationService.getOpenObligations(request.iossNumber)
+      val fulfilledObligations = obligationService.getFulfilledObligations(request.iossNumber)
       val selectedYear = request.userAnswers.get(CorrectionReturnYearPage(index)).getOrElse(0)
 
-      openObligations.flatMap { obligations =>
+      fulfilledObligations.flatMap { obligations =>
         val obligationYears = obligations.filter(obligation => ConvertPeriodKey.yearFromEtmpPeriodKey(obligation.periodKey) == selectedYear)
 
         val correctionMonths = obligationYears.map { obligation =>
