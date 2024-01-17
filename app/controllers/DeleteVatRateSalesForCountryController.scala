@@ -19,12 +19,12 @@ package controllers
 import controllers.actions._
 import forms.DeleteVatRateSalesForCountryFormProvider
 import logging.Logging
-import models.Index
-import pages.{DeleteVatRateSalesForCountryPage, Waypoints}
+import models.{Index, VatRateFromCountry}
+import pages.{DeleteVatRateSalesForCountryPage, VatRatesFromCountryPage, Waypoints}
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import queries.VatRateFromCountryQuery
+import queries.{AllSalesByCountryQuery, AllSalesQuery, AllVatRatesFromCountryQuery, DeriveNumberOfVatRatesFromCountry, VatRateFromCountryQuery}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax.FutureOps
 import views.html.DeleteVatRateSalesForCountryView
@@ -75,7 +75,13 @@ class DeleteVatRateSalesForCountryController @Inject()(
                 value =>
                   if (value) {
                     for {
-                      updatedAnswers <- Future.fromTry(request.userAnswers.remove(VatRateFromCountryQuery(countryIndex, vatRateIndex)))
+                      updatedAnswers <- {
+                        val remaining = request.userAnswers.get[List[VatRateFromCountry]](VatRatesFromCountryPage(countryIndex, vatRateIndex)).map(_.size)
+                        if (remaining == Some(1))
+                          Future.fromTry(request.userAnswers.remove(AllSalesByCountryQuery(countryIndex)))
+                        else
+                          Future.fromTry(request.userAnswers.remove(VatRateFromCountryQuery(countryIndex, vatRateIndex)))
+                      }
                       _ <- cc.sessionRepository.set(updatedAnswers)
                     } yield Redirect(DeleteVatRateSalesForCountryPage(countryIndex, vatRateIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route)
                   } else {

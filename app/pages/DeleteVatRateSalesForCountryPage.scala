@@ -19,7 +19,7 @@ package pages
 import controllers.routes
 import models.{Index, UserAnswers}
 import play.api.mvc.Call
-import queries.DeriveNumberOfVatRatesFromCountry
+import queries.{DeriveNumberOfVatRatesFromCountry, SalesByCountryQuery}
 
 case class DeleteVatRateSalesForCountryPage(countryIndex: Index, vatRateIndex: Index) extends Page {
 
