@@ -61,7 +61,7 @@ final case class CorrectionListCountriesPage(periodIndex: Index, countryIndex: O
               .orRecover
           }
       case false =>
-        CheckYourAnswersPage //todo navigate to add to list page for corrections period
+        VatPeriodCorrectionsListPage(answers.period, addAnother = true) //todo navigate to add to list page for corrections period
     }.orRecover
 
   override def deriveNumberOfItems: Derivable[Seq[JsObject], Int] = DeriveNumberOfCorrections(periodIndex)
