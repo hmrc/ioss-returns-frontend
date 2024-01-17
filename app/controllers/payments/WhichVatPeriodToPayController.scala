@@ -56,7 +56,7 @@ class WhichVatPeriodToPayController @Inject()(
         val paymentError = payments.exists(_.paymentStatus == PaymentStatus.Unknown)
 
         payments match {
-          case payment :: Nil => makePayment(request.vrn, payment)
+          case payment :: Nil => makePayment(request.iossNumber, payment)
           case Nil => Future.successful(Ok(viewNoPayment(YourAccountPage.route(waypoints).url)))
           case _ => Future.successful(Ok(view(form, payments, paymentError = paymentError)))
         }
@@ -64,8 +64,8 @@ class WhichVatPeriodToPayController @Inject()(
     }
   }
 
-  private def makePayment(vrn: Vrn, payment: Payment)(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[Result] = {
-    paymentsService.makePayment(vrn, payment.period, payment).map {
+  private def makePayment(iossNumber: String, payment: Payment)(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[Result] = {
+    paymentsService.makePayment(iossNumber, payment.period, payment).map {
       case Right(value) => Redirect(value.nextUrl)
       case _ => Redirect(s"$paymentsBaseUrl/pay/service-unavailable")
     }
@@ -78,13 +78,13 @@ class WhichVatPeriodToPayController @Inject()(
         val payments = pfd.duePayments ++ pfd.overduePayments
         val paymentError = payments.exists(_.paymentStatus == PaymentStatus.Unknown)
         if (payments.size == 1) {
-          makePayment(request.vrn, payments.head)
+          makePayment(request.iossNumber, payments.head)
         } else {
           form.bindFromRequest().fold(
             formWithErrors => Future.successful(BadRequest(view(formWithErrors, payments, paymentError))),
             value =>
               getChosenPayment(payments, value)
-                .map(p => makePayment(request.vrn, p)).getOrElse(
+                .map(p => makePayment(request.iossNumber, p)).getOrElse(
                 Future.successful(Redirect(JourneyRecoveryPage.route(waypoints).url))
               ))
         }
