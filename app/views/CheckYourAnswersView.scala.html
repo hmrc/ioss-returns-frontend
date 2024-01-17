@@ -95,15 +95,10 @@
     </tr>
    </thead>
    <tbody class="govuk-table__body">
-    <tr class="govuk-table__row">
-     <th scope="col" class="govuk-table__header govuk-!-width-one-third govuk-!-padding-left-5">@messages("checkYourAnswers.label.country")</th>
-     <th scope="col" class="govuk-table__header" style="text-align:right; padding-right: 200px">@messages("checkYourAnswers.label.amount")</th>
-    </tr>
-
    @for(totalVatToCountry <- totalVatToCountries) {
     <tr class="govuk-table__row govuk-summary-card__content ">
-     <td class="govuk-table__cell govuk-!-padding-5">@totalVatToCountry.country.name</td>
-     <td class="govuk-table__cell" style="text-align:right; padding-right: 200px">@Html(currencyFormat(totalVatToCountry.totalVat))</td>
+     <td class="govuk-table__cell govuk-!-padding-5"><strong>@totalVatToCountry.country.name</strong></td>
+     <td class="govuk-table__cell" style="text-align:right; padding-top: 25px; padding-right: 200px">@Html(currencyFormat(totalVatToCountry.totalVat))</td>
     </tr>
    }
    </tbody>
