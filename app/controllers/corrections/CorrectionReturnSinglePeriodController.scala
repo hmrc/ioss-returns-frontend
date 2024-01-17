@@ -50,9 +50,9 @@ class CorrectionReturnSinglePeriodController @Inject()(
 
       val period = request.userAnswers.period
 
-      val openObligations = obligationService.getOpenObligations(request.iossNumber)
+      val fulfilledObligations = obligationService.getFulfilledObligations(request.iossNumber)
 
-      openObligations.flatMap { obligations =>
+      fulfilledObligations.flatMap { obligations =>
         val periodKeys = obligations.map(obligation => ConvertPeriodKey.yearFromEtmpPeriodKey(obligation.periodKey))
 
         val correctionMonths = obligations.map (obligation => ConvertPeriodKey.monthNameFromEtmpPeriodKey(obligation.periodKey))
@@ -73,9 +73,9 @@ class CorrectionReturnSinglePeriodController @Inject()(
 
       val period = request.userAnswers.period
 
-      val openObligations = obligationService.getOpenObligations(request.iossNumber)
+      val fulfilledObligations = obligationService.getFulfilledObligations(request.iossNumber)
 
-      openObligations.flatMap { obligations =>
+      fulfilledObligations.flatMap { obligations =>
         val periodKeys = obligations.map(obligation => ConvertPeriodKey.yearFromEtmpPeriodKey(obligation.periodKey))
 
         val correctionMonths = obligations.map (obligation => ConvertPeriodKey.monthNameFromEtmpPeriodKey(obligation.periodKey))

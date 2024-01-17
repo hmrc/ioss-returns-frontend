@@ -95,7 +95,8 @@ trait SpecBase
         bind[IdentifierAction].to[FakeIdentifierAction],
         bind[Clock].toInstance(clockToBind),
         bind[DataRetrievalActionProvider].toInstance(new FakeDataRetrievalActionProvider(userAnswers)),
-        bind[GetRegistrationAction].toInstance(new FakeGetRegistrationAction(registration))
+        bind[GetRegistrationAction].toInstance(new FakeGetRegistrationAction(registration)),
+        bind[CheckSubmittedReturnsFilterProvider].toInstance(new FakeCheckSubmittedReturnsFilterProvider())
       )
   }
 }

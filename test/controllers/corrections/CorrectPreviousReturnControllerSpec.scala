@@ -42,22 +42,22 @@ class CorrectPreviousReturnControllerSpec extends SpecBase with MockitoSugar {
 
   private val singleEtmpObligationDetails: Seq[EtmpObligationDetails] = Seq(
     EtmpObligationDetails(
-      status = EtmpObligationsFulfilmentStatus.Open,
+      status = EtmpObligationsFulfilmentStatus.Fulfilled,
       periodKey = "23AL"
     )
   )
 
   private val etmpObligationDetails: Seq[EtmpObligationDetails] = Seq(
     EtmpObligationDetails(
-      status = EtmpObligationsFulfilmentStatus.Open,
+      status = EtmpObligationsFulfilmentStatus.Fulfilled,
       periodKey = "23AL"
     ),
     EtmpObligationDetails(
-      status = EtmpObligationsFulfilmentStatus.Open,
+      status = EtmpObligationsFulfilmentStatus.Fulfilled,
       periodKey = "23AK"
     ),
     EtmpObligationDetails(
-      status = EtmpObligationsFulfilmentStatus.Open,
+      status = EtmpObligationsFulfilmentStatus.Fulfilled,
       periodKey = "22AK"
     )
   )
@@ -71,7 +71,7 @@ class CorrectPreviousReturnControllerSpec extends SpecBase with MockitoSugar {
 
     "must return OK and the correct view for a GET" in {
 
-      when(obligationService.getOpenObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
+      when(obligationService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(bind[ObligationsService].toInstance(obligationService))
@@ -91,7 +91,7 @@ class CorrectPreviousReturnControllerSpec extends SpecBase with MockitoSugar {
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      when(obligationService.getOpenObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
+      when(obligationService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
 
       val userAnswers = emptyUserAnswers.set(CorrectPreviousReturnPage(0), true).success.value
 
@@ -113,7 +113,7 @@ class CorrectPreviousReturnControllerSpec extends SpecBase with MockitoSugar {
 
     "must redirect to the multiple period page when valid data is submitted" in {
 
-      when(obligationService.getOpenObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
+      when(obligationService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
 
       val mockSessionRepository = mock[SessionRepository]
 
@@ -141,7 +141,7 @@ class CorrectPreviousReturnControllerSpec extends SpecBase with MockitoSugar {
 
     "must redirect to the single period page when valid data is submitted" in {
 
-      when(obligationService.getOpenObligations(any())(any())) thenReturn singleEtmpObligationDetails.toFuture
+      when(obligationService.getFulfilledObligations(any())(any())) thenReturn singleEtmpObligationDetails.toFuture
 
       val mockSessionRepository = mock[SessionRepository]
 
@@ -169,7 +169,7 @@ class CorrectPreviousReturnControllerSpec extends SpecBase with MockitoSugar {
 
     "must return a Bad Request and errors when invalid data is submitted" in {
 
-      when(obligationService.getOpenObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
+      when(obligationService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(bind[ObligationsService].toInstance(obligationService))

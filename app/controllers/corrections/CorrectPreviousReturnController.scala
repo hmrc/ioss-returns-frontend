@@ -41,14 +41,14 @@ class CorrectPreviousReturnController @Inject()(
 
   val form = formProvider()
 
-  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndRequireData().async {
+  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible().async {
     implicit request =>
 
       val period = request.userAnswers.period
 
-      val openObligations = obligationService.getOpenObligations(request.iossNumber)
+      val fulfilledObligations = obligationService.getFulfilledObligations(request.iossNumber)
 
-      openObligations.flatMap { obligations =>
+      fulfilledObligations.flatMap { obligations =>
 
         val etmpObligationDetails = obligations.size
 
@@ -61,14 +61,14 @@ class CorrectPreviousReturnController @Inject()(
       }
   }
 
-  def onSubmit(waypoints: Waypoints): Action[AnyContent] = cc.authAndRequireData().async {
+  def onSubmit(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible().async {
     implicit request =>
 
       val period = request.userAnswers.period
 
-      val openObligations = obligationService.getOpenObligations(request.iossNumber)
+      val fulfilledObligations = obligationService.getFulfilledObligations(request.iossNumber)
 
-      openObligations.flatMap { obligations =>
+      fulfilledObligations.flatMap { obligations =>
 
         val etmpObligationDetails = obligations.size
 

@@ -53,15 +53,15 @@ class CorrectionReturnYearControllerSpec extends SpecBase with MockitoSugar with
 
   private val etmpObligationDetails: Seq[EtmpObligationDetails] = Seq(
     EtmpObligationDetails(
-      status = EtmpObligationsFulfilmentStatus.Open,
+      status = EtmpObligationsFulfilmentStatus.Fulfilled,
       periodKey = "23AL"
     ),
     EtmpObligationDetails(
-      status = EtmpObligationsFulfilmentStatus.Open,
+      status = EtmpObligationsFulfilmentStatus.Fulfilled,
       periodKey = "23AK"
     ),
     EtmpObligationDetails(
-      status = EtmpObligationsFulfilmentStatus.Open,
+      status = EtmpObligationsFulfilmentStatus.Fulfilled,
       periodKey = "22AK"
     )
   )
@@ -80,7 +80,7 @@ class CorrectionReturnYearControllerSpec extends SpecBase with MockitoSugar with
 
     "must return OK and the correct view for a GET" in {
 
-      when(obligationService.getOpenObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
+      when(obligationService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(bind[ObligationsService].toInstance(obligationService))
@@ -102,7 +102,7 @@ class CorrectionReturnYearControllerSpec extends SpecBase with MockitoSugar with
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      when(obligationService.getOpenObligations(any())(any())).thenReturn(Future.successful(etmpObligationDetails))
+      when(obligationService.getFulfilledObligations(any())(any())).thenReturn(Future.successful(etmpObligationDetails))
 
       val userAnswers = emptyUserAnswers.set(CorrectionReturnYearPage(Index(0)), 2021).success.value
 
@@ -130,7 +130,7 @@ class CorrectionReturnYearControllerSpec extends SpecBase with MockitoSugar with
       val updatedAnswers = emptyUserAnswers.set(CorrectionReturnYearPage(index), 2023).success.value
 
       when(mockSessionRepository.set(updatedAnswers)) thenReturn Future.successful(true)
-      when(obligationService.getOpenObligations(any())(any()))
+      when(obligationService.getFulfilledObligations(any())(any()))
         .thenReturn(Future.successful(Seq(
           EtmpObligationDetails(
             status = EtmpObligationsFulfilmentStatus.Open,
@@ -159,7 +159,7 @@ class CorrectionReturnYearControllerSpec extends SpecBase with MockitoSugar with
 
     "must return a Bad Request and errors when invalid data is submitted" in {
 
-      when(obligationService.getOpenObligations(any())(any())).thenReturn(Future.successful(etmpObligationDetails))
+      when(obligationService.getFulfilledObligations(any())(any())).thenReturn(Future.successful(etmpObligationDetails))
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(bind[ObligationsService].toInstance(obligationService))

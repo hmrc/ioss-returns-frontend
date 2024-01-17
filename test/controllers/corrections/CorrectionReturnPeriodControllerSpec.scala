@@ -50,11 +50,11 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
 
   private val etmpObligationDetails: Seq[EtmpObligationDetails] = Seq(
     EtmpObligationDetails(
-      status = EtmpObligationsFulfilmentStatus.Open,
+      status = EtmpObligationsFulfilmentStatus.Fulfilled,
       periodKey = "23AL"
     ),
     EtmpObligationDetails(
-      status = EtmpObligationsFulfilmentStatus.Open,
+      status = EtmpObligationsFulfilmentStatus.Fulfilled,
       periodKey = "23AK"
     )
   )
@@ -68,7 +68,7 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
 
     "must return OK and the correct view for a GET" in {
 
-      when(obligationService.getOpenObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
+      when(obligationService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
 
       val application = applicationBuilder(userAnswers = Some(selectedYear))
         .overrides(bind[ObligationsService].toInstance(obligationService))
@@ -89,7 +89,7 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      when(obligationService.getOpenObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
+      when(obligationService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
 
       val application = applicationBuilder(userAnswers = Some(selectedYear))
         .overrides(bind[ObligationsService].toInstance(obligationService))
@@ -114,7 +114,7 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
 
       val mockSessionRepository = mock[SessionRepository]
 
-      when(obligationService.getOpenObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
+      when(obligationService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
 
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
@@ -140,7 +140,7 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
 
     "must return a Bad Request and errors when invalid data is submitted" in {
 
-      when(obligationService.getOpenObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
+      when(obligationService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
 
       val application = applicationBuilder(userAnswers = Some(selectedYear))
         .overrides(bind[ObligationsService].toInstance(obligationService))
