@@ -18,7 +18,7 @@ package viewmodels.checkAnswers
 
 import controllers.routes
 import models.UserAnswers
-import pages.Waypoints
+import pages.{CheckAnswersPage, SoldToCountryListPage, Waypoints}
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
@@ -28,14 +28,14 @@ import viewmodels.implicits._
 
 object TotalVatOnSalesSummary extends CurrencyFormatter {
 
-  def row(answers: UserAnswers, totalVatOnSalesOption: Option[BigDecimal], waypoints: Waypoints)(implicit messages: Messages): Option[SummaryListRow] = {
+  def row(answers: UserAnswers, totalVatOnSalesOption: Option[BigDecimal], waypoints: Waypoints, sourcePage: CheckAnswersPage)(implicit messages: Messages): Option[SummaryListRow] = {
     totalVatOnSalesOption.map {
       totalVatOnSales =>
         SummaryListRowViewModel(
           key = "checkYourAnswers.label.vatOnSales",
           value = ValueViewModel(HtmlContent(currencyFormat(totalVatOnSales))).withCssClass("govuk-table__cell--numeric").withCssClass("govuk-!-padding-right-9"),
           actions = Seq(
-            ActionItemViewModel("site.change", routes.SoldToCountryListController.onPageLoad(waypoints).url)
+            ActionItemViewModel("site.change", SoldToCountryListPage().changeLink(waypoints, sourcePage).url)
               .withVisuallyHiddenText(messages("soldGoodsFromEu.changeEUVAT.hidden"))
               .withAttribute(("id", "change-vat-charged-eu"))
 
