@@ -104,9 +104,6 @@ class CheckSubmittedReturnsFilterSpec extends SpecBase with MockitoSugar with Be
 
         val test = etmpObligations.copy(obligations = Seq.empty)
 
-        println(test)
-        println(test.obligations.flatMap(_.obligationDetails))
-
         when(mockConnector.getObligations(any())(any())) thenReturn Future.successful(etmpObligations.copy(obligations = Seq.empty))
 
         val application = applicationBuilder(None)
