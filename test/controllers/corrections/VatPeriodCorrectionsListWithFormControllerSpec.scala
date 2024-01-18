@@ -19,7 +19,7 @@ package controllers.corrections
 import base.SpecBase
 import connectors.VatReturnConnector
 import forms.corrections.VatPeriodCorrectionsListFormProvider
-import models.etmp.{EtmpObligationDetails, EtmpObligations, EtmpObligationsFulfilmentStatus}
+import models.etmp.{EtmpObligation, EtmpObligationDetails, EtmpObligations, EtmpObligationsFulfilmentStatus}
 import models.{Country, Index, Period, UserAnswers}
 import org.jsoup.Jsoup
 import org.mockito.ArgumentMatchers.any
@@ -52,7 +52,7 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
     Future.successful {
 
       val details = periods.map(p => EtmpObligationDetails(status, p.toEtmpPeriodString)) //Period//PeriodWithStatus(period, Complete))))
-      EtmpObligations("", "", details)
+      EtmpObligations(obligations = Seq(EtmpObligation("", "", details)))
     }
   }
 

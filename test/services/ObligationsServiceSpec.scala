@@ -18,7 +18,7 @@ package services
 
 import base.SpecBase
 import connectors.VatReturnConnector
-import models.etmp.{EtmpObligationDetails, EtmpObligations, EtmpObligationsFulfilmentStatus}
+import models.etmp.{EtmpObligation, EtmpObligationDetails, EtmpObligations, EtmpObligationsFulfilmentStatus}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{reset, times, verify, when}
 import org.scalatest.BeforeAndAfterEach
@@ -36,7 +36,7 @@ class ObligationsServiceSpec extends SpecBase with MockitoSugar with BeforeAndAf
   private val mockVatReturnConnector: VatReturnConnector = mock[VatReturnConnector]
   private val obligationsService: ObligationsService = new ObligationsService(mockVatReturnConnector)
 
-  private val etmpObligations: EtmpObligations = EtmpObligations(
+  private val etmpObligations: EtmpObligations = EtmpObligations(obligations = Seq(EtmpObligation(
     referenceNumber = "IM9001234567",
     referenceType = "IOSS",
     obligationDetails = Seq(
@@ -57,7 +57,7 @@ class ObligationsServiceSpec extends SpecBase with MockitoSugar with BeforeAndAf
         periodKey = "23AK"
       )
     )
-  )
+  )))
 
   override def beforeEach(): Unit = {
     reset(mockVatReturnConnector)

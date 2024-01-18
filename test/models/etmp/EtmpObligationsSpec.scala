@@ -21,9 +21,9 @@ import play.api.libs.json.{JsSuccess, Json}
 
 class EtmpObligationsSpec extends SpecBase {
 
-  private val referenceNumber: String = arbitraryObligations.arbitrary.sample.value.referenceNumber
-  private val referenceType: String = arbitraryObligations.arbitrary.sample.value.referenceType
-  private val obligationDetails: Seq[EtmpObligationDetails] = arbitraryObligations.arbitrary.sample.value.obligationDetails
+  private val referenceNumber: String = arbitraryObligations.arbitrary.sample.value.obligations.head.referenceNumber
+  private val referenceType: String = arbitraryObligations.arbitrary.sample.value.obligations.head.referenceType
+  private val obligationDetails: Seq[EtmpObligationDetails] = arbitraryObligations.arbitrary.sample.value.obligations.head.obligationDetails
 
 
   "EtmpObligations" - {
@@ -31,21 +31,25 @@ class EtmpObligationsSpec extends SpecBase {
     "must deserialise/serialise to and from EtmpObligations" in {
 
       val json = Json.obj(
-        "referenceNumber" -> referenceNumber,
-        "referenceType" -> referenceType,
-        "obligationDetails" -> obligationDetails.map { obligationDetail =>
+        "obligations" -> Json.arr(
           Json.obj(
-            "status" -> obligationDetail.status,
-            "periodKey" -> obligationDetail.periodKey
+            "referenceNumber" -> referenceNumber,
+            "referenceType" -> referenceType,
+            "obligationDetails" -> obligationDetails.map { obligationDetail =>
+              Json.obj(
+                "status" -> obligationDetail.status,
+                "periodKey" -> obligationDetail.periodKey
+              )
+            }
           )
-        }
+        )
       )
 
-      val expectedResult = EtmpObligations(
+      val expectedResult = EtmpObligations(obligations = Seq(EtmpObligation(
         referenceNumber = referenceNumber,
         referenceType = referenceType,
         obligationDetails = obligationDetails
-      )
+      )))
 
       json mustBe Json.toJson(expectedResult)
       json.validate[EtmpObligations] mustBe JsSuccess(expectedResult)

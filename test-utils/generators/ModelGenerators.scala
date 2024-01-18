@@ -28,7 +28,7 @@ import scala.math.BigDecimal.RoundingMode
 
 trait ModelGenerators {
 
-  self : Generators =>
+  self: Generators =>
 
   implicit lazy val arbitraryCountry: Arbitrary[Country] =
     Arbitrary {
@@ -46,10 +46,10 @@ trait ModelGenerators {
     }
 
   implicit lazy val salesAtVatRate: Arbitrary[OptionalSalesAtVatRate] =
-    Arbitrary{
+    Arbitrary {
       for {
         netValueOfSales <- arbitrary[BigDecimal]
-         vatOnSales <- arbitraryVatOnSales.arbitrary
+        vatOnSales <- arbitraryVatOnSales.arbitrary
       } yield OptionalSalesAtVatRate(Some(netValueOfSales), Some(vatOnSales))
     }
 
@@ -337,11 +337,11 @@ trait ModelGenerators {
         referenceNumber <- arbitrary[String]
         obligationDetails <- Gen.listOfN(3, arbitrary[EtmpObligationDetails])
       } yield {
-        EtmpObligations(
+        EtmpObligations(Seq(EtmpObligation(
           referenceNumber = referenceNumber,
           referenceType = "IOSS",
           obligationDetails = obligationDetails
-        )
+        )))
       }
     }
 }

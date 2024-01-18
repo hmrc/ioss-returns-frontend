@@ -17,6 +17,7 @@
 package controllers.actions
 
 import connectors.VatReturnConnector
+import logging.Logging
 import models.etmp.{EtmpObligations, EtmpObligationsFulfilmentStatus}
 import models.requests.DataRequest
 import play.api.mvc.Results.Redirect
@@ -30,7 +31,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class CheckSubmittedReturnsFilterImpl(
                                      connector: VatReturnConnector
                                      )(implicit val executionContext: ExecutionContext)
-  extends ActionFilter[DataRequest] {
+  extends ActionFilter[DataRequest] with Logging {
 
   override protected def filter[A](request: DataRequest[A]): Future[Option[Result]] = {
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
@@ -38,13 +39,15 @@ class CheckSubmittedReturnsFilterImpl(
     connector.getObligations(request.iossNumber)
       .map(obligations)
       .recover {
-        case _ => None
+        case e: Exception =>
+          logger.error(s"Error occurred while getting obligations ${e.getMessage}", e)
+          None
       }
   }
 
     private def obligations(etmpObligations: EtmpObligations): Option[Result] = {
-      etmpObligations.obligationDetails.headOption match {
-        case Some(details) if details.status == EtmpObligationsFulfilmentStatus.Fulfilled =>
+      etmpObligations.obligations.flatMap(_.obligationDetails).minByOption(_.periodKey) match {
+        case Some(etmpObligation) if etmpObligation.status == EtmpObligationsFulfilmentStatus.Fulfilled =>
           None
         case _ =>
           Some(Redirect(controllers.routes.CheckYourAnswersController.onPageLoad()))
