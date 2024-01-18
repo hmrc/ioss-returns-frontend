@@ -16,7 +16,6 @@
 
 package viewmodels.checkAnswers
 
-import controllers.routes
 import models.UserAnswers
 import pages.{CheckAnswersPage, SoldToCountryListPage, Waypoints}
 import play.api.i18n.Messages

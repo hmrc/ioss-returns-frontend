@@ -49,5 +49,5 @@ class PaymentsServiceImpl @Inject()(
 trait PaymentsService {
   def prepareFinancialData()(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[PrepareData]
 
-  def makePayment(vrn: Vrn, period: Period, payment: Payment)(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[ReturnPaymentResponse]
+  def makePayment(iossNumber: String, period: Period, payment: Payment)(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[ReturnPaymentResponse]
 }
