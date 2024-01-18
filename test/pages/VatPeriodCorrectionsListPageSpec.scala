@@ -18,14 +18,14 @@ package pages
 
 import connectors.VatReturnConnector
 import controllers.actions.AuthenticatedControllerComponents
-import models.{Index, NormalMode, Period}
+import models.{Index, Period}
 import org.scalatestplus.mockito.MockitoSugar.mock
 import pages.behaviours.PageBehaviours
 import pages.corrections.{CorrectionReturnPeriodPage, VatPeriodCorrectionsListPage}
 import play.api.inject.bind
 
-import scala.util.Success
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.Success
 
 
 class VatPeriodCorrectionsListPageSpec extends PageBehaviours {

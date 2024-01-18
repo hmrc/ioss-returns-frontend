@@ -18,7 +18,7 @@ package controllers.corrections
 
 import base.SpecBase
 import forms.corrections.RemovePeriodCorrectionFormProvider
-import models.{Country, Index, NormalMode}
+import models.{Country, Index}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{never, times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar

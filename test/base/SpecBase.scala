@@ -18,16 +18,15 @@ package base
 
 import controllers.actions._
 import generators.{Generators, UserAnswersGenerator}
-import models.{Index, Period, RegistrationWrapper, UserAnswers}
 import models.{Country, Index, Period, RegistrationWrapper, UserAnswers, VatOnSales, VatOnSalesChoice, VatRateFromCountry, VatRateType}
 import org.scalacheck.Arbitrary
 import org.scalacheck.Arbitrary._
-import org.scalatest.{OptionValues, TryValues}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
+import org.scalatest.{OptionValues, TryValues}
+import pages.corrections.{CorrectPreviousReturnPage, CorrectionReturnYearPage}
 import pages.{EmptyWaypoints, SalesToCountryPage, SoldGoodsPage, SoldToCountryPage, VatOnSalesPage, VatRatesFromCountryPage, Waypoints}
-import pages.corrections.{CorrectionReturnYearPage, CorrectPreviousReturnPage}
 import play.api.Application
 import play.api.i18n.{Messages, MessagesApi}
 import play.api.inject.bind

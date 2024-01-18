@@ -16,8 +16,8 @@
 
 package pages.corrections
 
-import models.{CheckMode, Index, NormalMode, UserAnswers}
-import pages.{Page, PageAndWaypoints, QuestionPage, Waypoints}
+import models.{Index, UserAnswers}
+import pages.{Page, QuestionPage, Waypoints}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 import queries.DeriveNumberOfCorrectionPeriods

@@ -25,10 +25,10 @@ import uk.gov.hmrc.http.HeaderCarrier
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class PaymentsService @Inject()(
+class PaymentsServiceImpl @Inject()(
                                  financialDataConnector: FinancialDataConnector,
                                  paymentConnector: PaymentConnector
-                               ) {
+                               ) extends PaymentsService {
   def prepareFinancialData()(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[PrepareData] = {
     financialDataConnector.prepareFinancialData()
   }
@@ -44,4 +44,10 @@ class PaymentsService @Inject()(
 
     paymentConnector.submit(paymentRequest)
   }
+}
+
+trait PaymentsService {
+  def prepareFinancialData()(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[PrepareData]
+
+  def makePayment(iossNumber: String, period: Period, payment: Payment)(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[ReturnPaymentResponse]
 }

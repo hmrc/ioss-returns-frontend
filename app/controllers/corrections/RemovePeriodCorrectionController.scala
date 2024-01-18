@@ -18,7 +18,7 @@ package controllers.corrections
 
 import controllers.actions._
 import forms.corrections.RemovePeriodCorrectionFormProvider
-import models.{Index, Mode, Period}
+import models.Index
 import pages.Waypoints
 import pages.corrections.RemovePeriodCorrectionPage
 import play.api.i18n.I18nSupport

@@ -16,7 +16,6 @@
 
 package models.etmp
 
-import models.Period
 import play.api.libs.json.{Json, OFormat}
 
 case class EtmpObligations(

@@ -19,7 +19,8 @@ package controllers
 import config.FrontendAppConfig
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
-import models.payments.Payment
+import models.etmp.EtmpExclusion
+import models.etmp.EtmpExclusionReason.{NoLongerSupplies, Reversal, TransferringMSID, VoluntarilyLeaves}
 import pages.Waypoints
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -28,7 +29,7 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import viewmodels.PaymentsViewModel
 import views.html.YourAccountView
 
-import java.time.LocalDate
+import java.time.{Clock, LocalDate}
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
@@ -36,6 +37,7 @@ class YourAccountController @Inject()(
                                        cc: AuthenticatedControllerComponents,
                                        paymentsService: PaymentsService,
                                        view: YourAccountView,
+                                       clock: Clock,
                                        appConfig: FrontendAppConfig
                                      )(implicit ec: ExecutionContext)
 
@@ -46,13 +48,30 @@ class YourAccountController @Inject()(
   def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request =>
 
+      val lastExclusion: Option[EtmpExclusion] = request.registrationWrapper.registration.exclusions.maxByOption(_.effectiveDate)
+
+      val cancelYourRequestToLeaveUrl = lastExclusion match {
+        case Some(exclusion) if Seq(NoLongerSupplies, VoluntarilyLeaves, TransferringMSID).contains(exclusion.exclusionReason) &&
+          LocalDate.now(clock).isBefore(exclusion.effectiveDate) => Some(appConfig.cancelYourRequestToLeaveUrl)
+        case _ => None
+      }
+
+      val leaveThisServiceUrl = if (lastExclusion.isEmpty || lastExclusion.exists(_.exclusionReason == Reversal)) {
+        Some(appConfig.leaveThisServiceUrl)
+      } else {
+        None
+      }
+
       paymentsService.prepareFinancialData().map(payments => {
         val paymentsViewModel = PaymentsViewModel(payments.duePayments, payments.overduePayments)
-        Ok(view(request.registrationWrapper.vatInfo.getName, request.iossNumber, paymentsViewModel, appConfig.amendRegistrationUrl))
+        Ok(view(
+          request.registrationWrapper.vatInfo.getName,
+          request.iossNumber,
+          paymentsViewModel,
+          appConfig.amendRegistrationUrl,
+          leaveThisServiceUrl,
+          cancelYourRequestToLeaveUrl
+        ))
       })
-  }
-
-  private def isDue(payment: Payment): Boolean = {
-    payment.period.lastDay.isAfter(LocalDate.now().minusDays(1))
   }
 }

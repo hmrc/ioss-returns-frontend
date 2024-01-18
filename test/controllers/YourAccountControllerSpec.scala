@@ -17,18 +17,24 @@
 package controllers
 
 import base.SpecBase
+import config.FrontendAppConfig
 import generators.Generators
-import models.payments.{Payment, PaymentStatus, PrepareData}
 import models.{Period, RegistrationWrapper}
+import models.etmp.EtmpExclusion
+import models.etmp.EtmpExclusionReason.NoLongerSupplies
+import models.payments.{Payment, PaymentStatus, PrepareData}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
+import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import services.PaymentsService
-import play.api.inject.bind
+import viewmodels.PaymentsViewModel
+import views.html.YourAccountView
+
 import java.time.{LocalDate, Month}
 import scala.concurrent.Future
 
@@ -75,5 +81,90 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
       }
     }
 
+    "must return OK with leaveThisService link and without cancelYourRequestToLeave link when a trader is not excluded" in {
+      val registrationWrapper: RegistrationWrapper = arbitrary[RegistrationWrapper].sample.value
+
+      val registrationWrapperEmptyExclusions: RegistrationWrapper =
+        registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
+
+
+      val paymentsService = mock[PaymentsService]
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWrapperEmptyExclusions)
+        .overrides(
+          bind[PaymentsService].toInstance(paymentsService)
+        )
+        .build()
+
+
+      val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty)(messages(application))
+      when(paymentsService.prepareFinancialData()(any(), any())) thenReturn
+        Future.successful(PrepareData(List.empty, List.empty, 0, 0, iossNumber))
+
+      running(application) {
+
+        val request = FakeRequest(GET, routes.YourAccountController.onPageLoad(waypoints).url)
+
+        val result = route(application, request).value
+
+        val view = application.injector.instanceOf[YourAccountView]
+        val appConfig = application.injector.instanceOf[FrontendAppConfig]
+
+        status(result) mustBe OK
+        contentAsString(result) mustBe view(
+          registrationWrapper.vatInfo.getName,
+          iossNumber,
+          paymentsViewModel,
+          appConfig.amendRegistrationUrl,
+          Some(appConfig.leaveThisServiceUrl),
+          None
+        )(request, messages(application)).toString
+      }
+    }
+
+    "must return OK with cancelYourRequestToLeave link and without leaveThisService link when a trader is excluded" in {
+      val registrationWrapper: RegistrationWrapper = arbitrary[RegistrationWrapper].sample.value
+
+      val exclusion = EtmpExclusion(
+        NoLongerSupplies,
+        LocalDate.now(stubClockAtArbitraryDate).plusDays(2),
+        LocalDate.now(stubClockAtArbitraryDate).minusDays(1),
+        false
+      )
+      val registrationWrapperEmptyExclusions: RegistrationWrapper =
+        registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq(exclusion)))
+
+      val paymentsService = mock[PaymentsService]
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWrapperEmptyExclusions)
+        .overrides(
+          bind[PaymentsService].toInstance(paymentsService)
+        )
+        .build()
+
+      val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty)(messages(application))
+      when(paymentsService.prepareFinancialData()(any(), any())) thenReturn
+        Future.successful(PrepareData(List.empty, List.empty, 0, 0, iossNumber))
+
+      running(application) {
+
+        val request = FakeRequest(GET, routes.YourAccountController.onPageLoad(waypoints).url)
+
+        val result = route(application, request).value
+
+        val view = application.injector.instanceOf[YourAccountView]
+        val appConfig = application.injector.instanceOf[FrontendAppConfig]
+
+        status(result) mustBe OK
+        contentAsString(result) mustBe view(
+          registrationWrapper.vatInfo.getName,
+          iossNumber,
+          paymentsViewModel,
+          appConfig.amendRegistrationUrl,
+          None,
+          Some(appConfig.cancelYourRequestToLeaveUrl)
+        )(request, messages(application)).toString
+      }
+    }
   }
 }
