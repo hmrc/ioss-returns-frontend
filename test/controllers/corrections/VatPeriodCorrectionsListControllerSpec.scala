@@ -59,7 +59,7 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
 
       val details = periods.map(period => EtmpObligationDetails(EtmpObligationsFulfilmentStatus.Fulfilled, period.toEtmpPeriodString))
 
-      EtmpObligations(obligations = Seq(EtmpObligation("", "", details)))
+      EtmpObligations(obligations = Seq(EtmpObligation(details)))
     }
   }
 
@@ -103,7 +103,7 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
     "when there are no previous return periods must redirect to JourneyRecovery" in {
 
       when(mockVatReturnConnector.getObligations(any())(any()))
-        .thenReturn(Future.successful(EtmpObligations(obligations = Seq(EtmpObligation("", "", Nil)))))
+        .thenReturn(Future.successful(EtmpObligations(obligations = Seq(EtmpObligation(Nil)))))
 
       val application = applicationBuilder(userAnswers = Some(completeUserAnswers))
         .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))

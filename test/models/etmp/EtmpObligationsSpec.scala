@@ -21,8 +21,6 @@ import play.api.libs.json.{JsSuccess, Json}
 
 class EtmpObligationsSpec extends SpecBase {
 
-  private val referenceNumber: String = arbitraryObligations.arbitrary.sample.value.obligations.head.referenceNumber
-  private val referenceType: String = arbitraryObligations.arbitrary.sample.value.obligations.head.referenceType
   private val obligationDetails: Seq[EtmpObligationDetails] = arbitraryObligations.arbitrary.sample.value.obligations.head.obligationDetails
 
 
@@ -33,8 +31,6 @@ class EtmpObligationsSpec extends SpecBase {
       val json = Json.obj(
         "obligations" -> Json.arr(
           Json.obj(
-            "referenceNumber" -> referenceNumber,
-            "referenceType" -> referenceType,
             "obligationDetails" -> obligationDetails.map { obligationDetail =>
               Json.obj(
                 "status" -> obligationDetail.status,
@@ -46,8 +42,6 @@ class EtmpObligationsSpec extends SpecBase {
       )
 
       val expectedResult = EtmpObligations(obligations = Seq(EtmpObligation(
-        referenceNumber = referenceNumber,
-        referenceType = referenceType,
         obligationDetails = obligationDetails
       )))
 
