@@ -29,12 +29,12 @@ class VatPeriodCorrectionsService @Inject()(vatReturnConnector: VatReturnConnect
 
   def getCorrectionPeriodsWhereCountryVatCorrectionMissesAtLeastOnce(periodWithCorrections: Option[List[PeriodWithCorrections]]): List[Period] = {
     periodWithCorrections
-      .map(_.filter(_.correctionsToCountry.getOrElse(List.empty).exists(_.countryVatCorrection.isEmpty)))//Corrections where vatcorrections has not been entered
+      .map(_.filter(_.correctionsToCountry.getOrElse(List.empty).exists(_.countryVatCorrection.isEmpty))) //Corrections where vatcorrections has not been entered
       .map(_.map(_.correctionReturnPeriod))
       .getOrElse(List())
   }
 
   def listStatuses(iossNumber: String)(implicit hc: HeaderCarrier): Future[Seq[EtmpObligationDetails]] =
-    vatReturnConnector.getObligations(iossNumber).map(_.obligationDetails)
+    vatReturnConnector.getObligations(iossNumber).map(_.obligations.flatMap(_.obligationDetails))
 
 }

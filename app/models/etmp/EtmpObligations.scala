@@ -18,13 +18,19 @@ package models.etmp
 
 import play.api.libs.json.{Json, OFormat}
 
-case class EtmpObligations(
+case class EtmpObligations(obligations: Seq[EtmpObligation])
+
+object EtmpObligations {
+  implicit val format: OFormat[EtmpObligations] = Json.format[EtmpObligations]
+}
+
+case class EtmpObligation(
                             referenceNumber: String,
                             referenceType: String,
                             obligationDetails: Seq[EtmpObligationDetails]
                           )
 
-object EtmpObligations {
+object EtmpObligation {
 
-  implicit val format: OFormat[EtmpObligations] = Json.format[EtmpObligations]
+  implicit val format: OFormat[EtmpObligation] = Json.format[EtmpObligation]
 }

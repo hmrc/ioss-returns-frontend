@@ -18,8 +18,8 @@ package controllers.corrections
 
 import base.SpecBase
 import connectors.VatReturnConnector
-import models.etmp.{EtmpObligationDetails, EtmpObligations, EtmpObligationsFulfilmentStatus}
 import models.{Country, Index, Period, UserAnswers}
+import models.etmp.{EtmpObligation, EtmpObligationDetails, EtmpObligations, EtmpObligationsFulfilmentStatus}
 import org.jsoup.Jsoup
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
@@ -59,7 +59,7 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
 
       val details = periods.map(period => EtmpObligationDetails(EtmpObligationsFulfilmentStatus.Fulfilled, period.toEtmpPeriodString))
 
-      EtmpObligations("", "", details)
+      EtmpObligations(obligations = Seq(EtmpObligation("", "", details)))
     }
   }
 
@@ -103,7 +103,7 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
     "when there are no previous return periods must redirect to JourneyRecovery" in {
 
       when(mockVatReturnConnector.getObligations(any())(any()))
-        .thenReturn(Future.successful(EtmpObligations("", "", Nil)))
+        .thenReturn(Future.successful(EtmpObligations(obligations = Seq(EtmpObligation("", "", Nil)))))
 
       val application = applicationBuilder(userAnswers = Some(completeUserAnswers))
         .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))

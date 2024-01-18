@@ -29,13 +29,13 @@ class ObligationsService @Inject()(vatReturnConnector: VatReturnConnector)
 
   def getOpenObligations(iossNumber: String)(implicit hc: HeaderCarrier): Future[Seq[EtmpObligationDetails]] = {
     vatReturnConnector.getObligations(iossNumber).map { etmpObligations =>
-      etmpObligations.obligationDetails.filter(_.status == EtmpObligationsFulfilmentStatus.Open)
+      etmpObligations.obligations.flatMap(_.obligationDetails).filter(_.status == EtmpObligationsFulfilmentStatus.Open)
     }
   }
 
   def getFulfilledObligations(iossNumber: String)(implicit hc: HeaderCarrier): Future[Seq[EtmpObligationDetails]] = {
     vatReturnConnector.getObligations(iossNumber).map { etmpObligations =>
-      etmpObligations.obligationDetails.filter(_.status == EtmpObligationsFulfilmentStatus.Fulfilled)
+      etmpObligations.obligations.flatMap(_.obligationDetails).filter(_.status == EtmpObligationsFulfilmentStatus.Fulfilled)
     }
   }
 }

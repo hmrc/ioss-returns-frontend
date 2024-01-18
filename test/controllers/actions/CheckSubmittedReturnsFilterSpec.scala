@@ -18,7 +18,7 @@ package controllers.actions
 
 import base.SpecBase
 import connectors.VatReturnConnector
-import models.etmp.{EtmpObligationDetails, EtmpObligations, EtmpObligationsFulfilmentStatus}
+import models.etmp.{EtmpObligation, EtmpObligationDetails, EtmpObligations, EtmpObligationsFulfilmentStatus}
 import models.requests.DataRequest
 import org.mockito.ArgumentMatchers.any
 import org.scalatest.BeforeAndAfterEach
@@ -65,13 +65,13 @@ class CheckSubmittedReturnsFilterSpec extends SpecBase with MockitoSugar with Be
 
   )
 
-  private val openEtmpObligation = EtmpObligations(
+  private val openEtmpObligation = EtmpObligations(obligations = Seq(EtmpObligation(
     iossNumber, "IOSS", openObligationDetails
-  )
+  )))
 
-  private val fulfilledEtmpObligation = EtmpObligations(
+  private val fulfilledEtmpObligation = EtmpObligations(obligations = Seq(EtmpObligation(
     iossNumber, "IOSS", fulfilleddObligationDetails
-  )
+  )))
 
   override def beforeEach(): Unit = {
     Mockito.reset(mockConnector)
@@ -102,7 +102,12 @@ class CheckSubmittedReturnsFilterSpec extends SpecBase with MockitoSugar with Be
 
       "when no returns are found" in {
 
-        when(mockConnector.getObligations(any())(any())) thenReturn Future.successful(etmpObligations.copy(obligationDetails = Seq.empty))
+        val test = etmpObligations.copy(obligations = Seq.empty)
+
+        println(test)
+        println(test.obligations.flatMap(_.obligationDetails))
+
+        when(mockConnector.getObligations(any())(any())) thenReturn Future.successful(etmpObligations.copy(obligations = Seq.empty))
 
         val application = applicationBuilder(None)
           .overrides(bind[VatReturnConnector].toInstance(mockConnector))
