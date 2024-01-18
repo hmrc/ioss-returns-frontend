@@ -20,17 +20,22 @@ import base.SpecBase
 import controllers.routes
 import forms.corrections.CorrectionListCountriesFormProvider
 import models.Country
+import models.etmp.{EtmpObligationDetails, EtmpObligationsFulfilmentStatus}
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.when
+import org.mockito.ArgumentMatchersSugar.eqTo
+import org.mockito.Mockito.{times, verify, when}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.mockito.MockitoSugar
-import pages.corrections.{CorrectionCountryPage, CorrectionListCountriesPage}
+import pages.corrections._
 import play.api.data.Form
 import play.api.i18n.Messages
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
+import services.ObligationsService
+import utils.ConvertPeriodKey
+import utils.FutureSyntax.FutureOps
 import viewmodels.checkAnswers.corrections.CorrectionListCountriesSummary
 import viewmodels.govuk.SummaryListFluency
 import views.html.corrections.CorrectionListCountriesView
@@ -45,15 +50,30 @@ class CorrectionListCountriesControllerSpec extends SpecBase with SummaryListFlu
   lazy val correctionListCountriesRoute: String = controllers.corrections.routes.CorrectionListCountriesController.onPageLoad(waypoints, index).url
 
   private val country = arbitrary[Country].sample.value
+  private val obligationService: ObligationsService = mock[ObligationsService]
+  private val correctionPeriod = "December 2023"
+  private val etmpObligationDetails: Seq[EtmpObligationDetails] = Seq(
+    EtmpObligationDetails(
+      status = EtmpObligationsFulfilmentStatus.Fulfilled,
+      periodKey = "23AL"
+    )
+  )
 
   private val baseAnswers = emptyUserAnswers
     .set(CorrectionCountryPage(index, index), country).success.value
+    .set(CorrectionReturnYearPage(index), 2023).success.value
+    .set(CorrectionReturnPeriodPage[String](index), "December").success.value
+    .set(VatAmountCorrectionCountryPage(index, index), BigDecimal(100.0)).success.value
 
   "CorrectionListCountries Controller" - {
 
     "must return OK and the correct view for a GET" in {
 
-      val application = applicationBuilder(userAnswers = Some(baseAnswers)).build()
+      when(obligationService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
+
+      val application = applicationBuilder(userAnswers = Some(baseAnswers))
+        .overrides(bind[ObligationsService].toInstance(obligationService))
+        .build()
 
       running(application) {
         implicit val msgs: Messages = messages(application)
@@ -70,6 +90,7 @@ class CorrectionListCountriesControllerSpec extends SpecBase with SummaryListFlu
           waypoints,
           list,
           period,
+          correctionPeriod,
           index,
           canAddCountries = true
         )(request, messages(application)).toString
@@ -78,7 +99,11 @@ class CorrectionListCountriesControllerSpec extends SpecBase with SummaryListFlu
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val application = applicationBuilder(userAnswers = Some(baseAnswers)).build()
+      when(obligationService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
+
+      val application = applicationBuilder(userAnswers = Some(baseAnswers))
+        .overrides(bind[ObligationsService].toInstance(obligationService))
+        .build()
 
       running(application) {
         implicit val msgs: Messages = messages(application)
@@ -95,6 +120,7 @@ class CorrectionListCountriesControllerSpec extends SpecBase with SummaryListFlu
           waypoints,
           list,
           period,
+          correctionPeriod,
           index,
           canAddCountries = true
         )(request, messages(application)).toString
@@ -105,13 +131,14 @@ class CorrectionListCountriesControllerSpec extends SpecBase with SummaryListFlu
 
       val mockSessionRepository = mock[SessionRepository]
 
+      when(obligationService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
+
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
       val application =
         applicationBuilder(userAnswers = Some(baseAnswers))
-          .overrides(
-            bind[SessionRepository].toInstance(mockSessionRepository)
-          )
+          .overrides(bind[ObligationsService].toInstance(obligationService))
+          .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
           .build()
 
       running(application) {
@@ -121,13 +148,17 @@ class CorrectionListCountriesControllerSpec extends SpecBase with SummaryListFlu
         val expectedAnswers = emptyUserAnswers.set(CorrectionListCountriesPage(index), true).success.value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual CorrectionListCountriesPage(index, Some(index)).navigate(waypoints, emptyUserAnswers, expectedAnswers).url
+        redirectLocation(result).value mustEqual CorrectionListCountriesPage(index, Some(index)).navigate(waypoints, expectedAnswers, expectedAnswers).url
       }
     }
 
     "must return a Bad Request and errors when invalid data is submitted" in {
 
-      val application = applicationBuilder(userAnswers = Some(baseAnswers)).build()
+      when(obligationService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
+
+      val application = applicationBuilder(userAnswers = Some(baseAnswers))
+        .overrides(bind[ObligationsService].toInstance(obligationService))
+        .build()
 
       running(application) {
         implicit val msgs: Messages = messages(application)
@@ -148,6 +179,7 @@ class CorrectionListCountriesControllerSpec extends SpecBase with SummaryListFlu
           waypoints,
           list,
           period,
+          correctionPeriod,
           index,
           canAddCountries = true
         )(request, messages(application)).toString
@@ -156,7 +188,9 @@ class CorrectionListCountriesControllerSpec extends SpecBase with SummaryListFlu
 
     "must redirect to Journey Recovery for a GET if no existing data is found" in {
 
-      val application = applicationBuilder(userAnswers = None).build()
+      val application = applicationBuilder(userAnswers = None)
+        .overrides(bind[ObligationsService].toInstance(obligationService))
+        .build()
 
       running(application) {
         val request = FakeRequest(GET, correctionListCountriesRoute)
