@@ -37,8 +37,6 @@ class ObligationsServiceSpec extends SpecBase with MockitoSugar with BeforeAndAf
   private val obligationsService: ObligationsService = new ObligationsService(mockVatReturnConnector)
 
   private val etmpObligations: EtmpObligations = EtmpObligations(obligations = Seq(EtmpObligation(
-    referenceNumber = "IM9001234567",
-    referenceType = "IOSS",
     obligationDetails = Seq(
       EtmpObligationDetails(
         status = EtmpObligationsFulfilmentStatus.Fulfilled,

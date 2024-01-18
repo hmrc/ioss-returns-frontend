@@ -52,7 +52,7 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
     Future.successful {
 
       val details = periods.map(p => EtmpObligationDetails(status, p.toEtmpPeriodString)) //Period//PeriodWithStatus(period, Complete))))
-      EtmpObligations(obligations = Seq(EtmpObligation("", "", details)))
+      EtmpObligations(obligations = Seq(EtmpObligation(details)))
     }
   }
 

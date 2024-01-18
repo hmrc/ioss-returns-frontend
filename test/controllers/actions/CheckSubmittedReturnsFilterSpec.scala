@@ -65,13 +65,9 @@ class CheckSubmittedReturnsFilterSpec extends SpecBase with MockitoSugar with Be
 
   )
 
-  private val openEtmpObligation = EtmpObligations(obligations = Seq(EtmpObligation(
-    iossNumber, "IOSS", openObligationDetails
-  )))
+  private val openEtmpObligation = EtmpObligations(obligations = Seq(EtmpObligation(openObligationDetails)))
 
-  private val fulfilledEtmpObligation = EtmpObligations(obligations = Seq(EtmpObligation(
-    iossNumber, "IOSS", fulfilleddObligationDetails
-  )))
+  private val fulfilledEtmpObligation = EtmpObligations(obligations = Seq(EtmpObligation(fulfilleddObligationDetails)))
 
   override def beforeEach(): Unit = {
     Mockito.reset(mockConnector)
