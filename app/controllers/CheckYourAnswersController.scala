@@ -123,8 +123,8 @@ class CheckYourAnswersController @Inject()(
     SummaryListViewModel(
       rows = Seq(
         SoldGoodsSummary.row(request.userAnswers, waypoints, CheckYourAnswersPage),
-        TotalNetValueOfSalesSummary.row(request.userAnswers, salesAtVatRateService.getTotalNetSales(request.userAnswers), waypoints),
-        TotalVatOnSalesSummary.row(request.userAnswers, salesAtVatRateService.getTotalVatOnSales(request.userAnswers), waypoints)
+        TotalNetValueOfSalesSummary.row(request.userAnswers, salesAtVatRateService.getTotalNetSales(request.userAnswers), waypoints, CheckYourAnswersPage),
+        TotalVatOnSalesSummary.row(request.userAnswers, salesAtVatRateService.getTotalVatOnSales(request.userAnswers), waypoints, CheckYourAnswersPage)
       ).flatten
     ).withCard(
       card = Card(

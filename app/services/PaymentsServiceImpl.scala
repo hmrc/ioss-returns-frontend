@@ -20,7 +20,6 @@ import connectors.PaymentHttpParser.ReturnPaymentResponse
 import connectors.{FinancialDataConnector, PaymentConnector}
 import models.Period
 import models.payments._
-import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.HeaderCarrier
 
 import javax.inject.Inject
@@ -34,12 +33,13 @@ class PaymentsServiceImpl @Inject()(
     financialDataConnector.prepareFinancialData()
   }
 
-  def makePayment(vrn: Vrn, period: Period, payment: Payment)(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[ReturnPaymentResponse] = {
+  def makePayment(iossNumber: String, period: Period, payment: Payment)(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[ReturnPaymentResponse] = {
     val paymentRequest =
       PaymentRequest(
-        vrn,
+        iossNumber,
         PaymentPeriod(period.year, period.month),
-        (payment.amountOwed * 100).longValue
+        (payment.amountOwed * 100).longValue,
+        None
       )
 
     paymentConnector.submit(paymentRequest)

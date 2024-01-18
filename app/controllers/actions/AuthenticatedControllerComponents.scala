@@ -39,6 +39,8 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
 
   def requireData: DataRequiredAction
 
+  def requirePreviousReturns:  CheckSubmittedReturnsFilterProvider
+
   def auth: ActionBuilder[IdentifierRequest, AnyContent] =
     actionBuilder andThen identify
 
@@ -57,6 +59,11 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
       requireData
   }
 
+  def authAndGetDataAndCorrectionEligible(): ActionBuilder[DataRequest, AnyContent] = {
+    authAndRequireData() andThen
+      requirePreviousReturns()
+  }
+
 }
 
 case class DefaultAuthenticatedControllerComponents @Inject()(
@@ -71,5 +78,6 @@ case class DefaultAuthenticatedControllerComponents @Inject()(
                                                                identify: IdentifierAction,
                                                                getRegistration: GetRegistrationAction,
                                                                getData: DataRetrievalActionProvider,
-                                                               requireData: DataRequiredAction
+                                                               requireData: DataRequiredAction,
+                                                               requirePreviousReturns: CheckSubmittedReturnsFilterProvider
                                                              ) extends AuthenticatedControllerComponents

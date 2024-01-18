@@ -17,9 +17,9 @@
 package models.payments
 
 import play.api.libs.json.{Json, OFormat}
-import uk.gov.hmrc.domain.Vrn
+import java.time.LocalDate
 
-case class PaymentRequest(vrn: Vrn, period: PaymentPeriod, amountInPence: Long)
+case class PaymentRequest(ioss: String, period: PaymentPeriod, amountInPence: Long, dueDate: Option[LocalDate])
 
 object PaymentRequest {
 

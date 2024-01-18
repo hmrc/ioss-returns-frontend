@@ -52,9 +52,9 @@ class CorrectionReturnYearController @Inject()(
 
       implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
 
-      val openObligations = obligationService.getOpenObligations(request.iossNumber)
+      val fulfilledObligations = obligationService.getFulfilledObligations(request.iossNumber)
 
-      openObligations.map { obligations =>
+      fulfilledObligations.map { obligations =>
         val periodKeys = obligations.map(obligation => ConvertPeriodKey.yearFromEtmpPeriodKey(obligation.periodKey)).distinct
 
         val form: Form[Int] = formProvider(index, periodKeys)
@@ -73,9 +73,9 @@ class CorrectionReturnYearController @Inject()(
 
       val period = request.userAnswers.period
 
-      val openObligations = obligationService.getOpenObligations(request.iossNumber)
+      val fulfilledObligations = obligationService.getFulfilledObligations(request.iossNumber)
 
-      openObligations.flatMap { obligations =>
+      fulfilledObligations.flatMap { obligations =>
         val periodKeys = obligations.map(obligation => ConvertPeriodKey.yearFromEtmpPeriodKey(obligation.periodKey)).distinct
 
         val form: Form[Int] = formProvider(index, periodKeys)
