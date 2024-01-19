@@ -34,8 +34,6 @@ final case class Period(year: Int, month: Month) {
 
   private val firstMonthFormatter = DateTimeFormatter.ofPattern("MMMM")
   private val lastMonthYearFormatter = DateTimeFormatter.ofPattern("MMMM yyyy")
-  val paymentDeadline: LocalDate =
-    firstDay.plusMonths(2).minusDays(1)
 
   def toEtmpPeriodString: String = {
     val lastYearDigits = year.toString.substring(2)
@@ -60,6 +58,9 @@ final case class Period(year: Int, month: Month) {
     }
   }
 
+  val paymentDeadline: LocalDate =
+    firstDay.plusMonths(2).minusDays(1)
+
   def displayText: String =
     s"${month.getDisplayName(TextStyle.FULL, Locale.ENGLISH)} ${year}"
 
@@ -71,6 +72,9 @@ final case class Period(year: Int, month: Month) {
 
   def displayLongText(implicit messages: Messages): String =
     s"${firstDay.format(firstDayFormatter)} ${messages("site.to")} ${lastDay.format(lastDayFormatter)}"
+
+  def zeroPaddedMonth: String =
+    "%02d".format(month.getValue)
 
   override def toString: String = s"$year-M${month.getValue}"
 }
