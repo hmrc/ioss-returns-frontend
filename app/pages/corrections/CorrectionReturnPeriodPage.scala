@@ -35,7 +35,7 @@ case class CorrectionReturnPeriodPage(index: Index) extends QuestionPage[Period]
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
     answers.get(CorrectionReturnPeriodPage(index)) match {
-      case Some(_) => CorrectionCountryPage(Index(0), index)
+      case Some(_) => CorrectionCountryPage(index, Index(0))
       case _ => JourneyRecoveryPage
     }
 }
