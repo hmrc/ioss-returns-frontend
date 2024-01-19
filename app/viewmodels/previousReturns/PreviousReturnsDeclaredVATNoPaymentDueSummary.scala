@@ -22,6 +22,7 @@ import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.Aliases.Key
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
+import utils.CorrectionUtil.calculateNegativeAndZeroCorrections
 import utils.CurrencyFormatter
 import viewmodels.govuk.summarylist._
 import viewmodels.implicits._
@@ -29,22 +30,19 @@ import viewmodels.implicits._
 object PreviousReturnsDeclaredVATNoPaymentDueSummary {
 
   def summaryRowsOfNegativeAndZeroValues(etmpVatReturn: EtmpVatReturn)(implicit messages: Messages): Seq[SummaryListRow] = {
-
-    etmpVatReturn.balanceOfVATDueForMS.filter(balanceOfVatDue => balanceOfVatDue.totalVATDueGBP <= 0)
-      .map { etmpVatReturnBalanceDue =>
-
-        val country = getCountryName(etmpVatReturnBalanceDue.msOfConsumption)
+    calculateNegativeAndZeroCorrections(etmpVatReturn).map {
+      case (country, amount) =>
 
         val value = ValueViewModel(
           HtmlContent(
-            CurrencyFormatter.currencyFormat(etmpVatReturnBalanceDue.totalVATDueGBP)
+            CurrencyFormatter.currencyFormat(amount)
           )
         )
 
         SummaryListRowViewModel(
-          key = Key(country),
+          key = Key(getCountryName(country)),
           value = value
         )
-      }
+    }.toSeq
   }
 }
