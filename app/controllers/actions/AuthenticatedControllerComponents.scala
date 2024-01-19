@@ -39,14 +39,21 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
 
   def requireData: DataRequiredAction
 
+  def checkBouncedEmail: CheckBouncedEmailFilterProvider
+
   def requirePreviousReturns:  CheckSubmittedReturnsFilterProvider
 
   def auth: ActionBuilder[IdentifierRequest, AnyContent] =
     actionBuilder andThen identify
 
-  def authAndGetRegistration: ActionBuilder[RegistrationRequest, AnyContent] = {
+  def authAndGetRegistrationWithoutCheckBouncedEmail: ActionBuilder[RegistrationRequest, AnyContent] = {
     auth andThen
       getRegistration
+  }
+
+  def authAndGetRegistration: ActionBuilder[RegistrationRequest, AnyContent] = {
+    authAndGetRegistrationWithoutCheckBouncedEmail andThen
+      checkBouncedEmail()
   }
 
   def authAndGetOptionalData(): ActionBuilder[OptionalDataRequest, AnyContent] = {
@@ -79,5 +86,6 @@ case class DefaultAuthenticatedControllerComponents @Inject()(
                                                                getRegistration: GetRegistrationAction,
                                                                getData: DataRetrievalActionProvider,
                                                                requireData: DataRequiredAction,
+                                                               checkBouncedEmail: CheckBouncedEmailFilterProvider,
                                                                requirePreviousReturns: CheckSubmittedReturnsFilterProvider
                                                              ) extends AuthenticatedControllerComponents

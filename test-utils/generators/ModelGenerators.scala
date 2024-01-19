@@ -259,6 +259,7 @@ trait ModelGenerators {
           contactName,
           businessTelephoneNumber,
           businessEmailId,
+          unusableStatus = false,
           nonCompliantReturns,
           nonCompliantPayments
         )
