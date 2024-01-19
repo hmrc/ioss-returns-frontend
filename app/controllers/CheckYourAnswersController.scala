@@ -19,20 +19,20 @@ package controllers
 import com.google.inject.Inject
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
-import models.requests.DataRequest
 import models.ValidationError
-import pages.{CheckYourAnswersPage, Waypoints}
+import models.requests.DataRequest
 import pages.corrections.CorrectPreviousReturnPage
+import pages.{CheckYourAnswersPage, Waypoints}
 import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc._
-import queries.AllCorrectionPeriodsQuery
+import queries.AllCorrectionsQuery
 import services._
 import uk.gov.hmrc.govukfrontend.views.Aliases.Card
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{CardTitle, SummaryList}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import viewmodels.checkAnswers._
-import viewmodels.checkAnswers.corrections.{CorrectionReturnPeriodSummary, CorrectPreviousReturnSummary}
+import viewmodels.checkAnswers.corrections.{CorrectPreviousReturnSummary, CorrectionReturnPeriodSummary}
 import viewmodels.govuk.summarylist._
 import views.html.CheckYourAnswersView
 
@@ -56,7 +56,7 @@ class CheckYourAnswersController @Inject()(
 
       val salesFromEuSummaryList = getSalesFromEuSummaryList(request, waypoints)
 
-      val containsCorrections = request.userAnswers.get(AllCorrectionPeriodsQuery).isDefined
+      val containsCorrections = request.userAnswers.get(AllCorrectionsQuery).isDefined
 
       val (noPaymentDueCountries, totalVatToCountries) = salesAtVatRateService.getVatOwedToCountries(request.userAnswers).partition(vat => vat.totalVat <= 0)
 

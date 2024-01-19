@@ -56,7 +56,6 @@
   @govukSummaryList(summaryList)
  }
  @if(containsCorrections) {
-  <p class="govuk-table__caption--l">@messages("checkYourAnswers.vatOwedToEuCountriesAfterCorrections.heading")</p>
   @if(noPaymentDueCountries.nonEmpty) {
    <table class="govuk-table">
     <caption class="govuk-table__caption">
@@ -87,7 +86,7 @@
     <tr class="govuk-!-padding-top-0">
      <td colspan="2" class="govuk-!-padding-top-0">
      @if(containsCorrections) {
-      <p class="govuk-table__caption--m govuk-summary-card__title-wrapper">@messages("checkYourAnswers.vatOwedToEuCountriesAfterCorrections.caption")</p>
+      <div class="govuk-table__caption--s govuk-summary-card__title-wrapper">@messages("checkYourAnswers.vatOwedToEuCountriesAfterCorrections.caption")</div>
      } else {
       <p class="govuk-summary-card__title-wrapper  govuk-!-margin-0">@messages("checkYourAnswers.heading.vatOwned")</p>
      }
