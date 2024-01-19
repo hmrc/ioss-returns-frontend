@@ -22,8 +22,7 @@ import forms.corrections.CorrectionListCountriesFormProvider
 import models.Country
 import models.etmp.{EtmpObligationDetails, EtmpObligationsFulfilmentStatus}
 import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchersSugar.eqTo
-import org.mockito.Mockito.{times, verify, when}
+import org.mockito.Mockito.when
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.mockito.MockitoSugar
 import pages.corrections._
@@ -34,7 +33,6 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
 import services.ObligationsService
-import utils.ConvertPeriodKey
 import utils.FutureSyntax.FutureOps
 import viewmodels.checkAnswers.corrections.CorrectionListCountriesSummary
 import viewmodels.govuk.SummaryListFluency
@@ -51,7 +49,6 @@ class CorrectionListCountriesControllerSpec extends SpecBase with SummaryListFlu
 
   private val country = arbitrary[Country].sample.value
   private val obligationService: ObligationsService = mock[ObligationsService]
-  private val correctionPeriod = "December 2023"
   private val etmpObligationDetails: Seq[EtmpObligationDetails] = Seq(
     EtmpObligationDetails(
       status = EtmpObligationsFulfilmentStatus.Fulfilled,
@@ -62,7 +59,7 @@ class CorrectionListCountriesControllerSpec extends SpecBase with SummaryListFlu
   private val baseAnswers = emptyUserAnswers
     .set(CorrectionCountryPage(index, index), country).success.value
     .set(CorrectionReturnYearPage(index), 2023).success.value
-    .set(CorrectionReturnPeriodPage[String](index), "December").success.value
+    .set(CorrectionReturnPeriodPage(index), period).success.value
     .set(VatAmountCorrectionCountryPage(index, index), BigDecimal(100.0)).success.value
 
   "CorrectionListCountries Controller" - {
@@ -90,7 +87,7 @@ class CorrectionListCountriesControllerSpec extends SpecBase with SummaryListFlu
           waypoints,
           list,
           period,
-          correctionPeriod,
+          period,
           index,
           canAddCountries = true
         )(request, messages(application)).toString
@@ -120,7 +117,7 @@ class CorrectionListCountriesControllerSpec extends SpecBase with SummaryListFlu
           waypoints,
           list,
           period,
-          correctionPeriod,
+          period,
           index,
           canAddCountries = true
         )(request, messages(application)).toString
@@ -179,7 +176,7 @@ class CorrectionListCountriesControllerSpec extends SpecBase with SummaryListFlu
           waypoints,
           list,
           period,
-          correctionPeriod,
+          period,
           index,
           canAddCountries = true
         )(request, messages(application)).toString

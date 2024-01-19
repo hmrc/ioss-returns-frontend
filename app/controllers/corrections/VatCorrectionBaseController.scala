@@ -17,9 +17,9 @@
 package controllers.corrections
 
 import controllers.JourneyRecoverySyntax._
-import models.Index
+import models.{Index, Period}
 import models.requests.DataRequest
-import pages.corrections.{CorrectionReturnPeriodPage, CorrectionReturnYearPage}
+import pages.corrections.CorrectionReturnPeriodPage
 import play.api.mvc.{AnyContent, Result}
 import queries.DeriveNumberOfCorrections
 
@@ -29,24 +29,22 @@ trait VatCorrectionBaseController {
 
 
   protected def getNumberOfCorrections(periodIndex: Index)
-                                      (block: (Int, String) => Result)
+                                      (block: (Int, Period) => Result)
                                       (implicit request: DataRequest[AnyContent]): Result =
 
     (for {
       numberOfCorrections <- request.userAnswers.get(DeriveNumberOfCorrections(periodIndex))
-      correctionPeriod    <- request.userAnswers.get(CorrectionReturnPeriodPage[String](periodIndex))
-      correctionYear      <- request.userAnswers.get(CorrectionReturnYearPage(periodIndex))
-    } yield block(numberOfCorrections, s"$correctionPeriod $correctionYear"))
+      correctionPeriod    <- request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex))
+    } yield block(numberOfCorrections, correctionPeriod))
       .orRecoverJourney
 
   protected def getNumberOfCorrectionsAsync(periodIndex: Index)
-                                      (block: (Int, String) => Future[Result])
+                                      (block: (Int, Period) => Future[Result])
                                       (implicit request: DataRequest[AnyContent]): Future[Result] =
 
     (for {
       numberOfCorrections <- request.userAnswers.get(DeriveNumberOfCorrections(periodIndex))
-      correctionPeriod    <- request.userAnswers.get(CorrectionReturnPeriodPage[String](periodIndex))
-      correctionYear      <- request.userAnswers.get(CorrectionReturnYearPage(periodIndex))
-    } yield block(numberOfCorrections, s"$correctionPeriod $correctionYear"))
+      correctionPeriod    <- request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex))
+    } yield block(numberOfCorrections, correctionPeriod))
       .orRecoverJourney
 }

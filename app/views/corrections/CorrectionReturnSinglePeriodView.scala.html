@@ -24,9 +24,9 @@
     button: ButtonGroup
 )
 
-@(form: Form[_], waypoints: Waypoints, period: Period, returnPeriod: String, periodIndex: Index)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, period: Period, returnPeriod: Period, periodIndex: Index)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = title(form, messages("correctionReturnSinglePeriod.title", returnPeriod))) {
+@layout(pageTitle = title(form, messages("correctionReturnSinglePeriod.title", returnPeriod.displayText))) {
 
     @formHelper(action = controllers.corrections.routes.CorrectionReturnSinglePeriodController.onSubmit(waypoints, periodIndex), Symbol("autoComplete") -> "off") {
 
@@ -37,7 +37,7 @@
         @govukRadios(
             RadiosViewModel.yesNo(
                 field = form("value"),
-                legend = LegendViewModel(messages("correctionReturnSinglePeriod.heading", returnPeriod)).asPageHeading()
+                legend = LegendViewModel(messages("correctionReturnSinglePeriod.heading", returnPeriod.displayText)).asPageHeading()
             )
         )
 

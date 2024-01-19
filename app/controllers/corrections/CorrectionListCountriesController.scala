@@ -20,15 +20,11 @@ import controllers.actions._
 import forms.corrections.CorrectionListCountriesFormProvider
 import models.{Country, Index}
 import pages.Waypoints
-import pages.corrections.{CorrectionListCountriesPage, CorrectionReturnPeriodPage}
+import pages.corrections.CorrectionListCountriesPage
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import queries.DeriveNumberOfCorrections
-import services.ObligationsService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import utils.ConvertPeriodKey
-import utils.ItemsHelper.getDerivedItems
 import viewmodels.checkAnswers.corrections.CorrectionListCountriesSummary
 import views.html.corrections.CorrectionListCountriesView
 
@@ -39,7 +35,6 @@ class CorrectionListCountriesController @Inject()(
                                          override val messagesApi: MessagesApi,
                                          cc: AuthenticatedControllerComponents,
                                          formProvider: CorrectionListCountriesFormProvider,
-                                         obligationsService: ObligationsService,
                                          view: CorrectionListCountriesView
                                  )(implicit ec: ExecutionContext) extends FrontendBaseController with VatCorrectionBaseController with I18nSupport {
 
@@ -47,93 +42,44 @@ class CorrectionListCountriesController @Inject()(
 
   val form: Form[Boolean] = formProvider()
 
-  def onPageLoad(waypoints: Waypoints, periodIndex: Index): Action[AnyContent] = cc.authAndRequireData().async {
+  def onPageLoad(waypoints: Waypoints, periodIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible() {
     implicit request =>
 
       val period = request.userAnswers.period
 
-      val fulfilledObligations = obligationsService.getFulfilledObligations(request.iossNumber)
+        getNumberOfCorrections(periodIndex) {
+          (number, correctionPeriod) =>
 
-      fulfilledObligations.flatMap { obligations =>
-        val periodKeys = obligations.map(obligation => ConvertPeriodKey.yearFromEtmpPeriodKey(obligation.periodKey))
+            val canAddCountries = number < Country.euCountriesWithNI.size
+            val list = CorrectionListCountriesSummary
+              .addToListRows(request.userAnswers, waypoints, periodIndex, CorrectionListCountriesPage(periodIndex))
 
-        val correctionMonths = obligations.map(obligation => ConvertPeriodKey.monthNameFromEtmpPeriodKey(obligation.periodKey))
-
-        val monthAndYear = s"${correctionMonths.mkString(", ")} ${periodKeys.mkString(", ")}"
-
-        if (request.userAnswers.get(CorrectionReturnPeriodPage[String](periodIndex)).isDefined) {
-          getNumberOfCorrectionsAsync(periodIndex) {
-            (number, correctionPeriod) =>
-
-              val canAddCountries = number < Country.euCountriesWithNI.size
-              val list = CorrectionListCountriesSummary
-                .addToListRows(request.userAnswers, waypoints, periodIndex, CorrectionListCountriesPage(periodIndex))
-
-              Future.successful(Ok(view(form, waypoints, list, period, correctionPeriod, periodIndex, canAddCountries)))
-          }
-        } else {
-          getDerivedItems(waypoints, DeriveNumberOfCorrections(periodIndex)) {
-            number =>
-              val canAddCountries = number < Country.euCountriesWithNI.size
-              val list = CorrectionListCountriesSummary
-                .addToListRows(request.userAnswers, waypoints, periodIndex, CorrectionListCountriesPage(periodIndex))
-              val correctionPeriod = monthAndYear
-
-              Future.successful(Ok(view(form, waypoints, list, period, correctionPeriod, periodIndex, canAddCountries)))
-
-          }
+           Ok(view(form, waypoints, list, period, correctionPeriod, periodIndex, canAddCountries))
         }
-      }
 
   }
 
-  def onSubmit(waypoints: Waypoints, periodIndex: Index): Action[AnyContent] = cc.authAndRequireData().async {
+  def onSubmit(waypoints: Waypoints, periodIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible().async {
     implicit request =>
 
       val period = request.userAnswers.period
-      val fulfilledObligations = obligationsService.getFulfilledObligations(request.iossNumber)
 
-      fulfilledObligations.flatMap { obligations =>
-        val periodKeys = obligations.map(obligation => ConvertPeriodKey.yearFromEtmpPeriodKey(obligation.periodKey))
-        val correctionMonths = obligations.map(obligation => ConvertPeriodKey.monthNameFromEtmpPeriodKey(obligation.periodKey))
-        val monthAndYear = s"${correctionMonths.mkString(", ")} ${periodKeys.mkString(", ")}"
+      getNumberOfCorrectionsAsync(periodIndex) {
+        (number, correctionPeriod) =>
+          val canAddCountries = number < Country.euCountriesWithNI.size
+          val list = CorrectionListCountriesSummary
+            .addToListRows(request.userAnswers, waypoints, periodIndex, CorrectionListCountriesPage(periodIndex))
 
-        if (request.userAnswers.get(CorrectionReturnPeriodPage[String](periodIndex)).isDefined) {
-          getNumberOfCorrectionsAsync(periodIndex) {
-            (number, correctionPeriod) =>
-              val canAddCountries = number < Country.euCountriesWithNI.size
-              val list = CorrectionListCountriesSummary
-                .addToListRows(request.userAnswers, waypoints, periodIndex, CorrectionListCountriesPage(periodIndex))
+          form.bindFromRequest().fold(
+            formWithErrors =>
+              Future.successful(BadRequest(view(formWithErrors, waypoints, list, period, correctionPeriod, periodIndex, canAddCountries))),
 
-              form.bindFromRequest().fold(
-                formWithErrors =>
-                  Future.successful(BadRequest(view(formWithErrors, waypoints, list, period, correctionPeriod, periodIndex, canAddCountries))),
+            value =>
+              for {
+                updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionListCountriesPage(periodIndex), value))
+                _ <- cc.sessionRepository.set(updatedAnswers)
+              } yield Redirect(CorrectionListCountriesPage(periodIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route))
 
-                value =>
-                  for {
-                    updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionListCountriesPage(periodIndex), value))
-                    _ <- cc.sessionRepository.set(updatedAnswers)
-                  } yield Redirect(CorrectionListCountriesPage(periodIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route))
-          }
-        } else {
-          getDerivedItems(waypoints, DeriveNumberOfCorrections(periodIndex)) {
-            number =>
-
-              val canAddCountries = number < Country.euCountriesWithNI.size
-              val list = CorrectionListCountriesSummary.addToListRows(request.userAnswers, waypoints, periodIndex, CorrectionListCountriesPage(periodIndex))
-              val correctionPeriod = monthAndYear
-
-              form.bindFromRequest().fold(
-                formWithErrors =>
-                  Future.successful(BadRequest(view(formWithErrors, waypoints, list, period, correctionPeriod, periodIndex, canAddCountries))),
-
-                value =>
-                  for {
-                    updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionListCountriesPage(periodIndex), value))
-                    _ <- cc.sessionRepository.set(updatedAnswers)
-                  } yield Redirect(CorrectionListCountriesPage(periodIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route))
-          }
-        }
       }
   }
 

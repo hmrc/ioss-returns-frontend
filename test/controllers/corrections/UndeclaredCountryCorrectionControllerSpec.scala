@@ -21,7 +21,7 @@ import forms.corrections.UndeclaredCountryCorrectionFormProvider
 import models.Country
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.mockito.MockitoSugar
-import pages.corrections.{CorrectionCountryPage, UndeclaredCountryCorrectionPage}
+import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, UndeclaredCountryCorrectionPage}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import views.html.corrections.UndeclaredCountryCorrectionView
@@ -30,8 +30,9 @@ class UndeclaredCountryCorrectionControllerSpec extends SpecBase with MockitoSug
   private val selectedCountry = arbitrary[Country].sample.value
   private val formProvider = new UndeclaredCountryCorrectionFormProvider()
   private val form = formProvider()
-  private val userAnswersWithCountryAndPeriod = emptyUserAnswers.set(CorrectionCountryPage(index, index), selectedCountry).success.value
-
+  private val userAnswersWithCountryAndPeriod = emptyUserAnswers
+    .set(CorrectionCountryPage(index, index), selectedCountry).success.value
+    .set(CorrectionReturnPeriodPage(index), period).success.value
   private lazy val undeclaredCountryCorrectionRoute = UndeclaredCountryCorrectionPage(index, index).route(waypoints).url
 
   "UndeclaredCountryCorrection Controller" - {
@@ -49,7 +50,7 @@ class UndeclaredCountryCorrectionControllerSpec extends SpecBase with MockitoSug
         val view = application.injector.instanceOf[UndeclaredCountryCorrectionView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, waypoints, period, selectedCountry, index, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, waypoints, period, selectedCountry, period, index, index)(request, messages(application)).toString
       }
     }
 
@@ -68,7 +69,8 @@ class UndeclaredCountryCorrectionControllerSpec extends SpecBase with MockitoSug
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(true), waypoints, period, selectedCountry, index, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(
+          form.fill(true), waypoints, period, selectedCountry, period, index, index)(request, messages(application)).toString
       }
     }
 
@@ -86,7 +88,8 @@ class UndeclaredCountryCorrectionControllerSpec extends SpecBase with MockitoSug
         val expectedAnswers = userAnswersWithCountryAndPeriod.set(UndeclaredCountryCorrectionPage(index, index), true).success.value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual UndeclaredCountryCorrectionPage(index, index).navigate(waypoints, userAnswersWithCountryAndPeriod, expectedAnswers).url
+        redirectLocation(result).value mustEqual UndeclaredCountryCorrectionPage(index, index)
+          .navigate(waypoints, userAnswersWithCountryAndPeriod, expectedAnswers).url
       }
     }
 
@@ -107,7 +110,7 @@ class UndeclaredCountryCorrectionControllerSpec extends SpecBase with MockitoSug
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, waypoints, period, selectedCountry, index, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, waypoints, period, selectedCountry, period, index, index)(request, messages(application)).toString
       }
     }
 

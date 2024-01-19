@@ -24,7 +24,7 @@ import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
-import pages.corrections.CorrectionReturnSinglePeriodPage
+import pages.corrections.{CorrectionReturnPeriodPage, CorrectionReturnSinglePeriodPage}
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.test.FakeRequest
@@ -39,24 +39,18 @@ import scala.concurrent.Future
 
 class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSugar {
 
-
-  private val periodKey = "23AK"
-
-  private val periodYear: Int = s"20${periodKey.substring(0, 2)}".toInt
-
-  private val monthName: String = ConvertPeriodKey.monthNameFromEtmpPeriodKey(periodKey)
-
-  private val monthAndYear = s"$monthName $periodYear"
   private val obligationService: ObligationsService = mock[ObligationsService]
 
   private val etmpObligationDetails: Seq[EtmpObligationDetails] = Seq(
     EtmpObligationDetails(
       status = EtmpObligationsFulfilmentStatus.Fulfilled,
-      periodKey = "23AK"
+      periodKey = "24AC"
     )
   )
   val formProvider = new CorrectionReturnSinglePeriodFormProvider()
   val form: Form[Boolean] = formProvider()
+
+  private val userAnswers = emptyUserAnswers.set(CorrectionReturnPeriodPage(index), period).success.value
 
   lazy val correctionReturnSinglePeriodRoute: String = controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(waypoints, index).url
 
@@ -78,7 +72,7 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
         val view = application.injector.instanceOf[CorrectionReturnSinglePeriodView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form,waypoints, period, monthAndYear, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form,waypoints, period, period, index)(request, messages(application)).toString
       }
     }
 
@@ -100,7 +94,7 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(true), waypoints, period, monthAndYear, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form.fill(true), waypoints, period, period, index)(request, messages(application)).toString
       }
     }
 
@@ -113,7 +107,7 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
       val application =
-        applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        applicationBuilder(userAnswers = Some(userAnswers))
           .overrides(bind[ObligationsService].toInstance(obligationService))
           .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
           .build()
@@ -124,7 +118,9 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
             .withFormUrlEncodedBody(("value", "true"))
 
         val result = route(application, request).value
-        val expectedAnswers = emptyUserAnswers.set(CorrectionReturnSinglePeriodPage(index), true).success.value
+        val expectedAnswers = emptyUserAnswers
+          .set(CorrectionReturnPeriodPage(index), period).success.value
+          .set(CorrectionReturnSinglePeriodPage(index), true).success.value
 
         status(result) mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual CorrectionReturnSinglePeriodPage(index).navigate(waypoints, emptyUserAnswers, expectedAnswers).url
@@ -136,7 +132,7 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
 
       when(obligationService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+      val application = applicationBuilder(userAnswers = Some(userAnswers))
         .overrides(bind[ObligationsService].toInstance(obligationService))
         .build()
 
@@ -152,7 +148,7 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, waypoints, period, monthAndYear, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, waypoints, period, period, index)(request, messages(application)).toString
       }
     }
 

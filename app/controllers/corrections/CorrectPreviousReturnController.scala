@@ -20,6 +20,7 @@ import controllers.actions._
 import forms.corrections.CorrectPreviousReturnFormProvider
 import pages.Waypoints
 import pages.corrections.CorrectPreviousReturnPage
+import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.ObligationsService
@@ -39,7 +40,7 @@ class CorrectPreviousReturnController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  val form = formProvider()
+  val form: Form[Boolean] = formProvider()
 
   def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible().async {
     implicit request =>

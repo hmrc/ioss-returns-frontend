@@ -26,7 +26,7 @@ import org.mockito.{ArgumentMatchersSugar, Mockito}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
-import pages.corrections.{CorrectionCountryPage, UndeclaredCountryCorrectionPage, VatAmountCorrectionCountryPage, VatPayableForCountryPage}
+import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, UndeclaredCountryCorrectionPage, VatAmountCorrectionCountryPage, VatPayableForCountryPage}
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -43,7 +43,9 @@ class VatAmountCorrectionCountryControllerSpec extends SpecBase with MockitoSuga
 
   private val formProvider = new VatAmountCorrectionCountryFormProvider()
   private val form = formProvider(selectedCountry.name)
-  private val userAnswersWithCountryAndPeriod = emptyUserAnswers.set(CorrectionCountryPage(index, index), selectedCountry).flatMap(_.set(UndeclaredCountryCorrectionPage(index, index), true)).success.value
+  private val userAnswersWithCountryAndPeriod = emptyUserAnswers
+    .set(CorrectionCountryPage(index, index), selectedCountry).flatMap(_.set(UndeclaredCountryCorrectionPage(index, index), true)).success.value
+    .set(CorrectionReturnPeriodPage(index), period).success.value
 
   private val validAnswer = BigDecimal(10)
 
@@ -68,9 +70,7 @@ class VatAmountCorrectionCountryControllerSpec extends SpecBase with MockitoSuga
         val view = application.injector.instanceOf[VatAmountCorrectionCountryView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(
-          form, waypoints, period, index, index, selectedCountry
-        )(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, waypoints, period, index, period, index, selectedCountry)(request, messages(application)).toString
       }
     }
 
@@ -91,8 +91,7 @@ class VatAmountCorrectionCountryControllerSpec extends SpecBase with MockitoSuga
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(
-          form.fill(validAnswer), waypoints, period, index, index, selectedCountry
-        )(request, messages(application)).toString
+          form.fill(validAnswer), waypoints, period, index, period, index, selectedCountry)(request, messages(application)).toString
       }
     }
 
@@ -137,8 +136,7 @@ class VatAmountCorrectionCountryControllerSpec extends SpecBase with MockitoSuga
 
         status(result) mustEqual BAD_REQUEST
         contentAsString(result) mustEqual view(
-          boundForm, waypoints, period, index, index, selectedCountry
-        )(request, messages(application)).toString
+          boundForm, waypoints, period, index, period, index, selectedCountry)(request, messages(application)).toString
       }
     }
 

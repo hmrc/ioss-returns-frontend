@@ -29,7 +29,7 @@
     button: ButtonGroup,
 )
 
-@(form: Form[_], waypoints: Waypoints, list: Seq[SummaryList], period: Period, correctionPeriod: String, periodIndex: Index, canAddCountries: Boolean)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, list: Seq[SummaryList], period: Period, correctionPeriod: Period, periodIndex: Index, canAddCountries: Boolean)(implicit request: Request[_], messages: Messages)
 
 @titleText = @{
     list.size match {
@@ -49,7 +49,7 @@
 @layout(pageTitle = title(
     form,
     titleText,
-    Some(messages("correctionListCountries.section", correctionPeriod))
+    Some(messages("correctionListCountries.section", correctionPeriod.displayText))
 )) {
 
     @formHelper(action = controllers.corrections.routes.CorrectionListCountriesController.onSubmit(waypoints, periodIndex), Symbol("autoComplete") -> "off") {
@@ -59,7 +59,7 @@
         }
 
         <header class="hmrc-page-heading">
-            <p class="govuk-caption-xl hmrc-caption-l">@messages("correctionListCountries.section", correctionPeriod)</p>
+            <p class="govuk-caption-xl hmrc-caption-l">@messages("correctionListCountries.section", correctionPeriod.displayText)</p>
             <h1 class="govuk-heading-l">@headingText</h1>
         </header>
 

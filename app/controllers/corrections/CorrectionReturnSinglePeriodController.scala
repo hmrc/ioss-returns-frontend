@@ -20,7 +20,7 @@ import controllers.actions._
 import forms.corrections.CorrectionReturnSinglePeriodFormProvider
 import models.Index
 import pages.Waypoints
-import pages.corrections.CorrectionReturnSinglePeriodPage
+import pages.corrections.{CorrectionReturnPeriodPage, CorrectionReturnSinglePeriodPage}
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -53,18 +53,15 @@ class CorrectionReturnSinglePeriodController @Inject()(
       val fulfilledObligations = obligationService.getFulfilledObligations(request.iossNumber)
 
       fulfilledObligations.flatMap { obligations =>
-        val periodKeys = obligations.map(obligation => ConvertPeriodKey.yearFromEtmpPeriodKey(obligation.periodKey))
 
-        val correctionMonths = obligations.map (obligation => ConvertPeriodKey.monthNameFromEtmpPeriodKey(obligation.periodKey))
-
-        val monthAndYear = s"${correctionMonths.mkString(", ")} ${periodKeys.mkString(", ")}"
+        val correctionMonths = obligations.map (obligation => ConvertPeriodKey.periodkeyToPeriod(obligation.periodKey))
 
         val preparedForm = request.userAnswers.get(CorrectionReturnSinglePeriodPage(index)) match {
           case None => form
           case Some(value) => form.fill(value)
         }
 
-        Ok(view(preparedForm, waypoints, period, monthAndYear, index)).toFuture
+        Ok(view(preparedForm, waypoints, period, correctionMonths.head, index)).toFuture
       }
   }
 
@@ -76,21 +73,19 @@ class CorrectionReturnSinglePeriodController @Inject()(
       val fulfilledObligations = obligationService.getFulfilledObligations(request.iossNumber)
 
       fulfilledObligations.flatMap { obligations =>
-        val periodKeys = obligations.map(obligation => ConvertPeriodKey.yearFromEtmpPeriodKey(obligation.periodKey))
 
-        val correctionMonths = obligations.map (obligation => ConvertPeriodKey.monthNameFromEtmpPeriodKey(obligation.periodKey))
-
-        val monthAndYear = s"${correctionMonths.mkString(", ")} ${periodKeys.mkString(", ")}"
+        val correctionMonths = obligations.map (obligation => ConvertPeriodKey.periodkeyToPeriod(obligation.periodKey))
 
         form.bindFromRequest().fold(
           formWithErrors =>
-            Future.successful(BadRequest(view(formWithErrors, waypoints, period, monthAndYear, index))),
+            Future.successful(BadRequest(view(formWithErrors, waypoints, period, correctionMonths.head, index))),
 
           value =>
             for {
               updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionReturnSinglePeriodPage(index), value))
-              _ <- cc.sessionRepository.set(updatedAnswers)
-            } yield Redirect(CorrectionReturnSinglePeriodPage(index).navigate(waypoints, request.userAnswers, updatedAnswers).route)
+              updatedWithPeriodAnswers <- Future.fromTry(updatedAnswers.set(CorrectionReturnPeriodPage(index), correctionMonths.head))
+              _ <- cc.sessionRepository.set(updatedWithPeriodAnswers)
+            } yield Redirect(CorrectionReturnSinglePeriodPage(index).navigate(waypoints, request.userAnswers, updatedWithPeriodAnswers).route)
         )
       }
   }

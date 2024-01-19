@@ -21,7 +21,7 @@ import forms.corrections.VatAmountCorrectionCountryFormProvider
 import logging.Logging
 import models.requests.DataRequest
 import models.{Country, Index, Period}
-import pages.corrections.{CorrectionCountryPage, UndeclaredCountryCorrectionPage, VatAmountCorrectionCountryPage}
+import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, UndeclaredCountryCorrectionPage, VatAmountCorrectionCountryPage}
 import pages.{JourneyRecoveryPage, Waypoints}
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
@@ -43,48 +43,54 @@ class VatAmountCorrectionCountryController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(waypoints: Waypoints, periodIndex: Index, countryIndex: Index): Action[AnyContent] =
-    cc.authAndRequireData().async {
-      // ToDo: Downstream not ready to check Correction Eligibility yet.
-      // ToDo: Enhance the auth when ready
+  def onPageLoad(waypoints: Waypoints, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible().async {
       implicit request =>
 
         val period = request.userAnswers.period
-        //Todo: Change this to correction period when ready
+        val correctionPeriod = request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex))
 
-        withCountryCorrected(waypoints, period, periodIndex, countryIndex) {
-          country =>
-            val form: Form[BigDecimal] = formProvider(country.name)
+        correctionPeriod match {
+          case Some(correctionPeriod) =>
+            withCountryCorrected(waypoints, period, periodIndex, countryIndex) {
+              country =>
+                val form: Form[BigDecimal] = formProvider(country.name)
 
-            val preparedForm = request.userAnswers.get(VatAmountCorrectionCountryPage(periodIndex, countryIndex)) match {
-              case None => form
-              case Some(value) => form.fill(value)
+                val preparedForm = request.userAnswers.get(VatAmountCorrectionCountryPage(periodIndex, countryIndex)) match {
+                  case None => form
+                  case Some(value) => form.fill(value)
+                }
+                Future.successful(Ok(view(preparedForm, waypoints, period, periodIndex, correctionPeriod, countryIndex, country)))
             }
-            Future.successful((Ok(view(preparedForm, waypoints, period, periodIndex, countryIndex, country))))
+          case _ =>
+            Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
         }
 
     }
 
-  def onSubmit(waypoints: Waypoints, periodIndex: Index, countryIndex: Index): Action[AnyContent] =
-    cc.authAndRequireData().async {
-      // ToDo: Downstream not ready to check Correction Eligibility yet.
-      // ToDo: Enhance the auth when ready
+  def onSubmit(waypoints: Waypoints, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible().async {
       implicit request => {
-        val period = request.userAnswers.period
-        //Todo: Change this to correction period when ready
-        withCountryCorrected(waypoints, period, periodIndex, countryIndex) {
-          country=>
-            val form: Form[BigDecimal] = formProvider(country.name)
 
-            form.bindFromRequest().fold(
-              formWithErrors =>
-                BadRequest(view(formWithErrors, waypoints, period, periodIndex, countryIndex, country)).toFuture,
-              value =>
-                for {
-                  updatedAnswers <- Future.fromTry(request.userAnswers.set(VatAmountCorrectionCountryPage(periodIndex, countryIndex), value))
-                  _ <- cc.sessionRepository.set(updatedAnswers)
-                } yield Redirect(VatAmountCorrectionCountryPage(periodIndex, countryIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route)
-            )
+        val period = request.userAnswers.period
+        val correctionPeriod = request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex))
+
+        correctionPeriod match {
+          case Some(correctionPeriod) =>
+            withCountryCorrected(waypoints, period, periodIndex, countryIndex) {
+              country=>
+                val form: Form[BigDecimal] = formProvider(country.name)
+
+                form.bindFromRequest().fold(
+                  formWithErrors =>
+                    BadRequest(view(formWithErrors, waypoints, period, periodIndex, correctionPeriod, countryIndex, country)).toFuture,
+                  value =>
+                    for {
+                      updatedAnswers <- Future.fromTry(request.userAnswers.set(VatAmountCorrectionCountryPage(periodIndex, countryIndex), value))
+                      _ <- cc.sessionRepository.set(updatedAnswers)
+                    } yield Redirect(VatAmountCorrectionCountryPage(periodIndex, countryIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route)
+                )
+            }
+          case _ =>
+            Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
         }
       }
     }
