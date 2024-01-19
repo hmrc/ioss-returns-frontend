@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,17 +18,23 @@ package connectors
 
 import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock._
-import models.Period
-import models.financialdata.{FinancialData, FinancialTransaction, Item}
+import models.financialdata.{Charge, FinancialData, FinancialTransaction, Item}
 import models.payments.{Payment, PaymentStatus, PrepareData}
+import models.{InvalidJson, Period, UnexpectedResponseStatus}
 import play.api.Application
+import play.api.http.Status.{INTERNAL_SERVER_ERROR, OK}
+import play.api.libs.json.Json
 import play.api.test.Helpers.running
 import uk.gov.hmrc.http.HeaderCarrier
 
 import java.time.{LocalDate, Month, ZoneOffset, ZonedDateTime}
 
 class FinancialDataConnectorSpec extends SpecBase with WireMockHelper with FinancialDataConnectorFixture {
+
   implicit private lazy val hc: HeaderCarrier = HeaderCarrier()
+
+  private val baseUrl: String = "ioss-returns/financial-data"
+  private val charge: Charge = arbitraryCharge.arbitrary.sample.value
 
   private def application: Application = {
     applicationBuilder()
@@ -79,7 +85,94 @@ class FinancialDataConnectorSpec extends SpecBase with WireMockHelper with Finan
     }
   }
 
+  ".getCharge" - {
 
+    def application: Application =
+      applicationBuilder()
+        .configure("microservice.services.ioss-returns.port" -> server.port)
+        .build()
+
+    val url = s"/$baseUrl/charge/$period"
+
+    "must return Some(Charge) when successful" in {
+
+      running(application) {
+
+        val connector = application.injector.instanceOf[FinancialDataConnector]
+        val responseJson = Json.toJson(charge).toString()
+
+        server.stubFor(
+          get(urlEqualTo(url))
+            .willReturn(
+              aResponse().withStatus(OK).withBody(responseJson)
+            )
+        )
+
+        val result = connector.getCharge(period).futureValue
+
+        result mustBe Right(Some(charge))
+      }
+    }
+
+    "must return Right(None) when no charge is retrieved" in {
+
+      running(application) {
+
+        val connector = application.injector.instanceOf[FinancialDataConnector]
+        val responseJson = Json.toJson(None).toString()
+
+        server.stubFor(
+          get(urlEqualTo(url))
+            .willReturn(
+              aResponse().withStatus(OK).withBody(responseJson)
+            )
+        )
+
+        val result = connector.getCharge(period).futureValue
+
+        result mustBe Right(None)
+      }
+    }
+
+    "must return Left(invalidJson) response when invalid json is returned" in {
+
+      running(application) {
+
+        val connector = application.injector.instanceOf[FinancialDataConnector]
+        val responseJson = Json.toJson("").toString()
+
+        server.stubFor(
+          get(urlEqualTo(url))
+            .willReturn(
+              aResponse().withStatus(OK).withBody(responseJson)
+            )
+        )
+
+        val result = connector.getCharge(period).futureValue
+
+        result mustBe Left(InvalidJson)
+      }
+    }
+
+    "must return Left(UnexpectedResponseStatus) when the server responds with an error code" in {
+
+      running(application) {
+
+        val connector = application.injector.instanceOf[FinancialDataConnector]
+
+        server.stubFor(
+          get(urlEqualTo(url))
+            .willReturn(
+              aResponse().withStatus(INTERNAL_SERVER_ERROR).withBody("")
+            )
+        )
+
+        val result = connector.getCharge(period).futureValue
+
+        result mustBe Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, ""))
+      }
+    }
+  }
 }
 
 trait FinancialDataConnectorFixture {

@@ -28,68 +28,66 @@ import viewmodels.implicits._
 
 object SubmittedReturnForPeriodSummary {
 
-  def rowVatDeclared(etmpVatReturn: EtmpVatReturn)(implicit messages: Messages): SummaryListRow = {
+  def rowVatDeclared(etmpVatReturn: EtmpVatReturn)(implicit messages: Messages): Option[SummaryListRow] = {
     val value = etmpVatReturn.totalVATAmountDueForAllMSGBP
 
-    SummaryListRowViewModel(
+    Some(SummaryListRowViewModel(
       key = "submittedReturnForPeriod.summary.vatDeclared",
       value = ValueViewModel(HtmlContent(currencyFormat(value))).withCssClass("govuk-table__cell--numeric")
-    )
+    ))
   }
 
-  def rowAmountPaid()(implicit messages: Messages): SummaryListRow = {
-    // TODO -> Need financialService call?
-    val value = BigDecimal(1000.00)
-
-    SummaryListRowViewModel(
-      key = "submittedReturnForPeriod.summary.amountPaid",
-      value = ValueViewModel(HtmlContent(currencyFormat(value))).withCssClass("govuk-table__cell--numeric govuk-!-padding-right-0")
-    )
+  def rowAmountPaid(clearedAmount: Option[BigDecimal])(implicit messages: Messages): Option[SummaryListRow] = {
+    clearedAmount.map { amount =>
+      SummaryListRowViewModel(
+        key = "submittedReturnForPeriod.summary.amountPaid",
+        value = ValueViewModel(HtmlContent(currencyFormat(amount))).withCssClass("govuk-table__cell--numeric govuk-!-padding-right-0")
+      )
+    }
   }
 
-  def rowRemainingAmount()(implicit messages: Messages): SummaryListRow = {
-    // TODO -> Need financialService call?
-    val value = BigDecimal(3200.00)
-
-    SummaryListRowViewModel(
-      key = "submittedReturnForPeriod.summary.remainingAmount",
-      value = ValueViewModel(HtmlContent(currencyFormat(value))).withCssClass("govuk-table__cell--numeric govuk-!-padding-right-0")
-    )
+  def rowRemainingAmount(outstandingAmount: Option[BigDecimal])(implicit messages: Messages): Option[SummaryListRow] = {
+    outstandingAmount.map { amount =>
+      SummaryListRowViewModel(
+        key = "submittedReturnForPeriod.summary.remainingAmount",
+        value = ValueViewModel(HtmlContent(currencyFormat(amount))).withCssClass("govuk-table__cell--numeric govuk-!-padding-right-0")
+      )
+    }
   }
 
-  def rowReturnSubmittedDate(etmpVatReturn: EtmpVatReturn)(implicit messages: Messages): SummaryListRow = {
+  def rowReturnSubmittedDate(etmpVatReturn: EtmpVatReturn)(implicit messages: Messages): Option[SummaryListRow] = {
     val value = etmpVatReturn.returnVersion
 
-    SummaryListRowViewModel(
+    Some(SummaryListRowViewModel(
       key = "submittedReturnForPeriod.summary.submittedDate",
       value = ValueViewModel(HtmlContent(value.format(etmpDateFormatter))).withCssClass("govuk-table__cell--numeric govuk-!-padding-right-0")
-    )
+    ))
   }
 
-  def rowPaymentDueDate(period: Period)(implicit messages: Messages): SummaryListRow = {
+  def rowPaymentDueDate(period: Period)(implicit messages: Messages): Option[SummaryListRow] = {
     val value = period.paymentDeadline
 
-    SummaryListRowViewModel(
+    Some(SummaryListRowViewModel(
       key = "submittedReturnForPeriod.summary.paymentDueDate",
       value = ValueViewModel(HtmlContent(value.format(etmpDateFormatter))).withCssClass("govuk-table__cell--numeric govuk-!-padding-right-0")
-    )
+    ))
   }
 
-  def rowReturnReference(etmpVatReturn: EtmpVatReturn)(implicit messages: Messages): SummaryListRow = {
+  def rowReturnReference(etmpVatReturn: EtmpVatReturn)(implicit messages: Messages): Option[SummaryListRow] = {
     val value = etmpVatReturn.returnReference
 
-    SummaryListRowViewModel(
+    Some(SummaryListRowViewModel(
       key = "submittedReturnForPeriod.summary.returnReference",
       value = ValueViewModel(HtmlContent(value)).withCssClass("govuk-table__cell--numeric govuk-!-padding-right-0")
-    )
+    ))
   }
 
-  def rowPaymentReference(etmpVatReturn: EtmpVatReturn)(implicit messages: Messages): SummaryListRow = {
+  def rowPaymentReference(etmpVatReturn: EtmpVatReturn)(implicit messages: Messages): Option[SummaryListRow] = {
     val value = etmpVatReturn.paymentReference
 
-    SummaryListRowViewModel(
+    Some(SummaryListRowViewModel(
       key = "submittedReturnForPeriod.summary.paymentReference",
       value = ValueViewModel(HtmlContent(value)).withCssClass("govuk-table__cell--numeric govuk-!-padding-right-0")
-    )
+    ))
   }
 }

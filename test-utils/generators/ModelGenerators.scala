@@ -19,6 +19,7 @@ package generators
 import config.Constants.{maxCurrencyAmount, minCurrencyAmount}
 import models._
 import models.etmp._
+import models.financialdata.Charge
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Arbitrary, Gen}
 import queries.{OptionalSalesAtVatRate, SalesToCountryWithOptionalSales, VatRateWithOptionalSalesFromCountry}
@@ -405,6 +406,21 @@ trait ModelGenerators {
         msOfConsumption = msOfConsumption,
         totalVATDueGBP = totalVATDueGBP,
         totalVATEUR = totalVATEUR
+      )
+    }
+
+  implicit val arbitraryCharge: Arbitrary[Charge] =
+    Arbitrary {
+      for {
+        period <- arbitrary[Period]
+        originalAmount <- arbitrary[BigDecimal]
+        outstandingAmount <- arbitrary[BigDecimal]
+        clearedAmount <- arbitrary[BigDecimal]
+      } yield Charge(
+        period = period,
+        originalAmount = originalAmount,
+        outstandingAmount = outstandingAmount,
+        clearedAmount = clearedAmount
       )
     }
 
