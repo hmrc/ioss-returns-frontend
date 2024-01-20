@@ -17,17 +17,8 @@
 package controllers.actions
 
 import base.SpecBase
-import config.FrontendAppConfig
-import connectors.VatReturnConnector
-import controllers.routes
-import models.requests.{OptionalDataRequest, RegistrationRequest}
-import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchersSugar.eqTo
-import org.mockito.Mockito
-import org.mockito.Mockito.{times, verify, when}
-import org.scalatest.BeforeAndAfterEach
+import models.requests.RegistrationRequest
 import org.scalatestplus.mockito.MockitoSugar
-import play.api.inject.bind
 import play.api.mvc.Result
 import play.api.mvc.Results.Redirect
 import play.api.test.FakeRequest

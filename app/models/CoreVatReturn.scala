@@ -16,9 +16,9 @@
 
 package models
 
-import play.api.libs.json.{Json, JsString, OFormat, Reads, Writes}
+import play.api.libs.json.{Json, OFormat, Reads, Writes}
 
-import java.time.{Instant, LocalDate, LocalDateTime, ZoneId}
+import java.time.{Instant, LocalDate, LocalDateTime}
 import java.util.UUID
 
 case class CoreTraderId(IOSSNumber: String, issuedBy: String)
