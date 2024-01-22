@@ -10,4 +10,10 @@
 # Failing to follow this rule may result in test routes deployed in production.
 
 # Add all the application routes to the prod.routes file
-->         /                          prod.Routes
+->         /                                                                                                                      prod.Routes
+
+GET        /pay-vat-on-goods-sold-to-eu/import-one-stop-shop-returns-payments/test-only/your-account-from-bta                     @controllers.testOnly.TestOnlyController.yourAccountFromExternal(lang: Option[String] ?= None)
+GET        /pay-vat-on-goods-sold-to-eu/import-one-stop-shop-returns-payments/test-only/start-your-return-from-bta/:period        @controllers.testOnly.TestOnlyController.startReturnFromExternal(period: Period, lang: Option[String] ?= None)
+GET        /pay-vat-on-goods-sold-to-eu/import-one-stop-shop-returns-payments/test-only/continue-return-from-bta/:period          @controllers.testOnly.TestOnlyController.continueReturnFromExternal(period: Period, lang: Option[String] ?= None)
+GET        /pay-vat-on-goods-sold-to-eu/import-one-stop-shop-returns-payments/test-only/returns-history-from-bta                  @controllers.testOnly.TestOnlyController.returnsHistoryFromExternal(lang: Option[String] ?= None)
+GET        /pay-vat-on-goods-sold-to-eu/import-one-stop-shop-returns-payments/test-only/payments-from-bta                         @controllers.testOnly.TestOnlyController.paymentsFromExternal(lang: Option[String] ?= None)

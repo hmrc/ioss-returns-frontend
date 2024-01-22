@@ -112,3 +112,5 @@ GET         /outstanding-payments                                               
 POST        /outstanding-payments                                                     controllers.payments.WhichVatPeriodToPayController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints)
 
 GET         /intercept-unusable-email                                                 controllers.InterceptUnusableEmailController.onPageLoad()
+
+GET         /no-welsh-service                                                         controllers.external.NoMoreWelshController.onPageLoad(redirectUrl: Option[String] ?= None)
