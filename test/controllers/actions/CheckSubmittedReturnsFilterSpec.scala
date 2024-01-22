@@ -98,8 +98,6 @@ class CheckSubmittedReturnsFilterSpec extends SpecBase with MockitoSugar with Be
 
       "when no returns are found" in {
 
-        val test = etmpObligations.copy(obligations = Seq.empty)
-
         when(mockConnector.getObligations(any())(any())) thenReturn Future.successful(etmpObligations.copy(obligations = Seq.empty))
 
         val application = applicationBuilder(None)
