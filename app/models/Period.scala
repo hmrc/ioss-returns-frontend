@@ -35,6 +35,9 @@ final case class Period(year: Int, month: Month) {
   private val firstMonthFormatter = DateTimeFormatter.ofPattern("MMMM")
   private val lastMonthYearFormatter = DateTimeFormatter.ofPattern("MMMM yyyy")
 
+  val paymentDeadline: LocalDate =
+    firstDay.plusMonths(2).minusDays(1)
+
   private val paymentDeadlineFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy")
   val paymentDeadlineDisplay: String = paymentDeadline.format(paymentDeadlineFormatter)
 
@@ -60,9 +63,6 @@ final case class Period(year: Int, month: Month) {
       case Month.DECEMBER => "AL"
     }
   }
-
-  val paymentDeadline: LocalDate =
-    firstDay.plusMonths(2).minusDays(1)
 
   def displayText: String =
     s"${month.getDisplayName(TextStyle.FULL, Locale.ENGLISH)} ${year}"
