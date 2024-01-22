@@ -22,11 +22,12 @@ import utils.CurrencyFormatter.currencyFormat
 import viewmodels.LinkModel
 
 case class PaymentsViewModel(sections: Seq[PaymentsSection], warning: Option[String] = None, link: Option[LinkModel] = None)
+
 case class PaymentsSection(contents: Seq[String], heading: Option[String] = None)
 
-object PaymentsViewModel{
+object PaymentsViewModel {
   def apply(duePayments: Seq[Payment], overduePayments: Seq[Payment])(implicit messages: Messages): PaymentsViewModel = {
-    if(duePayments.isEmpty && overduePayments.isEmpty){
+    if (duePayments.isEmpty && overduePayments.isEmpty) {
       PaymentsViewModel(
         sections = Seq(PaymentsSection(
           contents = Seq(messages("yourAccount.payment.nothingOwed"))
@@ -50,7 +51,7 @@ object PaymentsViewModel{
   }
 
   private def getPaymentsSection(payments: Seq[Payment], key: String)(implicit messages: Messages) = {
-    if(payments.nonEmpty){
+    if (payments.nonEmpty) {
       Some(
         PaymentsSection(
           heading = Some(messages(s"yourAccount.payment.${key}Heading")),
@@ -60,15 +61,15 @@ object PaymentsViewModel{
                 messages(
                   s"yourAccount.payment.${key}AmountMaybeOwed",
                   payment.period.displayShortText,
-                  payment.period.lastDay.toString()
-                  )
+                  payment.period.paymentDeadlineDisplay
+                )
               case _ => messages(
-                  s"yourAccount.payment.${key}AmountOwed",
-                  currencyFormat(payment.amountOwed),
-                  payment.period.displayShortText,
-                  payment.period.lastDay.toString()
-                  )
-              }
+                s"yourAccount.payment.${key}AmountOwed",
+                currencyFormat(payment.amountOwed),
+                payment.period.displayShortText,
+                payment.period.paymentDeadlineDisplay
+              )
+            }
           )
         )
       )

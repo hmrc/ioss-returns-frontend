@@ -43,7 +43,7 @@ class PaymentsViewModelSpec extends SpecBase{
       val result = PaymentsViewModel(Seq(paymentDue), Seq.empty)(messages(app))
       result.sections mustBe Seq(PaymentsSection(
         Seq(
-          s"""You owe <span class="govuk-body govuk-!-font-weight-bold">&pound;1,000</span> for ${period.displayShortText(messages(app))}. You must pay this by ${period.lastDay.toString()}."""
+          s"""You owe <span class="govuk-body govuk-!-font-weight-bold">&pound;1,000</span> for ${period.displayShortText(messages(app))}. You must pay this by ${period.paymentDeadlineDisplay}."""
         ),
         Some("Due Payments")
       ))
@@ -55,7 +55,7 @@ class PaymentsViewModelSpec extends SpecBase{
       val result = PaymentsViewModel(Seq(paymentDue.copy(paymentStatus = PaymentStatus.Unknown)), Seq.empty)(messages(app))
       result.sections mustBe Seq(PaymentsSection(
         Seq(
-          s"""You may still owe VAT for ${period.displayShortText(messages(app))}. You must pay this by ${period.lastDay.toString()}."""
+          s"""You may still owe VAT for ${period.displayShortText(messages(app))}. You must pay this by ${period.paymentDeadlineDisplay}."""
         ),
         Some("Due Payments")
       ))
@@ -67,7 +67,7 @@ class PaymentsViewModelSpec extends SpecBase{
       val result = PaymentsViewModel(Seq.empty, Seq(paymentDue))(messages(app))
       result.sections mustBe Seq(PaymentsSection(
         Seq(
-          s"""You owe <span class="govuk-body govuk-!-font-weight-bold">&pound;1,000</span> for ${period.displayShortText(messages(app))}, which was due by ${period.lastDay.toString()}."""
+          s"""You owe <span class="govuk-body govuk-!-font-weight-bold">&pound;1,000</span> for ${period.displayShortText(messages(app))}, which was due by ${period.paymentDeadlineDisplay}."""
         ),
         Some("Overdue Payments")
       ))
@@ -79,7 +79,7 @@ class PaymentsViewModelSpec extends SpecBase{
       val result = PaymentsViewModel(Seq.empty, Seq(paymentDue.copy(paymentStatus = PaymentStatus.Unknown)))(messages(app))
       result.sections mustBe Seq(PaymentsSection(
         Seq(
-          s"""You may still owe VAT for ${period.displayShortText(messages(app))}, which was due by ${period.lastDay.toString()}."""
+          s"""You may still owe VAT for ${period.displayShortText(messages(app))}, which was due by ${period.paymentDeadlineDisplay}."""
         ),
         Some("Overdue Payments")
       ))
@@ -92,13 +92,13 @@ class PaymentsViewModelSpec extends SpecBase{
       result.sections mustBe Seq(
         PaymentsSection(
         Seq(
-          s"""You owe <span class="govuk-body govuk-!-font-weight-bold">&pound;1,000</span> for ${period3.displayShortText(messages(app))}. You must pay this by ${period3.lastDay.toString()}.""",
+          s"""You owe <span class="govuk-body govuk-!-font-weight-bold">&pound;1,000</span> for ${period3.displayShortText(messages(app))}. You must pay this by ${period3.paymentDeadlineDisplay}.""",
         ),
           Some("Due Payments")),
         PaymentsSection(
           Seq(
-            s"""You may still owe VAT for ${period1.displayShortText(messages(app))}, which was due by ${period1.lastDay.toString()}.""",
-            s"""You owe <span class="govuk-body govuk-!-font-weight-bold">&pound;1,000</span> for ${period2.displayShortText(messages(app))}, which was due by ${period2.lastDay.toString()}."""
+            s"""You may still owe VAT for ${period1.displayShortText(messages(app))}, which was due by ${period1.paymentDeadlineDisplay}.""",
+            s"""You owe <span class="govuk-body govuk-!-font-weight-bold">&pound;1,000</span> for ${period2.displayShortText(messages(app))}, which was due by ${period2.paymentDeadlineDisplay}."""
           ),
           Some("Overdue Payments")
         )
