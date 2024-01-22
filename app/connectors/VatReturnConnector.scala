@@ -41,7 +41,7 @@ class VatReturnConnector @Inject()(config: Configuration, httpClient: HttpClient
     )
   }
 
-  def get(period: Period)(implicit hc: HeaderCarrier): Future[EtmpVatReturn] = { // TODO - HttpParser
+  def get(period: Period)(implicit hc: HeaderCarrier): Future[EtmpVatReturn] = {
     httpClient.GET[EtmpVatReturn](url = s"$baseUrl/return/$period")
   }
 }

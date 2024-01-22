@@ -26,8 +26,6 @@ import viewmodels.govuk.all.currencyFormat
 import viewmodels.govuk.summarylist._
 import viewmodels.implicits._
 
-import java.time.LocalDateTime
-
 object SubmittedReturnForPeriodSummary {
 
   def rowVatDeclared(etmpVatReturn: EtmpVatReturn)(implicit messages: Messages): SummaryListRow = {
@@ -69,9 +67,7 @@ object SubmittedReturnForPeriodSummary {
   }
 
   def rowPaymentDueDate(period: Period)(implicit messages: Messages): SummaryListRow = {
-    // TODO Payment due by -> period.paymentDeadline when merged? -> Will need to covert from LocalDate to LocalDateTime
-    val value = LocalDateTime.of(2024, 1, 31, 0, 0, 0)
-    //    val value = period.firstDay.atStartOfDay() // paymentDeadline
+    val value = period.paymentDeadline
 
     SummaryListRowViewModel(
       key = "submittedReturnForPeriod.summary.paymentDueDate",
