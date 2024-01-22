@@ -19,7 +19,7 @@ package connectors
 import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock._
 import generators.Generators
-import models.etmp.EtmpObligations
+import models.etmp.{EtmpObligations, EtmpVatReturn}
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.Application
 import play.api.libs.json.Json
@@ -34,6 +34,7 @@ class VatReturnConnectorSpec extends SpecBase
   implicit private lazy val hc: HeaderCarrier = HeaderCarrier()
 
   private val etmpObligations: EtmpObligations = arbitraryObligations.arbitrary.sample.value
+  private val etmpVatReturn: EtmpVatReturn = arbitraryEtmpVatReturn.arbitrary.sample.value
 
   private def application: Application = {
     applicationBuilder()
@@ -66,6 +67,33 @@ class VatReturnConnectorSpec extends SpecBase
           val result = connector.getObligations(iossNumber).futureValue
 
           result mustBe etmpObligations
+        }
+      }
+    }
+
+    ".get" - {
+
+      val getReturnUrl: String = s"/ioss-returns/return/$period"
+
+      "must return OK with a payload of ETMP VAT Return" in {
+
+        val app = application
+
+        running(app) {
+          val connector = app.injector.instanceOf[VatReturnConnector]
+
+          val responseBody = Json.toJson(etmpVatReturn)
+
+          server.stubFor(
+            get(urlEqualTo(getReturnUrl))
+              .willReturn(ok()
+                .withBody(responseBody.toString())
+              )
+          )
+
+          val result = connector.get(period).futureValue
+
+          result mustBe etmpVatReturn
         }
       }
     }

@@ -55,7 +55,6 @@ class IdentifierActionSpec extends SpecBase with MockitoSugar with BeforeAndAfte
       "Activated"
     )
   ))
-  private val groupId = UUID.randomUUID().toString
 
   class Harness(authAction: IdentifierAction, defaultAction: DefaultActionBuilder) extends {
     def onPageLoad(): Action[AnyContent] = (defaultAction andThen authAction) { _ => Results.Ok }

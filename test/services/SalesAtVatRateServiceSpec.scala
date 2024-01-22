@@ -115,6 +115,8 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar {
       val belgium: Country = Country("BE", "Belgium")
       val denmark: Country = Country("DK", "Denmark")
       val spain: Country = Country("ES", "Spain")
+
+      // TODO -> run/fix commented tests
 /*
       "when the corrections exist" - {
 
@@ -322,7 +324,9 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar {
 
     }
 
-// Will uncomment these after the correction ticket is done
+    // TODO -> run/fix commented tests
+
+    // Will uncomment these after the correction ticket is done
 /*
     "getTotalVatOwedAfterCorrections" - {
 
@@ -330,12 +334,12 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar {
       "when corrections exist" - {
         // remove
         "must return correct total when NI and EU sales exist" in {
-          
+
           service.getTotalVatOwedAfterCorrections(completeUserAnswers) mustBe BigDecimal(1020)
         }
         // remove
         "must return zero when total NI and EU sales don't exist" in {
-          
+
           service.getTotalVatOwedAfterCorrections(emptyUserAnswers) mustBe BigDecimal(0)
         }
         // remove
@@ -345,7 +349,7 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar {
         }
         // remove
         "must return total when NI doesn't exist and EU does exist" in {
-          
+
           val answers = emptyUserAnswers
             .set(SoldGoodsPage, true).success.value
             .set(SoldToCountryPage(index0), Country("HR", "Croatia")).success.value
@@ -357,7 +361,7 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar {
         }
 
         "must return correct total when there is a positive correction " in {
-          
+
           val ua = emptyUserAnswers
             .set(SoldGoodsPage, true).success.value
             .set(SoldToCountryPage(index0), Country("HR", "Croatia")).success.value
@@ -374,7 +378,7 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar {
         }
 
         "must return correct total when there is a negative correction" in {
-          
+
           val ua = emptyUserAnswers
             .set(SoldGoodsPage, true).success.value
             .set(SoldToCountryPage(index0), Country("HR", "Croatia")).success.value
@@ -390,7 +394,7 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar {
         }
 
         "must return zero when the correction makes the total amount negative for a country" in {
-          
+
           val ua = emptyUserAnswers
             .set(SoldGoodsPage, true).success.value
             .set(SoldToCountryPage(index0), Country("HR", "Croatia")).success.value
@@ -406,7 +410,7 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar {
         }
 
         "must not subtract the negative amount for one country from the positive total for other countries" in {
-          
+
           val ua = emptyUserAnswers
             .set(SoldGoodsPage, true).success.value
             .set(SoldToCountryPage(index0), Country("HR", "Croatia")).success.value
@@ -435,17 +439,17 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar {
         }
         // remove
         "must return zero when no countries exist" in {
-          
+
           service.getTotalVatOwedAfterCorrections(emptyUserAnswers) mustBe BigDecimal(0)
         }
         // remove
         "must return total when NI exists and EU sales don't exist" in {
-          
+
           service.getTotalVatOwedAfterCorrections(completeSalesFromNIUserAnswers) mustBe BigDecimal(1000)
         }
         // remove
         "must return total when NI doesn't exist and EU does exist" in {
-          
+
           val answers = emptyUserAnswers
             .set(SoldGoodsPage, true).success.value
             .set(SoldToCountryPage(index0), Country("HR", "Croatia")).success.value

@@ -24,6 +24,8 @@ object Formatters {
 
   val etmpDateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX")
 
+  val etmpDateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy")
+
   def generateVatReturnReference(iossNumber: String, period: Period): String = {
     val vatReturnPeriodString = {
       val yearValue = period.year

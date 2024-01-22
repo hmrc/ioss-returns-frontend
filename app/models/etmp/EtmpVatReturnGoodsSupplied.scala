@@ -16,7 +16,7 @@
 
 package models.etmp
 
-import play.api.libs.json.{Format, Json}
+import play.api.libs.json.{Json, OFormat}
 
 case class EtmpVatReturnGoodsSupplied(
                                        msOfConsumption: String,
@@ -26,5 +26,6 @@ case class EtmpVatReturnGoodsSupplied(
                                      )
 
 object EtmpVatReturnGoodsSupplied {
-  implicit val format: Format[EtmpVatReturnGoodsSupplied] = Json.format[EtmpVatReturnGoodsSupplied]
+
+  implicit val format: OFormat[EtmpVatReturnGoodsSupplied] = Json.format[EtmpVatReturnGoodsSupplied]
 }

@@ -62,3 +62,16 @@ html[data-useragent*='MSIE 10.0'] .flex-container .tile {
     background-color: #d4351c;
 }
 
+@media (max-width: 640px) {
+    .govuk-summary-list__row {
+        .govuk-table__cell--numeric {
+            text-align: left;
+            padding-left: 0px;
+            margin-left: 0px;
+        }
+    }
+}
+
+.corrections-no-border {
+    border: 0;
+}
