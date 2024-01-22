@@ -194,11 +194,11 @@ trait ModelGenerators {
       } yield VatNumberTraderId(vatNumber)
     }
 
-  implicit val arbitraryEtmpEuRegistrationDetails: Arbitrary[EtmpEuRegistrationDetails] = {
+  implicit val arbitraryEtmpEuRegistrationDetails: Arbitrary[EtmpDisplayEuRegistrationDetails] = {
     Arbitrary {
       for {
-        countryOfRegistration <- Gen.listOfN(2, Gen.alphaChar).map(_.mkString.toUpperCase)
-        traderId <- arbitrary[VatNumberTraderId]
+        issuedBy <- Gen.listOfN(2, Gen.alphaChar).map(_.mkString.toUpperCase)
+        vatNumber <- arbitrary[String]
         tradingName <- arbitrary[String]
         fixedEstablishmentAddressLine1 <- arbitrary[String]
         fixedEstablishmentAddressLine2 <- Gen.option(arbitrary[String])
@@ -206,9 +206,10 @@ trait ModelGenerators {
         regionOrState <- Gen.option(arbitrary[String])
         postcode <- Gen.option(arbitrary[String])
       } yield {
-        EtmpEuRegistrationDetails(
-          countryOfRegistration,
-          traderId,
+        EtmpDisplayEuRegistrationDetails(
+          issuedBy,
+          Some(vatNumber),
+          None,
           tradingName,
           fixedEstablishmentAddressLine1,
           fixedEstablishmentAddressLine2,

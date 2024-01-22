@@ -20,7 +20,7 @@ import play.api.libs.json.{Json, OFormat}
 
 case class EtmpSchemeDetails(
                               commencementDate: String,
-                              euRegistrationDetails: Seq[EtmpEuRegistrationDetails],
+                              euRegistrationDetails: Seq[EtmpDisplayEuRegistrationDetails],
                               previousEURegistrationDetails: Seq[EtmpPreviousEuRegistrationDetails],
                               websites: Seq[EtmpWebsite],
                               contactName: String,
