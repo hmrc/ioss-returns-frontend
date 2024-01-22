@@ -19,12 +19,11 @@ package connectors
 import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock._
 import generators.Generators
-import models.etmp.EtmpObligations
+import models.etmp.{EtmpObligations, EtmpVatReturn}
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.Application
 import play.api.libs.json.Json
 import play.api.test.Helpers.running
-import testUtils.EtmpVatReturnData.etmpVatReturn
 import uk.gov.hmrc.http.HeaderCarrier
 
 class VatReturnConnectorSpec extends SpecBase
@@ -35,6 +34,7 @@ class VatReturnConnectorSpec extends SpecBase
   implicit private lazy val hc: HeaderCarrier = HeaderCarrier()
 
   private val etmpObligations: EtmpObligations = arbitraryObligations.arbitrary.sample.value
+  private val etmpVatReturn: EtmpVatReturn = arbitraryEtmpVatReturn.arbitrary.sample.value
 
   private def application: Application = {
     applicationBuilder()
