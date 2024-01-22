@@ -16,13 +16,15 @@
 
 package generators
 
-import java.time.{Instant, LocalDate, ZoneOffset}
-
 import org.scalacheck.Arbitrary._
 import org.scalacheck.Gen._
 import org.scalacheck.{Gen, Shrink}
+import org.scalatest.OptionValues
 
-trait Generators extends PageGenerators with ModelGenerators {
+import java.time.{Instant, LocalDate, ZoneOffset}
+
+
+trait Generators extends PageGenerators with ModelGenerators with OptionValues {
 
   implicit val dontShrink: Shrink[String] = Shrink.shrinkAny
 
@@ -61,7 +63,7 @@ trait Generators extends PageGenerators with ModelGenerators {
     alphaStr suchThat(_.size > 0)
 
   def decimals: Gen[String] =
-    arbitrary[BigDecimal]
+    arbitraryBigDecimal.arbitrary
       .suchThat(_.abs < Int.MaxValue)
       .suchThat(!_.isValidInt)
       .map("%f".format(_))

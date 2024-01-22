@@ -30,6 +30,14 @@ trait ModelGenerators {
 
   self: Generators =>
 
+  implicit val arbitraryBigDecimal: Arbitrary[BigDecimal] =
+    Arbitrary {
+      for {
+        nonDecimalNumber <- arbitrary[Int]
+        decimalNumber <- arbitrary[Int].retryUntil(_ > 0).retryUntil(_.toString.reverse.head.toString != "0")
+      } yield BigDecimal(s"$nonDecimalNumber.$decimalNumber")
+    }
+
   implicit lazy val arbitraryCountry: Arbitrary[Country] =
     Arbitrary {
       Gen.oneOf(Country.euCountries)

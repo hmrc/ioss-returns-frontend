@@ -82,12 +82,12 @@ class VatReturnConnectorSpec extends SpecBase
         running(app) {
           val connector = app.injector.instanceOf[VatReturnConnector]
 
-          val responseBody = Json.toJson(etmpVatReturn).toString()
+          val responseBody = Json.toJson(etmpVatReturn)
 
           server.stubFor(
             get(urlEqualTo(getReturnUrl))
               .willReturn(ok()
-                .withBody(responseBody)
+                .withBody(responseBody.toString())
               )
           )
 
