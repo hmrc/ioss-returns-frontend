@@ -22,6 +22,7 @@ case class EtmpDisplayRegistration(
                                     tradingNames: Seq[EtmpTradingName],
                                     schemeDetails: EtmpSchemeDetails,
                                     bankDetails: EtmpBankDetails,
+                                    // although ETMP send an array to us, they will only ever send 1 exclusion
                                     exclusions: Seq[EtmpExclusion],
                                     adminUse: EtmpAdminUse
                                   )
