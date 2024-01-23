@@ -17,7 +17,8 @@
 package controllers.previousReturns
 
 import base.SpecBase
-import connectors.VatReturnConnector
+import connectors.{FinancialDataConnector, VatReturnConnector}
+import models.financialdata.{Charge, FinancialData, FinancialTransaction, Item}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar.mock
@@ -33,12 +34,40 @@ import viewmodels.govuk.summarylist._
 import viewmodels.previousReturns._
 import views.html.previousReturns.SubmittedReturnForPeriodView
 
+import java.time.{LocalDate, ZonedDateTime}
+
 class SubmittedReturnForPeriodControllerSpec extends SpecBase {
 
   private val vatReturn = etmpVatReturn
+  private val charge: Charge = arbitraryCharge.arbitrary.sample.value
 
   private val mockVatReturnConnector: VatReturnConnector = mock[VatReturnConnector]
+  private val mockFinancialDataConnector: FinancialDataConnector = mock[FinancialDataConnector]
 
+  // TODO -> Create util?
+  private val financialData: FinancialData = FinancialData(
+    idType = Some("idType"),
+    idNumber = Some("idNumber"),
+    regimeType = Some("regimeType"),
+    processingDate = ZonedDateTime.now(),
+    financialTransactions = Some(Seq(FinancialTransaction(
+      chargeType = Some("chargeType"),
+      mainType = Some("mainType"),
+      taxPeriodFrom = Some(LocalDate.now()),
+      taxPeriodTo = Some(LocalDate.now()),
+      originalAmount = Some(BigDecimal(1)),
+      outstandingAmount = Some(BigDecimal(2)),
+      clearedAmount = Some(BigDecimal(3)),
+      items = Some(Seq(Item(
+        amount = Some(BigDecimal(4)),
+        clearingReason = Some("clearingReason"),
+        paymentReference = Some("paymentReference"),
+        paymentAmount = Some(BigDecimal(5)),
+        paymentMethod = Some("paymentMethod"))))
+    )))
+  )
+
+  // TODO -> Fix these
   "SubmittedReturnForPeriod Controller" - {
 
     "must return OK and the correct view for a GET" - {
@@ -47,10 +76,13 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase {
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
           .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
+          .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
           .build()
 
         running(application) {
-          when(mockVatReturnConnector.get(any())(any())) thenReturn vatReturn.toFuture
+          when(mockVatReturnConnector.get(any())(any())) thenReturn Right(vatReturn).toFuture
+          when(mockFinancialDataConnector.getFinancialData(any())(any())) thenReturn financialData.toFuture
+          when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Right(Some(charge)).toFuture
 
           implicit val msgs: Messages = messages(application)
 
@@ -63,13 +95,13 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase {
           val mainSummaryList = SummaryListViewModel(
             rows = Seq(
               SubmittedReturnForPeriodSummary.rowVatDeclared(vatReturn),
-              SubmittedReturnForPeriodSummary.rowAmountPaid(),
-              SubmittedReturnForPeriodSummary.rowRemainingAmount(),
+              SubmittedReturnForPeriodSummary.rowAmountPaid(Some(charge.clearedAmount)),
+              SubmittedReturnForPeriodSummary.rowRemainingAmount(Some(charge.outstandingAmount)),
               SubmittedReturnForPeriodSummary.rowReturnSubmittedDate(vatReturn),
               SubmittedReturnForPeriodSummary.rowPaymentDueDate(period),
               SubmittedReturnForPeriodSummary.rowReturnReference(vatReturn),
               SubmittedReturnForPeriodSummary.rowPaymentReference(vatReturn)
-            )
+            ).flatten
           )
 
           val salesToEuAndNiSummaryList = SummaryListViewModel(
@@ -120,10 +152,13 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase {
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
           .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
+          .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
           .build()
 
         running(application) {
-          when(mockVatReturnConnector.get(any())(any())) thenReturn vatReturnNoCorrections.toFuture
+          when(mockVatReturnConnector.get(any())(any())) thenReturn Right(vatReturnNoCorrections).toFuture
+          when(mockFinancialDataConnector.getFinancialData(any())(any())) thenReturn financialData.toFuture
+          when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Right(Some(charge)).toFuture
 
           implicit val msgs: Messages = messages(application)
 
@@ -136,13 +171,13 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase {
           val mainSummaryList = SummaryListViewModel(
             rows = Seq(
               SubmittedReturnForPeriodSummary.rowVatDeclared(vatReturnNoCorrections),
-              SubmittedReturnForPeriodSummary.rowAmountPaid(),
-              SubmittedReturnForPeriodSummary.rowRemainingAmount(),
+              SubmittedReturnForPeriodSummary.rowAmountPaid(Some(charge.clearedAmount)),
+              SubmittedReturnForPeriodSummary.rowRemainingAmount(Some(charge.outstandingAmount)),
               SubmittedReturnForPeriodSummary.rowReturnSubmittedDate(vatReturnNoCorrections),
               SubmittedReturnForPeriodSummary.rowPaymentDueDate(period),
               SubmittedReturnForPeriodSummary.rowReturnReference(vatReturnNoCorrections),
               SubmittedReturnForPeriodSummary.rowPaymentReference(vatReturnNoCorrections)
-            )
+            ).flatten
           )
 
           val salesToEuAndNiSummaryList = SummaryListViewModel(
@@ -186,6 +221,10 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase {
             )(request, messages(application)).toString
         }
       }
+
+      // TODO ->
+      //  Test Nil return (VEIOSS-491),
+      //  No negative corrections (VEIOSS-492)
     }
   }
 }

@@ -17,9 +17,10 @@
 package connectors
 
 import config.Service
+import connectors.VatReturnHttpParser.{EtmpVatReturnReads, EtmpVatReturnResponse}
 import models.Period
 import models.core.CoreVatReturn
-import models.etmp.{EtmpObligations, EtmpVatReturn}
+import models.etmp.EtmpObligations
 import play.api.Configuration
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions, HttpResponse}
 
@@ -41,7 +42,7 @@ class VatReturnConnector @Inject()(config: Configuration, httpClient: HttpClient
     )
   }
 
-  def get(period: Period)(implicit hc: HeaderCarrier): Future[EtmpVatReturn] = {
-    httpClient.GET[EtmpVatReturn](url = s"$baseUrl/return/$period")
+  def get(period: Period)(implicit hc: HeaderCarrier): Future[EtmpVatReturnResponse] = {
+    httpClient.GET[EtmpVatReturnResponse](url = s"$baseUrl/return/$period")
   }
 }

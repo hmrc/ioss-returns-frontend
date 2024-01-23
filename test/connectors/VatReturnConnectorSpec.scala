@@ -20,8 +20,10 @@ import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock._
 import generators.Generators
 import models.etmp.{EtmpObligations, EtmpVatReturn}
+import models.{InvalidJson, UnexpectedResponseStatus}
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.Application
+import play.api.http.Status.{INTERNAL_SERVER_ERROR, OK}
 import play.api.libs.json.Json
 import play.api.test.Helpers.running
 import uk.gov.hmrc.http.HeaderCarrier
@@ -77,23 +79,60 @@ class VatReturnConnectorSpec extends SpecBase
 
       "must return OK with a payload of ETMP VAT Return" in {
 
-        val app = application
+        running(application) {
 
-        running(app) {
-          val connector = app.injector.instanceOf[VatReturnConnector]
-
-          val responseBody = Json.toJson(etmpVatReturn)
+          val connector = application.injector.instanceOf[VatReturnConnector]
+          val responseBody = Json.toJson(etmpVatReturn).toString()
 
           server.stubFor(
             get(urlEqualTo(getReturnUrl))
-              .willReturn(ok()
-                .withBody(responseBody.toString())
+              .willReturn(
+                aResponse().withStatus(OK).withBody(responseBody)
               )
           )
 
           val result = connector.get(period).futureValue
 
-          result mustBe etmpVatReturn
+          result mustBe Right(etmpVatReturn)
+        }
+      }
+
+      "must return Left(InvalidJson) response when invalid json is returned" in {
+
+        running(application) {
+
+          val connector = application.injector.instanceOf[VatReturnConnector]
+          val responseBody = Json.toJson("").toString()
+
+          server.stubFor(
+            get(urlEqualTo(getReturnUrl))
+              .willReturn(
+                aResponse().withStatus(OK).withBody(responseBody)
+              )
+          )
+
+          val result = connector.get(period).futureValue
+
+          result mustBe Left(InvalidJson)
+        }
+      }
+
+      "must return Left(UnexpectedResponseStatus) when the server responds with an error code" in {
+
+        running(application) {
+
+          val connector = application.injector.instanceOf[VatReturnConnector]
+
+          server.stubFor(
+            get(urlEqualTo(getReturnUrl))
+              .willReturn(
+                aResponse().withStatus(INTERNAL_SERVER_ERROR).withBody("")
+              )
+          )
+
+          val result = connector.get(period).futureValue
+
+          result mustBe Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, ""))
         }
       }
     }

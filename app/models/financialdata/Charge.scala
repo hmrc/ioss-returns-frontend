@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,19 @@
  * limitations under the License.
  */
 
-package models.etmp
+package models.financialdata
 
+import models.Period
 import play.api.libs.json.{Json, OFormat}
 
-case class EtmpVatReturnGoodsSupplied(
-                                       msOfConsumption: String, // TODO country?
-                                       vatRateType: EtmpVatRateType,
-                                       taxableAmountGBP: BigDecimal,
-                                       vatAmountGBP: BigDecimal
-                                     )
+case class Charge(
+                   period: Period,
+                   originalAmount: BigDecimal,
+                   outstandingAmount: BigDecimal,
+                   clearedAmount: BigDecimal
+                 )
 
-object EtmpVatReturnGoodsSupplied {
+object Charge {
 
-  implicit val format: OFormat[EtmpVatReturnGoodsSupplied] = Json.format[EtmpVatReturnGoodsSupplied]
+  implicit val format: OFormat[Charge] = Json.format[Charge]
 }

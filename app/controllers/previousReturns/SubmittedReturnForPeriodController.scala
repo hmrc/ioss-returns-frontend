@@ -16,15 +16,16 @@
 
 package controllers.previousReturns
 
-import connectors.VatReturnConnector
+import connectors.{FinancialDataConnector, VatReturnConnector}
 import controllers.actions._
+import logging.Logging
 import models.Period
 import models.etmp.EtmpVatReturn
-import pages.Waypoints
+import pages.{JourneyRecoveryPage, Waypoints}
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
-import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{Card, CardTitle, SummaryList}
+import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{Card, CardTitle, SummaryList, SummaryListRow}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import viewmodels.govuk.summarylist._
 import viewmodels.previousReturns._
@@ -37,19 +38,30 @@ class SubmittedReturnForPeriodController @Inject()(
                                                     override val messagesApi: MessagesApi,
                                                     cc: AuthenticatedControllerComponents,
                                                     vatReturnConnector: VatReturnConnector,
+                                                    financialDataConnector: FinancialDataConnector,
                                                     view: SubmittedReturnForPeriodView
-                                                  )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                                  )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
   def onPageLoad(waypoints: Waypoints, period: Period): Action[AnyContent] = cc.authAndGetOptionalData().async {
-    implicit request =>
-
+    implicit request => {
       for {
-        etmpVatReturn <- vatReturnConnector.get(period)
-      } yield {
+        etmpVatReturnResult <- vatReturnConnector.get(period)
+        getChargeResult <- financialDataConnector.getCharge(period)
+      } yield (etmpVatReturnResult, getChargeResult)
+    }.map {
+      case (Right(etmpVatReturn), chargeResponse) =>
 
-        val mainSummaryList = getMainSummaryList(etmpVatReturn, period)
+        val maybeCharge = chargeResponse match {
+          case Right(charge) => charge
+          case _ => None
+        }
+
+        val clearedAmount = maybeCharge.map(_.clearedAmount)
+        val outstandingAmount = maybeCharge.map(_.outstandingAmount)
+
+        val mainSummaryList = SummaryListViewModel(rows = getMainSummaryList(etmpVatReturn, period, clearedAmount, outstandingAmount))
 
         val salesToEuAndNiSummaryList = getSalesToEuAndNiSummaryList(etmpVatReturn)
 
@@ -72,22 +84,33 @@ class SubmittedReturnForPeriodController @Inject()(
           vatOwedSummaryList,
           totalVatPayable
         ))
-      }
+      case (Left(error), _) =>
+        logger.error(s"Unexpected result from api while getting ETMP VAT return: $error")
+        Redirect(JourneyRecoveryPage.route(waypoints).url)
+
+      case (_, Left(error)) =>
+        logger.error(s"Unexpected result from api while getting Charge: $error")
+        Redirect(JourneyRecoveryPage.route(waypoints).url)
+
+      case _ => Redirect(JourneyRecoveryPage.route(waypoints).url)
+    }
   }
 
-  private def getMainSummaryList(etmpVatReturn: EtmpVatReturn, period: Period)(implicit messages: Messages): SummaryList = {
-    SummaryListViewModel(
-      rows =
-        Seq(
-          SubmittedReturnForPeriodSummary.rowVatDeclared(etmpVatReturn),
-          SubmittedReturnForPeriodSummary.rowAmountPaid(), // TODO -> Financial call param when created
-          SubmittedReturnForPeriodSummary.rowRemainingAmount(), // TODO -> Financial call param when created
-          SubmittedReturnForPeriodSummary.rowReturnSubmittedDate(etmpVatReturn),
-          SubmittedReturnForPeriodSummary.rowPaymentDueDate(period),
-          SubmittedReturnForPeriodSummary.rowReturnReference(etmpVatReturn),
-          SubmittedReturnForPeriodSummary.rowPaymentReference(etmpVatReturn)
-        )
-    )
+  private def getMainSummaryList(
+                                  etmpVatReturn: EtmpVatReturn,
+                                  period: Period,
+                                  clearedAmount: Option[BigDecimal],
+                                  outstandingAmount: Option[BigDecimal]
+                                )(implicit messages: Messages): Seq[SummaryListRow] = {
+    Seq(
+      SubmittedReturnForPeriodSummary.rowVatDeclared(etmpVatReturn),
+      SubmittedReturnForPeriodSummary.rowAmountPaid(clearedAmount),
+      SubmittedReturnForPeriodSummary.rowRemainingAmount(outstandingAmount),
+      SubmittedReturnForPeriodSummary.rowReturnSubmittedDate(etmpVatReturn),
+      SubmittedReturnForPeriodSummary.rowPaymentDueDate(period), // TODO -> Needs period.paymentDeadline when merged
+      SubmittedReturnForPeriodSummary.rowReturnReference(etmpVatReturn),
+      SubmittedReturnForPeriodSummary.rowPaymentReference(etmpVatReturn)
+    ).flatten
   }
 
   private def getSalesToEuAndNiSummaryList(etmpVatReturn: EtmpVatReturn)(implicit messages: Messages): SummaryList = {
