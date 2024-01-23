@@ -98,10 +98,8 @@ case class CoreMsconSupply(
                             msconCountryCode: String,
                             balanceOfVatDueGBP: BigDecimal,
                             grandTotalMsidGoodsGBP: BigDecimal,
-                            grandTotalMsestGoodsGBP: BigDecimal,
                             correctionsTotalGBP: BigDecimal,
                             msidSupplies: List[CoreSupply],
-                            msestSupplies: List[CoreMsestSupply],
                             corrections: List[CoreCorrection]
                           )
 
