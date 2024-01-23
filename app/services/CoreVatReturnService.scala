@@ -110,10 +110,8 @@ class CoreVatReturnService @Inject()(
           .find(_.country == country)
           .getOrElse(throw new IllegalStateException(s"Unable to find balance for country $country when expected")).totalVat,
         grandTotalMsidGoodsGBP = msidSupplies.map(_.vatAmountGBP).sum,
-        grandTotalMsestGoodsGBP = BigDecimal(0),
         correctionsTotalGBP = corrections.map(_.totalVatAmountCorrectionGBP).sum,
         msidSupplies = msidSupplies,
-        msestSupplies = List.empty,
         corrections = corrections
       )
     }

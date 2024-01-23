@@ -84,7 +84,6 @@ class CoreVatReturnServiceSpec extends SpecBase with BeforeAndAfterEach {
             msconCountryCode = "HR",
             balanceOfVatDueGBP = BigDecimal(20),
             grandTotalMsidGoodsGBP = BigDecimal(20),
-            grandTotalMsestGoodsGBP = BigDecimal(0),
             correctionsTotalGBP = BigDecimal(0),
             msidSupplies = List(CoreSupply(
               "GOODS",
@@ -93,7 +92,6 @@ class CoreVatReturnServiceSpec extends SpecBase with BeforeAndAfterEach {
               BigDecimal(100),
               BigDecimal(20)
             )),
-            msestSupplies = List.empty,
             corrections = List.empty
           )
         ),
