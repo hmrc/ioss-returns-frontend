@@ -88,7 +88,6 @@ class CorrectionReturnPeriodController @Inject()(
 
         form.bindFromRequest().fold(
           formWithErrors => {
-            println(s"Form errors: ${formWithErrors.errors}")
             Future.successful(BadRequest(
               view(formWithErrors, waypoints, period, correctionPeriod, index)
             ))},
