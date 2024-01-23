@@ -361,3 +361,7 @@ interceptUnusableEmail.p1 = The address you gave us, {0}, is not receiving our e
 interceptUnusableEmail.p2 = Your mailbox could be full or the email account may not be active.
 interceptUnusableEmail.p3 = You must have a valid email address to use this service.
 interceptUnusableEmail.confirm = Confirm email address
+
+noMoreWelsh.title = Mae gweddill y gwasanaeth hwn yn Saesneg yn unig ar hyn o bryd
+noMoreWelsh.heading = Mae gweddill y gwasanaeth hwn yn Saesneg yn unig ar hyn o bryd
+noMoreWelsh.submit = Yn eich blaen

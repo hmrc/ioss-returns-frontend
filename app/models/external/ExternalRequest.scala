@@ -14,18 +14,13 @@
  * limitations under the License.
  */
 
-package models
+package models.external
 
-sealed trait ErrorResponse {
-  val body: String
+import play.api.libs.json.{Format, Json}
+
+
+case class ExternalRequest(origin: String, returnUrl: String)
+
+object ExternalRequest {
+  implicit val format:Format[ExternalRequest] = Json.format[ExternalRequest]
 }
-
-case object InvalidJson extends ErrorResponse {
-  override val body = "Invalid JSON received"
-}
-
-case object NotFound extends ErrorResponse {
-  override val body = "Not found"
-}
-
-case class UnexpectedResponseStatus(status: Int, body: String) extends ErrorResponse
