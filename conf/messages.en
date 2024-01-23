@@ -368,3 +368,7 @@ noMoreWelsh.submit = Yn eich blaen
 
 submittedReturnsHistory.title = submittedReturnsHistory
 submittedReturnsHistory.heading = submittedReturnsHistory
+
+noPayments.title = You do not owe any Import One Stop Shop VAT
+noPayments.heading = You do not owe any Import One Stop Shop VAT
+noPayments.textWithLink = Return to <a class="govuk-link" href={0}>your account</a>.
