@@ -17,25 +17,30 @@
 package controllers
 
 import config.FrontendAppConfig
+import connectors.ReturnStatusConnector
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
 import models.etmp.EtmpExclusion
 import models.etmp.EtmpExclusionReason.{NoLongerSupplies, Reversal, TransferringMSID, VoluntarilyLeaves}
+import models.requests.RegistrationRequest
 import pages.Waypoints
 import play.api.i18n.I18nSupport
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import services.PaymentsService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.FutureSyntax.FutureOps
 import viewmodels.PaymentsViewModel
+import viewmodels.yourAccount.{Return, ReturnsViewModel}
 import views.html.YourAccountView
 
 import java.time.{Clock, LocalDate}
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class YourAccountController @Inject()(
                                        cc: AuthenticatedControllerComponents,
                                        paymentsService: PaymentsService,
+                                       returnStatusConnector: ReturnStatusConnector,
                                        view: YourAccountView,
                                        clock: Clock,
                                        appConfig: FrontendAppConfig
@@ -70,8 +75,89 @@ class YourAccountController @Inject()(
           paymentsViewModel,
           appConfig.amendRegistrationUrl,
           leaveThisServiceUrl,
-          cancelYourRequestToLeaveUrl
+          cancelYourRequestToLeaveUrl,
+          returnsViewModel = ???
         ))
       })
   }
+
+  private def getCurrentReturnsAndFinancialData()(implicit request: RegistrationRequest[AnyContent]) = {
+    for {
+      currentReturns <- returnStatusConnector.getCurrentReturns(request.iossNumber)
+      currentPayments <- paymentsService.prepareFinancialData()
+    } yield {
+      (currentReturns, currentPayments)
+    }
+  }
+
+  private def preparedViewWithFinancialData(
+                                             returnsViewModel: Seq[Return]
+                                           )(implicit  request: RegistrationRequest[AnyContent]): Future[Result] = {
+
+    val lastExclusion: Option[EtmpExclusion] = request.registrationWrapper.registration.exclusions.maxByOption(_.effectiveDate)
+
+    val cancelYourRequestToLeaveUrl = lastExclusion match {
+      case Some(exclusion) if Seq(NoLongerSupplies, VoluntarilyLeaves, TransferringMSID).contains(exclusion.exclusionReason) &&
+        LocalDate.now(clock).isBefore(exclusion.effectiveDate) => Some(appConfig.cancelYourRequestToLeaveUrl)
+      case _ => None
+    }
+
+    val leaveThisServiceUrl = if (lastExclusion.isEmpty || lastExclusion.exists(_.exclusionReason == Reversal)) {
+      Some(appConfig.leaveThisServiceUrl)
+    } else {
+      None
+    }
+
+    paymentsService.prepareFinancialData().map(payments => {
+      val paymentsViewModel = PaymentsViewModel(payments.duePayments, payments.overduePayments)
+        Ok(view(
+          request.registrationWrapper.vatInfo.getName,
+          request.iossNumber,
+          paymentsViewModel,
+          appConfig.amendRegistrationUrl,
+          leaveThisServiceUrl,
+          cancelYourRequestToLeaveUrl,
+          ReturnsViewModel(
+            returnsViewModel.map(currentReturn =>
+            currentReturn
+            )
+          )
+        ))
+      })
+  }
+
+  private def preparedViewWithNoFinancialData(
+                                             returnsViewModel: Seq[Return]
+                                           )(implicit  request: RegistrationRequest[AnyContent]): Future[Result] = {
+
+    val lastExclusion: Option[EtmpExclusion] = request.registrationWrapper.registration.exclusions.maxByOption(_.effectiveDate)
+
+    val cancelYourRequestToLeaveUrl = lastExclusion match {
+      case Some(exclusion) if Seq(NoLongerSupplies, VoluntarilyLeaves, TransferringMSID).contains(exclusion.exclusionReason) &&
+        LocalDate.now(clock).isBefore(exclusion.effectiveDate) => Some(appConfig.cancelYourRequestToLeaveUrl)
+      case _ => None
+    }
+
+    val leaveThisServiceUrl = if (lastExclusion.isEmpty || lastExclusion.exists(_.exclusionReason == Reversal)) {
+      Some(appConfig.leaveThisServiceUrl)
+    } else {
+      None
+    }
+
+    Ok(view(
+      request.registrationWrapper.vatInfo.getName,
+      request.iossNumber,
+      PaymentsViewModel(Seq.empty, Seq.empty),
+      appConfig.amendRegistrationUrl,
+      leaveThisServiceUrl,
+      cancelYourRequestToLeaveUrl,
+      ReturnsViewModel(
+        returnsViewModel.map(currentReturn =>
+          currentReturn
+        )
+      )
+    )).toFuture
+  }
+
+
 }
