@@ -365,3 +365,6 @@ interceptUnusableEmail.confirm = Confirm email address
 noMoreWelsh.title = Mae gweddill y gwasanaeth hwn yn Saesneg yn unig ar hyn o bryd
 noMoreWelsh.heading = Mae gweddill y gwasanaeth hwn yn Saesneg yn unig ar hyn o bryd
 noMoreWelsh.submit = Yn eich blaen
+
+submittedReturnsHistory.title = submittedReturnsHistory
+submittedReturnsHistory.heading = submittedReturnsHistory

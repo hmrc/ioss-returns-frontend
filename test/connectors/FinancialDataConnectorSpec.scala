@@ -87,11 +87,6 @@ class FinancialDataConnectorSpec extends SpecBase with WireMockHelper with Finan
 
   ".getCharge" - {
 
-    def application: Application =
-      applicationBuilder()
-        .configure("microservice.services.ioss-returns.port" -> server.port)
-        .build()
-
     val url = s"/$baseUrl/charge/$period"
 
     "must return Some(Charge) when successful" in {
@@ -134,7 +129,7 @@ class FinancialDataConnectorSpec extends SpecBase with WireMockHelper with Finan
       }
     }
 
-    "must return Left(invalidJson) response when invalid json is returned" in {
+    "must return Left(InvalidJson) response when invalid json is returned" in {
 
       running(application) {
 
@@ -183,7 +178,7 @@ trait FinancialDataConnectorFixture {
   val dateFrom: LocalDate = zonedNow.toLocalDate.minusMonths(1)
   val dateTo: LocalDate = zonedNow.toLocalDate
 
-  val expectedPrepareFinancialData = PrepareData(
+  val expectedPrepareFinancialData: PrepareData = PrepareData(
     Nil,
     List(
       Payment(
