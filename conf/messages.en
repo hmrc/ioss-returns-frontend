@@ -44,6 +44,7 @@ yourAccount.yourReturns.heading = Your returns
 yourAccount.yourReturns.startReturn = Start your {0} return
 yourAccount.payment.heading = Payments
 yourAccount.details.heading = Details
+yourAccount.details.viewSubmittedReturns = View submitted returns
 yourAccount.details.changeYourRegistration = Change your registration
 yourAccount.details.cancelYourRequestToLeave = Cancel your request to leave
 yourAccount.details.leaveThisService = Leave this service
@@ -344,8 +345,8 @@ submittedReturnForPeriod.vatOwed.titleWithCorrections = VAT owed (including corr
 
 submittedReturnForPeriod.totalVat.title = Total VAT payable
 
-submittedReturnForPeriod.breadcrumbs.yourAccount = Your IOSS account
-submittedReturnForPeriod.breadcrumbs.submittedReturns = Submitted returns
+previousReturns.breadcrumbs.yourAccount = Your IOSS account
+previousReturns.breadcrumbs.submittedReturns = Submitted returns
 
 whichVatPeriodToPay.title = Which month would you like to make a payment for?
 whichVatPeriodToPay.heading = Which month would you like to make a payment for?
@@ -366,8 +367,13 @@ noMoreWelsh.title = Mae gweddill y gwasanaeth hwn yn Saesneg yn unig ar hyn o br
 noMoreWelsh.heading = Mae gweddill y gwasanaeth hwn yn Saesneg yn unig ar hyn o bryd
 noMoreWelsh.submit = Yn eich blaen
 
-submittedReturnsHistory.title = submittedReturnsHistory
-submittedReturnsHistory.heading = submittedReturnsHistory
+submittedReturnsHistory.title = Submitted returns
+submittedReturnsHistory.heading = Submitted returns
+submittedReturnsHistory.noReturns = You have not submitted any returns.
+submittedReturnsHistory.returnPeriod = Return month
+submittedReturnsHistory.amountLeftToPay = Amount left to pay
+submittedReturnsHistory.payment = Payment
+submittedReturnsHistory.previousRegistrationReturns = View returns from a previous registration
 
 noPayments.title = You do not owe any Import One Stop Shop VAT
 noPayments.heading = You do not owe any Import One Stop Shop VAT

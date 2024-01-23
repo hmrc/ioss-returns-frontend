@@ -107,7 +107,7 @@ class SubmittedReturnForPeriodController @Inject()(
       SubmittedReturnForPeriodSummary.rowAmountPaid(clearedAmount),
       SubmittedReturnForPeriodSummary.rowRemainingAmount(outstandingAmount),
       SubmittedReturnForPeriodSummary.rowReturnSubmittedDate(etmpVatReturn),
-      SubmittedReturnForPeriodSummary.rowPaymentDueDate(period), // TODO -> Needs period.paymentDeadline when merged
+      SubmittedReturnForPeriodSummary.rowPaymentDueDate(period),
       SubmittedReturnForPeriodSummary.rowReturnReference(etmpVatReturn),
       SubmittedReturnForPeriodSummary.rowPaymentReference(etmpVatReturn)
     ).flatten

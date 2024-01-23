@@ -15,6 +15,7 @@
  *@
 
 @import viewmodels.previousReturns.PreviousReturnsCorrectionsSummary.CorrectionRow
+@import controllers.previousReturns.{routes => prevRoutes}
 
 @this(
         layout: templates.Layout,
@@ -38,11 +39,10 @@
         <div class="govuk-breadcrumbs" style="margin-bottom: 50px;">
             <ol class="govuk-breadcrumbs__list">
                 <li class="govuk-breadcrumbs__list-item">
-                    <a class="govuk-breadcrumbs__link" href="@routes.YourAccountController.onPageLoad(waypoints)" id="your-account">@messages("submittedReturnForPeriod.breadcrumbs.yourAccount")</a>
+                    <a class="govuk-breadcrumbs__link" href="@routes.YourAccountController.onPageLoad(waypoints)" id="your-account">@messages("previousReturns.breadcrumbs.yourAccount")</a>
                 </li>
                 <li class="govuk-breadcrumbs__list-item">
-                    @* TODO - href = SubmittedReturnsHistoryController when created*@
-                    <a class="govuk-breadcrumbs__link" href="" id="submitted-returns">@messages("submittedReturnForPeriod.breadcrumbs.submittedReturns")</a>
+                    <a class="govuk-breadcrumbs__link" href="@prevRoutes.SubmittedReturnsHistoryController.onPageLoad(waypoints)" id="submitted-returns">@messages("previousReturns.breadcrumbs.submittedReturns")</a>
                 </li>
                 <li class="govuk-breadcrumbs__list-item">
                     @period.displayText
