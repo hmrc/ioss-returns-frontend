@@ -18,12 +18,13 @@ package controllers.corrections
 
 import controllers.actions._
 import forms.corrections.CorrectionReturnSinglePeriodFormProvider
-import models.Index
+import models.{Index, Period}
 import pages.Waypoints
 import pages.corrections.{CorrectionReturnPeriodPage, CorrectionReturnSinglePeriodPage}
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import queries.DeriveCompletedCorrectionPeriods
 import services.ObligationsService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.ConvertPeriodKey
@@ -53,15 +54,19 @@ class CorrectionReturnSinglePeriodController @Inject()(
       val fulfilledObligations = obligationService.getFulfilledObligations(request.iossNumber)
 
       fulfilledObligations.flatMap { obligations =>
+        val completedCorrectionPeriods: List[Period] = request.userAnswers.get(DeriveCompletedCorrectionPeriods).getOrElse(List.empty)
 
         val correctionMonths = obligations.map (obligation => ConvertPeriodKey.periodkeyToPeriod(obligation.periodKey))
 
-        val preparedForm = request.userAnswers.get(CorrectionReturnSinglePeriodPage(index)) match {
-          case None => form
-          case Some(value) => form.fill(value)
-        }
+        val uncompletedCorrectionPeriods = correctionMonths.diff(completedCorrectionPeriods).distinct
 
-        Ok(view(preparedForm, waypoints, period, correctionMonths.head, index)).toFuture
+        uncompletedCorrectionPeriods.size match {
+          case 0 => Redirect(controllers.routes.CheckYourAnswersController.onPageLoad(waypoints)).toFuture
+          case 1 => Ok(view(form, waypoints, period, uncompletedCorrectionPeriods.head, index)).toFuture
+          case _ => Redirect(
+            controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(waypoints, index)
+          ).toFuture
+        }
       }
   }
 
@@ -74,19 +79,33 @@ class CorrectionReturnSinglePeriodController @Inject()(
 
       fulfilledObligations.flatMap { obligations =>
 
+        val completedCorrectionPeriods: List[Period] = request.userAnswers.get(DeriveCompletedCorrectionPeriods).getOrElse(List.empty)
+
         val correctionMonths = obligations.map (obligation => ConvertPeriodKey.periodkeyToPeriod(obligation.periodKey))
 
-        form.bindFromRequest().fold(
-          formWithErrors =>
-            Future.successful(BadRequest(view(formWithErrors, waypoints, period, correctionMonths.head, index))),
+        val uncompletedCorrectionPeriods = correctionMonths.diff(completedCorrectionPeriods).distinct
 
-          value =>
-            for {
-              updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionReturnSinglePeriodPage(index), value))
-              updatedWithPeriodAnswers <- Future.fromTry(updatedAnswers.set(CorrectionReturnPeriodPage(index), correctionMonths.head))
-              _ <- cc.sessionRepository.set(updatedWithPeriodAnswers)
-            } yield Redirect(CorrectionReturnSinglePeriodPage(index).navigate(waypoints, request.userAnswers, updatedWithPeriodAnswers).route)
-        )
+        uncompletedCorrectionPeriods.size match {
+          case 0 => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+          case 1 => form.bindFromRequest ().fold(
+            formWithErrors => {
+              Future.successful(BadRequest(view(formWithErrors, waypoints, period, uncompletedCorrectionPeriods.head, index)))
+            },
+            value =>
+              if(value) {
+                for {
+                  updatedAnswers <- Future.fromTry (request.userAnswers.set (CorrectionReturnSinglePeriodPage (index), value) )
+                  updatedWithPeriodAnswers <- Future.fromTry (updatedAnswers.set (CorrectionReturnPeriodPage (index), uncompletedCorrectionPeriods.head) )
+                  _ <- cc.sessionRepository.set (updatedWithPeriodAnswers)
+                } yield Redirect (CorrectionReturnSinglePeriodPage (index).navigate (waypoints, request.userAnswers, updatedWithPeriodAnswers).route)
+              } else {
+                Future.successful(Redirect(CorrectionReturnSinglePeriodPage(index).navigate(waypoints, request.userAnswers, request.userAnswers).route))
+              }
+          )
+          case _ => Future.successful(Redirect(controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(waypoints, index)))
+        }
       }
   }
+
+
 }

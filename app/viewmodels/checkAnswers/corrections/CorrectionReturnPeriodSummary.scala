@@ -35,7 +35,7 @@ object CorrectionReturnPeriodSummary {
 
     if(periods.nonEmpty) {
       Some(SummaryListRowViewModel(
-        key = messages("checkYourAnswers.correctionReturnPeriod.checkYourAnswersLabel"),
+        key = messages("checkYourAnswers.correctionLabel.l2"),
         value = ValueViewModel(HtmlContent(periods.mkString("</br>"))),
         actions = Seq(
           ActionItemViewModel(

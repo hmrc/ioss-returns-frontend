@@ -79,9 +79,7 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
 
       when(obligationService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
 
-      val userAnswers = emptyUserAnswers.set(CorrectionReturnSinglePeriodPage(index), true).success.value
-
-      val application = applicationBuilder(userAnswers = Some(userAnswers))
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(bind[ObligationsService].toInstance(obligationService))
         .build()
 
@@ -93,7 +91,7 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(true), waypoints, period, period, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, waypoints, period, period, index)(request, messages(application)).toString
       }
     }
 

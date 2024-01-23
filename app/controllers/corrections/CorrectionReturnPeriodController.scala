@@ -25,6 +25,7 @@ import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import queries.AllCorrectionPeriodsQuery
+import queries.corrections.DeriveCompletedCorrectionPeriods
 import services.ObligationsService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.ConvertPeriodKey
@@ -57,15 +58,23 @@ class CorrectionReturnPeriodController @Inject()(
 
         val correctionPeriod = obligationYears.map(obligation => ConvertPeriodKey.periodkeyToPeriod(obligation.periodKey))
 
-        val form: Form[Period] = formProvider(index, correctionPeriod, request.userAnswers
-          .get(AllCorrectionPeriodsQuery).getOrElse(Seq.empty).map(_.correctionReturnPeriod))
+        val completedCorrectionPeriods: List[Period] = request.userAnswers.get(DeriveCompletedCorrectionPeriods).getOrElse(List.empty)
 
-        val preparedForm = request.userAnswers.get(CorrectionReturnPeriodPage(index)) match {
-          case None => form
-          case Some(value) => form.fill(value)
+        val uncompletedCorrectionPeriods = correctionPeriod.diff(completedCorrectionPeriods).distinct
+
+        if (uncompletedCorrectionPeriods.size < 2) {
+          Redirect(controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(waypoints, index))
+        } else {
+          val form: Form[Period] = formProvider(index, correctionPeriod, request.userAnswers
+            .get(AllCorrectionPeriodsQuery).getOrElse(Seq.empty).map(_.correctionReturnPeriod))
+
+          val preparedForm = request.userAnswers.get(CorrectionReturnPeriodPage(index)) match {
+            case None => form
+            case Some(value) => form.fill(value)
+          }
+
+          Ok(view(preparedForm, waypoints, period, uncompletedCorrectionPeriods, index))
         }
-
-        Ok(view(preparedForm, waypoints, period, correctionPeriod, index))
       }
   }
 
@@ -83,7 +92,11 @@ class CorrectionReturnPeriodController @Inject()(
 
         val correctionPeriod = obligationYears.map(obligation => ConvertPeriodKey.periodkeyToPeriod(obligation.periodKey))
 
-        val form: Form[Period] = formProvider(index, correctionPeriod, request.userAnswers
+        val completedCorrectionPeriods: List[Period] = request.userAnswers.get(DeriveCompletedCorrectionPeriods).getOrElse(List.empty)
+
+        val uncompletedCorrectionPeriods = correctionPeriod.diff(completedCorrectionPeriods).distinct
+
+        val form: Form[Period] = formProvider(index, uncompletedCorrectionPeriods, request.userAnswers
           .get(AllCorrectionPeriodsQuery).getOrElse(Seq.empty).map(_.correctionReturnPeriod))
 
         form.bindFromRequest().fold(
