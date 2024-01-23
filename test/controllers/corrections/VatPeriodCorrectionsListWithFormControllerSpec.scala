@@ -29,6 +29,7 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, VatAmountCorrectionCountryPage}
 import play.api.inject.bind
+import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.ListItem
@@ -39,16 +40,20 @@ import scala.concurrent.Future
 
 class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
 
-  private lazy val vatPeriodCorrectionsListRoute = controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onPageLoad(waypoints, periodJuly2021).url
+  private lazy val vatPeriodCorrectionsListRoute = controllers.corrections.routes.VatPeriodCorrectionsListWithFormController
+    .onPageLoad(waypoints, periodJuly2021).url
 
   private def addCorrectionPeriods(userAnswers: UserAnswers, periods: Seq[Period]): Option[UserAnswers] = //Some(userAnswers)
     periods.zipWithIndex
       .foldLeft(Option(userAnswers))((ua, indexedPeriod) =>
-        ua.flatMap(_.set(CorrectionReturnPeriodPage(Index(indexedPeriod._2)), (indexedPeriod._1)).toOption)
+        ua.flatMap(_.set(CorrectionReturnPeriodPage(Index(indexedPeriod._2)), indexedPeriod._1).toOption)
           .flatMap(_.set(CorrectionCountryPage(Index(indexedPeriod._2), Index(0)), Country.euCountries.head).toOption)
           .flatMap(_.set(VatAmountCorrectionCountryPage(Index(indexedPeriod._2), Index(0)), BigDecimal(200.0)).toOption))
 
-  private def getStatusResponse(periods: Seq[Period], status: EtmpObligationsFulfilmentStatus = EtmpObligationsFulfilmentStatus.Fulfilled): Future[EtmpObligations] = {
+  private def getStatusResponse(
+                                 periods: Seq[Period],
+                                 status: EtmpObligationsFulfilmentStatus = EtmpObligationsFulfilmentStatus.Fulfilled
+                               ): Future[EtmpObligations] = {
     Future.successful {
 
       val details = periods.map(p => EtmpObligationDetails(status, p.toEtmpPeriodString)) //Period//PeriodWithStatus(period, Complete))))
@@ -67,11 +72,11 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
   }
 
   val year = 2021
-  val periodJuly2021 = Period(year, Month.JULY)
+  val periodJuly2021: Period = Period(year, Month.JULY)
 
   override def completeUserAnswers: UserAnswers = emptyUserAnswers.copy(period = periodJuly2021)
 
-  val allPeriods = Seq(
+  val allPeriods: Seq[Period] = Seq(
     periodJuly2021,
     Period(year, Month.OCTOBER),
     Period(year + 1, Month.JANUARY)
@@ -88,7 +93,7 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
         .build()
 
       running(application) {
-        implicit val request = FakeRequest(GET, vatPeriodCorrectionsListRoute)
+        implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, vatPeriodCorrectionsListRoute)
         val result = route(application, request).value
 
         whenReady(result.failed) { exp =>
@@ -108,7 +113,7 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
         .build()
 
       running(application) {
-        implicit val request = FakeRequest(GET, vatPeriodCorrectionsListRoute)
+        implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, vatPeriodCorrectionsListRoute)
         val result = route(application, request).value
         status(result) mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
@@ -141,7 +146,7 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
           val responseString = contentAsString(result)
           val doc = Jsoup.parse(responseString)
 
-          doc.getElementsByClass("govuk-heading-xl").get(0).text() mustEqual expectedTitle
+          doc.getElementsByClass("govuk-heading-l").get(0).text() mustEqual expectedTitle
           doc.getElementsByClass("govuk-table__row").size() mustBe expectedTableRows
 
           val view = application.injector.instanceOf[VatPeriodAvailableCorrectionsListView]
@@ -162,7 +167,7 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
 
           val completedCorrectionsModel = Seq(
             ListItem(
-              name = "1 July to 31 July 2021",
+              name = "July 2021",
               changeUrl = controllers.corrections.routes.CorrectionListCountriesController.onPageLoad(waypoints, index).url,
               removeUrl = controllers.corrections.routes.RemovePeriodCorrectionController.onPageLoad(waypoints, index).url
             )
@@ -186,7 +191,7 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
             val responseString = contentAsString(result)
             val doc = Jsoup.parse(responseString)
 
-            doc.getElementsByClass("govuk-heading-xl").get(0).text() mustEqual expectedTitle
+            doc.getElementsByClass("govuk-heading-l").get(0).text() mustEqual expectedTitle
             doc.getElementsByClass("hmrc-add-to-a-list__contents").size() mustEqual expectedTableRows
 
             val view = application.injector.instanceOf[VatPeriodAvailableCorrectionsListView]
@@ -229,7 +234,7 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
       running(application) {
         val request = FakeRequest(POST,
           controllers.corrections.routes.VatPeriodCorrectionsListWithFormController
-            .onSubmit(waypoints, periodJuly2021, false).url)
+            .onSubmit(waypoints, periodJuly2021, incompletePromptShown = false).url)
 
         val result = route(application, request).value
         status(result) mustEqual SEE_OTHER
@@ -247,9 +252,9 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
         .build()
 
       running(application) {
-        implicit val request = FakeRequest(POST,
+        implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(POST,
           controllers.corrections.routes.VatPeriodCorrectionsListWithFormController
-            .onSubmit(waypoints, periodJuly2021, false).url)
+            .onSubmit(waypoints, periodJuly2021, incompletePromptShown = false).url)
         val result = route(application, request).value
         status(result) mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
@@ -265,12 +270,13 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
         .build()
 
       running(application) {
-        val request = FakeRequest(POST, controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onSubmit(waypoints, period, false).url)
+        val request = FakeRequest(
+          POST, controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onSubmit(waypoints, period, incompletePromptShown = false).url)
 
         val result = route(application, request).value
 
         whenReady(result.failed) {
-          exp => exp.getMessage mustEqual (exceptionMessage)
+          exp => exp.getMessage mustEqual exceptionMessage
         }
       }
     }
