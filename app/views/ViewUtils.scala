@@ -48,7 +48,7 @@ object ViewUtils {
       if (hasUnknownPayments) {
         payment.period.displayText
       } else {
-        messages("whichVatPeriodToPay.amountKnown", payment.amountOwed, displayShortText(payment.period))
+        messages("whichVatPeriodToPay.amountKnown", payment.period.displayShortText)
       }
 
     payments.zipWithIndex.map {
@@ -60,11 +60,5 @@ object ViewUtils {
         )
     }
   }
-
-  private val firstMonthFormatter = DateTimeFormatter.ofPattern("MMMM")
-  private val lastMonthYearFormatter = DateTimeFormatter.ofPattern("MMMM yyyy")
-
-  def displayShortText(period: Period)(implicit messages: Messages): String =
-    s"${period.firstDay.format(firstMonthFormatter)} ${messages("site.to")} ${period.lastDay.format(lastMonthYearFormatter)}"
 
 }
