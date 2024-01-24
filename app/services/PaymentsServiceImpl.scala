@@ -18,6 +18,7 @@ package services
 
 import connectors.PaymentHttpParser.ReturnPaymentResponse
 import connectors.{FinancialDataConnector, PaymentConnector}
+import logging.Logging
 import models.Period
 import models.payments._
 import uk.gov.hmrc.http.HeaderCarrier
@@ -28,9 +29,15 @@ import scala.concurrent.{ExecutionContext, Future}
 class PaymentsServiceImpl @Inject()(
                                  financialDataConnector: FinancialDataConnector,
                                  paymentConnector: PaymentConnector
-                               ) extends PaymentsService {
+                               ) extends PaymentsService with Logging {
   def prepareFinancialData()(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[PrepareData] = {
-    financialDataConnector.prepareFinancialData()
+    financialDataConnector.prepareFinancialData().map {
+      case Right(preparedData) => preparedData
+      case Left(error) =>
+        val message = s"There was a problem getting prepared financial data ${error.body}"
+        logger.error(message)
+        throw new Exception(message)
+    }
   }
 
   def makePayment(iossNumber: String, period: Period, payment: Payment)(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[ReturnPaymentResponse] = {

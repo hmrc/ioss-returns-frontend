@@ -79,7 +79,7 @@ class FinancialDataConnectorSpec extends SpecBase with WireMockHelper with Finan
           val connector = app.injector.instanceOf[FinancialDataConnector]
           val result = connector.prepareFinancialData().futureValue
 
-          result mustEqual expectedPrepareFinancialData
+          result mustEqual Right(expectedPrepareFinancialData)
         }
       }
     }

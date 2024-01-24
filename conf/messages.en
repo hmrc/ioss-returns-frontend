@@ -347,10 +347,10 @@ submittedReturnForPeriod.totalVat.title = Total VAT payable
 submittedReturnForPeriod.breadcrumbs.yourAccount = Your IOSS account
 submittedReturnForPeriod.breadcrumbs.submittedReturns = Submitted returns
 
-whichVatPeriodToPay.title = Which VAT period do you want to pay?
-whichVatPeriodToPay.heading = Which VAT period do you want to pay?
-whichVatPeriodToPay.amountKnown = You owe <b>£{0}</b> for {1}
-whichVatPeriodToPay.error.required = Select a period to pay
+whichVatPeriodToPay.title = Which month would you like to make a payment for?
+whichVatPeriodToPay.heading = Which month would you like to make a payment for?
+whichVatPeriodToPay.amountKnown = {0}
+whichVatPeriodToPay.error.required = Select a month to pay
 
 notificationBanner.title = Important
 notificationBanner.text = We cannot get your latest payment records due to a technical issue. Try again later.

@@ -18,11 +18,11 @@ package connectors
 
 import config.Service
 import connectors.FinancialDataHttpParser.{ChargeReads, ChargeResponse}
+import connectors.PrepareDataHttpParser.{PrepareDataReads, PrepareDataResponse}
 import logging.Logging
 import models.Period
 import models.financialdata.FinancialData
 import models.financialdata.FinancialData._
-import models.payments.PrepareData
 import play.api.Configuration
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
 
@@ -50,9 +50,9 @@ class FinancialDataConnector @Inject()(
     )
   }
 
-  def prepareFinancialData()(implicit hc: HeaderCarrier): Future[PrepareData] = {
+  def prepareFinancialData()(implicit hc: HeaderCarrier): Future[PrepareDataResponse] = {
     val url = prepareFinancialDataUrl
-    http.GET[PrepareData](
+    http.GET[PrepareDataResponse](
       url
     )
   }
