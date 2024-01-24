@@ -70,7 +70,7 @@ class WhichVatPeriodToPayController @Inject()(
     }
   }
 
-  def onSubmit(waypoints: Waypoints): Action[AnyContent] = cc.authAndRequireData.async {
+  def onSubmit(waypoints: Waypoints): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request => {
       val prepareFinancialData: Future[PrepareData] = paymentsService.prepareFinancialData()
       prepareFinancialData.flatMap { pfd =>

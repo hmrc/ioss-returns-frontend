@@ -43,7 +43,7 @@ object PaymentsViewModel {
           LinkModel(
             linkText = messages("yourAccount.payment.makeAPayment"),
             id = "make-a-payment",
-            url = controllers.routes.YourAccountController.onPageLoad().url //ToDo: To be replaced by following once VEIOSS-435 is merged: controllers.payments.routes.WhichVatPeriodToPayController.onPageLoad().url
+            url = controllers.payments.routes.WhichVatPeriodToPayController.onPageLoad().url
           )
         )
       )
