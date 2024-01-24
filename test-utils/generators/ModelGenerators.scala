@@ -20,6 +20,7 @@ import config.Constants.{maxCurrencyAmount, minCurrencyAmount}
 import models._
 import models.etmp._
 import models.financialdata.Charge
+import models.payments.{Payment, PaymentStatus}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Arbitrary, Gen}
 import queries.{OptionalSalesAtVatRate, SalesToCountryWithOptionalSales, VatRateWithOptionalSalesFromCountry}
@@ -344,7 +345,7 @@ trait ModelGenerators {
     Arbitrary {
       for {
         status <- Gen.oneOf(EtmpObligationsFulfilmentStatus.values)
-        periodKey <- arbitrary[String]
+        periodKey <- arbitraryPeriodKey.arbitrary
       } yield EtmpObligationDetails(
         status = status,
         periodKey = periodKey
@@ -461,4 +462,20 @@ trait ModelGenerators {
         paymentReference = paymentReference
       )
     }
+
+  implicit val arbitraryPayment: Arbitrary[Payment] = {
+    Arbitrary {
+      for {
+        period <- arbitrary[Period]
+        amountOwed <- arbitrary[BigDecimal]
+        dateDue <- arbitrary[LocalDate]
+        paymentStatus <- Gen.oneOf(PaymentStatus.values)
+      } yield Payment(
+        period = period,
+        amountOwed = amountOwed,
+        dateDue = dateDue,
+        paymentStatus = paymentStatus
+      )
+    }
+  }
 }

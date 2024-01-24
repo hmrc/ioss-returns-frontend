@@ -373,6 +373,7 @@ submittedReturnsHistory.noReturns = You have not submitted any returns.
 submittedReturnsHistory.returnPeriod = Return month
 submittedReturnsHistory.amountLeftToPay = Amount left to pay
 submittedReturnsHistory.payment = Payment
+submittedReturnsHistory.payNow = Pay now
 submittedReturnsHistory.previousRegistrationReturns = View returns from a previous registration
 
 noPayments.title = You do not owe any Import One Stop Shop VAT

@@ -23,7 +23,7 @@ import models.payments.Payment
 import pages.Waypoints
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import services.ObligationsService
+import services.{ObligationsService, PaymentsService}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.previousReturns.SubmittedReturnsHistoryView
 
@@ -33,7 +33,7 @@ import scala.concurrent.ExecutionContext
 class SubmittedReturnsHistoryController @Inject()(
                                                    override val messagesApi: MessagesApi,
                                                    cc: AuthenticatedControllerComponents,
-                                                   financialDataConnector: FinancialDataConnector,
+                                                   paymentsService: PaymentsService,
                                                    obligationsService: ObligationsService,
                                                    view: SubmittedReturnsHistoryView
                                                  )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
@@ -43,18 +43,27 @@ class SubmittedReturnsHistoryController @Inject()(
   def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetOptionalData().async {
     implicit request =>
 
+      // TODO -> get etmp vat return to determine payment if financial data api down
       for {
         obligations <- obligationsService.getFulfilledObligations(request.iossNumber)
-        preparedFinancialData <- financialDataConnector.prepareFinancialData()
+        preparedFinancialData <- paymentsService.prepareFinancialData()
       } yield {
 
         val periods = obligations.map(_.periodKey).map(Period.fromKey)
 
         val allPayments = preparedFinancialData.duePayments ++ preparedFinancialData.overduePayments
 
+        println(s"ALL PAYMENTS: $allPayments")
+
+        // TODO if head of empty list????
         val periodWithFinancialData: Map[Int, Seq[(Period, Payment)]] = periods.flatMap { period =>
-          Map(period -> allPayments.filter(_.period == period).head)
+          allPayments.find(_.period == period) match {
+            case Some(payment) => Map(period -> payment)
+            case _ => Map.empty
+          }
         }.groupBy(_._1.year)
+
+        println(s"periodWithFinancialData: $periodWithFinancialData")
 
         Ok(view(waypoints, periodWithFinancialData))
       }

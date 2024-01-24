@@ -73,8 +73,8 @@
                                     @Html(currencyFormat(payment.amountOwed))
                                     </td>
                                     <td class="govuk-table__cell govuk-table__cell--numeric">
-                                    @if(payment.paymentStatus == PaymentStatus.Unpaid) {
-                                        <a class="govuk-link" href="#">@payment.paymentStatus</a>
+                                    @if(payment.paymentStatus == PaymentStatus.Unpaid || payment.paymentStatus == PaymentStatus.Unknown) {
+                                        <a class="govuk-link" href="#">@messages("submittedReturnsHistory.payNow")</a>
                                     } else {
                                         @payment.paymentStatus
                                     }

@@ -61,6 +61,10 @@ class SubmittedReturnForPeriodController @Inject()(
         val clearedAmount = maybeCharge.map(_.clearedAmount)
         val outstandingAmount = maybeCharge.map(_.outstandingAmount)
 
+        println(s"etmpVatReturn.totalVATAmountDueForAllMSGBP: ${etmpVatReturn.totalVATAmountDueForAllMSGBP}")
+        println(s"All outstandingAmounts: ${outstandingAmount.map(outstanding => outstanding)}")
+        val displayPayNow = etmpVatReturn.totalVATAmountDueForAllMSGBP > 0 && outstandingAmount.forall(outstanding => outstanding > 0)
+
         val mainSummaryList = SummaryListViewModel(rows = getMainSummaryList(etmpVatReturn, period, clearedAmount, outstandingAmount))
 
         val salesToEuAndNiSummaryList = getSalesToEuAndNiSummaryList(etmpVatReturn)
@@ -82,7 +86,8 @@ class SubmittedReturnForPeriodController @Inject()(
           correctionRowsSummaryList,
           negativeAndZeroBalanceCorrectionCountriesSummaryList,
           vatOwedSummaryList,
-          totalVatPayable
+          totalVatPayable,
+          displayPayNow
         ))
       case (Left(error), _) =>
         logger.error(s"Unexpected result from api while getting ETMP VAT return: $error")
@@ -119,7 +124,7 @@ class SubmittedReturnForPeriodController @Inject()(
         Seq(
           PreviousReturnsTotalNetValueOfSalesSummary.row(etmpVatReturn),
           PreviousReturnsTotalVatOnSalesSummary.row(etmpVatReturn)
-        )
+        ).flatten
     ).withCard(
       card = Card(
         title = Some(CardTitle(content = HtmlContent(messages("submittedReturnForPeriod.salesToEuNi.title"))))

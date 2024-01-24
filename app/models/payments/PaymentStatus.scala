@@ -16,30 +16,25 @@
 
 package models.payments
 
+import models.{Enumerable, WithName}
 import models.json.WritesString
 import play.api.libs.json.{JsPath, Reads, Writes}
 
 sealed trait PaymentStatus
 
-object PaymentStatus {
+object PaymentStatus extends Enumerable.Implicits {
 
-  case object Unpaid extends PaymentStatus
+  case object Unpaid extends WithName("UNPAID") with PaymentStatus
 
-  case object Partial extends PaymentStatus
+  case object Partial extends WithName("PARTIAL") with PaymentStatus
 
-  case object Unknown extends PaymentStatus
+  case object Unknown extends WithName("UNKNOWN") with PaymentStatus
 
-  implicit val reads: Reads[PaymentStatus] = JsPath
-    .read[String]
-    .map(_.toUpperCase)
-    .map {
-      case "UNPAID" => Unpaid
-      case "PARTIAL" => Partial
-      case "UNKNOWN" => Unknown
-    }
-  implicit val writes: Writes[PaymentStatus] = WritesString[PaymentStatus] {
-    case Unpaid => "UNPAID"
-    case Partial => "PARTIAL"
-    case Unknown => "UNKNOWN"
-  }
+  val values: Seq[PaymentStatus] = Seq(
+    Unpaid, Partial, Unknown
+  )
+
+  implicit val enumerable: Enumerable[PaymentStatus] =
+    Enumerable(values.map(v => v.toString -> v): _*)
+
 }
