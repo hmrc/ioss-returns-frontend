@@ -26,12 +26,12 @@ final case class PaymentPeriod(year: Int, month: Month)
 object PaymentPeriod {
 
   implicit val monthReads: Reads[Month] = {
-    Reads.at[Int](__ \ "month")
+    Reads.at[Int](__)
       .map(Month.of)
   }
 
   implicit val monthWrites: Writes[Month] = {
-    Writes.at[Int](__ \ "month")
+    Writes.at[Int](__)
       .contramap(_.getValue)
   }
 
