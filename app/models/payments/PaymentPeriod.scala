@@ -16,7 +16,8 @@
 
 package models.payments
 
-import play.api.libs.json.{Json, OFormat, Reads, Writes, __}
+import play.api.libs.json._
+import play.api.libs.functional.syntax._
 
 import java.time.Month
 
@@ -25,15 +26,21 @@ final case class PaymentPeriod(year: Int, month: Month)
 
 object PaymentPeriod {
 
-  implicit val monthReads: Reads[Month] = {
-    Reads.at[Int](__)
-      .map(Month.of)
+  implicit val reads: Reads[PaymentPeriod] = {
+    (
+      (__ \ "year").read[Int] and
+        (__ \ "month").read[Int].map(Month.of)
+      )(PaymentPeriod.apply _)
   }
 
-  implicit val monthWrites: Writes[Month] = {
-    Writes.at[Int](__)
-      .contramap(_.getValue)
+
+  implicit val writes: Writes[PaymentPeriod] = {
+    (
+      (__ \ "year").write[Int] and
+        (__ \ "month").write[Int].contramap[Month](_.getValue)
+      )(unlift(PaymentPeriod.unapply))
+
   }
 
-  implicit val format: OFormat[PaymentPeriod] = Json.format[PaymentPeriod]
+  implicit val format: Format[PaymentPeriod] = Format(reads, writes)
 }
