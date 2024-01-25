@@ -31,7 +31,7 @@ case class VatPeriodCorrectionsListPage(period: Period, addAnother: Boolean) ext
     if (addAnother) {
       answers.get(DeriveNumberOfCorrectionPeriods) match {
         case Some(size) => CorrectionReturnYearPage(Index(size))
-        case None => CorrectionReturnPeriodPage(Index(0))
+        case None => CorrectionReturnYearPage(Index(0))
       }
     } else {
       CheckYourAnswersPage

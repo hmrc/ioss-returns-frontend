@@ -20,6 +20,9 @@ import models.{Index, UserAnswers}
 import pages.{CheckYourAnswersPage, JourneyRecoveryPage, Page, QuestionPage, Waypoints}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
+import queries.AllCorrectionPeriodsQuery
+
+import scala.util.Try
 
 case class CorrectPreviousReturnPage(etmpObligationDetails: Int) extends QuestionPage[Boolean] {
 
@@ -39,6 +42,22 @@ case class CorrectPreviousReturnPage(etmpObligationDetails: Int) extends Questio
       }
       case Some(false) => CheckYourAnswersPage
       case _ => JourneyRecoveryPage
+    }
+  }
+
+  override def cleanup(value: Option[Boolean], userAnswers: UserAnswers): Try[UserAnswers] = {
+
+    val changedFromYesToNo:Option[Boolean] = for {
+      currentAnswers <- value
+      previousAnswers <- userAnswers.get(AllCorrectionPeriodsQuery).map(_.nonEmpty)
+    } yield {
+      previousAnswers && !currentAnswers
+    }
+
+    if(changedFromYesToNo.getOrElse(false)) {
+      userAnswers.remove(AllCorrectionPeriodsQuery)
+    } else {
+      Try(userAnswers)
     }
   }
 }

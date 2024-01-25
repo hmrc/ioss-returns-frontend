@@ -89,7 +89,8 @@ class CorrectionListCountriesControllerSpec extends SpecBase with SummaryListFlu
           period,
           period,
           index,
-          canAddCountries = true
+          canAddCountries = true,
+          incompleteCountries = List.empty
         )(request, messages(application)).toString
       }
     }
@@ -119,7 +120,8 @@ class CorrectionListCountriesControllerSpec extends SpecBase with SummaryListFlu
           period,
           period,
           index,
-          canAddCountries = true
+          canAddCountries = true,
+          incompleteCountries = List.empty
         )(request, messages(application)).toString
       }
     }
@@ -178,7 +180,8 @@ class CorrectionListCountriesControllerSpec extends SpecBase with SummaryListFlu
           period,
           period,
           index,
-          canAddCountries = true
+          canAddCountries = true,
+          incompleteCountries = List.empty
         )(request, messages(application)).toString
       }
     }

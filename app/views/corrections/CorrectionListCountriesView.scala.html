@@ -29,7 +29,7 @@
     button: ButtonGroup,
 )
 
-@(form: Form[_], waypoints: Waypoints, list: Seq[SummaryList], period: Period, correctionPeriod: Period, periodIndex: Index, canAddCountries: Boolean)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, list: Seq[SummaryList], period: Period, correctionPeriod: Period, periodIndex: Index, canAddCountries: Boolean, incompleteCountries: Seq[String])(implicit request: Request[_], messages: Messages)
 
 @titleText = @{
     list.size match {
@@ -58,6 +58,13 @@
             @govukErrorSummary(ErrorSummaryViewModel(form))
         }
 
+        @if(incompleteCountries.nonEmpty) {
+            @govukWarningText(WarningText(
+                iconFallbackText = Option(messages("site.warning")),
+                content = Text(messages("error.missing_answers"))
+            ))
+        }
+
         <header class="hmrc-page-heading">
             <p class="govuk-caption-xl hmrc-caption-l">@messages("correctionListCountries.section", correctionPeriod.displayText)</p>
             <h1 class="govuk-heading-l">@headingText</h1>
@@ -66,24 +73,32 @@
         @for(list <- list) {
             @govukSummaryList(list)
         }
-
-        @if(canAddCountries) {
-            @govukRadios(
-                RadiosViewModel.yesNo(
-                    field = form("value"),
-                    legend = LegendViewModel(
-                        HtmlContent(Html(messages("correctionListCountries.addAnother")))
-                    ).withSize(LegendSize.Medium)
+        @if(incompleteCountries.isEmpty) {
+            @if(canAddCountries) {
+                @govukRadios(
+                    RadiosViewModel.yesNo(
+                        field = form("value"),
+                        legend = LegendViewModel(
+                            HtmlContent(Html(messages("correctionListCountries.addAnother")))
+                        ).withSize(LegendSize.Medium)
+                    )
                 )
+            } else {
+                <p class="govuk-body">@messages("correctionListCountries.maximumReached")</p>
+                <input type="hidden" name="value" id="value" value="false"/>
+            }
+
+            @govukButton(
+                ButtonViewModel(messages("site.continue"))
+                    .withAttribute("id", "continue")
             )
         } else {
-            <p class="govuk-body">@messages("correctionListCountries.maximumReached")</p>
-            <input type="hidden" name="value" id="value" value="false"/>
-        }
+            <h2 class="govuk-heading-m push--top">@messages("error.missing_answers_header")</h2>
+            <p class="govuk-body">@messages("error.missing_answers_prompt", incompleteCountries.head)</p>
 
-        @govukButton(
-            ButtonViewModel(messages("site.continue"))
-                .withAttribute("id", "continue")
-        )
+            @govukButton(
+                ButtonViewModel(messages("error.resolve_missing_answers"))
+            )
+        }
     }
 }

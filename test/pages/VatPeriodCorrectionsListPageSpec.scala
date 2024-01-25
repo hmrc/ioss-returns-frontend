@@ -51,7 +51,7 @@ class VatPeriodCorrectionsListPageSpec extends PageBehaviours {
             emptyUserAnswers
 
           VatPeriodCorrectionsListPage(period, true).navigate(waypoints, answers, answers).route
-            .mustEqual(controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(waypoints, Index(0)))
+            .mustEqual(controllers.corrections.routes.CorrectionReturnYearController.onPageLoad(waypoints, Index(0)))
         }
       }
 

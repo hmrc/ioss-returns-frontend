@@ -44,7 +44,7 @@ class CorrectionReturnPeriodController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndRequireData().async {
+  def onPageLoad(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible().async {
     implicit request =>
 
       val period = request.userAnswers.period
@@ -54,15 +54,17 @@ class CorrectionReturnPeriodController @Inject()(
       val selectedYear = request.userAnswers.get(CorrectionReturnYearPage(index)).getOrElse(0)
 
       fulfilledObligations.map { obligations =>
+        val periodKeys = obligations.map(obligation => ConvertPeriodKey.yearFromEtmpPeriodKey(obligation.periodKey)).distinct
+
         val obligationYears = obligations.filter(obligation => ConvertPeriodKey.yearFromEtmpPeriodKey(obligation.periodKey) == selectedYear)
 
         val correctionPeriod = obligationYears.map(obligation => ConvertPeriodKey.periodkeyToPeriod(obligation.periodKey))
 
         val completedCorrectionPeriods: List[Period] = request.userAnswers.get(DeriveCompletedCorrectionPeriods).getOrElse(List.empty)
 
-        val uncompletedCorrectionPeriods = correctionPeriod.diff(completedCorrectionPeriods).distinct
+        val uncompletedCorrectionPeriods = correctionPeriod.diff(completedCorrectionPeriods)
 
-        if (uncompletedCorrectionPeriods.size < 2) {
+        if (uncompletedCorrectionPeriods.size <= 1 && periodKeys.size <=1) {
           Redirect(controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(waypoints, index))
         } else {
           val form: Form[Period] = formProvider(index, correctionPeriod, request.userAnswers
@@ -78,7 +80,7 @@ class CorrectionReturnPeriodController @Inject()(
       }
   }
 
-  def onSubmit(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndRequireData().async {
+  def onSubmit(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible().async {
     implicit request =>
 
       val period = request.userAnswers.period

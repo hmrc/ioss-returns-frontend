@@ -46,7 +46,7 @@ class CorrectionReturnSinglePeriodController @Inject()(
 
   val form: Form[Boolean] = formProvider()
 
-  def onPageLoad(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndRequireData().async {
+  def onPageLoad(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible().async {
     implicit request =>
 
       val period = request.userAnswers.period
@@ -70,7 +70,7 @@ class CorrectionReturnSinglePeriodController @Inject()(
       }
   }
 
-  def onSubmit(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndRequireData().async {
+  def onSubmit(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible().async {
     implicit request =>
 
       val period = request.userAnswers.period

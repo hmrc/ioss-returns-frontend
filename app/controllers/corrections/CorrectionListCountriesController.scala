@@ -54,7 +54,7 @@ class CorrectionListCountriesController @Inject()(
             val list = CorrectionListCountriesSummary
               .addToListRows(request.userAnswers, waypoints, periodIndex, CorrectionListCountriesPage(periodIndex))
 
-           Ok(view(form, waypoints, list, period, correctionPeriod, periodIndex, canAddCountries))
+           Ok(view(form, waypoints, list, period, correctionPeriod, periodIndex, canAddCountries, Seq.empty))
         }
 
   }
@@ -72,7 +72,7 @@ class CorrectionListCountriesController @Inject()(
 
           form.bindFromRequest().fold(
             formWithErrors =>
-              Future.successful(BadRequest(view(formWithErrors, waypoints, list, period, correctionPeriod, periodIndex, canAddCountries))),
+              Future.successful(BadRequest(view(formWithErrors, waypoints, list, period, correctionPeriod, periodIndex, canAddCountries, Seq.empty))),
 
             value =>
               for {
