@@ -117,3 +117,4 @@ GET         /intercept-unusable-email                                           
 
 GET         /no-welsh-service                                                         controllers.external.NoMoreWelshController.onPageLoad(redirectUrl: Option[String] ?= None)
 
+GET         /cannot-use-service-error                                                 controllers.CannotUseServiceErrorController.onPageLoad()
