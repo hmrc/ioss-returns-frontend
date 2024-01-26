@@ -55,6 +55,7 @@ yourAccount.details.viewSubmittedReturns = View submitted returns
 yourAccount.details.changeYourRegistration = Change your registration
 yourAccount.details.cancelYourRequestToLeave = Cancel your request to leave
 yourAccount.details.leaveThisService = Leave this service
+yourAccount.details.rejoinThisService = Rejoin this service
 yourAccount.details.previousReturn = View submitted returns
 yourAccount.payment.heading = Payments
 yourAccount.payment.dueHeading = Due Payments
