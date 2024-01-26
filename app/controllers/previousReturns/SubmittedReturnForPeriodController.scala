@@ -61,8 +61,6 @@ class SubmittedReturnForPeriodController @Inject()(
         val clearedAmount = maybeCharge.map(_.clearedAmount)
         val outstandingAmount = maybeCharge.map(_.outstandingAmount)
 
-        println(s"etmpVatReturn.totalVATAmountDueForAllMSGBP: ${etmpVatReturn.totalVATAmountDueForAllMSGBP}")
-        println(s"All outstandingAmounts: ${outstandingAmount.map(outstanding => outstanding)}")
         val displayPayNow = etmpVatReturn.totalVATAmountDueForAllMSGBP > 0 && outstandingAmount.forall(outstanding => outstanding > 0)
 
         val mainSummaryList = SummaryListViewModel(rows = getMainSummaryList(etmpVatReturn, period, clearedAmount, outstandingAmount))

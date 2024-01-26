@@ -16,6 +16,7 @@
 
 @import viewmodels.previousReturns.PreviousReturnsCorrectionsSummary.CorrectionRow
 @import controllers.previousReturns.{routes => prevRoutes}
+@import controllers.payments.{routes => paymentRoutes}
 
 @this(
         layout: templates.Layout,
@@ -63,8 +64,7 @@
 
         @if(displayPayNow) {
             <p class="govuk-!-margin-bottom-5">
-                @*TODO - href = Pay now redirect when created*@
-                <a class="govuk-button" href="">@messages("submittedReturnForPeriod.payNow")</a>
+                <a class="govuk-button" href="@paymentRoutes.WhichVatPeriodToPayController.onPageLoad(waypoints).url">@messages("submittedReturnForPeriod.payNow")</a>
             </p>
         }
 

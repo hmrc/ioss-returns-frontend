@@ -16,56 +16,88 @@
 
 package controllers.previousReturns
 
-import connectors.FinancialDataConnector
+import connectors.VatReturnConnector
 import controllers.actions._
+import logging.Logging
 import models.Period
-import models.payments.Payment
+import models.payments.{Payment, PaymentStatus}
 import pages.Waypoints
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.{ObligationsService, PaymentsService}
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.previousReturns.SubmittedReturnsHistoryView
 
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class SubmittedReturnsHistoryController @Inject()(
                                                    override val messagesApi: MessagesApi,
                                                    cc: AuthenticatedControllerComponents,
                                                    paymentsService: PaymentsService,
                                                    obligationsService: ObligationsService,
+                                                   vatReturnConnector: VatReturnConnector,
                                                    view: SubmittedReturnsHistoryView
-                                                 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                                 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
   def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetOptionalData().async {
     implicit request =>
 
-      // TODO -> get etmp vat return to determine payment if financial data api down
       for {
         obligations <- obligationsService.getFulfilledObligations(request.iossNumber)
         preparedFinancialData <- paymentsService.prepareFinancialData()
+        periods = obligations.map(_.periodKey).map(Period.fromKey)
+        allUnpaidPayments = preparedFinancialData.duePayments ++ preparedFinancialData.overduePayments
+        periodWithFinancialData <- getPeriodWithFinancialData(periods, allUnpaidPayments)
       } yield {
-
-        val periods = obligations.map(_.periodKey).map(Period.fromKey)
-
-        val allPayments = preparedFinancialData.duePayments ++ preparedFinancialData.overduePayments
-
-        println(s"ALL PAYMENTS: $allPayments")
-
-        // TODO if head of empty list????
-        val periodWithFinancialData: Map[Int, Seq[(Period, Payment)]] = periods.flatMap { period =>
-          allPayments.find(_.period == period) match {
-            case Some(payment) => Map(period -> payment)
-            case _ => Map.empty
-          }
-        }.groupBy(_._1.year)
-
-        println(s"periodWithFinancialData: $periodWithFinancialData")
 
         Ok(view(waypoints, periodWithFinancialData))
       }
+  }
+
+  private def getPeriodWithFinancialData(periods: Seq[Period], allUnpaidPayments: List[Payment])
+                                        (implicit hc: HeaderCarrier): Future[Map[Int, Seq[(Period, Payment)]]] = {
+    val futurePeriods = Future(periods)
+
+    for {
+      periods <- futurePeriods
+      allPaymentsForPeriod <- getAllPaymentsForPeriods(periods, allUnpaidPayments)
+    } yield allPaymentsForPeriod.flatten.groupBy(_._1.year)
+  }
+
+  private def getAllPaymentsForPeriods(periods: Seq[Period], allUnpaidPayments: List[Payment])
+                                      (implicit hc: HeaderCarrier): Future[Seq[Map[Period, Payment]]] = {
+    Future.sequence(periods.map { period =>
+      allUnpaidPayments.find(_.period == period) match {
+        case Some(payment) =>
+          println(s"Payment: ${payment}")
+          Future(Map(period -> payment))
+        case _ =>
+          vatReturnConnector.get(period).map {
+            case Right(vatReturn) =>
+              println(s"VAT_RETURN: ${vatReturn}")
+              val paymentStatus = if (vatReturn.totalVATAmountDueForAllMSGBP == 0) {
+                println(s"paymentStatus = Paid with ${vatReturn.totalVATAmountDueForAllMSGBP}")
+                PaymentStatus.Paid
+              } else {
+                println(s"paymentStatus = Unknown with ${vatReturn.totalVATAmountDueForAllMSGBP}")
+                PaymentStatus.Unknown
+              }
+              Map(period -> Payment(
+                period = period,
+                amountOwed = vatReturn.totalVATAmountDueForAllMSGBP,
+                dateDue = period.paymentDeadline,
+                paymentStatus = paymentStatus
+              ))
+            case Left(error) =>
+              val exception = new IllegalStateException(s"Unable to get vat return for calculating amount owed ${error.body}")
+              logger.error(exception.getMessage, exception)
+              throw exception
+          }
+      }
+    })
   }
 }

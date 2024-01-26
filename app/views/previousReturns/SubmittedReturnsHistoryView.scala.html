@@ -74,7 +74,7 @@
                                     </td>
                                     <td class="govuk-table__cell govuk-table__cell--numeric">
                                     @if(payment.paymentStatus == PaymentStatus.Unpaid || payment.paymentStatus == PaymentStatus.Unknown) {
-                                        <a class="govuk-link" href="#">@messages("submittedReturnsHistory.payNow")</a>
+                                        <a class="govuk-link" href="">@messages("submittedReturnsHistory.payNow")</a>
                                     } else {
                                         @payment.paymentStatus
                                     }

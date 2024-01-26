@@ -20,7 +20,9 @@ import base.SpecBase
 import connectors.{FinancialDataConnector, VatReturnConnector}
 import models.financialdata.{Charge, FinancialData, FinancialTransaction, Item}
 import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito
 import org.mockito.Mockito.when
+import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.i18n.Messages
 import play.api.inject.bind
@@ -36,7 +38,7 @@ import views.html.previousReturns.SubmittedReturnForPeriodView
 
 import java.time.{LocalDate, ZonedDateTime}
 
-class SubmittedReturnForPeriodControllerSpec extends SpecBase {
+class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfterEach {
 
   private val vatReturn = etmpVatReturn
   private val charge: Charge = arbitraryCharge.arbitrary.sample.value
@@ -44,7 +46,6 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase {
   private val mockVatReturnConnector: VatReturnConnector = mock[VatReturnConnector]
   private val mockFinancialDataConnector: FinancialDataConnector = mock[FinancialDataConnector]
 
-  // TODO -> Create util?
   private val financialData: FinancialData = FinancialData(
     idType = Some("idType"),
     idNumber = Some("idNumber"),
@@ -55,19 +56,23 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase {
       mainType = Some("mainType"),
       taxPeriodFrom = Some(LocalDate.now()),
       taxPeriodTo = Some(LocalDate.now()),
-      originalAmount = Some(BigDecimal(1)),
-      outstandingAmount = Some(BigDecimal(2)),
-      clearedAmount = Some(BigDecimal(3)),
+      originalAmount = Some(BigDecimal(1000)),
+      outstandingAmount = Some(BigDecimal(500)),
+      clearedAmount = Some(BigDecimal(500)),
       items = Some(Seq(Item(
-        amount = Some(BigDecimal(4)),
+        amount = Some(BigDecimal(500)),
         clearingReason = Some("clearingReason"),
         paymentReference = Some("paymentReference"),
-        paymentAmount = Some(BigDecimal(5)),
+        paymentAmount = Some(BigDecimal(500)),
         paymentMethod = Some("paymentMethod"))))
     )))
   )
 
-  // TODO -> Fix these
+  override def beforeEach(): Unit = {
+    Mockito.reset(mockFinancialDataConnector)
+    Mockito.reset(mockVatReturnConnector)
+  }
+
   "SubmittedReturnForPeriod Controller" - {
 
     "must return OK and the correct view for a GET" - {
@@ -109,7 +114,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase {
               Seq(
                 PreviousReturnsTotalNetValueOfSalesSummary.row(vatReturn),
                 PreviousReturnsTotalVatOnSalesSummary.row(vatReturn)
-              )
+              ).flatten
           ).withCard(
             card = Card(
               title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.salesToEuNi.title"))))
@@ -141,12 +146,13 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase {
               correctionRowsSummaryList,
               negativeAndZeroBalanceCorrectionCountriesSummaryList,
               vatOwedSummaryList,
-              totalVatPayable
+              totalVatPayable,
+              displayPayNow = totalVatPayable > 0 && charge.outstandingAmount > 0
             )(request, messages(application)).toString
         }
       }
 
-      "when there are not corrections present" in {
+      "when there are no corrections present" in {
 
         val vatReturnNoCorrections = vatReturn.copy(correctionPreviousVATReturn = Seq.empty)
 
@@ -185,7 +191,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase {
               Seq(
                 PreviousReturnsTotalNetValueOfSalesSummary.row(vatReturnNoCorrections),
                 PreviousReturnsTotalVatOnSalesSummary.row(vatReturnNoCorrections)
-              )
+              ).flatten
           ).withCard(
             card = Card(
               title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.salesToEuNi.title"))))
@@ -217,10 +223,17 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase {
               correctionRowsSummaryList,
               negativeAndZeroBalanceCorrectionCountriesSummaryList,
               vatOwedSummaryList,
-              totalVatPayable
+              totalVatPayable,
+              displayPayNow = totalVatPayable > 0 && charge.outstandingAmount > 0
             )(request, messages(application)).toString
         }
       }
+
+      "when there are no negative corrections present" in {
+
+      }
+
+
 
       // TODO ->
       //  Test Nil return (VEIOSS-491),
