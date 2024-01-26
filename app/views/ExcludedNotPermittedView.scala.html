@@ -19,16 +19,15 @@
         govukButton: GovukButton
 )
 
-@(yourAccountUrl: String)(implicit request: Request[_], messages: Messages)
+@()(implicit request: Request[_], messages: Messages)
 
-    @layout(pageTitle = titleNoForm(messages("cannotUseServiceError.title"))) {
+@layout(pageTitle = titleNoForm(messages("excludedNotPermitted.title"))) {
 
-        <h1 class="govuk-heading-l">@messages("cannotUseServiceError.heading")</h1>
+    <h1 class="govuk-heading-l">@messages("excludedNotPermitted.heading")</h1>
 
-        <p class="govuk-body">
-            <a href="@yourAccountUrl" class="govuk-link govuk-link--no-visited-state">
-            @messages("cannotUseServiceError.returnToAccount")
-            </a>
-        </p>
-
-    }
+    <p class="govuk-body">
+        <a href="@routes.YourAccountController.onPageLoad()" class="govuk-link govuk-link--no-visited-state">
+            @messages("excludedNotPermitted.returnToAccount")
+        </a>
+    </p>
+}
