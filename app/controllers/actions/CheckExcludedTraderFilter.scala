@@ -26,8 +26,7 @@ import play.api.mvc.{ActionFilter, Result}
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class CheckExcludedTraderFilterImpl(frontendAppConfig: FrontendAppConfig
-                                   )(implicit val executionContext: ExecutionContext)
+class CheckExcludedTraderFilterImpl(frontendAppConfig: FrontendAppConfig)(implicit val executionContext: ExecutionContext)
   extends ActionFilter[DataRequest] {
 
   override protected def filter[A](request: DataRequest[A]): Future[Option[Result]] = {
@@ -42,7 +41,6 @@ class CheckExcludedTraderFilterImpl(frontendAppConfig: FrontendAppConfig
     } else {
       Future.successful(None)
     }
-    Future.successful(Some(Redirect(routes.ExcludedNotPermittedController.onPageLoad())))
   }
 }
 

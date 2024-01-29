@@ -28,8 +28,7 @@ import play.api.data.Form
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import views.html.StartReturnView
-
-import java.time.LocalDate
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class StartReturnControllerSpec extends SpecBase with MockitoSugar with ScalaCheckPropertyChecks {
 
@@ -117,11 +116,11 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar with ScalaChe
       }
     }
 
-    "must redirect to Cannot Use Service Error when a trader is excluded and today is after or equal to their exclusion effective date" in {
+    "must redirect to Excluded Not Permitted when a trader is excluded and the period's last day is after their exclusion effective date" in {
 
       val effectiveDate = Gen.choose(
-        LocalDate.now(stubClockAtArbitraryDate).minusDays(extraNumberOfDays),
-        LocalDate.now(stubClockAtArbitraryDate)
+        period.lastDay.minusDays(1 + extraNumberOfDays),
+        period.lastDay.minusDays(1)
       ).sample.value
 
       val noLongerSuppliesExclusion = EtmpExclusion(
@@ -142,15 +141,15 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar with ScalaChe
         val result = route(application, request).value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.CannotUseServiceErrorController.onPageLoad().url
+        redirectLocation(result).value mustEqual routes.ExcludedNotPermittedController.onPageLoad().url
       }
     }
 
-    "must return OK and the correct view for a GET when a trader is excluded and today is before their exclusion effective date" in {
+    "must return OK and the correct view for a GET when a trader is excluded and the period's last day is before their exclusion effective date" in {
 
       val effectiveDate = Gen.choose(
-        LocalDate.now(stubClockAtArbitraryDate).plusDays(1),
-        LocalDate.now(stubClockAtArbitraryDate).plusDays(extraNumberOfDays)
+        period.lastDay,
+        period.lastDay.plusDays(extraNumberOfDays)
       ).sample.value
 
       val noLongerSuppliesExclusion = EtmpExclusion(
