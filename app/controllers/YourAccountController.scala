@@ -17,15 +17,18 @@
 package controllers
 
 import config.FrontendAppConfig
-import connectors.ReturnStatusConnector
+import connectors.{FinancialDataConnector, ReturnStatusConnector}
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
+import models.{Period, UserAnswers}
 import models.etmp.EtmpExclusion
 import models.etmp.EtmpExclusionReason.{NoLongerSupplies, Reversal, TransferringMSID, VoluntarilyLeaves}
+import models.payments.{PaymentStatus, PrepareData}
 import models.requests.RegistrationRequest
 import pages.Waypoints
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
+import repositories.SessionRepository
 import services.PaymentsService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax.FutureOps
@@ -41,6 +44,8 @@ class YourAccountController @Inject()(
                                        cc: AuthenticatedControllerComponents,
                                        paymentsService: PaymentsService,
                                        returnStatusConnector: ReturnStatusConnector,
+                                       financialDataConnector: FinancialDataConnector,
+                                       sessionRepository: SessionRepository,
                                        view: YourAccountView,
                                        clock: Clock,
                                        appConfig: FrontendAppConfig
@@ -66,32 +71,26 @@ class YourAccountController @Inject()(
       } else {
         None
       }
-
-      paymentsService.prepareFinancialData().map(payments => {
-        val paymentsViewModel = PaymentsViewModel(payments.duePayments, payments.overduePayments)
-        Ok(view(
-          request.registrationWrapper.vatInfo.getName,
-          request.iossNumber,
-          paymentsViewModel,
-          appConfig.amendRegistrationUrl,
-          leaveThisServiceUrl,
-          cancelYourRequestToLeaveUrl,
-          returnsViewModel = ???
-        ))
-      })
+      val results = getCurrentReturnsAndFinancialData()
+        results.flatMap {
+          case (Right(returns), Right(financialData)) =>
+                preparedViewWithFinancialData(returns.contents, financialData)
+        }
   }
+
 
   private def getCurrentReturnsAndFinancialData()(implicit request: RegistrationRequest[AnyContent]) = {
     for {
       currentReturns <- returnStatusConnector.getCurrentReturns(request.iossNumber)
-      currentPayments <- paymentsService.prepareFinancialData()
+      currentPayments <- financialDataConnector.getCurrentPayments(request.iossNumber)
     } yield {
       (currentReturns, currentPayments)
     }
   }
 
   private def preparedViewWithFinancialData(
-                                             returnsViewModel: Seq[Return]
+                                             returnsViewModel: Seq[Return],
+                                             currentPayments: PrepareData
                                            )(implicit  request: RegistrationRequest[AnyContent]): Future[Result] = {
 
     val lastExclusion: Option[EtmpExclusion] = request.registrationWrapper.registration.exclusions.maxByOption(_.effectiveDate)
@@ -108,22 +107,20 @@ class YourAccountController @Inject()(
       None
     }
 
-    paymentsService.prepareFinancialData().map(payments => {
-      val paymentsViewModel = PaymentsViewModel(payments.duePayments, payments.overduePayments)
-        Ok(view(
-          request.registrationWrapper.vatInfo.getName,
-          request.iossNumber,
-          paymentsViewModel,
-          appConfig.amendRegistrationUrl,
-          leaveThisServiceUrl,
-          cancelYourRequestToLeaveUrl,
-          ReturnsViewModel(
-            returnsViewModel.map(currentReturn =>
-            currentReturn
-            )
-          )
-        ))
-      })
+
+    Future.successful(Ok(view(
+      request.registrationWrapper.vatInfo.getName,
+      request.iossNumber,
+      PaymentsViewModel(currentPayments.duePayments, currentPayments.overduePayments),
+      appConfig.amendRegistrationUrl,
+      leaveThisServiceUrl,
+      cancelYourRequestToLeaveUrl,
+      ReturnsViewModel(
+        returnsViewModel.map(currentReturn =>
+          currentReturn
+        )),
+    )))
+
   }
 
   private def preparedViewWithNoFinancialData(

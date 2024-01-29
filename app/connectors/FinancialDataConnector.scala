@@ -20,6 +20,7 @@ import config.Service
 import connectors.FinancialDataHttpParser.{ChargeReads, ChargeResponse}
 import connectors.PrepareDataHttpParser.{PrepareDataReads, PrepareDataResponse}
 import logging.Logging
+import models.financialdata.CurrentPaymentsHttpParser._
 import models.Period
 import models.financialdata.FinancialData
 import models.financialdata.FinancialData._
@@ -60,5 +61,10 @@ class FinancialDataConnector @Inject()(
   def getCharge(period: Period)(implicit hc: HeaderCarrier): Future[ChargeResponse] = {
     val url = chargeUrl(period)
     http.GET[ChargeResponse](url)
+  }
+
+  def getCurrentPayments(iossNumber: String)(implicit hc: HeaderCarrier): Future[CurrentPaymentsResponse] = {
+    val url = s"$baseUrl/financial-data/prepare"
+    http.GET[CurrentPaymentsResponse](url)
   }
 }
