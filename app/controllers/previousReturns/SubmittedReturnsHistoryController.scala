@@ -70,6 +70,8 @@ class SubmittedReturnsHistoryController @Inject()(
 
   private def getAllPaymentsForPeriods(periods: Seq[Period], allUnpaidPayments: List[Payment])
                                       (implicit hc: HeaderCarrier): Future[Seq[Map[Period, Payment]]] = {
+
+    println("allUnpaidPayments " + allUnpaidPayments)
     Future.sequence(periods.map { period =>
       allUnpaidPayments.find(_.period == period) match {
         case Some(payment) =>
@@ -79,16 +81,19 @@ class SubmittedReturnsHistoryController @Inject()(
           vatReturnConnector.get(period).map {
             case Right(vatReturn) =>
               println(s"VAT_RETURN: ${vatReturn}")
-              val paymentStatus = if (vatReturn.totalVATAmountDueForAllMSGBP == 0) {
-                println(s"paymentStatus = Paid with ${vatReturn.totalVATAmountDueForAllMSGBP}")
-                PaymentStatus.Paid
+              val paymentStatus = if (vatReturn.correctionPreviousVATReturn.isEmpty && vatReturn.goodsSupplied.isEmpty) {
+                println(s"paymentStatus = NilReturn with ${vatReturn.totalVATAmountDueForAllMSGBP} and ${vatReturn.totalVATAmountPayable}")
+                PaymentStatus.NilReturn
+//              } else if (vatReturn.totalVATAmountPayable == 0) {
+//                println(s"paymentStatus = Paid with ${vatReturn.totalVATAmountDueForAllMSGBP}")
+//                PaymentStatus.Paid
               } else {
                 println(s"paymentStatus = Unknown with ${vatReturn.totalVATAmountDueForAllMSGBP}")
-                PaymentStatus.Unknown
+                PaymentStatus.Paid
               }
               Map(period -> Payment(
                 period = period,
-                amountOwed = vatReturn.totalVATAmountDueForAllMSGBP,
+                amountOwed = 0,
                 dateDue = period.paymentDeadline,
                 paymentStatus = paymentStatus
               ))

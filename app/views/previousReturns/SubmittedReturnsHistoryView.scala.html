@@ -45,8 +45,8 @@
         <p class="govuk-body-m">@messages("submittedReturnsHistory.noReturns")</p>
     } else {
 
+        <div class="govuk-accordion" data-module="govuk-accordion" id="accordion-with-summary-sections">
         @for((year, periodWithFinancialData) <- periodsWithFinancialData) {
-            <div class="govuk-accordion" data-module="govuk-accordion" id="accordion-with-summary-sections">
                 <div class="govuk-accordion__section">
                     <div class="govuk-accordion__section-header">
                         <h2 class="govuk-accordion__section-heading">
@@ -74,10 +74,10 @@
                                     @Html(currencyFormat(payment.amountOwed))
                                     </td>
                                     <td class="govuk-table__cell govuk-table__cell--numeric">
-                                    @if(payment.paymentStatus == PaymentStatus.Unpaid || payment.paymentStatus == PaymentStatus.Unknown) {
-                                        <a class="govuk-link" href="@paymentRoutes.PaymentController.makePayment(waypoints, period, (payment.amountOwed * 100).toLong, payment.paymentStatus)">@messages("submittedReturnsHistory.payNow")</a>
+                                    @if(payment.paymentStatus == PaymentStatus.Unpaid || payment.paymentStatus == PaymentStatus.Unknown || payment.paymentStatus == PaymentStatus.Partial) {
+                                        <a class="govuk-link" href="@paymentRoutes.PaymentController.makePayment(waypoints, period, (payment.amountOwed * 100).toLong)">@messages("submittedReturnsHistory.payNow")</a>
                                     } else {
-                                        @payment.paymentStatus
+                                        @messages(s"submittedReturnsHistory.status.${payment.paymentStatus.toString.toLowerCase}")
                                     }
                                     </td>
                                 </tr>
@@ -86,8 +86,9 @@
                         </table>
                     </div>
                 </div>
-            </div>
         }
+            </div>
+
 
         <p class="govuk-body">
             <a class="govuk-link" href="">@messages("submittedReturnsHistory.previousRegistrationReturns")</a>

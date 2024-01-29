@@ -45,7 +45,7 @@ class WhichVatPeriodToPayController @Inject()(
   private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  val paymentsBaseUrl = config.get[Service]("microservice.services.pay-api")
+  val paymentsBaseUrl: Service = config.get[Service]("microservice.services.pay-api")
 
   def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request => {
@@ -64,7 +64,7 @@ class WhichVatPeriodToPayController @Inject()(
   }
 
   private def makePayment(iossNumber: String, payment: Payment)(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[Result] = {
-    paymentsService.makePayment(iossNumber, payment.period, payment).map {
+    paymentsService.makePayment(iossNumber, payment.period, payment.amountOwed).map {
       case Right(value) => Redirect(value.nextUrl)
       case _ => Redirect(s"$paymentsBaseUrl/pay/service-unavailable")
     }

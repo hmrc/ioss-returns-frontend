@@ -39,15 +39,11 @@ class PaymentController @Inject()(
   protected val controllerComponents: MessagesControllerComponents = cc
   private val paymentsBaseUrl: Service = config.get[Service]("microservice.services.pay-api")
 
-  def makePayment(waypoints: Waypoints, period: Period, amount: Long, paymentStatus: PaymentStatus): Action[AnyContent] = cc.authAndGetOptionalData().async {
+  def makePayment(waypoints: Waypoints, period: Period, amountInPence: Long): Action[AnyContent] = cc.authAndGetOptionalData().async {
     implicit request =>
-      val payment: Payment = Payment(
-        period = period,
-        amountOwed = amount,
-        dateDue = period.paymentDeadline,
-        paymentStatus = paymentStatus
-      )
-      paymentsService.makePayment(request.iossNumber, period, payment).map {
+      val amountOwed = BigDecimal(amountInPence) / 100
+
+      paymentsService.makePayment(request.iossNumber, period, amountOwed).map {
         case Right(value) => Redirect(value.nextUrl)
         case _ => Redirect(s"$paymentsBaseUrl/pay/service-unavailable")
       }

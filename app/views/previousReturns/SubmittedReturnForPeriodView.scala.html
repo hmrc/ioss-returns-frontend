@@ -33,6 +33,7 @@
         negativeAndZeroBalanceCorrectionCountries: Seq[SummaryListRow],
         vatOwedSummaryList: SummaryList,
         totalVatPayable: BigDecimal,
+        vatDeclared: BigDecimal,
         displayPayNow: Boolean
 )(implicit request: Request[_], messages: Messages)
 
@@ -64,7 +65,7 @@
 
         @if(displayPayNow) {
             <p class="govuk-!-margin-bottom-5">
-                <a class="govuk-button" href="@paymentRoutes.WhichVatPeriodToPayController.onPageLoad(waypoints).url">@messages("submittedReturnForPeriod.payNow")</a>
+                <a class="govuk-button" href="@paymentRoutes.PaymentController.makePayment(waypoints, period, (totalVatPayable * 100).toLong).url">@messages("submittedReturnForPeriod.payNow")</a>
             </p>
         }
 
@@ -138,7 +139,7 @@
                         @messages("submittedReturnForPeriod.totalVat.title")
                         </dt>
                         <dd class="govuk-summary-list__value govuk-!-font-size-24 govuk-table__cell--numeric govuk-!-width-one-third">
-                        @Html(currencyFormatWithAccuracy(totalVatPayable))
+                        @Html(currencyFormatWithAccuracy(vatDeclared))
                         </dd>
                     </div>
                 </dl>

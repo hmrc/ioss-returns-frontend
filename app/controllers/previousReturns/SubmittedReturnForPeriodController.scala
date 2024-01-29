@@ -74,7 +74,9 @@ class SubmittedReturnForPeriodController @Inject()(
 
         val vatOwedSummaryList = getVatOwedSummaryList(etmpVatReturn)
 
-        val totalVatPayable = etmpVatReturn.totalVATAmountDueForAllMSGBP
+        val outstanding = outstandingAmount.getOrElse(etmpVatReturn.totalVATAmountPayable)
+
+        val vatDeclared = etmpVatReturn.totalVATAmountDueForAllMSGBP
 
         Ok(view(
           waypoints,
@@ -84,7 +86,8 @@ class SubmittedReturnForPeriodController @Inject()(
           correctionRowsSummaryList,
           negativeAndZeroBalanceCorrectionCountriesSummaryList,
           vatOwedSummaryList,
-          totalVatPayable,
+          outstanding,
+          vatDeclared,
           displayPayNow
         ))
       case (Left(error), _) =>
