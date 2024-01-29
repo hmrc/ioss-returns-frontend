@@ -75,8 +75,6 @@ final case class Period(year: Int, month: Month) {
   def displayLongText(implicit messages: Messages): String =
     s"${firstDay.format(firstDayFormatter)} ${messages("site.to")} ${lastDay.format(lastDayFormatter)}"
 
-  val paymentDeadlineDisplay: String = paymentDeadline.format(lastDayFormatter)
-
   def zeroPaddedMonth: String =
     "%02d".format(month.getValue)
 

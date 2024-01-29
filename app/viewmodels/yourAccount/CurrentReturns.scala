@@ -20,7 +20,7 @@ import play.api.libs.json.{Json, OFormat}
 
 
 case class CurrentReturns(
-                           contents: Seq[Return],
+                           returns: Seq[Return],
                            excluded: Boolean = false
                            )
 

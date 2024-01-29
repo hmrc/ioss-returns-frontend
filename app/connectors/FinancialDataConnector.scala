@@ -20,8 +20,8 @@ import config.Service
 import connectors.FinancialDataHttpParser.{ChargeReads, ChargeResponse}
 import connectors.PrepareDataHttpParser.{PrepareDataReads, PrepareDataResponse}
 import logging.Logging
-import models.financialdata.CurrentPaymentsHttpParser._
 import models.Period
+import models.financialdata.CurrentPaymentsHttpParser.CurrentPaymentsResponse
 import models.financialdata.FinancialData
 import models.financialdata.FinancialData._
 import play.api.Configuration

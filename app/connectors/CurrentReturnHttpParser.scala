@@ -17,9 +17,8 @@
 package connectors
 
 import logging.Logging
-import models.payments.PaymentResponse
 import models.{ErrorResponse, InvalidJson, UnexpectedResponseStatus}
-import play.api.http.Status.CREATED
+import play.api.http.Status.{CREATED, OK}
 import play.api.libs.json.{JsError, JsSuccess}
 import viewmodels.yourAccount.CurrentReturns
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
@@ -32,7 +31,7 @@ object CurrentReturnHttpParser extends Logging {
 
     override def read(method: String, url: String, response: HttpResponse): CurrentReturnsResponse = {
       response.status match {
-        case CREATED =>
+        case OK | CREATED =>
           response.json.validate[CurrentReturns] match {
             case JsSuccess(r, _) => Right(r)
             case JsError(errors) =>

@@ -17,7 +17,6 @@
 package connectors
 
 import logging.Logging
-import models.payments.PaymentResponse
 import models.{ErrorResponse, InvalidJson, PeriodWithStatus, UnexpectedResponseStatus}
 import play.api.http.Status.CREATED
 import play.api.libs.json.{JsError, JsSuccess}

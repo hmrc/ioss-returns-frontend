@@ -18,8 +18,10 @@ package controllers
 
 import base.SpecBase
 import config.FrontendAppConfig
+import connectors.ReturnStatusConnector
 import generators.Generators
-import models.{Period, RegistrationWrapper}
+import models.SubmissionStatus._
+import models.{Period, RegistrationWrapper, SubmissionStatus}
 import models.etmp.EtmpExclusion
 import models.etmp.EtmpExclusionReason.NoLongerSupplies
 import models.payments.{Payment, PaymentStatus, PrepareData}
@@ -33,12 +35,16 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import services.PaymentsService
 import viewmodels.PaymentsViewModel
+import viewmodels.yourAccount.{CurrentReturns, Return, ReturnsViewModel}
 import views.html.YourAccountView
 
 import java.time.{LocalDate, Month}
 import scala.concurrent.Future
 
 class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generators with BeforeAndAfterEach {
+
+  val nextPeriod: Period = Period(2024, Month.APRIL)
+  private val returnStatusConnector = mock[ReturnStatusConnector]
 
   "Your Account Controller" - {
 
@@ -67,8 +73,26 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(paymentsService.prepareFinancialData()(any(), any())) thenReturn
           Future.successful(prepareData)
 
+        when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
+          Future.successful(
+            Right(CurrentReturns(
+              Seq(Return(
+                nextPeriod,
+                nextPeriod.firstDay,
+                nextPeriod.lastDay,
+                nextPeriod.paymentDeadline,
+                SubmissionStatus.Next,
+                inProgress = false,
+                isOldest = false
+              ))
+            ))
+          )
+
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWrapper)
-          .overrides(bind[PaymentsService].to(paymentsService))
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[PaymentsService].to(paymentsService)
+          )
           .build()
 
         running(application) {
@@ -87,11 +111,26 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
       val registrationWrapperEmptyExclusions: RegistrationWrapper =
         registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
 
+      when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
+        Future.successful(
+          Right(CurrentReturns(
+            Seq(Return(
+              nextPeriod,
+              nextPeriod.firstDay,
+              nextPeriod.lastDay,
+              nextPeriod.paymentDeadline,
+              SubmissionStatus.Next,
+              inProgress = false,
+              isOldest = false
+            ))
+          ))
+        )
 
       val paymentsService = mock[PaymentsService]
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWrapperEmptyExclusions)
         .overrides(
+          bind[ReturnStatusConnector].toInstance(returnStatusConnector),
           bind[PaymentsService].toInstance(paymentsService)
         )
         .build()
@@ -117,7 +156,12 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           paymentsViewModel,
           appConfig.amendRegistrationUrl,
           Some(appConfig.leaveThisServiceUrl),
-          None
+          None,
+          ReturnsViewModel(
+            Seq(
+              Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
+            )
+          )(messages(application))
         )(request, messages(application)).toString
       }
     }
@@ -136,8 +180,24 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
       val paymentsService = mock[PaymentsService]
 
+      when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
+        Future.successful(
+          Right(CurrentReturns(
+            Seq(Return(
+              nextPeriod,
+              nextPeriod.firstDay,
+              nextPeriod.lastDay,
+              nextPeriod.paymentDeadline,
+              SubmissionStatus.Next,
+              inProgress = false,
+              isOldest = false
+            ))
+          ))
+        )
+
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWrapperEmptyExclusions)
         .overrides(
+          bind[ReturnStatusConnector].toInstance(returnStatusConnector),
           bind[PaymentsService].toInstance(paymentsService)
         )
         .build()
@@ -162,7 +222,12 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           paymentsViewModel,
           appConfig.amendRegistrationUrl,
           None,
-          Some(appConfig.cancelYourRequestToLeaveUrl)
+          Some(appConfig.cancelYourRequestToLeaveUrl),
+          ReturnsViewModel(
+            Seq(
+              Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
+            )
+          )(messages(application))
         )(request, messages(application)).toString
       }
     }

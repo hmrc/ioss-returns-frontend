@@ -18,7 +18,6 @@ package viewmodels.yourAccount
 
 import models.Period
 import models.SubmissionStatus.{Due, Next, Overdue}
-import models.etmp.EtmpObligationsFulfilmentStatus.Open
 import pages.{EmptyWaypoints, Waypoints}
 import play.api.i18n.Messages
 import viewmodels.{LinkModel, Paragraph, ParagraphSimple, ParagraphWithId}
@@ -56,6 +55,13 @@ object ReturnsViewModel {
     )
   }
 
+  private def startOverdueReturnLink(waypoints: Waypoints, period: Period)(implicit messages: Messages) =
+    LinkModel(
+      linkText = messages("index.yourReturns.startReturn", period.displayShortText),
+      id = "start-your-return",
+      url = controllers.routes.StartReturnController.onPageLoad(waypoints, period).url
+    )
+
   private def returnDueParagraph(period: Period)(implicit messages: Messages) =
     ParagraphSimple(messages("yourAccount.yourReturns.returnDue", period.displayShortText, period.paymentDeadlineDisplay))
 
@@ -92,7 +98,7 @@ object ReturnsViewModel {
           Seq(returnDueParagraph(dueReturn.period), returnOverdueSingularParagraph())).getOrElse(Seq(returnOverdueMultipleParagraph()))
         ReturnsViewModel(
           contents = contents,
-          linkToStart = Some(startDueReturnLink(waypoints, overdueReturns.head.period))
+          linkToStart = Some(startOverdueReturnLink(waypoints, overdueReturns.head.period))
         )
 
     }

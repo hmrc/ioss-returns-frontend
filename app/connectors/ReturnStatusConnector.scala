@@ -19,7 +19,7 @@ package connectors
 import config.Service
 import connectors.CurrentReturnHttpParser._
 import play.api.Configuration
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions, HttpResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
