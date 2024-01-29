@@ -19,6 +19,7 @@ package models.payments
 import models.Enumerable
 import models.json.WritesString
 import play.api.libs.json.{JsPath, Reads, Writes}
+import play.api.mvc.PathBindable
 
 sealed trait PaymentStatus
 
@@ -58,4 +59,25 @@ object PaymentStatus {
 
   implicit val enumerable: Enumerable[PaymentStatus] =
     Enumerable(values.map(v => v.toString -> v): _*)
+
+  def fromString(string: String): PaymentStatus =
+    string match {
+      case "Unpaid" => PaymentStatus.Unpaid
+      case "Partial" => PaymentStatus.Partial
+      case "Paid" => PaymentStatus.Paid
+      case "Unknown" => PaymentStatus.Unknown
+      case "NilReturn" => PaymentStatus.NilReturn
+    }
+
+  implicit val pathBindable: PathBindable[PaymentStatus] = new PathBindable[PaymentStatus] {
+    override def bind(key: String, value: String): Either[String, PaymentStatus] =
+      fromString(value) match {
+        case status =>
+          Right(status)
+        case _ => Left("Invalid Payment Status")
+      }
+
+    override def unbind(key: String, value: PaymentStatus): String =
+      value.toString
+  }
 }

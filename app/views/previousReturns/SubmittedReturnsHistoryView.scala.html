@@ -15,6 +15,7 @@
  *@
 
 @import controllers.previousReturns.{routes => prevRoutes}
+@import controllers.payments.{routes => paymentRoutes}
 @import models.payments.{Payment, PaymentStatus}
 
 @this(
@@ -74,7 +75,7 @@
                                     </td>
                                     <td class="govuk-table__cell govuk-table__cell--numeric">
                                     @if(payment.paymentStatus == PaymentStatus.Unpaid || payment.paymentStatus == PaymentStatus.Unknown) {
-                                        <a class="govuk-link" href="">@messages("submittedReturnsHistory.payNow")</a>
+                                        <a class="govuk-link" href="@paymentRoutes.PaymentController.makePayment(waypoints, period, (payment.amountOwed * 100).toLong, payment.paymentStatus)">@messages("submittedReturnsHistory.payNow")</a>
                                     } else {
                                         @payment.paymentStatus
                                     }
