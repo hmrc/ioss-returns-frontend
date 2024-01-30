@@ -46,9 +46,6 @@ case class VatOnSalesPage(countryIndex: Index, vatRateIndex: Index) extends Ques
             } else {
               questionPage
             }
-
-          case otherPage =>
-            otherPage
         }
     }
   }

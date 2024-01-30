@@ -66,7 +66,7 @@ final case class Period(year: Int, month: Month) {
   def displayText: String =
     s"${month.getDisplayName(TextStyle.FULL, Locale.ENGLISH)} ${year}"
 
-  def displayShortText(implicit messages: Messages): String =
+  def displayShortText: String =
     s"${lastDay.format(lastMonthYearFormatter)}"
 
   private val firstDayFormatter = DateTimeFormatter.ofPattern("d MMMM")
@@ -151,23 +151,6 @@ object Period {
         value = Some(value.toString),
         id = Some(s"value_$index")
       )
-  }
-
-  private def toEtmpMonthString(month: Month): String = {
-    month match {
-      case Month.JANUARY => "AA"
-      case Month.FEBRUARY => "AB"
-      case Month.MARCH => "AC"
-      case Month.APRIL => "AD"
-      case Month.MAY => "AE"
-      case Month.JUNE => "AF"
-      case Month.JULY => "AG"
-      case Month.AUGUST => "AH"
-      case Month.SEPTEMBER => "AI"
-      case Month.OCTOBER => "AJ"
-      case Month.NOVEMBER => "AK"
-      case Month.DECEMBER => "AL"
-    }
   }
 
   private def fromEtmpMonthString(keyMonth: String): Month = {
