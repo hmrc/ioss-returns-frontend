@@ -58,10 +58,19 @@ class StartReturnController @Inject()(
 
         value => {
 
-          val initialisedAnswers = UserAnswers(id = request.userId, period = period, lastUpdated = Instant.now(clock))
+          val (clearSession: Boolean, userAnswers: UserAnswers) = request.userAnswers match {
+            case Some(userAnswers) if userAnswers.period == period => userAnswers
+            case Some(userAnswers) => userAnswers
+            case _ => (true, UserAnswers(id = request.userId, period = period, lastUpdated = Instant.now(clock)))
+          }
 
           for {
-            answers <- request.userAnswers.getOrElse(initialisedAnswers).toFuture
+            answers <- userAnswers.toFuture
+            _ <- if (clearSession) {
+              cc.sessionRepository.clear(answers.id)
+            } else {
+              Future.successful()
+            }
             updatedAnswers <- Future.fromTry(answers.set(StartReturnPage(period), value))
             _ <- cc.sessionRepository.set(updatedAnswers)
           } yield Redirect(StartReturnPage(period).navigate(waypoints, answers, updatedAnswers).route)

@@ -44,7 +44,7 @@ class PaymentsService @Inject()(
     val paymentRequest =
       PaymentRequest(
         iossNumber,
-        PaymentPeriod(period.year, period.month),
+        PaymentPeriod(period.year, period.month, period.paymentDeadline),
         (amountOwed * 100).longValue,
         Some(period.paymentDeadline)
       )

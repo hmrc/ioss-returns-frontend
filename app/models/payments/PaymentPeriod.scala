@@ -19,9 +19,9 @@ package models.payments
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
 
-import java.time.Month
+import java.time.{LocalDate, Month}
 
-final case class PaymentPeriod(year: Int, month: Month)
+final case class PaymentPeriod(year: Int, month: Month, dueDate: LocalDate)
 
 
 object PaymentPeriod {
@@ -29,7 +29,8 @@ object PaymentPeriod {
   implicit val reads: Reads[PaymentPeriod] = {
     (
       (__ \ "year").read[Int] and
-        (__ \ "month").read[Int].map(Month.of)
+        (__ \ "month").read[Int].map(Month.of) and
+        (__ \ "dueDate").read[LocalDate]
       )(PaymentPeriod.apply _)
   }
 
@@ -37,7 +38,8 @@ object PaymentPeriod {
   implicit val writes: Writes[PaymentPeriod] = {
     (
       (__ \ "year").write[Int] and
-        (__ \ "month").write[Int].contramap[Month](_.getValue)
+        (__ \ "month").write[Int].contramap[Month](_.getValue) and
+        (__ \ "dueDate").write[LocalDate]
       )(unlift(PaymentPeriod.unapply))
 
   }
