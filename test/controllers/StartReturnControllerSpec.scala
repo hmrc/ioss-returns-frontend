@@ -18,19 +18,26 @@ package controllers
 
 import base.SpecBase
 import forms.StartReturnFormProvider
+import models.etmp.EtmpExclusion
+import models.etmp.EtmpExclusionReason.NoLongerSupplies
+import org.scalacheck.Gen
 import org.scalatestplus.mockito.MockitoSugar
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import pages.{NoOtherPeriodsAvailablePage, SoldGoodsPage}
 import play.api.data.Form
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import views.html.StartReturnView
+import scala.concurrent.ExecutionContext.Implicits.global
 
-class StartReturnControllerSpec extends SpecBase with MockitoSugar {
+class StartReturnControllerSpec extends SpecBase with MockitoSugar with ScalaCheckPropertyChecks {
 
   val formProvider = new StartReturnFormProvider()
   val form: Form[Boolean] = formProvider()
 
   lazy val startReturnRoute: String = routes.StartReturnController.onPageLoad(waypoints, period).url
+
+  val extraNumberOfDays: Int = 5
 
   "StartReturn Controller" - {
 
@@ -106,6 +113,66 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar {
 
         status(result) mustBe BAD_REQUEST
         contentAsString(result) mustBe view(boundForm, waypoints, period)(request, messages(application)).toString
+      }
+    }
+
+    "must redirect to Excluded Not Permitted when a trader is excluded and the period's last day is after their exclusion effective date" in {
+
+      val effectiveDate = Gen.choose(
+        period.lastDay.minusDays(1 + extraNumberOfDays),
+        period.lastDay.minusDays(1)
+      ).sample.value
+
+      val noLongerSuppliesExclusion = EtmpExclusion(
+        NoLongerSupplies,
+        effectiveDate,
+        effectiveDate,
+        false
+      )
+
+      val application = applicationBuilder(
+        userAnswers = Some(emptyUserAnswers),
+        registration = registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq(noLongerSuppliesExclusion)))
+      ).build()
+
+      running(application) {
+        val request = FakeRequest(GET, startReturnRoute)
+
+        val result = route(application, request).value
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual routes.ExcludedNotPermittedController.onPageLoad().url
+      }
+    }
+
+    "must return OK and the correct view for a GET when a trader is excluded and the period's last day is before their exclusion effective date" in {
+
+      val effectiveDate = Gen.choose(
+        period.lastDay,
+        period.lastDay.plusDays(extraNumberOfDays)
+      ).sample.value
+
+      val noLongerSuppliesExclusion = EtmpExclusion(
+        NoLongerSupplies,
+        effectiveDate,
+        effectiveDate,
+        false
+      )
+
+      val application = applicationBuilder(
+        userAnswers = Some(emptyUserAnswers),
+        registration = registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq(noLongerSuppliesExclusion)))
+      ).build()
+
+      running(application) {
+        val request = FakeRequest(GET, startReturnRoute)
+
+        val result = route(application, request).value
+
+        val view = application.injector.instanceOf[StartReturnView]
+
+        status(result) mustBe OK
+        contentAsString(result) mustBe view(form, waypoints, period)(request, messages(application)).toString
       }
     }
   }

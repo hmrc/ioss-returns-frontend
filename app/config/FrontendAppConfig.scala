@@ -44,8 +44,8 @@ class FrontendAppConfig @Inject() (configuration: Configuration) {
   private val exitSurveyBaseUrl: String = configuration.get[Service]("microservice.services.feedback-frontend").baseUrl
   val exitSurveyUrl: String             = s"${exitSurveyBaseUrl}feedback/ioss-returns-frontend"
 
-  val languageTranslationEnabled: Boolean =
-    configuration.get[Boolean]("features.welsh-translation")
+  val languageTranslationEnabled: Boolean = configuration.get[Boolean]("features.welsh-translation")
+  val exclusionsEnabled: Boolean = configuration.get[Boolean]("features.exclusions.enabled")
 
   def languageMap: Map[String, Lang] = Map(
     "en" -> Lang("en"),

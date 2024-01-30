@@ -21,7 +21,6 @@ import play.api.mvc.Call
 import queries.Gettable
 
 import scala.annotation.nowarn
-import scala.language.implicitConversions
 
 final case class PageAndWaypoints(page: Page, waypoints: Waypoints) {
 

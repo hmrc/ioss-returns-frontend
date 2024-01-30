@@ -372,3 +372,7 @@ submittedReturnsHistory.heading = submittedReturnsHistory
 noPayments.title = You do not owe any Import One Stop Shop VAT
 noPayments.heading = You do not owe any Import One Stop Shop VAT
 noPayments.textWithLink = <a class="govuk-link" href={0}>Return to your account</a>
+
+excludedNotPermitted.title = You cannot use this service
+excludedNotPermitted.heading = You cannot use this service
+excludedNotPermitted.returnToAccount = Return to your account

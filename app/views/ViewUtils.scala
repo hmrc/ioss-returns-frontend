@@ -16,14 +16,11 @@
 
 package views
 
-import models.Period
 import models.payments.{Payment, PaymentStatus}
 import play.api.data.Form
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.radios.RadioItem
-
-import java.time.format.DateTimeFormatter
 
 object ViewUtils {
 

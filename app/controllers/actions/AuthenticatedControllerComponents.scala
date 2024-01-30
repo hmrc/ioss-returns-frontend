@@ -41,7 +41,11 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
 
   def checkBouncedEmail: CheckBouncedEmailFilterProvider
 
-  def requirePreviousReturns:  CheckSubmittedReturnsFilterProvider
+  def requirePreviousReturns: CheckSubmittedReturnsFilterProvider
+
+  def checkExcludedTrader: CheckExcludedTraderFilter
+
+  def checkExcludedTraderOptional: CheckExcludedTraderOptionalFilter
 
   def auth: ActionBuilder[IdentifierRequest, AnyContent] =
     actionBuilder andThen identify
@@ -57,13 +61,11 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
   }
 
   def authAndGetOptionalData(): ActionBuilder[OptionalDataRequest, AnyContent] = {
-    authAndGetRegistration andThen
-      getData()
+    authAndGetRegistration andThen getData()
   }
 
   def authAndRequireData(): ActionBuilder[DataRequest, AnyContent] = {
-    authAndGetOptionalData() andThen
-      requireData
+    authAndGetOptionalData() andThen requireData andThen checkExcludedTrader()
   }
 
   def authAndGetDataAndCorrectionEligible(): ActionBuilder[DataRequest, AnyContent] = {
@@ -87,5 +89,7 @@ case class DefaultAuthenticatedControllerComponents @Inject()(
                                                                getData: DataRetrievalActionProvider,
                                                                requireData: DataRequiredAction,
                                                                checkBouncedEmail: CheckBouncedEmailFilterProvider,
-                                                               requirePreviousReturns: CheckSubmittedReturnsFilterProvider
+                                                               requirePreviousReturns: CheckSubmittedReturnsFilterProvider,
+                                                               checkExcludedTrader: CheckExcludedTraderFilter,
+                                                               checkExcludedTraderOptional: CheckExcludedTraderOptionalFilter
                                                              ) extends AuthenticatedControllerComponents
