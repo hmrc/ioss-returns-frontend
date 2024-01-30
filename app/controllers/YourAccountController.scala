@@ -43,7 +43,6 @@ class YourAccountController @Inject()(
                                        paymentsService: PaymentsService,
                                        view: YourAccountView,
                                        returnStatusConnector: ReturnStatusConnector,
-                                       financialDataConnector: FinancialDataConnector,
                                        clock: Clock,
                                        appConfig: FrontendAppConfig
                                      )(implicit ec: ExecutionContext)
@@ -56,7 +55,7 @@ class YourAccountController @Inject()(
     implicit request =>
       val results = getCurrentReturns()
       results.flatMap {
-        case (Right(availableReturns), Right(vatReturnsWithFinacialData)) =>
+        case (Right(availableReturns), vatReturnsWithFinacialData) =>
           preparedViewWithFinancialData(availableReturns.returns, vatReturnsWithFinacialData)
         case (Right(availableReturns), error) =>
           logger.warn(s"There was an error with getting payment information $error")
@@ -74,7 +73,7 @@ class YourAccountController @Inject()(
   private def getCurrentReturns()(implicit request: RegistrationRequest[AnyContent]) = {
     for {
       currentReturns <- returnStatusConnector.getCurrentReturns(request.iossNumber)
-      currentPayments <- financialDataConnector.getCurrentPayments(request.iossNumber)
+      currentPayments <- paymentsService.prepareFinancialData()
     } yield {
       (currentReturns, currentPayments)
     }
