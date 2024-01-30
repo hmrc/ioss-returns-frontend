@@ -68,11 +68,11 @@ object ReturnsViewModel {
   private def returnOverdueSingularParagraph()(implicit messages: Messages) =
     ParagraphSimple(messages("yourAccount.yourReturns.returnsOverdue.singular"))
 
-  private def returnOverdueMultipleParagraph()(implicit messages: Messages) =
-    ParagraphSimple(messages("yourAccount.yourReturns.returnsOverdue.multiple"))
+  private def returnOverdueParagraph()(implicit messages: Messages) =
+    ParagraphSimple(messages("yourAccount.yourReturns.returnsOverdue"))
 
   private def returnsOverdueParagraph(numberOfOverdueReturns: Int)(implicit messages: Messages) =
-    ParagraphSimple(messages("yourAccount.yourReturns.returnsOverdue", numberOfOverdueReturns))
+    ParagraphSimple(messages("yourAccount.yourReturns.returnsOverdue.multiple", numberOfOverdueReturns))
   private def onlyReturnsOverdueParagraph(numberOfOverdueReturns: Int)(implicit messages: Messages) =
     ParagraphSimple(messages("yourAccount.yourReturns.onlyReturnsOverdue", numberOfOverdueReturns))
   private def nextReturnParagraph(nextReturn: Period)(implicit messages: Messages) =
@@ -99,7 +99,7 @@ object ReturnsViewModel {
 
       case (1, None, _) =>
         val contents = dueReturn.map(dueReturn =>
-          Seq(returnDueParagraph(dueReturn.period), returnOverdueSingularParagraph())).getOrElse(Seq(returnOverdueMultipleParagraph()))
+          Seq(returnOverdueSingularParagraph(), returnDueParagraph(dueReturn.period))).getOrElse(Seq(returnOverdueParagraph()))
         ReturnsViewModel(
           contents = contents,
           linkToStart = Some(startOverdueReturnLink(waypoints, overdueReturns.head.period))
@@ -107,7 +107,7 @@ object ReturnsViewModel {
 
       case (x, None, _) =>
         val contents = dueReturn.map(dueReturn =>
-            Seq(returnDueParagraph(dueReturn.period), returnsOverdueParagraph(x)))
+            Seq(returnsOverdueParagraph(x), returnDueParagraph(dueReturn.period)))
           .getOrElse(Seq(onlyReturnsOverdueParagraph(x)))
         ReturnsViewModel(
           contents = contents,
