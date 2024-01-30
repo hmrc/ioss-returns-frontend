@@ -34,7 +34,9 @@ case class Return (
 case object Return {
   implicit val format: OFormat[Return] = Json.format[Return]
 
-  def fromPeriod(period: Period, submissionStatus: SubmissionStatus, inProgress: Boolean, isOldest: Boolean): Return =
+  def fromPeriod(period: Period, submissionStatus: SubmissionStatus, inProgress: Boolean, isOldest: Boolean): Return = {
     Return(period, period.firstDay, period.lastDay, period.paymentDeadline, submissionStatus, inProgress, isOldest)
+
+  }
 
 }

@@ -56,7 +56,7 @@ class YourAccountController @Inject()(
     implicit request =>
       val results = getCurrentReturns()
       results.flatMap {
-        case (Right(availableReturns), vatReturnsWithFinacialData) =>
+        case (Right(availableReturns), Right(vatReturnsWithFinacialData)) =>
           preparedViewWithFinancialData(availableReturns.returns, vatReturnsWithFinacialData)
         case (Right(availableReturns), error) =>
           logger.warn(s"There was an error with getting payment information $error")
@@ -74,7 +74,7 @@ class YourAccountController @Inject()(
   private def getCurrentReturns()(implicit request: RegistrationRequest[AnyContent]) = {
     for {
       currentReturns <- returnStatusConnector.getCurrentReturns(request.iossNumber)
-      currentPayments <- paymentsService.prepareFinancialData()
+      currentPayments <- financialDataConnector.getCurrentPayments(request.iossNumber)
     } yield {
       (currentReturns, currentPayments)
     }
@@ -101,19 +101,18 @@ class YourAccountController @Inject()(
       None
     }
 
-      Ok(view(
-        request.registrationWrapper.vatInfo.getName,
-        request.iossNumber,
-        PaymentsViewModel(currentPayments.duePayments, currentPayments.overduePayments),
-        appConfig.amendRegistrationUrl,
-        leaveThisServiceUrl,
-        cancelYourRequestToLeaveUrl,
-        ReturnsViewModel(
-          returnsViewModel.map(currentReturn =>
-            currentReturn
-          )),
-      )).toFuture
-
+    Ok(view(
+      request.registrationWrapper.vatInfo.getName,
+      request.iossNumber,
+      PaymentsViewModel(currentPayments.duePayments, currentPayments.overduePayments),
+      appConfig.amendRegistrationUrl,
+      leaveThisServiceUrl,
+      cancelYourRequestToLeaveUrl,
+      ReturnsViewModel(
+        returnsViewModel.map(currentReturn =>
+          currentReturn
+        )),
+    )).toFuture
   }
 
   private def preparedViewWithNoFinancialData(
@@ -150,6 +149,5 @@ class YourAccountController @Inject()(
       )
     )).toFuture
   }
-
 
 }

@@ -57,7 +57,7 @@ object ReturnsViewModel {
 
   private def startOverdueReturnLink(waypoints: Waypoints, period: Period)(implicit messages: Messages) =
     LinkModel(
-      linkText = messages("index.yourReturns.startReturn", period.displayShortText),
+      linkText = messages("yourAccount.yourReturns.dueReturn.startReturn"),
       id = "start-your-return",
       url = controllers.routes.StartReturnController.onPageLoad(waypoints, period).url
     )
@@ -71,13 +71,17 @@ object ReturnsViewModel {
   private def returnOverdueMultipleParagraph()(implicit messages: Messages) =
     ParagraphSimple(messages("yourAccount.yourReturns.returnsOverdue.multiple"))
 
+  private def returnsOverdueParagraph(numberOfOverdueReturns: Int)(implicit messages: Messages) =
+    ParagraphSimple(messages("yourAccount.yourReturns.returnsOverdue", numberOfOverdueReturns))
+  private def onlyReturnsOverdueParagraph(numberOfOverdueReturns: Int)(implicit messages: Messages) =
+    ParagraphSimple(messages("yourAccount.yourReturns.onlyReturnsOverdue", numberOfOverdueReturns))
   private def nextReturnParagraph(nextReturn: Period)(implicit messages: Messages) =
     ParagraphWithId(messages("yourAccount.nextPeriod", nextReturn.displayShortText, nextReturn.lastDay.plusDays(1)
       .format(DateTimeFormatter.ofPattern("d MMMM yyyy"))),
       "next-period"
     )
 
-  private def dueRetunsModel(overdueReturns:Seq[Return], currentReturn: Option[Return],dueReturn: Option[Return])(implicit messages: Messages) = {
+  private def dueRetunsModel(overdueReturns: Seq[Return], currentReturn: Option[Return], dueReturn: Option[Return])(implicit messages: Messages) = {
     val waypoints = EmptyWaypoints
 
     (overdueReturns.size, currentReturn, dueReturn) match {
@@ -99,6 +103,15 @@ object ReturnsViewModel {
         ReturnsViewModel(
           contents = contents,
           linkToStart = Some(startOverdueReturnLink(waypoints, overdueReturns.head.period))
+        )
+
+      case (x, None, _) =>
+        val contents = dueReturn.map(dueReturn =>
+            Seq(returnDueParagraph(dueReturn.period), returnsOverdueParagraph(x)))
+          .getOrElse(Seq(onlyReturnsOverdueParagraph(x)))
+        ReturnsViewModel(
+          contents = contents,
+          linkToStart = Some(startOverdueReturnLink(waypoints, overdueReturns.minBy(_.period.lastDay.toEpochDay).period))
         )
 
     }
