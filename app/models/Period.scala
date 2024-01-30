@@ -21,6 +21,7 @@ import play.api.libs.json._
 import play.api.mvc.{PathBindable, QueryStringBindable}
 import uk.gov.hmrc.govukfrontend.views.Aliases.Text
 import uk.gov.hmrc.govukfrontend.views.viewmodels.radios.RadioItem
+import play.api.libs.functional.syntax._
 
 import java.time.{LocalDate, Month}
 import java.time.format.{DateTimeFormatter, TextStyle}
@@ -105,17 +106,22 @@ object Period {
     Period(s"20$yearLast2".toInt, fromEtmpMonthString(month))
   }
 
-  implicit val monthReads: Reads[Month] = {
-    Reads.at[Int](__ \ "month")
-      .map(Month.of)
+  implicit val reads: Reads[Period] = {
+    (
+      (__ \ "year").read[Int] and
+        (__ \ "month").read[Int].map(Month.of)
+      )((test1, test2) => Period.apply(test1, test2))
   }
 
-  implicit val monthWrites: Writes[Month] = {
-    Writes.at[Int](__ \ "month")
-      .contramap(_.getValue)
+  implicit val writes: Writes[Period] = {
+    (
+      (__ \ "year").write[Int] and
+        (__ \ "month").write[Int].contramap[Month](_.getValue)
+      )(unlift(Period.unapply))
   }
 
-  implicit val format: OFormat[Period] = Json.format[Period]
+
+  implicit val format: Format[Period] = Format(reads, writes)
 
   implicit val pathBindable: PathBindable[Period] = new PathBindable[Period] {
 
