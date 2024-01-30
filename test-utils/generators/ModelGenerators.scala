@@ -19,7 +19,7 @@ package generators
 import config.Constants.{maxCurrencyAmount, minCurrencyAmount}
 import models._
 import models.etmp._
-import models.financialdata.{Charge, FinancialData}
+import models.financialdata.Charge
 import models.payments.{Payment, PaymentStatus}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Arbitrary, Gen}
