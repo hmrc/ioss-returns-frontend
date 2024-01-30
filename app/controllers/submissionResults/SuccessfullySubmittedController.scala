@@ -56,7 +56,7 @@ class SuccessfullySubmittedController @Inject()(
         returnReference,
         nilReturn = nilReturn,
         period = request.userAnswers.period,
-        owedAmount = CurrencyFormatter.currencyFormatWithAccuracy(totalOwed)
+        owedAmount = totalOwed
       ))
   }
 }

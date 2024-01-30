@@ -18,7 +18,6 @@ package config
 
 import com.google.inject.AbstractModule
 import controllers.actions._
-import services.{PaymentsService, PaymentsServiceImpl}
 
 import java.time.{Clock, ZoneOffset}
 
@@ -27,7 +26,6 @@ class Module extends AbstractModule {
   override def configure(): Unit = {
 
     bind(classOf[DataRequiredAction]).to(classOf[DataRequiredActionImpl]).asEagerSingleton()
-    bind(classOf[PaymentsService]).to(classOf[PaymentsServiceImpl]).asEagerSingleton()
     bind(classOf[AuthenticatedControllerComponents]).to(classOf[DefaultAuthenticatedControllerComponents]).asEagerSingleton()
     bind(classOf[Clock]).toInstance(Clock.systemDefaultZone.withZone(ZoneOffset.UTC))
   }

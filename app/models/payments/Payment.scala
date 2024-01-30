@@ -21,12 +21,14 @@ import play.api.libs.json.{Format, Json}
 
 import java.time.LocalDate
 
-final case class Payment(period: Period,
-                   amountOwed: BigDecimal,
-                   dateDue: LocalDate,
-                   paymentStatus: PaymentStatus
-                  )
+final case class Payment(
+                          period: Period,
+                          amountOwed: BigDecimal,
+                          dateDue: LocalDate,
+                          paymentStatus: PaymentStatus
+                        )
 
 object Payment {
+
   implicit val formatPayment: Format[Payment] = Json.format[Payment]
 }

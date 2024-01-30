@@ -14,6 +14,8 @@
  * limitations under the License.
  *@
 
+@import controllers.payments.{routes => paymentRoutes}
+@import controllers.previousReturns.{routes => prevRoutes}
 @import viewmodels.previousReturns.PreviousReturnsCorrectionsSummary.CorrectionRow
 
 @this(
@@ -22,7 +24,7 @@
         govukSummaryList: GovukSummaryList
 )
 
-    @(
+@(
         waypoints: Waypoints,
         period: Period,
         mainSummaryList: SummaryList,
@@ -30,7 +32,9 @@
         correctionRows: Seq[CorrectionRow],
         negativeAndZeroBalanceCorrectionCountries: Seq[SummaryListRow],
         vatOwedSummaryList: SummaryList,
-        totalVatPayable: BigDecimal
+        totalVatPayable: BigDecimal,
+        vatDeclared: BigDecimal,
+        displayPayNow: Boolean
 )(implicit request: Request[_], messages: Messages)
 
     @layout(pageTitle = titleNoForm(messages("submittedReturnForPeriod.title", period.displayText))) {
@@ -38,14 +42,13 @@
         <div class="govuk-breadcrumbs" style="margin-bottom: 50px;">
             <ol class="govuk-breadcrumbs__list">
                 <li class="govuk-breadcrumbs__list-item">
-                    <a class="govuk-breadcrumbs__link" href="@routes.YourAccountController.onPageLoad(waypoints)" id="your-account">@messages("submittedReturnForPeriod.breadcrumbs.yourAccount")</a>
+                    <a class="govuk-breadcrumbs__link" href="@routes.YourAccountController.onPageLoad(waypoints)" id="your-account">@messages("previousReturns.breadcrumbs.yourAccount")</a>
                 </li>
                 <li class="govuk-breadcrumbs__list-item">
-                    @* TODO - href = SubmittedReturnsHistoryController when created*@
-                    <a class="govuk-breadcrumbs__link" href="" id="submitted-returns">@messages("submittedReturnForPeriod.breadcrumbs.submittedReturns")</a>
+                    <a class="govuk-breadcrumbs__link" href="@prevRoutes.SubmittedReturnsHistoryController.onPageLoad(waypoints)" id="submitted-returns">@messages("previousReturns.breadcrumbs.submittedReturns")</a>
                 </li>
                 <li class="govuk-breadcrumbs__list-item">
-                    @period.displayText
+                @period.displayText
                 </li>
             </ol>
         </div>
@@ -56,18 +59,20 @@
 
         <div class="govuk-summary-card">
             <div class="govuk-summary-card__content">
-                @govukSummaryList(mainSummaryList)
+            @govukSummaryList(mainSummaryList)
             </div>
         </div>
 
-        <p class="govuk-!-margin-bottom-5">
-            @*TODO - href = Pay now redirect when created*@
-            <a class="govuk-button" href="">@messages("submittedReturnForPeriod.payNow")</a>
-        </p>
+        @if(displayPayNow) {
+            <p class="govuk-!-margin-bottom-5">
+                <a class="govuk-button" id="pay-now" href="@paymentRoutes.PaymentController.makePayment(waypoints, period, (totalVatPayable * 100).toLong).url">@messages("submittedReturnForPeriod.payNow")</a>
+            </p>
+        }
 
-        <h2 class="govuk-heading-m">@messages("submittedReturnForPeriod.details")</h2>
-
-        @govukSummaryList(salesToEuAndNiSummaryList)
+        @if(salesToEuAndNiSummaryList.rows) {
+            <h2 class="govuk-heading-m">@messages("submittedReturnForPeriod.details")</h2>
+            @govukSummaryList(salesToEuAndNiSummaryList)
+        }
 
         @if(correctionRows.nonEmpty) {
             <div class="govuk-summary-card">
@@ -82,15 +87,15 @@
                         } else {
                             class="govuk-summary-list__row corrections-no-border"}>
                             <dt class="govuk-summary-list__key">
-                                @if(correctionRow.isFirst) {
-                                    @correctionRow.period
+                            @if(correctionRow.isFirst) {
+                                @correctionRow.period
                             }
                             </dt>
                             <dd class="govuk-summary-list__value govuk-table__cell--numeric govuk-!-width-one-third">
-                                @correctionRow.country
+                            @correctionRow.country
                             </dd>
                             <dd class="govuk-summary-list__value govuk-table__cell--numeric govuk-!-width-one-third">
-                                @Html(correctionRow.totalVATAmountCorrectionGBP)
+                            @Html(correctionRow.totalVATAmountCorrectionGBP)
                             </dd>
                         </div>
                     }
@@ -99,38 +104,42 @@
             </div>
         }
 
-        <div class="govuk-summary-card">
-            <div class="govuk-summary-card__title-wrapper">
-                <h2 class="govuk-summary-card__title">@messages("submittedReturnForPeriod.corrections.vatDeclarationNotDue")</h2>
-            </div>
-            <div class="govuk-summary-card__content">
-                <p class="govuk-body">@messages("submittedReturnForPeriod.corrections.p1")</p>
-                <dl class="govuk-summary-list">
-                @for(negativeAndZeroBalanceCorrectionCountry <- negativeAndZeroBalanceCorrectionCountries) {
-                    <div class="govuk-summary-list__row">
-                        <dt class="govuk-summary-list__key">
+        @if(negativeAndZeroBalanceCorrectionCountries.nonEmpty) {
+            <div class="govuk-summary-card">
+                <div class="govuk-summary-card__title-wrapper">
+                    <h2 class="govuk-summary-card__title">@messages("submittedReturnForPeriod.corrections.vatDeclarationNotDue")</h2>
+                </div>
+                <div class="govuk-summary-card__content">
+                    <p class="govuk-body">@messages("submittedReturnForPeriod.corrections.p1")</p>
+                    <dl class="govuk-summary-list">
+                    @for(negativeAndZeroBalanceCorrectionCountry <- negativeAndZeroBalanceCorrectionCountries) {
+                        <div class="govuk-summary-list__row">
+                            <dt class="govuk-summary-list__key">
                             @negativeAndZeroBalanceCorrectionCountry.key.content.asHtml
-                        </dt>
-                        <dd class="govuk-summary-list__value govuk-table__cell--numeric govuk-!-width-one-third">
+                            </dt>
+                            <dd class="govuk-summary-list__value govuk-table__cell--numeric govuk-!-width-one-third">
                             @negativeAndZeroBalanceCorrectionCountry.value.content.asHtml
-                        </dd>
-                    </div>
-                }
-                </dl>
+                            </dd>
+                        </div>
+                    }
+                    </dl>
+                </div>
             </div>
-        </div>
+        }
 
-        @govukSummaryList(vatOwedSummaryList)
+        @if(vatOwedSummaryList.rows.nonEmpty) {
+            @govukSummaryList(vatOwedSummaryList)
+        }
 
         <div class="govuk-summary-card">
             <div class="govuk-summary-card__title-wrapper govuk-summary-card__content">
                 <dl class="govuk-summary-list">
                     <div class="govuk-summary-list__row">
                         <dt class="govuk-summary-card__title govuk-!-font-size-24">
-                            @messages("submittedReturnForPeriod.totalVat.title")
+                        @messages("submittedReturnForPeriod.totalVat.title")
                         </dt>
                         <dd class="govuk-summary-list__value govuk-!-font-size-24 govuk-table__cell--numeric govuk-!-width-one-third">
-                            @Html(currencyFormatWithAccuracy(totalVatPayable))
+                        @Html(currencyFormatWithAccuracy(vatDeclared))
                         </dd>
                     </div>
                 </dl>

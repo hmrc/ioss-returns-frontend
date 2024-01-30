@@ -117,4 +117,6 @@ GET         /intercept-unusable-email                                           
 
 GET         /no-welsh-service                                                         controllers.external.NoMoreWelshController.onPageLoad(redirectUrl: Option[String] ?= None)
 
+GET         /make-payment/:period/:amountInPence                                      controllers.payments.PaymentController.makePayment(waypoints: Waypoints ?= EmptyWaypoints, period: Period, amountInPence: Long)
+
 GET         /excluded-cannot-use-service                                              controllers.ExcludedNotPermittedController.onPageLoad()

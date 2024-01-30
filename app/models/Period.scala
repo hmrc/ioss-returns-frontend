@@ -78,6 +78,9 @@ final case class Period(year: Int, month: Month) {
   def zeroPaddedMonth: String =
     "%02d".format(month.getValue)
 
+  def displayMonth: String =
+    s"${month.getDisplayName(TextStyle.FULL, Locale.ENGLISH)}"
+
   override def toString: String = s"$year-M${month.getValue}"
 }
 

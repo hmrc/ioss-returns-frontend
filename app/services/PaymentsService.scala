@@ -26,10 +26,10 @@ import uk.gov.hmrc.http.HeaderCarrier
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class PaymentsServiceImpl @Inject()(
+class PaymentsService @Inject()(
                                  financialDataConnector: FinancialDataConnector,
                                  paymentConnector: PaymentConnector
-                               ) extends PaymentsService with Logging {
+                               ) extends Logging {
   def prepareFinancialData()(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[PrepareData] = {
     financialDataConnector.prepareFinancialData().map {
       case Right(preparedData) => preparedData
@@ -40,21 +40,15 @@ class PaymentsServiceImpl @Inject()(
     }
   }
 
-  def makePayment(iossNumber: String, period: Period, payment: Payment)(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[ReturnPaymentResponse] = {
+  def makePayment(iossNumber: String, period: Period, amountOwed: BigDecimal)(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[ReturnPaymentResponse] = {
     val paymentRequest =
       PaymentRequest(
         iossNumber,
         PaymentPeriod(period.year, period.month),
-        (payment.amountOwed * 100).longValue,
-        None
+        (amountOwed * 100).longValue,
+        Some(period.paymentDeadline)
       )
 
     paymentConnector.submit(paymentRequest)
   }
-}
-
-trait PaymentsService {
-  def prepareFinancialData()(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[PrepareData]
-
-  def makePayment(iossNumber: String, period: Period, payment: Payment)(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[ReturnPaymentResponse]
 }

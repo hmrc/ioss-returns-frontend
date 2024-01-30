@@ -26,12 +26,17 @@ import viewmodels.implicits._
 
 object PreviousReturnsTotalVatOnSalesSummary {
 
-  def row(etmpVatReturn: EtmpVatReturn)(implicit messages: Messages): SummaryListRow = {
+  def row(etmpVatReturn: EtmpVatReturn)(implicit messages: Messages): Option[SummaryListRow] = {
     val value = etmpVatReturn.goodsSupplied.map(_.vatAmountGBP).sum
 
-    SummaryListRowViewModel(
-      key = "submittedReturnForPeriod.salesToEuNi.allVatOnSales",
-      value = ValueViewModel(HtmlContent(currencyFormat(value))).withCssClass("govuk-table__cell--numeric")
-    )
+    if (value == 0) {
+      None
+    } else {
+
+      Some(SummaryListRowViewModel(
+        key = "submittedReturnForPeriod.salesToEuNi.allVatOnSales",
+        value = ValueViewModel(HtmlContent(currencyFormat(value))).withCssClass("govuk-table__cell--numeric")
+      ))
+    }
   }
 }

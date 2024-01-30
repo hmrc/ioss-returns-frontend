@@ -14,14 +14,83 @@
  * limitations under the License.
  *@
 
+@import controllers.payments.{routes => paymentRoutes}
+@import controllers.previousReturns.{routes => prevRoutes}
+@import models.payments.{Payment, PaymentStatus}
+
 @this(
         layout: templates.Layout,
         govukButton: GovukButton
 )
 
-@()(implicit request: Request[_], messages: Messages)
+@(waypoints: Waypoints, periodsWithFinancialData: Map[Int, Seq[(Period, Payment)]])(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = titleNoForm(messages("submittedReturnsHistory.title"))) {
+    @layout(pageTitle = titleNoForm(messages("submittedReturnsHistory.title"))) {
 
-    <h1 class="govuk-heading-xl">@messages("submittedReturnsHistory.heading")</h1>
-}
+        <div class="govuk-breadcrumbs" style="margin-bottom: 50px;">
+            <ol class="govuk-breadcrumbs__list">
+                <li class="govuk-breadcrumbs__list-item">
+                    <a class="govuk-breadcrumbs__link" href="@routes.YourAccountController.onPageLoad(waypoints)" id="your-account">@messages("previousReturns.breadcrumbs.yourAccount")</a>
+                </li>
+                <li class="govuk-breadcrumbs__list-item">
+                    <a class="govuk-breadcrumbs__link" href="@prevRoutes.SubmittedReturnsHistoryController.onPageLoad(waypoints)" id="submitted-returns">@messages("previousReturns.breadcrumbs.submittedReturns")</a>
+                </li>
+            </ol>
+        </div>
+
+        <h1 class="govuk-heading-l">@messages("submittedReturnsHistory.heading")</h1>
+
+        @if(periodsWithFinancialData.isEmpty) {
+            <br/>
+            <p class="govuk-body-m">@messages("submittedReturnsHistory.noReturns")</p>
+        } else {
+
+            <div class="govuk-accordion" data-module="govuk-accordion" id="accordion-with-summary-sections">
+            @for((year, periodWithFinancialData) <- periodsWithFinancialData) {
+                <div class="govuk-accordion__section">
+                    <div class="govuk-accordion__section-header">
+                        <h2 class="govuk-accordion__section-heading">
+                            <span class="govuk-accordion__section-button" id="accordion-with-summary-sections-heading-1">
+                            @year
+                            </span>
+                        </h2>
+                    </div>
+                    <div id="accordion-with-summary-sections-content-1" class="govuk-accordion__section-content" aria-labelledby="accordion-with-summary-sections-heading-1">
+                        <table class="govuk-table">
+                            <thead class="govuk-table__head">
+                                <tr class="govuk-table__row">
+                                    <th scope="col" class="govuk-table__header">@messages("submittedReturnsHistory.returnPeriod")</th>
+                                    <th scope="col" class="govuk-table__header govuk-table__header--numeric">@messages("submittedReturnsHistory.amountLeftToPay")</th>
+                                    <th scope="col" class="govuk-table__header govuk-table__header--numeric">@messages("submittedReturnsHistory.payment")</th>
+                                </tr>
+                            </thead>
+                            <tbody class="govuk-table__body">
+                            @for((period, payment) <- periodWithFinancialData) {
+                                <tr class="govuk-table__row">
+                                    <td class="govuk-table__cell">
+                                        <a class="govuk-link govuk-body" href="@prevRoutes.SubmittedReturnForPeriodController.onPageLoad(waypoints, period)">@period.displayMonth</a>
+                                    </td>
+                                    <td class="govuk-table__cell govuk-table__cell--numeric">
+                                    @Html(currencyFormat(payment.amountOwed))
+                                    </td>
+                                    <td class="govuk-table__cell govuk-table__cell--numeric">
+                                    @if(payment.paymentStatus == PaymentStatus.Unpaid || payment.paymentStatus == PaymentStatus.Unknown || payment.paymentStatus == PaymentStatus.Partial) {
+                                        <a class="govuk-link" id="pay-now" href="@paymentRoutes.PaymentController.makePayment(waypoints, period, (payment.amountOwed * 100).toLong)">@messages("submittedReturnsHistory.payNow")</a>
+                                    } else {
+                                        @messages(s"submittedReturnsHistory.status.${payment.paymentStatus.toString.toLowerCase}")
+                                    }
+                                    </td>
+                                </tr>
+                            }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+            </div>
+
+            <p class="govuk-body">
+                <a class="govuk-link" href="">@messages("submittedReturnsHistory.previousRegistrationReturns")</a>
+            </p>
+        }
+    }

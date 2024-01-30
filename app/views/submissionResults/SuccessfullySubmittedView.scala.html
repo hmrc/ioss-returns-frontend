@@ -16,6 +16,9 @@
 
 @import pages.EmptyWaypoints
 @import java.time.format.DateTimeFormatter
+@import controllers.payments.{routes => paymentRoutes}
+@import utils.CurrencyFormatter.currencyFormatWithAccuracy
+
 
 @this(
         layout: templates.Layout,
@@ -23,7 +26,7 @@
         govukPanel: GovukPanel
 )
 
-@(returnReference: String, nilReturn: Boolean, period: Period, owedAmount: String)(implicit request: Request[_], messages: Messages)
+@(returnReference: String, nilReturn: Boolean, period: Period, owedAmount: BigDecimal)(implicit request: Request[_], messages: Messages)
 
     @layout(pageTitle = titleNoForm(messages("successfullySubmitted.title")), showBackLink =false) {
 
@@ -37,12 +40,12 @@
         } else {
             <h2 class="govuk-heading-m govuk-!-margin-top-6" id="how-pay">@messages("successfullySubmitted.payVatOwed")</h2>
             <p class="govuk-body">
-            @Html(messages("successfullySubmitted.payPeriodAmount", period.lastDay.format(DateTimeFormatter.ofPattern("d MMMM u")), owedAmount))
+            @Html(messages("successfullySubmitted.payPeriodAmount", period.lastDay.format(DateTimeFormatter.ofPattern("d MMMM u")), currencyFormatWithAccuracy(owedAmount)))
             </p>
 
             <p class="govuk-body"> @messages("successfullySubmitted.howToPay")</p>
 
-            <a href="payments/amount-to-pay.html" class="govuk-button" rel="external" title="This will open in a new tab or window">
+            <a id="pay-now" href="@paymentRoutes.PaymentController.makePayment(EmptyWaypoints, period, (owedAmount * 100).toLong)" class="govuk-button" rel="external" title="This will open in a new tab or window">
                @messages("successfullySubmitted.payNow")
             </a>
 

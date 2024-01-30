@@ -62,17 +62,15 @@ class SubmittedReturnForPeriodController @Inject()(
         val outstandingAmount = maybeCharge.map(_.outstandingAmount)
 
         val mainSummaryList = SummaryListViewModel(rows = getMainSummaryList(etmpVatReturn, period, clearedAmount, outstandingAmount))
-
         val salesToEuAndNiSummaryList = getSalesToEuAndNiSummaryList(etmpVatReturn)
-
         val correctionRowsSummaryList = PreviousReturnsCorrectionsSummary.correctionRows(etmpVatReturn)
-
         val negativeAndZeroBalanceCorrectionCountriesSummaryList =
           PreviousReturnsDeclaredVATNoPaymentDueSummary.summaryRowsOfNegativeAndZeroValues(etmpVatReturn)
-
         val vatOwedSummaryList = getVatOwedSummaryList(etmpVatReturn)
 
-        val totalVatPayable = etmpVatReturn.totalVATAmountDueForAllMSGBP
+        val outstanding = outstandingAmount.getOrElse(etmpVatReturn.totalVATAmountPayable)
+        val vatDeclared = etmpVatReturn.totalVATAmountDueForAllMSGBP
+        val displayPayNow = etmpVatReturn.totalVATAmountDueForAllMSGBP > 0 && outstanding > 0
 
         Ok(view(
           waypoints,
@@ -82,14 +80,12 @@ class SubmittedReturnForPeriodController @Inject()(
           correctionRowsSummaryList,
           negativeAndZeroBalanceCorrectionCountriesSummaryList,
           vatOwedSummaryList,
-          totalVatPayable
+          outstanding,
+          vatDeclared,
+          displayPayNow
         ))
       case (Left(error), _) =>
         logger.error(s"Unexpected result from api while getting ETMP VAT return: $error")
-        Redirect(JourneyRecoveryPage.route(waypoints).url)
-
-      case (_, Left(error)) =>
-        logger.error(s"Unexpected result from api while getting Charge: $error")
         Redirect(JourneyRecoveryPage.route(waypoints).url)
 
       case _ => Redirect(JourneyRecoveryPage.route(waypoints).url)
@@ -107,7 +103,7 @@ class SubmittedReturnForPeriodController @Inject()(
       SubmittedReturnForPeriodSummary.rowAmountPaid(clearedAmount),
       SubmittedReturnForPeriodSummary.rowRemainingAmount(outstandingAmount),
       SubmittedReturnForPeriodSummary.rowReturnSubmittedDate(etmpVatReturn),
-      SubmittedReturnForPeriodSummary.rowPaymentDueDate(period), // TODO -> Needs period.paymentDeadline when merged
+      SubmittedReturnForPeriodSummary.rowPaymentDueDate(period),
       SubmittedReturnForPeriodSummary.rowReturnReference(etmpVatReturn),
       SubmittedReturnForPeriodSummary.rowPaymentReference(etmpVatReturn)
     ).flatten
@@ -119,7 +115,7 @@ class SubmittedReturnForPeriodController @Inject()(
         Seq(
           PreviousReturnsTotalNetValueOfSalesSummary.row(etmpVatReturn),
           PreviousReturnsTotalVatOnSalesSummary.row(etmpVatReturn)
-        )
+        ).flatten
     ).withCard(
       card = Card(
         title = Some(CardTitle(content = HtmlContent(messages("submittedReturnForPeriod.salesToEuNi.title"))))

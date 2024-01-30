@@ -14,21 +14,24 @@
  * limitations under the License.
  *@
 
-@import java.time.Month
+@import controllers.previousReturns.{routes => prevRoutes}
+@import pages.EmptyWaypoints
 @import viewmodels._
 
+@import java.time.Month
+
 @this(
-    layout: templates.Layout,
-    govukWarningText: GovukWarningText
+        layout: templates.Layout,
+        govukWarningText: GovukWarningText
 )
 
 @(
-  businessName: String,
-  iossNumber: String,
-  paymentsViewModel: PaymentsViewModel,
-  changeYourRegistrationUrl: String,
-  leaveThisServiceUrl: Option[String],
-  cancelYourRequestToLeaveUrl: Option[String]
+        businessName: String,
+        iossNumber: String,
+        paymentsViewModel: PaymentsViewModel,
+        changeYourRegistrationUrl: String,
+        leaveThisServiceUrl: Option[String],
+        cancelYourRequestToLeaveUrl: Option[String]
 )(implicit request: Request[_], messages: Messages)
 
 @layout(
@@ -37,76 +40,83 @@
     fullWidth = true
 ) {
 
-  <h1 class="govuk-heading-l">
-    @messages("yourAccount.heading")
-    <span class="govuk-caption-m">@businessName</span>
-    <span class="govuk-caption-m">@messages("yourAccount.iossNumber", iossNumber)</span>
-  </h1>
+    <h1 class="govuk-heading-l">
+        @messages("yourAccount.heading")
+        <span class="govuk-caption-m">@businessName</span>
+        <span class="govuk-caption-m">@messages("yourAccount.iossNumber", iossNumber)</span>
+    </h1>
 
-  <div class="flex-container govuk-grid-row">
-    <div class="tile tile-no-border">
-      <div id="next-return" class="tile-body">
-        <h2 class="govuk-heading-m">@messages("yourAccount.yourReturns.heading")</h2>
-        <p class="govuk-body">
-          <a class="govuk-link" href="@routes.StartReturnController.onPageLoad(period = Period(2023, Month.OCTOBER))" id="start-return">
-            @messages("yourAccount.yourReturns.startReturn", "October 2023")
-          </a>
-        </p>
-      </div>
+    <div class="flex-container govuk-grid-row">
+        <div class="tile tile-no-border">
+            <div id="next-return" class="tile-body">
+                <h2 class="govuk-heading-m">@messages("yourAccount.yourReturns.heading")</h2>
+                <p class="govuk-body">
+                    <a class="govuk-link" href="@routes.StartReturnController.onPageLoad(period = Period(2023, Month.OCTOBER))" id="start-return">
+                    @messages("yourAccount.yourReturns.startReturn", "October 2023")
+                    </a>
+                </p>
+            </div>
+        </div>
+
+        <div class="tile tile-no-border">
+            <div id="payments" class="tile-body">
+                <h2 class="govuk-heading-m push--top">@messages("yourAccount.payment.heading")</h2>
+                @for(warningText <- paymentsViewModel.warning) {
+                    @govukWarningText(WarningText(iconFallbackText = Option(messages("site.warning")), content = Text(warningText)))
+                }
+                @for(section <- paymentsViewModel.sections) {
+                    @for(sectionHeading <- section.heading) {
+                        <h3 class="govuk-heading-s push--top">@sectionHeading</h3>
+                    }
+
+                    @for(paragraph <- section.contents) {
+                        <p class="govuk-body">
+                        @Html(paragraph)
+                        </p>
+                    }
+                }
+                @for(link <- paymentsViewModel.link) {
+                    <p class="govuk-body">
+                        <a class="govuk-link" href="@link.url" id="@link.id">@link.linkText</a>
+                    </p>
+                }
+            </div>
+        </div>
+
+        <div class="tile tile-no-border">
+            <div id="details" class="tile-body">
+                <h2 class="govuk-heading-m">@messages("yourAccount.details.heading")</h2>
+
+                <p class="govuk-body">
+                    <a class="govuk-link" href="@prevRoutes.SubmittedReturnsHistoryController.onPageLoad(EmptyWaypoints).url"
+                    id="view-submitted-returns">
+                    @messages("yourAccount.details.viewSubmittedReturns")
+                    </a>
+                </p>
+
+                <p class="govuk-body">
+                    <a class="govuk-link" href="@changeYourRegistrationUrl" id="change-your-registration">
+                    @messages("yourAccount.details.changeYourRegistration")
+                    </a>
+                </p>
+
+                @leaveThisServiceUrl.map { url =>
+                    <p class="govuk-body">
+                        <a class="govuk-link" href="@url" id="leave-scheme">
+                        @messages("yourAccount.details.leaveThisService")
+                        </a>
+                    </p>
+                }
+
+                @cancelYourRequestToLeaveUrl.map { url =>
+                    <p class="govuk-body">
+                        <a class="govuk-link" href="@url" id="cancel-your-request-to-leave">
+                        @messages("yourAccount.details.cancelYourRequestToLeave")
+                        </a>
+                    </p>
+                }
+            </div>
+        </div>
     </div>
-
-    <div class="tile tile-no-border">
-      <div id="payments" class="tile-body">
-        <h2 class="govuk-heading-m push--top">@messages("yourAccount.payment.heading")</h2>
-        @for(warningText <- paymentsViewModel.warning){
-          @govukWarningText(WarningText(iconFallbackText = Option(messages("site.warning")), content = Text(warningText) ))
-        }
-        @for(section <- paymentsViewModel.sections){
-          @for(sectionHeading <- section.heading){
-              <h3 class="govuk-heading-s push--top">@sectionHeading</h3>
-          }
-
-          @for(paragraph <- section.contents){
-              <p class="govuk-body">
-                  @Html(paragraph)
-              </p>
-          }
-        }
-        @for(link <- paymentsViewModel.link){
-          <p class="govuk-body">
-              <a class="govuk-link" href="@link.url" id="@link.id">@link.linkText</a>
-          </p>
-        }
-      </div>
-    </div>
-
-    <div class="tile tile-no-border">
-      <div id="details" class="tile-body">
-        <h2 class="govuk-heading-m">@messages("yourAccount.details.heading")</h2>
-
-        <p class="govuk-body">
-          <a class="govuk-link" href="@changeYourRegistrationUrl" id="change-your-registration">
-            @messages("yourAccount.details.changeYourRegistration")
-          </a>
-        </p>
-
-        @leaveThisServiceUrl.map { url =>
-          <p class="govuk-body">
-            <a class="govuk-link" href="@url" id="leave-scheme">
-              @messages("yourAccount.details.leaveThisService")
-            </a>
-          </p>
-        }
-
-        @cancelYourRequestToLeaveUrl.map { url =>
-          <p class="govuk-body">
-            <a class="govuk-link" href="@url" id="cancel-your-request-to-leave">
-              @messages("yourAccount.details.cancelYourRequestToLeave")
-            </a>
-          </p>
-        }
-      </div>
-    </div>
-  </div>
 
 }
