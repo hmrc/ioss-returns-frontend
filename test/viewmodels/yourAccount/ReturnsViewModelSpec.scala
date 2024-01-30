@@ -104,7 +104,7 @@ class ReturnsViewModelSpec extends SpecBase{
       )
       val resultModel = ReturnsViewModel(returns)(messages(app))
       assert(resultModel.contents.map(p => p.content)
-        .contains("""You can complete your July 2021 return from <span class="govuk-body govuk-!-font-weight-bold">1 August 2021</span>."""))
+        .contains("""You can complete your next return from <span class="govuk-body govuk-!-font-weight-bold">1 August 2021</span>."""))
       resultModel.linkToStart must not be defined
     }
   }

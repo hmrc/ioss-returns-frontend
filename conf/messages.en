@@ -66,7 +66,7 @@ yourAccount.payment.dueAmountOwed = You owe <span class="govuk-body govuk-!-font
 yourAccount.payment.dueAmountMaybeOwed = You may still owe VAT for {0}. You must pay this by {1}.
 yourAccount.payment.overdueAmountOwed = You owe <span class="govuk-body govuk-!-font-weight-bold">{0}</span> for {1}, which was due by {2}.
 yourAccount.payment.overdueAmountMaybeOwed = You may still owe VAT for {0}, which was due by {1}.
-yourAccount.nextPeriod = You can complete your {0} return from <span class="govuk-body govuk-!-font-weight-bold">{1}</span>.
+yourAccount.nextPeriod = You can complete your next return from <span class="govuk-body govuk-!-font-weight-bold">{1}</span>.
 
 checkYourAnswers.title = Check Your Answers
 checkYourAnswers.heading = Check Your Answers
