@@ -19,7 +19,6 @@ package models.payments
 import models.Enumerable
 import models.json.WritesString
 import play.api.libs.json.{JsPath, Reads, Writes}
-import play.api.mvc.PathBindable
 
 sealed trait PaymentStatus
 

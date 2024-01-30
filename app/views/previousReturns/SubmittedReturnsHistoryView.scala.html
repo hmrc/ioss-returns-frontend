@@ -14,8 +14,8 @@
  * limitations under the License.
  *@
 
-@import controllers.previousReturns.{routes => prevRoutes}
 @import controllers.payments.{routes => paymentRoutes}
+@import controllers.previousReturns.{routes => prevRoutes}
 @import models.payments.{Payment, PaymentStatus}
 
 @this(
@@ -25,28 +25,28 @@
 
 @(waypoints: Waypoints, periodsWithFinancialData: Map[Int, Seq[(Period, Payment)]])(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = titleNoForm(messages("submittedReturnsHistory.title"))) {
+    @layout(pageTitle = titleNoForm(messages("submittedReturnsHistory.title"))) {
 
-    <div class="govuk-breadcrumbs" style="margin-bottom: 50px;">
-        <ol class="govuk-breadcrumbs__list">
-            <li class="govuk-breadcrumbs__list-item">
-                <a class="govuk-breadcrumbs__link" href="@routes.YourAccountController.onPageLoad(waypoints)" id="your-account">@messages("previousReturns.breadcrumbs.yourAccount")</a>
-            </li>
-            <li class="govuk-breadcrumbs__list-item">
-                <a class="govuk-breadcrumbs__link" href="@prevRoutes.SubmittedReturnsHistoryController.onPageLoad(waypoints)" id="submitted-returns">@messages("previousReturns.breadcrumbs.submittedReturns")</a>
-            </li>
-        </ol>
-    </div>
+        <div class="govuk-breadcrumbs" style="margin-bottom: 50px;">
+            <ol class="govuk-breadcrumbs__list">
+                <li class="govuk-breadcrumbs__list-item">
+                    <a class="govuk-breadcrumbs__link" href="@routes.YourAccountController.onPageLoad(waypoints)" id="your-account">@messages("previousReturns.breadcrumbs.yourAccount")</a>
+                </li>
+                <li class="govuk-breadcrumbs__list-item">
+                    <a class="govuk-breadcrumbs__link" href="@prevRoutes.SubmittedReturnsHistoryController.onPageLoad(waypoints)" id="submitted-returns">@messages("previousReturns.breadcrumbs.submittedReturns")</a>
+                </li>
+            </ol>
+        </div>
 
-    <h1 class="govuk-heading-l">@messages("submittedReturnsHistory.heading")</h1>
+        <h1 class="govuk-heading-l">@messages("submittedReturnsHistory.heading")</h1>
 
-    @if(periodsWithFinancialData.isEmpty) {
-        <br/>
-        <p class="govuk-body-m">@messages("submittedReturnsHistory.noReturns")</p>
-    } else {
+        @if(periodsWithFinancialData.isEmpty) {
+            <br/>
+            <p class="govuk-body-m">@messages("submittedReturnsHistory.noReturns")</p>
+        } else {
 
-        <div class="govuk-accordion" data-module="govuk-accordion" id="accordion-with-summary-sections">
-        @for((year, periodWithFinancialData) <- periodsWithFinancialData) {
+            <div class="govuk-accordion" data-module="govuk-accordion" id="accordion-with-summary-sections">
+            @for((year, periodWithFinancialData) <- periodsWithFinancialData) {
                 <div class="govuk-accordion__section">
                     <div class="govuk-accordion__section-header">
                         <h2 class="govuk-accordion__section-heading">
@@ -75,7 +75,7 @@
                                     </td>
                                     <td class="govuk-table__cell govuk-table__cell--numeric">
                                     @if(payment.paymentStatus == PaymentStatus.Unpaid || payment.paymentStatus == PaymentStatus.Unknown || payment.paymentStatus == PaymentStatus.Partial) {
-                                        <a class="govuk-link" href="@paymentRoutes.PaymentController.makePayment(waypoints, period, (payment.amountOwed * 100).toLong)">@messages("submittedReturnsHistory.payNow")</a>
+                                        <a class="govuk-link" id="pay-now" href="@paymentRoutes.PaymentController.makePayment(waypoints, period, (payment.amountOwed * 100).toLong)">@messages("submittedReturnsHistory.payNow")</a>
                                     } else {
                                         @messages(s"submittedReturnsHistory.status.${payment.paymentStatus.toString.toLowerCase}")
                                     }
@@ -86,12 +86,11 @@
                         </table>
                     </div>
                 </div>
-        }
+            }
             </div>
 
-
-        <p class="govuk-body">
-            <a class="govuk-link" href="">@messages("submittedReturnsHistory.previousRegistrationReturns")</a>
-        </p>
+            <p class="govuk-body">
+                <a class="govuk-link" href="">@messages("submittedReturnsHistory.previousRegistrationReturns")</a>
+            </p>
+        }
     }
-}

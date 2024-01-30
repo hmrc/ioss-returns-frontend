@@ -60,22 +60,16 @@ class SubmittedReturnForPeriodController @Inject()(
 
         val clearedAmount = maybeCharge.map(_.clearedAmount)
         val outstandingAmount = maybeCharge.map(_.outstandingAmount)
-
         val displayPayNow = etmpVatReturn.totalVATAmountDueForAllMSGBP > 0 && outstandingAmount.forall(outstanding => outstanding > 0)
 
         val mainSummaryList = SummaryListViewModel(rows = getMainSummaryList(etmpVatReturn, period, clearedAmount, outstandingAmount))
-
         val salesToEuAndNiSummaryList = getSalesToEuAndNiSummaryList(etmpVatReturn)
-
         val correctionRowsSummaryList = PreviousReturnsCorrectionsSummary.correctionRows(etmpVatReturn)
-
         val negativeAndZeroBalanceCorrectionCountriesSummaryList =
           PreviousReturnsDeclaredVATNoPaymentDueSummary.summaryRowsOfNegativeAndZeroValues(etmpVatReturn)
-
         val vatOwedSummaryList = getVatOwedSummaryList(etmpVatReturn)
 
         val outstanding = outstandingAmount.getOrElse(etmpVatReturn.totalVATAmountPayable)
-
         val vatDeclared = etmpVatReturn.totalVATAmountDueForAllMSGBP
 
         Ok(view(
@@ -92,10 +86,6 @@ class SubmittedReturnForPeriodController @Inject()(
         ))
       case (Left(error), _) =>
         logger.error(s"Unexpected result from api while getting ETMP VAT return: $error")
-        Redirect(JourneyRecoveryPage.route(waypoints).url)
-
-      case (_, Left(error)) =>
-        logger.error(s"Unexpected result from api while getting Charge: $error")
         Redirect(JourneyRecoveryPage.route(waypoints).url)
 
       case _ => Redirect(JourneyRecoveryPage.route(waypoints).url)

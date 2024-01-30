@@ -58,10 +58,9 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
           val view = application.injector.instanceOf[SuccessfullySubmittedView]
 
           status(result) mustEqual OK
-          val formattedTotalOwed = "&pound;200.52"
-          contentAsString(result) mustEqual view(returnReference, nilReturn = nilReturn, period, formattedTotalOwed)(request, messages(application)).toString
+          val totalOwed = BigDecimal(200.52)
+          contentAsString(result) mustEqual view(returnReference, nilReturn = nilReturn, period, totalOwed)(request, messages(application)).toString
         }
-
       }
     }
   }

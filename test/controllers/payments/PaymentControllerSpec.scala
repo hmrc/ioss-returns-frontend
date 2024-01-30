@@ -18,7 +18,7 @@ package controllers.payments
 
 import base.SpecBase
 import models.InvalidJson
-import models.payments.{PaymentResponse, PaymentStatus}
+import models.payments.PaymentResponse
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
@@ -45,7 +45,7 @@ class PaymentControllerSpec extends SpecBase with MockitoSugar {
         .build()
 
       running(application) {
-        val request = FakeRequest(GET, routes.PaymentController.makePayment(waypoints, period, amount, PaymentStatus.values.head).url)
+        val request = FakeRequest(GET, routes.PaymentController.makePayment(waypoints, period, amount).url)
 
         val result = route(application, request).value
 
@@ -63,7 +63,7 @@ class PaymentControllerSpec extends SpecBase with MockitoSugar {
         .build()
 
       running(application) {
-        val request = FakeRequest(GET, routes.PaymentController.makePayment(waypoints, period, amount, PaymentStatus.values.head).url)
+        val request = FakeRequest(GET, routes.PaymentController.makePayment(waypoints, period, amount).url)
 
         val result = route(application, request).value
 

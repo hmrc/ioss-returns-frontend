@@ -14,9 +14,9 @@
  * limitations under the License.
  *@
 
-@import viewmodels.previousReturns.PreviousReturnsCorrectionsSummary.CorrectionRow
-@import controllers.previousReturns.{routes => prevRoutes}
 @import controllers.payments.{routes => paymentRoutes}
+@import controllers.previousReturns.{routes => prevRoutes}
+@import viewmodels.previousReturns.PreviousReturnsCorrectionsSummary.CorrectionRow
 
 @this(
         layout: templates.Layout,
@@ -65,7 +65,7 @@
 
         @if(displayPayNow) {
             <p class="govuk-!-margin-bottom-5">
-                <a class="govuk-button" href="@paymentRoutes.PaymentController.makePayment(waypoints, period, (totalVatPayable * 100).toLong).url">@messages("submittedReturnForPeriod.payNow")</a>
+                <a class="govuk-button" id="pay-now" href="@paymentRoutes.PaymentController.makePayment(waypoints, period, (totalVatPayable * 100).toLong).url">@messages("submittedReturnForPeriod.payNow")</a>
             </p>
         }
 

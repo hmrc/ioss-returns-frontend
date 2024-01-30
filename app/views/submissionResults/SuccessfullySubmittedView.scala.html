@@ -45,7 +45,7 @@
 
             <p class="govuk-body"> @messages("successfullySubmitted.howToPay")</p>
 
-            <a href="@paymentRoutes.PaymentController.makePayment(EmptyWaypoints, period, (owedAmount * 100).toLong)" class="govuk-button" rel="external" title="This will open in a new tab or window">
+            <a id="pay-now" href="@paymentRoutes.PaymentController.makePayment(EmptyWaypoints, period, (owedAmount * 100).toLong)" class="govuk-button" rel="external" title="This will open in a new tab or window">
                @messages("successfullySubmitted.payNow")
             </a>
 

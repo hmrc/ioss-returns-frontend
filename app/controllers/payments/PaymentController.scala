@@ -19,7 +19,6 @@ package controllers.payments
 import config.Service
 import controllers.actions._
 import models.Period
-import models.payments.{Payment, PaymentStatus}
 import pages.Waypoints
 import play.api.Configuration
 import play.api.i18n.I18nSupport

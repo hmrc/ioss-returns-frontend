@@ -17,9 +17,10 @@
 package controllers.previousReturns
 
 import base.SpecBase
-import models.Period
-import models.etmp.EtmpObligationDetails
-import models.payments.{Payment, PrepareData}
+import connectors.VatReturnConnector
+import models.etmp.{EtmpObligationDetails, EtmpVatReturn}
+import models.payments.{Payment, PaymentStatus, PrepareData}
+import models.{Period, UnexpectedResponseStatus}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.mockito.Mockito.when
@@ -30,8 +31,12 @@ import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import services.{ObligationsService, PaymentsService}
+import testUtils.EtmpVatReturnData.etmpVatReturn
 import utils.FutureSyntax.FutureOps
 import views.html.previousReturns.SubmittedReturnsHistoryView
+
+import java.time.Month
+import scala.concurrent.Future
 
 class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfterEach {
 
@@ -67,10 +72,12 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
 
   private val mockPaymentsService: PaymentsService = mock[PaymentsService]
   private val mockObligationsService: ObligationsService = mock[ObligationsService]
+  private val mockVatReturnConnector: VatReturnConnector = mock[VatReturnConnector]
 
   override def beforeEach(): Unit = {
     Mockito.reset(mockPaymentsService)
     Mockito.reset(mockObligationsService)
+    Mockito.reset(mockVatReturnConnector)
   }
 
   "SubmittedReturnsHistory Controller" - {
@@ -128,7 +135,153 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
       }
     }
 
-    // TODO api down test? use vatReturn instead?
+    "must return OK and the correct view for a GET when using data from vat return for a paid return" in {
 
+      val payments: List[Payment] =
+        obligationPeriods.map { period =>
+          Payment(
+            period = period,
+            amountOwed = BigDecimal(0),
+            dateDue = period.paymentDeadline,
+            paymentStatus = PaymentStatus.Paid
+          )
+        }.toList
+
+      val prepareData: PrepareData = {
+        PrepareData(
+          duePayments = List(payments.head.copy(period = Period(2023, Month.APRIL))),
+          overduePayments = payments.tail,
+          totalAmountOwed = payments.map(_.amountOwed).sum,
+          totalAmountOverdue = BigDecimal(0),
+          iossNumber = iossNumber
+        )
+      }
+
+      val periodsWithFinancialData: Map[Int, Seq[(Period, Payment)]] = obligationPeriods.flatMap { period =>
+        Map(period -> payments.filter(_.period == period).head)
+      }.groupBy(_._1.year)
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(bind[ObligationsService].toInstance(mockObligationsService))
+        .overrides(bind[PaymentsService].toInstance(mockPaymentsService))
+        .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
+        .build()
+
+      running(application) {
+
+        when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn obligationDetails.toFuture
+        when(mockPaymentsService.prepareFinancialData()(any(), any())) thenReturn prepareData.toFuture
+        when(mockVatReturnConnector.get(any())(any())) thenReturn Right(etmpVatReturn).toFuture
+
+        val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
+
+        val result = route(application, request).value
+
+        val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
+
+        status(result) mustEqual OK
+        contentAsString(result) mustEqual view(waypoints, periodsWithFinancialData)(request, messages(application)).toString
+      }
+    }
+
+    "must return OK and the correct view for a GET when using data from vat return for a nil return" in {
+
+      val emptyCorrectionsAndGoodsSuppliedVatReturn: EtmpVatReturn =
+        etmpVatReturn.copy(
+          goodsSupplied = Seq.empty,
+          correctionPreviousVATReturn = Seq.empty
+        )
+
+      val payments: List[Payment] =
+        obligationPeriods.map { period =>
+          Payment(
+            period = period,
+            amountOwed = BigDecimal(0),
+            dateDue = period.paymentDeadline,
+            paymentStatus = PaymentStatus.NilReturn
+          )
+        }.toList
+
+      val prepareData: PrepareData = {
+        PrepareData(
+          duePayments = List(payments.head.copy(period = Period(2023, Month.JUNE))),
+          overduePayments = payments.tail,
+          totalAmountOwed = payments.map(_.amountOwed).sum,
+          totalAmountOverdue = BigDecimal(0),
+          iossNumber = iossNumber
+        )
+      }
+
+      val periodsWithFinancialData: Map[Int, Seq[(Period, Payment)]] = obligationPeriods.flatMap { period =>
+        Map(period -> payments.filter(_.period == period).head)
+      }.groupBy(_._1.year)
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(bind[ObligationsService].toInstance(mockObligationsService))
+        .overrides(bind[PaymentsService].toInstance(mockPaymentsService))
+        .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
+        .build()
+
+      running(application) {
+
+        when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn obligationDetails.toFuture
+        when(mockPaymentsService.prepareFinancialData()(any(), any())) thenReturn prepareData.toFuture
+        when(mockVatReturnConnector.get(any())(any())) thenReturn Right(emptyCorrectionsAndGoodsSuppliedVatReturn).toFuture
+
+        val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
+
+        val result = route(application, request).value
+
+        val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
+
+        status(result) mustEqual OK
+        contentAsString(result) mustEqual view(waypoints, periodsWithFinancialData)(request, messages(application)).toString
+      }
+    }
+
+    "must throw an exception when financial data API is down" in {
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(bind[ObligationsService].toInstance(mockObligationsService))
+        .overrides(bind[PaymentsService].toInstance(mockPaymentsService))
+        .build()
+
+      running(application) {
+
+        when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn obligationDetails.toFuture
+        when(mockPaymentsService.prepareFinancialData()(any(), any())) thenReturn Future.failed(new Exception("Some exception"))
+
+        val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
+
+        val result = route(application, request).value
+
+        whenReady(result.failed) { exp => exp mustBe a[Exception] }
+      }
+    }
+
+    "must throw an Illegal State Exception when server responds with an error when retrieving an ETMP vat return" in {
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(bind[ObligationsService].toInstance(mockObligationsService))
+        .overrides(bind[PaymentsService].toInstance(mockPaymentsService))
+        .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
+        .build()
+
+      running(application) {
+
+        when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn obligationDetails.toFuture
+        when(mockPaymentsService.prepareFinancialData()(any(), any())) thenReturn emptyPrepareData.toFuture
+        when(mockVatReturnConnector.get(any())(any())) thenReturn Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "error")).toFuture
+
+        val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
+
+        val result = route(application, request).value.failed
+
+        whenReady(result) { exp =>
+          exp mustBe a[IllegalStateException]
+          exp.getMessage must include(exp.getLocalizedMessage)
+        }
+      }
+    }
   }
 }
