@@ -19,7 +19,7 @@ package models.payments
 import base.SpecBase
 import play.api.libs.json.{Json, JsSuccess}
 
-import java.time.Month
+import java.time.{LocalDate, Month}
 
 class PaymentPeriodSpec extends SpecBase {
 
@@ -31,12 +31,14 @@ class PaymentPeriodSpec extends SpecBase {
 
       val json = Json.obj(
         "year" -> 2023,
-        "month" -> 11
+        "month" -> 11,
+        "dueDate"-> "2023-12-31"
       )
 
       val expectedResult = PaymentPeriod(
         year = 2023,
-        month = Month.NOVEMBER
+        month = Month.NOVEMBER,
+        dueDate = LocalDate.of(2023, 12, 31)
       )
 
       json mustBe Json.toJson(expectedResult)
