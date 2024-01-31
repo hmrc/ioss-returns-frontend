@@ -31,6 +31,7 @@ case class CorrectionReturnSinglePeriodPage(index: Index) extends QuestionPage[B
     controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(waypoints, index)
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
+
     answers.get(CorrectionReturnSinglePeriodPage(index)) match {
       case Some(true) => CorrectionCountryPage(index, Index(0))
       case Some(false) => NoOtherCorrectionPeriodsAvailablePage

@@ -64,19 +64,17 @@ class CorrectionReturnPeriodController @Inject()(
 
         val uncompletedCorrectionPeriods = correctionPeriod.diff(completedCorrectionPeriods)
 
-        if (uncompletedCorrectionPeriods.size <= 1 && periodKeys.size <=1) {
-          Redirect(controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(waypoints, index))
-        } else {
-          val form: Form[Period] = formProvider(index, correctionPeriod, request.userAnswers
-            .get(AllCorrectionPeriodsQuery).getOrElse(Seq.empty).map(_.correctionReturnPeriod))
 
-          val preparedForm = request.userAnswers.get(CorrectionReturnPeriodPage(index)) match {
-            case None => form
-            case Some(value) => form.fill(value)
-          }
+        val form: Form[Period] = formProvider(index, correctionPeriod, request.userAnswers
+          .get(AllCorrectionPeriodsQuery).getOrElse(Seq.empty).map(_.correctionReturnPeriod))
 
-          Ok(view(preparedForm, waypoints, period, uncompletedCorrectionPeriods, index))
+        val preparedForm = request.userAnswers.get(CorrectionReturnPeriodPage(index)) match {
+          case None => form
+          case Some(value) => form.fill(value)
         }
+
+        Ok(view(preparedForm, waypoints, period, uncompletedCorrectionPeriods, index))
+
       }
   }
 

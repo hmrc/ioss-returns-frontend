@@ -161,7 +161,7 @@ object Period {
       RadioItem(
         content = Text(value.displayMonth),
         value = Some(value.toString),
-        id = Some(s"value_$index")
+        id = Some(s"value_${value.displayMonth}")
       )
   }
 
