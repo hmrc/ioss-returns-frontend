@@ -56,7 +56,6 @@
   @govukSummaryList(summaryList)
  }
  @if(containsCorrections) {
-  <p class="govuk-table__caption--l">@messages("checkYourAnswers.vatOwedToEuCountriesAfterCorrections.heading")</p>
   @if(noPaymentDueCountries.nonEmpty) {
    <table class="govuk-table">
     <caption class="govuk-table__caption">
@@ -87,7 +86,7 @@
     <tr class="govuk-!-padding-top-0">
      <td colspan="2" class="govuk-!-padding-top-0">
      @if(containsCorrections) {
-      <p class="govuk-table__caption--m govuk-summary-card__title-wrapper">@messages("checkYourAnswers.vatOwedToEuCountriesAfterCorrections.caption")</p>
+      <p class="govuk-summary-card__title-wrapper">@messages("checkYourAnswers.heading.corrections.vatOwned")</p>
      } else {
       <p class="govuk-summary-card__title-wrapper  govuk-!-margin-0">@messages("checkYourAnswers.heading.vatOwned")</p>
      }
@@ -119,7 +118,7 @@
 
  @if(missingData.isEmpty) {
   @formHelper(action = routes.CheckYourAnswersController.onSubmit(waypoints, false)) {
-   @button(messages("site.submit", waypoints, routes.CheckYourAnswersController.onPageLoad(waypoints).url))
+   @button(messages("site.continue", waypoints, routes.CheckYourAnswersController.onPageLoad(waypoints).url))
   }
  } else {
   <h2 class="govuk-heading-m push--top">@messages("error.missing_answers_header")</h2>

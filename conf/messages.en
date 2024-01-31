@@ -75,6 +75,7 @@ checkYourAnswers.totalVatPayable.heading = Total VAT payable
 checkYourAnswers.label.country = Country
 checkYourAnswers.label.amount = Amount
 checkYourAnswers.heading.vatOwned = VAT owed
+checkYourAnswers.heading.corrections.vatOwned = VAT owed (including corrections)
 
 journeyRecovery.continue.title = Sorry, there is a problem with the service
 journeyRecovery.continue.heading = Sorry, there is a problem with the service
