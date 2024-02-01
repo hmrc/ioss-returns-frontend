@@ -23,7 +23,7 @@ import models.corrections.PeriodWithCorrections
 import models.requests.DataRequest
 import models.{Country, UserAnswers}
 import play.api.http.Status.CREATED
-import queries.{AllCorrectionPeriodsQuery, AllSalesWithTotalAndVatQuery, VatRateWithOptionalSalesFromCountry}
+import queries.{AllCorrectionPeriodsQuery, AllSalesWithTotalAndVatQuery, SalesToCountryWithOptionalSales, VatRateWithOptionalSalesFromCountry}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import utils.Formatters.generateVatReturnReference
@@ -95,7 +95,7 @@ class CoreVatReturnService @Inject()(
       val allSalesByCountry = allSales
         .getOrElse(List.empty)
         .find(_.country == country)
-        .getOrElse(throw new IllegalStateException(s"Unable to find sales by country $country when expected"))
+        .getOrElse(SalesToCountryWithOptionalSales(country, None))
       val allVatRatesByCountry = allSalesByCountry.vatRatesFromCountry.getOrElse(List.empty)
       val msidSupplies = getMsidSuppliesFrom(allVatRatesByCountry)
 
