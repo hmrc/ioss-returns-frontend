@@ -18,6 +18,8 @@
 @import pages.EmptyWaypoints
 @import viewmodels._
 @import viewmodels.yourAccount._
+@import models.etmp.EtmpExclusion
+@import models.etmp.EtmpExclusionReason
 
 @import java.time.Month
 
@@ -34,7 +36,10 @@
         rejoinRegistrationUrl: Option[String],
         leaveThisServiceUrl: Option[String],
         cancelYourRequestToLeaveUrl: Option[String],
-  returnsViewModel: ReturnsViewModel
+        exclusionsEnabled: Boolean,
+        maybeExclusion: Option[EtmpExclusion]
+        cancelYourRequestToLeaveUrl: Option[String],
+        returnsViewModel: ReturnsViewModel
 )(implicit request: Request[_], messages: Messages)
 
 @layout(
@@ -49,33 +54,62 @@
         <span class="govuk-caption-m">@messages("yourAccount.iossNumber", iossNumber)</span>
     </h1>
 
-    <p class="govuk-body">@messages("yourAccount.paragraph")</p>
+    @if(exclusionsEnabled) {
+        @maybeExclusion match {
+            case Some(exclusion) => {
+                @exclusion.exclusionReason match {
+                    case EtmpExclusionReason.VoluntarilyLeaves => {
+                        @*No returns due scenario*@
+                        @govukWarningText(WarningText(
+                            iconFallbackText = Option(messages("site.warning")),
+                            content = Text(messages("YourAccount.requestLeaveService"))
+                        ))
+                    }
 
-  <div class="flex-container govuk-grid-row">
-    <div class="tile tile-no-border">
-      <div id="next-return" class="tile-body">
-        <h2 class="govuk-heading-m">@messages("yourAccount.yourReturns.heading")</h2>
-          @for(paragraph <- returnsViewModel.contents) {
-            @paragraph match {
-                case simple: ParagraphSimple => {
-                    <p class="govuk-body">
-                        @Html(simple.content)
-                    </p>
-                }
-                case pWithId: ParagraphWithId => {
-                    <p class="govuk-body" id="@pWithId.id">
-                         @Html(pWithId.content)
-                    </p>
+                    case EtmpExclusionReason.FailsToComply => {
+                        @govukWarningText(WarningText(
+                            iconFallbackText = Option(messages("site.warning")),
+                            content = Text(messages("yourAccount.failsToComply.noRejoin", exclusion.displayRejoinDate))
+                        ))
+                    }
+
+                    case EtmpExclusionReason
                 }
             }
-          }
-          @for(link <- returnsViewModel.linkToStart) {
-            <p class="govuk-body">
-                <a class="govuk-link" href="@{link.url}" id="@{link.id}">
-                    @link.linkText
-                </a>
-            </p>
-          }
+            case _ => {
+                None
+            }
+
+        }
+
+        <p class="govuk-body">@messages("YourAccount.requestLeaveService.p1")</p>
+    }
+
+    <div class="flex-container govuk-grid-row">
+        <div class="tile tile-no-border">
+            <div id="next-return" class="tile-body">
+                <h2 class="govuk-heading-m">@messages("yourAccount.yourReturns.heading")</h2>
+                @for(paragraph <- returnsViewModel.contents) {
+                @paragraph match {
+                case simple: ParagraphSimple => {
+                <p class="govuk-body">
+                    @Html(simple.content)
+                </p>
+                }
+                case pWithId: ParagraphWithId => {
+                <p class="govuk-body" id="@pWithId.id">
+                    @Html(pWithId.content)
+                </p>
+                }
+                }
+                }
+                @for(link <- returnsViewModel.linkToStart) {
+                <p class="govuk-body">
+                    <a class="govuk-link" href="@{link.url}" id="@{link.id}">
+                        @link.linkText
+                    </a>
+                </p>
+                }
             </div>
         </div>
 
