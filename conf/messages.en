@@ -82,6 +82,12 @@ yourAccount.removedFromService.outstanding = We've removed you from this service
 yourAccount.quarantined = We''ve removed you from this service. You cannot rejoin until {0}.
 yourAccount.quarantined.outstanding = We''ve removed you from this service, but you must complete and pay your final return. You cannot rejoin until {0}.
 
+yourAccount.previousReturn.correct = You can no longer use this service to correct previous returns. You must make any VAT corrections directly with the country where you made the sales.
+yourAccount.finalReturn.complete = You''ve completed your final return.
+
+yourAccount.paragraph = You can correct a previous return when you submit your next one.
+
+
 checkYourAnswers.title = Check Your Answers
 checkYourAnswers.heading = Check Your Answers
 checkYourAnswers.label.businessName = Business name

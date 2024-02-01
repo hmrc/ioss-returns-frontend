@@ -55,51 +55,112 @@
     </h1>
 
     @if(exclusionsEnabled) {
-        @maybeExclusion match {
-            case Some(exclusion) => {
-                @exclusion.exclusionReason match {
-                    case EtmpExclusionReason.NoLongerSupplies | EtmpExclusionReason.VoluntarilyLeaves | EtmpExclusionReason.TransferringMSID => {
-                        @if(exclusion.isActive) {
-                            @govukWarningText(WarningText(
-                                iconFallbackText = Option(messages("site.warning")),
-                                content = Text(messages("yourAccount.leftService"))
-                            ))
-                        } else {
-                            @govukWarningText(WarningText(
-                                iconFallbackText = Option(messages("site.warning")),
-                                content = Text(messages("yourAccount.requestLeaveService"))
-                            ))
-                        }
-                    }
+        @if(!hasSubmittedFinalReturn) {
+            @maybeExclusion match {
+                case Some(exclusion) => {
+                    @exclusion.exclusionReason match {
 
-                    case EtmpExclusionReason.CeasedTrade | EtmpExclusionReason.FailsToComply | EtmpExclusionReason.NoLongerMeetsConditions => {
-                        @if(exclusion.quarantine) {
-                            @govukWarningText(WarningText(
-                                iconFallbackText = Option(messages("site.warning")),
-                                content = Text(messages("yourAccount.quarantined", exclusion.displayRejoinDate))
-                            ))
-                        } else {
-                            @govukWarningText(WarningText(
-                                iconFallbackText = Option(messages("site.warning")),
-                                content = Text(messages("yourAccount.removedFromService"))
-                            ))
+                        case EtmpExclusionReason.NoLongerSupplies | EtmpExclusionReason.VoluntarilyLeaves | EtmpExclusionReason.TransferringMSID => {
+                            @if(exclusion.isActive) {
+                                @govukWarningText(WarningText(
+                                    iconFallbackText = Option(messages("site.warning")),
+                                    content = Text(messages("yourAccount.leftService"))
+                                ))
+                            } else {
+                                @govukWarningText(WarningText(
+                                    iconFallbackText = Option(messages("site.warning")),
+                                    content = Text(messages("yourAccount.requestLeaveService"))
+                                ))
+                            }
                         }
+
+                        case EtmpExclusionReason.CeasedTrade | EtmpExclusionReason.FailsToComply | EtmpExclusionReason.NoLongerMeetsConditions => {
+                            @if(exclusion.quarantine) {
+                                @govukWarningText(WarningText(
+                                    iconFallbackText = Option(messages("site.warning")),
+                                    content = Text(messages("yourAccount.quarantined", exclusion.displayRejoinDate))
+                                ))
+                            } else {
+                                @govukWarningText(WarningText(
+                                    iconFallbackText = Option(messages("site.warning")),
+                                    content = Text(messages("yourAccount.removedFromService"))
+                                ))
+                            }
+                        }
+
+                        case EtmpExclusionReason.Reversal => {}
+
                     }
                 }
-            }
-            case _ => {
-                None
-            }
+                case _ => {
 
+                }
+            }
+        } else {
+            @maybeExclusion match {
+                case Some(exclusion) => {
+                    @exclusion.exclusionReason match {
+                        case EtmpExclusionReason.NoLongerSupplies | EtmpExclusionReason.VoluntarilyLeaves | EtmpExclusionReason.TransferringMSID => {
+                            @if(exclusion.isActive) {
+                                @govukWarningText(WarningText(
+                                    iconFallbackText = Option(messages("site.warning")),
+                                    content = Text(messages("yourAccount.leftService.outstanding"))
+                                ))
+                            } else {
+                                @govukWarningText(WarningText(
+                                    iconFallbackText = Option(messages("site.warning")),
+                                    content = Text(messages("yourAccount.requestLeaveService.outstanding"))
+                                ))
+                            }
+                        }
+
+                        case EtmpExclusionReason.CeasedTrade | EtmpExclusionReason.FailsToComply | EtmpExclusionReason.NoLongerMeetsConditions => {
+                            @if(exclusion.quarantine) {
+                                @govukWarningText(WarningText(
+                                    iconFallbackText = Option(messages("site.warning")),
+                                    content = Text(messages("yourAccount.quarantined.outstanding", exclusion.displayRejoinDate))
+                                ))
+                            } else {
+                                @govukWarningText(WarningText(
+                                    iconFallbackText = Option(messages("site.warning")),
+                                    content = Text(messages("yourAccount.removedFromService.outstanding"))
+                                ))
+                            }
+                        }
+
+                        case EtmpExclusionReason.Reversal => {}
+                    }
+                }
+                case _ => {
+
+                }
+
+            }
         }
 
-        <p class="govuk-body">@messages("yourAccount.requestLeaveService.p1")</p>
+        @if(exclusionsEnabled) {
+            @if(maybeExclusion.isDefined) {
+                @if(!hasSubmittedFinalReturn) {
+                    <p class="govuk-body">@messages("yourAccount.previousReturn.correct")</p>
+                } else {
+                    <p class="govuk-body">@messages("yourAccount.requestLeaveService.p1")</p>
+                }
+            } else {
+                <p class="govuk-body">@messages("yourAccount.paragraph")</p>
+            }
+        } else {
+            <p class="govuk-body">@messages("yourAccount.paragraph")</p>
+        }
+
     }
 
     <div class="flex-container govuk-grid-row">
         <div class="tile tile-no-border">
             <div id="next-return" class="tile-body">
                 <h2 class="govuk-heading-m">@messages("yourAccount.yourReturns.heading")</h2>
+                @if(exclusionsEnabled && !hasSubmittedFinalReturn) {
+                    <p class="govuk-body">@messages("yourAccount.finalReturn.complete")</p>
+                }
                 @for(paragraph <- returnsViewModel.contents) {
                     @paragraph match {
                         case simple: ParagraphSimple => {
