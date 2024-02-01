@@ -30,10 +30,12 @@ case class EtmpExclusion(
                         ) {
 
   private val lastDayFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy")
-  private val rejoinDate: LocalDate = effectiveDate.withDayOfMonth(1).plusYears(2)
+  private val rejoinDate: LocalDate = effectiveDate.plusYears(2)
 
   val displayRejoinDate: String =
     s"${rejoinDate.format(lastDayFormatter)}"
+
+  val isActive: Boolean = LocalDate.now().isAfter(effectiveDate) || LocalDate.now().isEqual(effectiveDate)
 }
 
 object EtmpExclusion {

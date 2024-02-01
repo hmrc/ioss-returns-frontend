@@ -38,7 +38,7 @@
         cancelYourRequestToLeaveUrl: Option[String],
         exclusionsEnabled: Boolean,
         maybeExclusion: Option[EtmpExclusion]
-        cancelYourRequestToLeaveUrl: Option[String],
+        hasSubmittedFinalReturn: Boolean
         returnsViewModel: ReturnsViewModel
 )(implicit request: Request[_], messages: Messages)
 
@@ -58,22 +58,33 @@
         @maybeExclusion match {
             case Some(exclusion) => {
                 @exclusion.exclusionReason match {
-                    case EtmpExclusionReason.VoluntarilyLeaves => {
-                        @*No returns due scenario*@
-                        @govukWarningText(WarningText(
-                            iconFallbackText = Option(messages("site.warning")),
-                            content = Text(messages("YourAccount.requestLeaveService"))
-                        ))
+                    case EtmpExclusionReason.NoLongerSupplies | EtmpExclusionReason.VoluntarilyLeaves | EtmpExclusionReason.TransferringMSID => {
+                        @if(exclusion.isActive) {
+                            @govukWarningText(WarningText(
+                                iconFallbackText = Option(messages("site.warning")),
+                                content = Text(messages("yourAccount.leftService"))
+                            ))
+                        } else {
+                            @govukWarningText(WarningText(
+                                iconFallbackText = Option(messages("site.warning")),
+                                content = Text(messages("yourAccount.requestLeaveService"))
+                            ))
+                        }
                     }
 
-                    case EtmpExclusionReason.FailsToComply => {
-                        @govukWarningText(WarningText(
-                            iconFallbackText = Option(messages("site.warning")),
-                            content = Text(messages("yourAccount.failsToComply.noRejoin", exclusion.displayRejoinDate))
-                        ))
+                    case EtmpExclusionReason.CeasedTrade | EtmpExclusionReason.FailsToComply | EtmpExclusionReason.NoLongerMeetsConditions => {
+                        @if(exclusion.quarantine) {
+                            @govukWarningText(WarningText(
+                                iconFallbackText = Option(messages("site.warning")),
+                                content = Text(messages("yourAccount.quarantined", exclusion.displayRejoinDate))
+                            ))
+                        } else {
+                            @govukWarningText(WarningText(
+                                iconFallbackText = Option(messages("site.warning")),
+                                content = Text(messages("yourAccount.removedFromService"))
+                            ))
+                        }
                     }
-
-                    case EtmpExclusionReason
                 }
             }
             case _ => {
@@ -82,7 +93,7 @@
 
         }
 
-        <p class="govuk-body">@messages("YourAccount.requestLeaveService.p1")</p>
+        <p class="govuk-body">@messages("yourAccount.requestLeaveService.p1")</p>
     }
 
     <div class="flex-container govuk-grid-row">
@@ -90,18 +101,18 @@
             <div id="next-return" class="tile-body">
                 <h2 class="govuk-heading-m">@messages("yourAccount.yourReturns.heading")</h2>
                 @for(paragraph <- returnsViewModel.contents) {
-                @paragraph match {
-                case simple: ParagraphSimple => {
-                <p class="govuk-body">
-                    @Html(simple.content)
-                </p>
-                }
-                case pWithId: ParagraphWithId => {
-                <p class="govuk-body" id="@pWithId.id">
-                    @Html(pWithId.content)
-                </p>
-                }
-                }
+                    @paragraph match {
+                        case simple: ParagraphSimple => {
+                            <p class="govuk-body">
+                                @Html(simple.content)
+                            </p>
+                        }
+                        case pWithId: ParagraphWithId => {
+                            <p class="govuk-body" id="@pWithId.id">
+                                @Html(pWithId.content)
+                            </p>
+                        }
+                    }
                 }
                 @for(link <- returnsViewModel.linkToStart) {
                 <p class="govuk-body">

@@ -69,15 +69,18 @@ yourAccount.payment.overdueAmountOwed = You owe <span class="govuk-body govuk-!-
 yourAccount.payment.overdueAmountMaybeOwed = You may still owe VAT for {0}, which was due by {1}.
 yourAccount.nextPeriod = You can complete your next return from <span class="govuk-body govuk-!-font-weight-bold">{1}</span>.
 
-YourAccount.requestLeaveService = You have requested to leave this service.
-YourAccount.requestLeaveService.outstanding = You have requested to leave this service. You must complete and pay any outstanding returns.
-YourAccount.requestLeaveService.p1 = You can correct a previous return when you submit your final one.
+yourAccount.requestLeaveService = You have requested to leave this service.
+yourAccount.requestLeaveService.outstanding = You have requested to leave this service. You must complete and pay any outstanding returns.
+yourAccount.requestLeaveService.p1 = You can correct a previous return when you submit your final one.
 
-YourAccount.removedFromService = We've removed you from this service.
-YourAccount.removedFromService.outstanding = We've removed you from this service, but you must complete and pay your final return.
+yourAccount.leftService = You have left this service.
+yourAccount.leftService.outstanding = You have left this service. You must complete and pay any outstanding returns.
 
-yourAccount.failsToComply.noRejoin = We've removed you from this service. You cannot rejoin until {0}.
-yourAccount.failsToComply.noRejoin.outstanding = We've removed you from this service, but you must complete and pay your final return. You cannot rejoin until {0}.
+yourAccount.removedFromService = We''ve removed you from this service.
+yourAccount.removedFromService.outstanding = We've removed you from this service, but you must complete and pay your final return.
+
+yourAccount.quarantined = We''ve removed you from this service. You cannot rejoin until {0}.
+yourAccount.quarantined.outstanding = We''ve removed you from this service, but you must complete and pay your final return. You cannot rejoin until {0}.
 
 checkYourAnswers.title = Check Your Answers
 checkYourAnswers.heading = Check Your Answers

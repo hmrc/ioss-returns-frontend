@@ -17,9 +17,10 @@
 package controllers
 
 import config.FrontendAppConfig
-import connectors.{FinancialDataConnector, ReturnStatusConnector}
+import connectors.{FinancialDataConnector, ReturnStatusConnector, VatReturnConnector}
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
+import models.Period
 import models.etmp.EtmpExclusion
 import models.etmp.EtmpExclusionReason.{NoLongerSupplies, Reversal, TransferringMSID, VoluntarilyLeaves}
 import models.payments._
@@ -41,6 +42,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class YourAccountController @Inject()(
                                        cc: AuthenticatedControllerComponents,
                                        paymentsService: PaymentsService,
+                                       vatReturnConnector: VatReturnConnector,
                                        view: YourAccountView,
                                        returnStatusConnector: ReturnStatusConnector,
                                        clock: Clock,
@@ -69,7 +71,6 @@ class YourAccountController @Inject()(
       }
   }
 
-
   private def getCurrentReturns()(implicit request: RegistrationRequest[AnyContent]) = {
     for {
       currentReturns <- returnStatusConnector.getCurrentReturns(request.iossNumber)
@@ -86,52 +87,78 @@ class YourAccountController @Inject()(
 
     val maybeExclusion: Option[EtmpExclusion] = request.registrationWrapper.registration.exclusions.lastOption
 
-    val lastExclusion: Option[EtmpExclusion] = request.registrationWrapper.registration.exclusions.maxByOption(_.effectiveDate)
+      val futureHasSubmittedFinalReturn = maybeExclusion match {
+        case Some(exclusion) =>
+          val effectiveDateToPeriod = Period(exclusion.effectiveDate.getYear, exclusion.effectiveDate.getMonth)
+          for {
+            vatReturnResult <- vatReturnConnector.get(effectiveDateToPeriod)
+          } yield {
+            vatReturnResult match {
+              case Right(_) => true
+              case _ => false
+            }
+          }
+        case _ => false.toFuture
+      }
 
-    val now: LocalDate = LocalDate.now(clock)
+      val now: LocalDate = LocalDate.now(clock)
 
-    val cancelYourRequestToLeaveUrl = lastExclusion match {
-      case Some(exclusion) if Seq(NoLongerSupplies, VoluntarilyLeaves, TransferringMSID).contains(exclusion.exclusionReason) &&
+    val cancelYourRequestToLeaveUrl = maybeExclusion match {
+        case Some(exclusion) if Seq(NoLongerSupplies, VoluntarilyLeaves, TransferringMSID).contains(exclusion.exclusionReason) &&
           now.isBefore(exclusion.effectiveDate) => Some(appConfig.cancelYourRequestToLeaveUrl)
-      case _ => None
-    }
+        case _ => None
+      }
 
-    val leaveThisServiceUrl = if (maybeExclusion.isEmpty || maybeExclusion.exists(_.exclusionReason == Reversal)) {
-      Some(appConfig.leaveThisServiceUrl)
-    } else {
-      None
-    }
+      val leaveThisServiceUrl = if (maybeExclusion.isEmpty || maybeExclusion.exists(_.exclusionReason == Reversal)) {
+        Some(appConfig.leaveThisServiceUrl)
+      } else {
+        None
+      }
 
-    val rejoinUrl = if(request.registrationWrapper.registration.canRejoinRegistration(now)){
-      Some(appConfig.rejoinThisServiceUrl)
-    }else {
-      None
-    }
-
-    Ok(view(
-      request.registrationWrapper.vatInfo.getName,
-      request.iossNumber,
-      PaymentsViewModel(currentPayments.duePayments, currentPayments.overduePayments),
-      appConfig.amendRegistrationUrl,
-      rejoinUrl,
-      leaveThisServiceUrl,
-      cancelYourRequestToLeaveUrl,
-      ReturnsViewModel(
-        returnsViewModel.map(currentReturn =>
-          currentReturn
-        )),
-    )).toFuture
+      for {
+        payments <- paymentsService.prepareFinancialData()
+        hasSubmittedFinalReturn <- futureHasSubmittedFinalReturn
+      } yield {
+        val paymentsViewModel = PaymentsViewModel(payments.duePayments, payments.overduePayments)
+        Ok(view(
+          request.registrationWrapper.vatInfo.getName,
+          request.iossNumber,
+          paymentsViewModel,
+          appConfig.amendRegistrationUrl,
+          leaveThisServiceUrl,
+          cancelYourRequestToLeaveUrl,
+          appConfig.exclusionsEnabled,
+          maybeExclusion,
+          hasSubmittedFinalReturn,
+          ReturnsViewModel(
+            returnsViewModel.map(currentReturn =>
+              currentReturn
+            )),
+        ))
+      }
   }
 
   private def preparedViewWithNoFinancialData(
-                                             returnsViewModel: Seq[Return]
-                                           )(implicit  request: RegistrationRequest[AnyContent]): Future[Result] = {
+                                               returnsViewModel: Seq[Return]
+                                             )(implicit  request: RegistrationRequest[AnyContent]): Future[Result] = {
 
     val maybeExclusion: Option[EtmpExclusion] = request.registrationWrapper.registration.exclusions.lastOption
 
-    val lastExclusion: Option[EtmpExclusion] = request.registrationWrapper.registration.exclusions.maxByOption(_.effectiveDate)
+    val futureHasSubmittedFinalReturn = maybeExclusion match {
+      case Some(exclusion) =>
+        val effectiveDateToPeriod = Period(exclusion.effectiveDate.getYear, exclusion.effectiveDate.getMonth)
+        for {
+          vatReturnResult <- vatReturnConnector.get(effectiveDateToPeriod)
+        } yield {
+          vatReturnResult match {
+            case Right(_) => true
+            case _ => false
+          }
+        }
+      case _ => false.toFuture
+    }
 
-    val cancelYourRequestToLeaveUrl = lastExclusion match {
+    val cancelYourRequestToLeaveUrl = maybeExclusion match {
       case Some(exclusion) if Seq(NoLongerSupplies, VoluntarilyLeaves, TransferringMSID).contains(exclusion.exclusionReason) &&
         LocalDate.now(clock).isBefore(exclusion.effectiveDate) => Some(appConfig.cancelYourRequestToLeaveUrl)
       case _ => None
@@ -143,29 +170,27 @@ class YourAccountController @Inject()(
       None
     }
 
-    val now: LocalDate = LocalDate.now(clock)
-    
-    val rejoinUrl = if(request.registrationWrapper.registration.canRejoinRegistration(now)){
-      Some(appConfig.rejoinThisServiceUrl)
-    }else {
-      None
+    for {
+      payments <- paymentsService.prepareFinancialData()
+      hasSubmittedFinalReturn <- futureHasSubmittedFinalReturn
+    } yield {
+      val paymentsViewModel = PaymentsViewModel(payments.duePayments, payments.overduePayments)
+      Ok(view(
+        request.registrationWrapper.vatInfo.getName,
+        request.iossNumber,
+        paymentsViewModel,
+        appConfig.amendRegistrationUrl,
+        leaveThisServiceUrl,
+        cancelYourRequestToLeaveUrl,
+        appConfig.exclusionsEnabled,
+        maybeExclusion,
+        hasSubmittedFinalReturn,
+        ReturnsViewModel(
+          returnsViewModel.map(currentReturn =>
+            currentReturn
+          )),
+      ))
     }
-
-    Ok(view(
-      request.registrationWrapper.vatInfo.getName,
-      request.iossNumber,
-      PaymentsViewModel(Seq.empty, Seq.empty),
-      appConfig.amendRegistrationUrl,
-      rejoinUrl,
-      leaveThisServiceUrl,
-      cancelYourRequestToLeaveUrl,
-      ReturnsViewModel(
-        returnsViewModel.map(currentReturn =>
-          currentReturn
-        )
-      )
-    )).toFuture
-  }
-
+    }
 
 }
