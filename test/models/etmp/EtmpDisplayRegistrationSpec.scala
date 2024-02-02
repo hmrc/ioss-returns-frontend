@@ -66,7 +66,7 @@ class EtmpDisplayRegistrationSpec extends SpecBase with TableDrivenPropertyCheck
       )
 
       "return true" - {
-        "when it is not a reversal, not quarantined, not quarantined and the effective date is not in the future" in {
+        "when it is not a reversal, not quarantined and the effective date is not in the future" in {
           forAll(nonReversalEtmpExclusionReasons) { nonReversalEtmpExclusionReason =>
             etmpDisplayRegistration.copy(exclusions = List(
                 createExclusion(nonReversalEtmpExclusionReason, effectiveDate = currentDate))
