@@ -84,17 +84,17 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
     )
     val allPeriodsModel = Seq(
       ListItem(
-        name = "1 July to 31 July 2021",
+        name = "July 2021",
         changeUrl = vatCorrectionsListUrl(1),
         removeUrl = removePeriodCorrectionUrl(1)
       ),
       ListItem(
-        name = "1 October to 31 October 2021",
+        name = "October 2021",
         changeUrl = vatCorrectionsListUrl(2),
         removeUrl = removePeriodCorrectionUrl(2)
       ),
       ListItem(
-        name = "1 January to 31 January 2022",
+        name = "January 2022",
         changeUrl = vatCorrectionsListUrl(3),
         removeUrl = removePeriodCorrectionUrl(3)
       )
@@ -167,7 +167,7 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
           val responseString = contentAsString(result)
 
           val doc = Jsoup.parse(responseString)
-          doc.getElementsByClass("govuk-heading-xl").get(0).text() mustEqual expectedTitle
+          doc.getElementsByClass("govuk-heading-l").get(0).text() mustEqual expectedTitle
           doc.getElementsByClass("hmrc-add-to-a-list__contents").size() mustEqual expectedTableRows
 
           val view = application.injector.instanceOf[VatPeriodCorrectionsListView]
@@ -203,7 +203,7 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
           val responseString = contentAsString(result)
 
           val doc = Jsoup.parse(responseString)
-          doc.getElementsByClass("govuk-heading-xl").get(0).text() mustEqual expectedTitle
+          doc.getElementsByClass("govuk-heading-l").get(0).text() mustEqual expectedTitle
           doc.getElementsByClass("hmrc-add-to-a-list__contents").size() mustEqual expectedTableRows
 
           val view = application.injector.instanceOf[VatPeriodCorrectionsListView]

@@ -30,8 +30,8 @@ case class VatPeriodCorrectionsListPage(period: Period, addAnother: Boolean) ext
   override def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page = {
     if (addAnother) {
       answers.get(DeriveNumberOfCorrectionPeriods) match {
-        case Some(size) => CorrectionReturnPeriodPage(Index(size))
-        case None => CorrectionReturnPeriodPage(Index(0))
+        case Some(size) => CorrectionReturnYearPage(Index(size))
+        case None => CorrectionReturnYearPage(Index(0))
       }
     } else {
       CheckYourAnswersPage

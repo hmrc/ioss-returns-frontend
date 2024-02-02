@@ -38,13 +38,14 @@ class VatPeriodCorrectionsListController @Inject()(
                                                     cc: AuthenticatedControllerComponents,
                                                     view: VatPeriodCorrectionsListView,
                                                     vatPeriodCorrectionsService: VatPeriodCorrectionsService,
-                                                  )(implicit ec: ExecutionContext) extends FrontendBaseController with VatPeriodCorrections with I18nSupport with Logging {
+                                                  )(implicit ec: ExecutionContext)
+  extends FrontendBaseController with VatPeriodCorrections with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
   def onPageLoad(waypoints: Waypoints, period: Period): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
-      VatPeriodCorrectionsListPage(period, false).cleanup(request.userAnswers, cc).flatMap { result =>
+      VatPeriodCorrectionsListPage(period, addAnother = false).cleanup(request.userAnswers, cc).flatMap { result =>
         result.fold(
           _ => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())),
           _ =>
@@ -77,7 +78,7 @@ class VatPeriodCorrectionsListController @Inject()(
         request,
         correctionPeriodsWithNoVatCorrection
       ) orWhenEmpty {
-        Redirect(VatPeriodCorrectionsListPage(period, false).navigate(waypoints, request.userAnswers, request.userAnswers).url)
+        Redirect(VatPeriodCorrectionsListPage(period, addAnother = false).navigate(waypoints, request.userAnswers, request.userAnswers).url)
       }
 
   }

@@ -18,12 +18,14 @@ package controllers.corrections
 
 import controllers.actions._
 import forms.corrections.CorrectionReturnPeriodFormProvider
-import models.Index
+import models.{Index, Period}
 import pages.Waypoints
 import pages.corrections.{CorrectionReturnPeriodPage, CorrectionReturnYearPage}
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import queries.AllCorrectionPeriodsQuery
+import queries.corrections.DeriveCompletedCorrectionPeriods
 import services.ObligationsService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.ConvertPeriodKey
@@ -42,7 +44,7 @@ class CorrectionReturnPeriodController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndRequireData().async {
+  def onPageLoad(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible().async {
     implicit request =>
 
       val period = request.userAnswers.period
@@ -52,24 +54,31 @@ class CorrectionReturnPeriodController @Inject()(
       val selectedYear = request.userAnswers.get(CorrectionReturnYearPage(index)).getOrElse(0)
 
       fulfilledObligations.map { obligations =>
+        val periodKeys = obligations.map(obligation => ConvertPeriodKey.yearFromEtmpPeriodKey(obligation.periodKey)).distinct
+
         val obligationYears = obligations.filter(obligation => ConvertPeriodKey.yearFromEtmpPeriodKey(obligation.periodKey) == selectedYear)
 
-        val correctionMonths = obligationYears.map { obligation =>
-          ConvertPeriodKey.monthNameFromEtmpPeriodKey(obligation.periodKey)
-        }.distinct.sorted
+        val correctionPeriod = obligationYears.map(obligation => ConvertPeriodKey.periodkeyToPeriod(obligation.periodKey))
 
-        val form: Form[String] = formProvider(index, correctionMonths)
+        val completedCorrectionPeriods: List[Period] = request.userAnswers.get(DeriveCompletedCorrectionPeriods).getOrElse(List.empty)
 
-        val preparedForm = request.userAnswers.get(CorrectionReturnPeriodPage[String](index)) match {
+        val uncompletedCorrectionPeriods = correctionPeriod.diff(completedCorrectionPeriods)
+
+
+        val form: Form[Period] = formProvider(index, correctionPeriod, request.userAnswers
+          .get(AllCorrectionPeriodsQuery).getOrElse(Seq.empty).map(_.correctionReturnPeriod))
+
+        val preparedForm = request.userAnswers.get(CorrectionReturnPeriodPage(index)) match {
           case None => form
           case Some(value) => form.fill(value)
         }
 
-        Ok(view(preparedForm, waypoints, period, utils.ItemsHelper.radioButtonMonthItems(correctionMonths), index))
+        Ok(view(preparedForm, waypoints, period, uncompletedCorrectionPeriods, index))
+
       }
   }
 
-  def onSubmit(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndRequireData().async {
+  def onSubmit(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible().async {
     implicit request =>
 
       val period = request.userAnswers.period
@@ -78,18 +87,23 @@ class CorrectionReturnPeriodController @Inject()(
       val selectedYear = request.userAnswers.get(CorrectionReturnYearPage(index)).getOrElse(0)
 
       fulfilledObligations.flatMap { obligations =>
+
         val obligationYears = obligations.filter(obligation => ConvertPeriodKey.yearFromEtmpPeriodKey(obligation.periodKey) == selectedYear)
 
-        val correctionMonths = obligationYears.map { obligation =>
-          ConvertPeriodKey.monthNameFromEtmpPeriodKey(obligation.periodKey)
-        }.distinct.sorted
+        val correctionPeriod = obligationYears.map(obligation => ConvertPeriodKey.periodkeyToPeriod(obligation.periodKey))
 
+        val completedCorrectionPeriods: List[Period] = request.userAnswers.get(DeriveCompletedCorrectionPeriods).getOrElse(List.empty)
 
-        val form: Form[String] = formProvider(index, correctionMonths)
+        val uncompletedCorrectionPeriods = correctionPeriod.diff(completedCorrectionPeriods).distinct
+
+        val form: Form[Period] = formProvider(index, uncompletedCorrectionPeriods, request.userAnswers
+          .get(AllCorrectionPeriodsQuery).getOrElse(Seq.empty).map(_.correctionReturnPeriod))
 
         form.bindFromRequest().fold(
-          formWithErrors =>
-            Future.successful(BadRequest(view(formWithErrors, waypoints, period, utils.ItemsHelper.radioButtonMonthItems(correctionMonths), index))),
+          formWithErrors => {
+            Future.successful(BadRequest(
+              view(formWithErrors, waypoints, period, correctionPeriod, index)
+            ))},
 
           value =>
             for {

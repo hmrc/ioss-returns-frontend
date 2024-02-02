@@ -19,7 +19,7 @@ package controllers.corrections
 import base.SpecBase
 import controllers.routes
 import forms.corrections.CorrectionReturnPeriodFormProvider
-import models.Index
+import models.{Index, Period, UserAnswers}
 import models.etmp.{EtmpObligationDetails, EtmpObligationsFulfilmentStatus}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
@@ -36,15 +36,16 @@ import utils.ConvertPeriodKey
 import utils.FutureSyntax.FutureOps
 import views.html.corrections.CorrectionReturnPeriodView
 
+import java.time.Month
 import scala.concurrent.Future
 
 class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
 
   private val periodKeys = Seq("23AL", "23AK")
 
-  val selectedYear = emptyUserAnswers.set(CorrectionReturnYearPage(Index(0)), 2023).success.value
+  val selectedYear: UserAnswers = emptyUserAnswers.set(CorrectionReturnYearPage(Index(0)), 2023).success.value
 
-  private val monthNames: Seq[String] = periodKeys.map(ConvertPeriodKey.monthNameFromEtmpPeriodKey)
+  private val monthNames: Seq[Period] = periodKeys.map(ConvertPeriodKey.periodkeyToPeriod)
 
   private val obligationService: ObligationsService = mock[ObligationsService]
 
@@ -59,8 +60,22 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
     )
   )
 
+  private val testPeriodsList = Seq(
+    Period(2023, Month.JANUARY),
+    Period(2023, Month.FEBRUARY),
+    Period(2023, Month.MARCH),
+    Period(2023, Month.APRIL),
+    Period(2023, Month.MAY),
+    Period(2023, Month.JUNE),
+    Period(2023, Month.JULY),
+    Period(2023, Month.AUGUST),
+    Period(2023, Month.SEPTEMBER),
+    Period(2023, Month.OCTOBER),
+    Period(2023, Month.NOVEMBER),
+    Period(2023, Month.DECEMBER)
+  )
   private val formProvider = new CorrectionReturnPeriodFormProvider()
-  private val form: Form[String] = formProvider(index, Seq.empty)
+  private val form: Form[Period] = formProvider(index, testPeriodsList, Seq.empty)
 
   private lazy val correctionReturnPeriodRoute: String = controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(waypoints, index).url
 
@@ -83,7 +98,7 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(
-          form, waypoints, period, utils.ItemsHelper.radioButtonMonthItems(monthNames), index)(request, messages(application)).toString
+          form, waypoints, period, monthNames, index)(request, messages(application)).toString
       }
     }
 
@@ -104,7 +119,7 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(
-          form, waypoints, period, utils.ItemsHelper.radioButtonMonthItems(monthNames), index)(request, messages(application)).toString
+          form, waypoints, period, monthNames, index)(request, messages(application)).toString
       }
 
     }
@@ -127,13 +142,14 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
       running(application) {
         val request =
           FakeRequest(POST, correctionReturnPeriodRoute)
-            .withFormUrlEncodedBody(("value", "DECEMBER"))
+            .withFormUrlEncodedBody(("value", Period(2023, Month.DECEMBER).toString))
 
         val result = route(application, request).value
-        val expectedAnswers = emptyUserAnswers.set(CorrectionReturnPeriodPage(index), "DECEMBER").success.value
+
+        val expectedAnswers = emptyUserAnswers.set(CorrectionReturnPeriodPage(index), Period(2023, Month.DECEMBER)).success.value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.corrections.routes.CorrectionCountryController.onPageLoad(waypoints, index, index).url
+        redirectLocation(result).value mustEqual CorrectionReturnPeriodPage(index).navigate(waypoints, expectedAnswers, expectedAnswers).url
         verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
       }
     }
@@ -159,7 +175,7 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
 
         status(result) mustEqual BAD_REQUEST
         contentAsString(result) mustEqual view(
-          boundForm, waypoints, period, utils.ItemsHelper.radioButtonMonthItems(monthNames), index)(request, messages(application)).toString
+          boundForm, waypoints, period, monthNames, index)(request, messages(application)).toString
       }
     }
 

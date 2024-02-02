@@ -20,12 +20,11 @@ import controllers.actions._
 import forms.corrections.CorrectionCountryFormProvider
 import models.Index
 import pages.Waypoints
-import pages.corrections.CorrectionCountryPage
+import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import queries.AllCorrectionCountriesQuery
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import utils.FutureSyntax.FutureOps
 import views.html.corrections.CorrectionCountryView
 
 import javax.inject.Inject
@@ -56,7 +55,12 @@ class CorrectionCountryController @Inject()(
         case Some(value) => form.fill(value)
       }
 
-      Ok(view(preparedForm, waypoints, period, periodIndex, index))
+      request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex)) match {
+        case Some(correctionPeriod) => Ok(view(preparedForm, waypoints, period, periodIndex, correctionPeriod, index))
+        case None => Redirect(controllers.routes.JourneyRecoveryController.onPageLoad().url)
+      }
+
+
   }
 
   def onSubmit(waypoints: Waypoints, periodIndex: Index, index: Index): Action[AnyContent] = cc.authAndRequireData().async {
@@ -73,8 +77,10 @@ class CorrectionCountryController @Inject()(
 
       form.bindFromRequest().fold(
         formWithErrors =>
-          BadRequest(view(formWithErrors, waypoints, period, periodIndex, index)).toFuture
-        ,
+          request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex)) match {
+            case Some(correctionPeriod) => Future.successful(BadRequest (view (formWithErrors, waypoints, period, periodIndex, correctionPeriod, index)))
+            case None => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad().url))
+          },
         value =>
           for {
             updatedAnswers <-

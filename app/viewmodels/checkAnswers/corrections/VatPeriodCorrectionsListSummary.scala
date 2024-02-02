@@ -29,7 +29,7 @@ object VatPeriodCorrectionsListSummary {
       .get(DeriveCompletedCorrectionPeriods).getOrElse(List.empty).sortBy(_.firstDay.toEpochDay).zipWithIndex.map{
       case (correctionPeriod, index) =>
         ListItem(
-          name = correctionPeriod.displayLongText,
+          name = correctionPeriod.displayText,
           changeUrl = controllers.corrections.routes.CorrectionListCountriesController.onPageLoad(waypoints, Index(index)).url,
           removeUrl = controllers.corrections.routes.RemovePeriodCorrectionController.onPageLoad(waypoints, Index(index)).url
         )

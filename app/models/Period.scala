@@ -156,6 +156,15 @@ object Period {
       )
   }
 
+  def monthOptions(periods: Seq[Period]): Seq[RadioItem] = periods.zipWithIndex.map {
+    case (value, index) =>
+      RadioItem(
+        content = Text(value.displayMonth),
+        value = Some(value.toString),
+        id = Some(s"value_${value.displayMonth}")
+      )
+  }
+
   private def fromEtmpMonthString(keyMonth: String): Month = {
     keyMonth match {
       case "AA" => Month.JANUARY

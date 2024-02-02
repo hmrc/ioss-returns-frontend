@@ -28,12 +28,12 @@
     button: ButtonGroup
 )
 
-@(form: Form[_], waypoints: Waypoints, period: Period, periodIndex: Index, countryIndex: Index, country: Country)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, period: Period, periodIndex: Index, correctionPeriod: Period, countryIndex: Index, country: Country)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(
     form,
     messages("vatAmountCorrectionCountry.title",  country.name),
-    Some(messages("caption.fromCountry.periodAndCountry", period.displayText, country.name))
+    Some(messages("caption.fromCountry.periodAndCountry", correctionPeriod.displayText, country.name))
 )) {
 
     @formHelper(action = controllers.corrections.routes.VatAmountCorrectionCountryController.onSubmit(waypoints, periodIndex, countryIndex), Symbol("autoComplete") -> "off") {
@@ -47,7 +47,7 @@
                 field = form("value"),
                 label = HmrcPageHeadingLabel(
                     content = messages("vatAmountCorrectionCountry.heading", country.name),
-                    caption = messages("vatAmountCorrectionCountry.caption", period.displayText)
+                    caption = messages("vatAmountCorrectionCountry.caption", correctionPeriod.displayText)
                 )
             )
             .withWidth(Fixed10)

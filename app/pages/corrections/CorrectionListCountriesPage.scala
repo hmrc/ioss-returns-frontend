@@ -17,7 +17,7 @@
 package pages.corrections
 
 import models.{Country, Index, NormalMode, UserAnswers}
-import pages.{AddItemPage, CheckYourAnswersPage, JourneyRecoveryPage, NonEmptyWaypoints, Page, QuestionPage, Waypoint, Waypoints}
+import pages.{AddItemPage, JourneyRecoveryPage, NonEmptyWaypoints, Page, QuestionPage, Waypoint, Waypoints}
 import play.api.libs.json.{JsObject, JsPath}
 import play.api.mvc.Call
 import queries.{Derivable, DeriveNumberOfCorrections}
@@ -61,7 +61,7 @@ final case class CorrectionListCountriesPage(periodIndex: Index, countryIndex: O
               .orRecover
           }
       case false =>
-        CheckYourAnswersPage //todo navigate to add to list page for corrections period
+        VatPeriodCorrectionsListPage(answers.period, addAnother = true)
     }.orRecover
 
   override def deriveNumberOfItems: Derivable[Seq[JsObject], Int] = DeriveNumberOfCorrections(periodIndex)

@@ -16,16 +16,15 @@
 
 package pages.corrections
 
-import models.{Index, UserAnswers}
+import models.{Index, Period, UserAnswers}
 import pages.{JourneyRecoveryPage, Page, QuestionPage, Waypoints}
 import play.api.libs.json.JsPath
-
 import play.api.mvc.Call
 
 
 
 
-case class CorrectionReturnPeriodPage[T](index: Index) extends QuestionPage[T] {
+case class CorrectionReturnPeriodPage(index: Index) extends QuestionPage[Period] {
 
   override def path: JsPath = JsPath \ "corrections" \ index.position \ toString
 
@@ -35,8 +34,8 @@ case class CorrectionReturnPeriodPage[T](index: Index) extends QuestionPage[T] {
     controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(waypoints, index)
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
-    answers.get(CorrectionReturnPeriodPage[String](index)) match {
-      case Some(_) => CorrectionCountryPage(Index(0), index)
+    answers.get(CorrectionReturnPeriodPage(index)) match {
+      case Some(_) => CorrectionCountryPage(index, Index(0))
       case _ => JourneyRecoveryPage
     }
 }

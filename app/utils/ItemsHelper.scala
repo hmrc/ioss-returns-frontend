@@ -32,6 +32,8 @@ import uk.gov.hmrc.govukfrontend.views.viewmodels.checkboxes.CheckboxItem
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.Text
 import uk.gov.hmrc.govukfrontend.views.viewmodels.radios.RadioItem
 
+import java.time.Month
+
 
 object ItemsHelper {
 
@@ -84,12 +86,12 @@ object ItemsHelper {
         )
     }
 
-  def radioButtonMonthItems(obligationMonths: Seq[String]): Seq[RadioItem] =
+  def radioButtonMonthItems(obligationMonths: Seq[Month]): Seq[RadioItem] =
     obligationMonths.map {
       case (months) =>
         RadioItem(
-          content = Text(months),
-          value   = Some(months),
+          content = Text(months.toString.toLowerCase.capitalize),
+          value   = Some(months.toString.toLowerCase.capitalize),
           id      = Some(s"value_$months")
         )
     }

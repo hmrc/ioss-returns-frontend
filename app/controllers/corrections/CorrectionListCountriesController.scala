@@ -24,9 +24,7 @@ import pages.corrections.CorrectionListCountriesPage
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import queries.DeriveNumberOfCorrections
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import utils.ItemsHelper.getDerivedItems
 import viewmodels.checkAnswers.corrections.CorrectionListCountriesSummary
 import views.html.corrections.CorrectionListCountriesView
 
@@ -38,51 +36,52 @@ class CorrectionListCountriesController @Inject()(
                                          cc: AuthenticatedControllerComponents,
                                          formProvider: CorrectionListCountriesFormProvider,
                                          view: CorrectionListCountriesView
-                                 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                 )(implicit ec: ExecutionContext) extends FrontendBaseController with VatCorrectionBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
   val form: Form[Boolean] = formProvider()
 
-  def onPageLoad(waypoints: Waypoints, periodIndex: Index): Action[AnyContent] = cc.authAndRequireData().async {
+  def onPageLoad(waypoints: Waypoints, periodIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible() {
     implicit request =>
 
       val period = request.userAnswers.period
 
-      getDerivedItems(waypoints, DeriveNumberOfCorrections(periodIndex)) {
-        number =>
+        getNumberOfCorrections(periodIndex) {
+          (number, correctionPeriod) =>
 
-          val canAddCountries = number < Country.euCountriesWithNI.size
-          val list = CorrectionListCountriesSummary
-            .addToListRows(request.userAnswers, waypoints, periodIndex, CorrectionListCountriesPage(periodIndex))
+            val canAddCountries = number < Country.euCountriesWithNI.size
+            val list = CorrectionListCountriesSummary
+              .addToListRows(request.userAnswers, waypoints, periodIndex, CorrectionListCountriesPage(periodIndex))
 
-          Future.successful(Ok(view(form, waypoints, list, period, periodIndex, canAddCountries)))
-      }
+           Ok(view(form, waypoints, list, period, correctionPeriod, periodIndex, canAddCountries, Seq.empty))
+        }
 
   }
 
-  def onSubmit(waypoints: Waypoints, periodIndex: Index): Action[AnyContent] = cc.authAndRequireData().async {
+  def onSubmit(waypoints: Waypoints, periodIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible().async {
     implicit request =>
 
       val period = request.userAnswers.period
 
-      getDerivedItems(waypoints, DeriveNumberOfCorrections(periodIndex)) {
-        number =>
-
+      getNumberOfCorrectionsAsync(periodIndex) {
+        (number, correctionPeriod) =>
           val canAddCountries = number < Country.euCountriesWithNI.size
           val list = CorrectionListCountriesSummary
             .addToListRows(request.userAnswers, waypoints, periodIndex, CorrectionListCountriesPage(periodIndex))
 
           form.bindFromRequest().fold(
-          formWithErrors =>
-            Future.successful(BadRequest(view(formWithErrors, waypoints, list, period, periodIndex, canAddCountries))),
+            formWithErrors =>
+              Future.successful(BadRequest(view(formWithErrors, waypoints, list, period, correctionPeriod, periodIndex, canAddCountries, Seq.empty))),
 
-          value =>
-            for {
-              updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionListCountriesPage(periodIndex), value))
-              _ <- cc.sessionRepository.set(updatedAnswers)
-            } yield Redirect(CorrectionListCountriesPage(periodIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route)
-        )
+            value =>
+              for {
+                updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionListCountriesPage(periodIndex), value))
+                _ <- cc.sessionRepository.set(updatedAnswers)
+              } yield Redirect(CorrectionListCountriesPage(periodIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route))
+
       }
   }
+
+
 }

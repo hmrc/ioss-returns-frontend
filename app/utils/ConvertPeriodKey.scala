@@ -16,6 +16,8 @@
 
 package utils
 
+import models.Period
+
 import java.time.Month
 import java.time.Month._
 
@@ -25,7 +27,7 @@ object ConvertPeriodKey {
     s"20${periodKey.substring(0, 2)}".toInt
   }
 
-  def monthFromEtmpPeriodKey(periodKey: String): Month = {
+  private def monthFromEtmpPeriodKey(periodKey: String): Month = {
     val monthKey = periodKey.substring(2, 4)
     fromEtmpMonthString(monthKey)
   }
@@ -33,6 +35,13 @@ object ConvertPeriodKey {
   def monthNameFromEtmpPeriodKey(periodKey: String): String = {
     val month = monthFromEtmpPeriodKey(periodKey)
     month.toString.toLowerCase.capitalize
+  }
+
+  def periodkeyToPeriod(periodKey: String): Period = {
+    val year = periodKey.substring(0, 2)
+    val month = periodKey.substring(2, 4)
+
+    Period(s"20$year".toInt, fromEtmpMonthString(month))
   }
 
   def fromEtmpMonthString(monthKey: String): Month = {

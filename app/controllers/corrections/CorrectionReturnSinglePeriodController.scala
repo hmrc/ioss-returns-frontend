@@ -18,12 +18,13 @@ package controllers.corrections
 
 import controllers.actions._
 import forms.corrections.CorrectionReturnSinglePeriodFormProvider
-import models.Index
+import models.{Index, Period}
 import pages.Waypoints
-import pages.corrections.CorrectionReturnSinglePeriodPage
+import pages.corrections.{CorrectionReturnPeriodPage, CorrectionReturnSinglePeriodPage}
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import queries.DeriveCompletedCorrectionPeriods
 import services.ObligationsService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.ConvertPeriodKey
@@ -45,7 +46,7 @@ class CorrectionReturnSinglePeriodController @Inject()(
 
   val form: Form[Boolean] = formProvider()
 
-  def onPageLoad(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndRequireData().async {
+  def onPageLoad(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible().async {
     implicit request =>
 
       val period = request.userAnswers.period
@@ -53,22 +54,23 @@ class CorrectionReturnSinglePeriodController @Inject()(
       val fulfilledObligations = obligationService.getFulfilledObligations(request.iossNumber)
 
       fulfilledObligations.flatMap { obligations =>
-        val periodKeys = obligations.map(obligation => ConvertPeriodKey.yearFromEtmpPeriodKey(obligation.periodKey))
+        val completedCorrectionPeriods: List[Period] = request.userAnswers.get(DeriveCompletedCorrectionPeriods).getOrElse(List.empty)
 
-        val correctionMonths = obligations.map (obligation => ConvertPeriodKey.monthNameFromEtmpPeriodKey(obligation.periodKey))
+        val correctionMonths = obligations.map (obligation => ConvertPeriodKey.periodkeyToPeriod(obligation.periodKey))
 
-        val monthAndYear = s"${correctionMonths.mkString(", ")} ${periodKeys.mkString(", ")}"
+        val uncompletedCorrectionPeriods = correctionMonths.diff(completedCorrectionPeriods).distinct
 
-        val preparedForm = request.userAnswers.get(CorrectionReturnSinglePeriodPage(index)) match {
-          case None => form
-          case Some(value) => form.fill(value)
+        uncompletedCorrectionPeriods.size match {
+          case 0 => Redirect(controllers.routes.CheckYourAnswersController.onPageLoad(waypoints)).toFuture
+          case 1 => Ok(view(form, waypoints, period, uncompletedCorrectionPeriods.head, index)).toFuture
+          case _ => Redirect(
+            controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(waypoints, index)
+          ).toFuture
         }
-
-        Ok(view(preparedForm, waypoints, period, monthAndYear, index)).toFuture
       }
   }
 
-  def onSubmit(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndRequireData().async {
+  def onSubmit(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible().async {
     implicit request =>
 
       val period = request.userAnswers.period
@@ -76,22 +78,31 @@ class CorrectionReturnSinglePeriodController @Inject()(
       val fulfilledObligations = obligationService.getFulfilledObligations(request.iossNumber)
 
       fulfilledObligations.flatMap { obligations =>
-        val periodKeys = obligations.map(obligation => ConvertPeriodKey.yearFromEtmpPeriodKey(obligation.periodKey))
 
-        val correctionMonths = obligations.map (obligation => ConvertPeriodKey.monthNameFromEtmpPeriodKey(obligation.periodKey))
+        val completedCorrectionPeriods: List[Period] = request.userAnswers.get(DeriveCompletedCorrectionPeriods).getOrElse(List.empty)
 
-        val monthAndYear = s"${correctionMonths.mkString(", ")} ${periodKeys.mkString(", ")}"
+        val correctionMonths = obligations.map (obligation => ConvertPeriodKey.periodkeyToPeriod(obligation.periodKey))
 
-        form.bindFromRequest().fold(
-          formWithErrors =>
-            Future.successful(BadRequest(view(formWithErrors, waypoints, period, monthAndYear, index))),
+        val uncompletedCorrectionPeriods = correctionMonths.diff(completedCorrectionPeriods).distinct
 
-          value =>
-            for {
-              updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionReturnSinglePeriodPage(index), value))
-              _ <- cc.sessionRepository.set(updatedAnswers)
-            } yield Redirect(CorrectionReturnSinglePeriodPage(index).navigate(waypoints, request.userAnswers, updatedAnswers).route)
-        )
+        uncompletedCorrectionPeriods.size match {
+          case 0 => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+          case 1 => form.bindFromRequest ().fold(
+            formWithErrors => {
+              Future.successful(BadRequest(view(formWithErrors, waypoints, period, uncompletedCorrectionPeriods.head, index)))
+            },
+            value =>
+                for {
+                  updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionReturnSinglePeriodPage(index), value))
+                  updatedWithPeriodAnswers <- Future.fromTry(updatedAnswers.set(CorrectionReturnPeriodPage(index), uncompletedCorrectionPeriods.head))
+                  _ <- cc.sessionRepository.set(updatedWithPeriodAnswers)
+                } yield Redirect(CorrectionReturnSinglePeriodPage(index).navigate(waypoints, request.userAnswers, updatedWithPeriodAnswers).route)
+
+          )
+          case _ => Future.successful(Redirect(controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(waypoints, index)))
+        }
       }
   }
+
+
 }

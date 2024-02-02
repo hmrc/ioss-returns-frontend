@@ -21,7 +21,7 @@ import forms.corrections.VatPayableForCountryFormProvider
 import models.requests.DataRequest
 import models.{Country, Index, Period}
 import pages.Waypoints
-import pages.corrections.{CorrectionCountryPage, VatAmountCorrectionCountryPage, VatPayableForCountryPage}
+import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, VatAmountCorrectionCountryPage, VatPayableForCountryPage}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -38,10 +38,9 @@ class VatPayableForCountryController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(waypoints: Waypoints, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndRequireData().async {
-    // ToDo: Downstream not ready to check Correction Eligibility yet.
-    // ToDo: Enhance the auth when ready
+  def onPageLoad(waypoints: Waypoints, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible().async {
     implicit request =>
+
       withAmountPeriodAndCountryCorrected(periodIndex, countryIndex) { data => {
         val (selectedCountry, correctionPeriod, correctionAmount) = data
           val form = formProvider(selectedCountry, correctionAmount)
@@ -54,10 +53,7 @@ class VatPayableForCountryController @Inject()(
       }
   }
 
-  def onSubmit(waypoints: Waypoints, periodIndex: Index, countryIndex: Index): Action[AnyContent] =
-    cc.authAndRequireData().async {
-      // ToDo: Downstream not ready to check Correction Eligibility yet.
-      // ToDo: Enhance the auth when ready
+  def onSubmit(waypoints: Waypoints, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible().async {
       implicit request =>
         withAmountPeriodAndCountryCorrected(periodIndex, countryIndex) { data => {
           val (selectedCountry, correctionPeriod, correctionAmount) = data
@@ -79,16 +75,20 @@ class VatPayableForCountryController @Inject()(
                                                  (
                                                    implicit request: DataRequest[AnyContent]
                                                  ): Future[Result] = {
-    val correctionPeriod = request.userAnswers.period
-    //Todo: Change this to correction period when ready
-    val result: Option[(Country, Period, BigDecimal)] = for {
-      selectedCountry <- request.userAnswers.get(CorrectionCountryPage(periodIndex, countryIndex))
-      correctionAmount <- request.userAnswers.get(VatAmountCorrectionCountryPage(periodIndex, countryIndex))
-    } yield (selectedCountry, correctionPeriod, correctionAmount)
+    val correctionPeriod = request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex))
+    correctionPeriod match {
+      case Some(correctionPeriod) =>
+        val result: Option[(Country, Period, BigDecimal)] = for {
+          selectedCountry <- request.userAnswers.get(CorrectionCountryPage (periodIndex, countryIndex))
+          correctionAmount <- request.userAnswers.get(VatAmountCorrectionCountryPage (periodIndex, countryIndex))
+        } yield (selectedCountry, correctionPeriod, correctionAmount)
 
-    result
-      .fold(
+        result
+          .fold (
+            Future.successful (Redirect (controllers.routes.JourneyRecoveryController.onPageLoad () ) )
+          ) (block (_) )
+      case _ =>
         Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
-      )(block(_))
+    }
   }
 }

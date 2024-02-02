@@ -61,7 +61,7 @@ object VatPeriodCorrectionsOpSyntax {
     Future[Result] = {
       val (vatPeriodCorrectionsService, block) = value
 
-      vatPeriodCorrectionsService.listStatuses(request.registrationWrapper.registration.schemeDetails.commencementDate)
+      vatPeriodCorrectionsService.listStatuses(request.iossNumber)
         .map {
           returnStatuses =>
             val allPeriodsOfCompletedStatuses = returnStatuses.filter(obligationDetails =>

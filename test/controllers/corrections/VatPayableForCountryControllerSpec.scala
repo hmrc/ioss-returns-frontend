@@ -20,7 +20,7 @@ import base.SpecBase
 import forms.corrections.VatPayableForCountryFormProvider
 import models.{Country, Index}
 import org.scalatestplus.mockito.MockitoSugar
-import pages.corrections.{CorrectionCountryPage, VatAmountCorrectionCountryPage, VatPayableForCountryPage}
+import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, VatAmountCorrectionCountryPage, VatPayableForCountryPage}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import views.html.corrections.VatPayableForCountryView
@@ -37,6 +37,7 @@ class VatPayableForCountryControllerSpec extends SpecBase with MockitoSugar {
     "must return OK and the correct view for a GET" in {
 
       val userAnswers = emptyUserAnswers
+        .set(CorrectionReturnPeriodPage(index), period).success.value
         .set(CorrectionCountryPage(index, index), Country("DE", "Germany")).success.value
         .set(VatAmountCorrectionCountryPage(index, index), BigDecimal(1000)).success.value
 
@@ -58,6 +59,7 @@ class VatPayableForCountryControllerSpec extends SpecBase with MockitoSugar {
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
       val userAnswers = emptyUserAnswers
+        .set(CorrectionReturnPeriodPage(index), period).success.value
         .set(VatPayableForCountryPage(index, Index(0)), true).success.value
         .set(CorrectionCountryPage(index, index), Country("DE", "Germany")).success.value
         .set(VatAmountCorrectionCountryPage(index, index), BigDecimal(1000)).success.value
@@ -88,6 +90,7 @@ class VatPayableForCountryControllerSpec extends SpecBase with MockitoSugar {
     "must redirect to the next page when valid data is submitted" in {
 
       val userAnswers = emptyUserAnswers
+        .set(CorrectionReturnPeriodPage(index), period).success.value
         .set(CorrectionCountryPage(index, index), Country("DE", "Germany")).success.value
         .set(VatAmountCorrectionCountryPage(index, index), BigDecimal(1000)).success.value
 
@@ -111,6 +114,7 @@ class VatPayableForCountryControllerSpec extends SpecBase with MockitoSugar {
     "must return a Bad Request and errors when invalid data is submitted" in {
 
       val userAnswers = emptyUserAnswers
+        .set(CorrectionReturnPeriodPage(index), period).success.value
         .set(VatPayableForCountryPage(index, index), true).success.value
         .set(CorrectionCountryPage(index, index), Country("DE", "Germany")).success.value
         .set(VatAmountCorrectionCountryPage(index, index), BigDecimal(1000)).success.value

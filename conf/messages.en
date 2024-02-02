@@ -75,6 +75,7 @@ checkYourAnswers.totalVatPayable.heading = Total VAT payable
 checkYourAnswers.label.country = Country
 checkYourAnswers.label.amount = Amount
 checkYourAnswers.heading.vatOwned = VAT owed
+checkYourAnswers.heading.corrections.vatOwned = VAT owed (including corrections)
 
 journeyRecovery.continue.title = Sorry, there is a problem with the service
 journeyRecovery.continue.heading = Sorry, there is a problem with the service
@@ -208,6 +209,7 @@ correctionReturnPeriod.checkYourAnswersLabel = Which return do you want to corre
 correctionReturnPeriod.error.required = Select which return you want to correct
 correctionReturnPeriod.error.invalid = Select which return you want to correct
 correctionReturnPeriod.change.hidden = which return you want to correct
+correctionReturnPeriod.error.duplicate = You selected this period already. Select a different one.
 
 
 noOtherCorrectionPeriodsAvailable.title = You cannot make a correction to other VAT Import One Stop Shop months
@@ -278,6 +280,10 @@ correctionListCountries.checkYourAnswersLabel = Correction amount
 removeCountryCorrection.title = Are you sure you want to remove this correction?
 removeCountryCorrection.heading = Are you sure you want to remove this correction?
 removeCountryCorrection.error.required = Select yes if you want to remove this correction
+
+removePeriodCorrection.title = Are you sure you want to remove this correction period?
+removePeriodCorrection.heading = Are you sure you want to remove this correction period?
+removePeriodCorrection.error.required = Select yes if you want to remove this correction period
 
 vatCorrectionsList.title = You have corrected the VAT amount for {0} EU countries
 vatCorrectionsList.title.singular = You have corrected the VAT amount for one EU country
