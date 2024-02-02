@@ -20,13 +20,23 @@ import models.{Enumerable, WithName}
 import play.api.libs.json.{Json, OFormat}
 
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 case class EtmpExclusion(
                           exclusionReason: EtmpExclusionReason,
                           effectiveDate: LocalDate,
                           decisionDate: LocalDate,
                           quarantine: Boolean
-                        )
+                        ) {
+
+  private val lastDayFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy")
+  private val rejoinDate: LocalDate = effectiveDate.plusYears(2).plusDays(1)
+
+  val displayRejoinDate: String =
+    s"${rejoinDate.format(lastDayFormatter)}"
+
+  val isActive: Boolean = LocalDate.now().isAfter(effectiveDate) || LocalDate.now().isEqual(effectiveDate)
+}
 
 object EtmpExclusion {
 

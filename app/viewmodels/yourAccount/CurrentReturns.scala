@@ -22,6 +22,7 @@ import play.api.libs.json.{Json, OFormat}
 case class CurrentReturns(
                            returns: Seq[Return],
                            excluded: Boolean = false,
+                           finalReturnsCompleted: Boolean
                            )
 
  case object CurrentReturns {
