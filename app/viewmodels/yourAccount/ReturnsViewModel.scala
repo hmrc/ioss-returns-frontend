@@ -43,7 +43,7 @@ object ReturnsViewModel {
           contents = Seq(nextReturnParagraph(nextReturn.period))
         )
     ).getOrElse(
-      dueRetunsModel(overdueReturns, inProgress, returnDue)
+      dueReturnsModel(overdueReturns, inProgress, returnDue)
     )
   }
 
@@ -81,7 +81,7 @@ object ReturnsViewModel {
       "next-period"
     )
 
-  private def dueRetunsModel(overdueReturns: Seq[Return], currentReturn: Option[Return], dueReturn: Option[Return])(implicit messages: Messages) = {
+  private def dueReturnsModel(overdueReturns: Seq[Return], currentReturn: Option[Return], dueReturn: Option[Return])(implicit messages: Messages) = {
     val waypoints = EmptyWaypoints
 
     (overdueReturns.size, currentReturn, dueReturn) match {
@@ -113,6 +113,9 @@ object ReturnsViewModel {
           contents = contents,
           linkToStart = Some(startOverdueReturnLink(waypoints, overdueReturns.minBy(_.period.lastDay.toEpochDay).period))
         )
+
+      case _ =>
+        throw new RuntimeException(s"Unexpected combination overdueReturns.size:${overdueReturns.size}, currentReturn:$currentReturn, dueReturn:$dueReturn}")
 
     }
   }

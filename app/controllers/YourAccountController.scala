@@ -20,7 +20,7 @@ import config.FrontendAppConfig
 import connectors.{FinancialDataConnector, ReturnStatusConnector}
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
-import models.etmp.{EtmpExclusion, EtmpExclusionReason}
+import models.etmp.EtmpExclusion
 import models.etmp.EtmpExclusionReason.{NoLongerSupplies, Reversal, TransferringMSID, VoluntarilyLeaves}
 import models.payments._
 import models.requests.RegistrationRequest
@@ -84,6 +84,8 @@ class YourAccountController @Inject()(
                                              currentPayments: PrepareData,
                                            )(implicit  request: RegistrationRequest[AnyContent]): Future[Result] = {
 
+    val maybeExclusion: Option[EtmpExclusion] = request.registrationWrapper.registration.exclusions.lastOption
+
     val lastExclusion: Option[EtmpExclusion] = request.registrationWrapper.registration.exclusions.maxByOption(_.effectiveDate)
 
     val now: LocalDate = LocalDate.now(clock)
@@ -94,17 +96,17 @@ class YourAccountController @Inject()(
       case _ => None
     }
 
-    val leaveThisServiceUrl = if (lastExclusion.isEmpty || lastExclusion.exists(_.exclusionReason == Reversal)) {
+    val leaveThisServiceUrl = if (maybeExclusion.isEmpty || maybeExclusion.exists(_.exclusionReason == Reversal)) {
       Some(appConfig.leaveThisServiceUrl)
     } else {
       None
     }
 
-      val rejoinUrl = if(request.registrationWrapper.registration.canRejoinRegistration(now)){
-        Some(appConfig.rejoinThisServiceUrl)
-      }else {
-        None
-      }
+    val rejoinUrl = if(request.registrationWrapper.registration.canRejoinRegistration(now)){
+      Some(appConfig.rejoinThisServiceUrl)
+    }else {
+      None
+    }
 
     Ok(view(
       request.registrationWrapper.vatInfo.getName,
@@ -141,11 +143,20 @@ class YourAccountController @Inject()(
       None
     }
 
+    val now: LocalDate = LocalDate.now(clock)
+    
+    val rejoinUrl = if(request.registrationWrapper.registration.canRejoinRegistration(now)){
+      Some(appConfig.rejoinThisServiceUrl)
+    }else {
+      None
+    }
+
     Ok(view(
       request.registrationWrapper.vatInfo.getName,
       request.iossNumber,
       PaymentsViewModel(Seq.empty, Seq.empty),
       appConfig.amendRegistrationUrl,
+      rejoinUrl,
       leaveThisServiceUrl,
       cancelYourRequestToLeaveUrl,
       ReturnsViewModel(

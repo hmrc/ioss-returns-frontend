@@ -171,6 +171,21 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
     "must return OK with rejoinThisService link" in {
       val registrationWrapperWithExclusion: RegistrationWrapper = createRegistrationWrapperWithExclusion(LocalDate.now())
 
+      when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
+        Future.successful(
+          Right(CurrentReturns(
+            Seq(Return(
+              nextPeriod,
+              nextPeriod.firstDay,
+              nextPeriod.lastDay,
+              nextPeriod.paymentDeadline,
+              SubmissionStatus.Next,
+              inProgress = false,
+              isOldest = false
+            ))
+          ))
+        )
+
       val paymentsService = mock[PaymentsService]
 
       val application = applicationBuilder(
@@ -178,6 +193,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         registration = registrationWrapperWithExclusion,
         clock = Some(Clock.systemUTC()))
         .overrides(
+          bind[ReturnStatusConnector].toInstance(returnStatusConnector),
           bind[PaymentsService].toInstance(paymentsService)
         )
         .build()
@@ -204,7 +220,12 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           appConfig.amendRegistrationUrl,
           Some(appConfig.rejoinThisServiceUrl),
           None,
-          None
+          None,
+          ReturnsViewModel(
+            Seq(
+              Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
+            )
+          )(messages(application))
         )(request, messages(application)).toString
       }
     }
@@ -282,6 +303,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           paymentsViewModel,
           appConfig.amendRegistrationUrl,
           None,
+          None,
           Some(appConfig.cancelYourRequestToLeaveUrl),
           ReturnsViewModel(
             Seq(
@@ -344,6 +366,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             iossNumber,
             paymentsViewModel,
             appConfig.amendRegistrationUrl,
+            None,
             Some(appConfig.leaveThisServiceUrl),
             None,
             ReturnsViewModel(
@@ -398,6 +421,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             iossNumber,
             paymentsViewModel,
             appConfig.amendRegistrationUrl,
+            None,
             Some(appConfig.leaveThisServiceUrl),
             None,
             ReturnsViewModel(
@@ -458,6 +482,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             iossNumber,
             paymentsViewModel,
             appConfig.amendRegistrationUrl,
+            None,
             Some(appConfig.leaveThisServiceUrl),
             None,
             ReturnsViewModel(
@@ -517,6 +542,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             iossNumber,
             paymentsViewModel,
             appConfig.amendRegistrationUrl,
+            None,
             Some(appConfig.leaveThisServiceUrl),
             None,
             ReturnsViewModel(
@@ -576,6 +602,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             iossNumber,
             paymentsViewModel,
             appConfig.amendRegistrationUrl,
+            None,
             Some(appConfig.leaveThisServiceUrl),
             None,
             ReturnsViewModel(
@@ -638,6 +665,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             iossNumber,
             paymentsViewModel,
             appConfig.amendRegistrationUrl,
+            None,
             Some(appConfig.leaveThisServiceUrl),
             None,
             ReturnsViewModel(
