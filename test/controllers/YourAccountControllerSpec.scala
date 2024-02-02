@@ -20,8 +20,8 @@ import base.SpecBase
 import config.FrontendAppConfig
 import connectors.{FinancialDataConnector, ReturnStatusConnector}
 import generators.Generators
-import models.SubmissionStatus._
 import models.{Period, RegistrationWrapper, SubmissionStatus}
+import models.SubmissionStatus._
 import models.etmp.EtmpExclusion
 import models.etmp.EtmpExclusionReason.NoLongerSupplies
 import models.payments.{Payment, PaymentStatus, PrepareData}
@@ -33,7 +33,6 @@ import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import services.PaymentsService
 import viewmodels.PaymentsViewModel
 import viewmodels.yourAccount.{CurrentReturns, Return, ReturnsViewModel}
 import views.html.YourAccountView
@@ -185,11 +184,12 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               SubmissionStatus.Next,
               inProgress = false,
               isOldest = false
-            ))
+            )),
+            finalReturnsCompleted = true
           ))
         )
 
-      val paymentsService = mock[PaymentsService]
+      val mockFinancialDataConnector = mock[FinancialDataConnector]
 
       val application = applicationBuilder(
         userAnswers = Some(emptyUserAnswers),
@@ -197,14 +197,14 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         clock = Some(Clock.systemUTC()))
         .overrides(
           bind[ReturnStatusConnector].toInstance(returnStatusConnector),
-          bind[PaymentsService].toInstance(paymentsService)
+          bind[FinancialDataConnector].toInstance(mockFinancialDataConnector)
         )
         .build()
 
 
       val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty)(messages(application))
-      when(paymentsService.prepareFinancialData()(any(), any())) thenReturn
-        Future.successful(PrepareData(List.empty, List.empty, 0, 0, iossNumber))
+      when(mockFinancialDataConnector.prepareFinancialData()(any())) thenReturn
+        Future.successful(Right(PrepareData(List.empty, List.empty, 0, 0, iossNumber)))
 
       running(application) {
 
@@ -224,6 +224,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           Some(appConfig.rejoinThisServiceUrl),
           None,
           None,
+          exclusionsEnabled = true,
+          Some(registrationWrapperWithExclusion.registration.exclusions.head),
+          hasSubmittedFinalReturn = true,
           ReturnsViewModel(
             Seq(
               Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
@@ -688,6 +691,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             iossNumber,
             paymentsViewModel,
             appConfig.amendRegistrationUrl,
+            None,
             Some(appConfig.leaveThisServiceUrl),
             None,
             exclusionsEnabled = true,

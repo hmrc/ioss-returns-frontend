@@ -55,7 +55,7 @@
     </h1>
 
     @if(exclusionsEnabled) {
-        @if(!hasSubmittedFinalReturn) {
+        @if(hasSubmittedFinalReturn) {
             @maybeExclusion match {
                 case Some(exclusion) => {
                     @exclusion.exclusionReason match {
