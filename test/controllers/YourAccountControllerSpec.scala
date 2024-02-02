@@ -18,8 +18,10 @@ package controllers
 
 import base.SpecBase
 import config.FrontendAppConfig
+import connectors.ReturnStatusConnector
 import generators.Generators
-import models.{Period, RegistrationWrapper}
+import models.SubmissionStatus._
+import models.{Period, RegistrationWrapper, SubmissionStatus}
 import models.etmp.EtmpExclusion
 import models.etmp.EtmpExclusionReason.NoLongerSupplies
 import models.payments.{Payment, PaymentStatus, PrepareData}
@@ -33,12 +35,17 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import services.PaymentsService
 import viewmodels.PaymentsViewModel
+import viewmodels.yourAccount.{CurrentReturns, Return, ReturnsViewModel}
 import views.html.YourAccountView
 
 import java.time.{LocalDate, Month}
 import scala.concurrent.Future
 
 class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generators with BeforeAndAfterEach {
+
+  val nextPeriod: Period = Period(LocalDate.now.minusYears(1).getYear, Month.APRIL)
+
+  private val returnStatusConnector = mock[ReturnStatusConnector]
 
   "Your Account Controller" - {
 
@@ -67,8 +74,26 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(paymentsService.prepareFinancialData()(any(), any())) thenReturn
           Future.successful(prepareData)
 
+        when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
+          Future.successful(
+            Right(CurrentReturns(
+              Seq(Return(
+                nextPeriod,
+                nextPeriod.firstDay,
+                nextPeriod.lastDay,
+                nextPeriod.paymentDeadline,
+                SubmissionStatus.Next,
+                inProgress = false,
+                isOldest = false
+              ))
+            ))
+          )
+
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWrapper)
-          .overrides(bind[PaymentsService].to(paymentsService))
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[PaymentsService].to(paymentsService)
+          )
           .build()
 
         running(application) {
@@ -87,11 +112,26 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
       val registrationWrapperEmptyExclusions: RegistrationWrapper =
         registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
 
+      when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
+        Future.successful(
+          Right(CurrentReturns(
+            Seq(Return(
+              nextPeriod,
+              nextPeriod.firstDay,
+              nextPeriod.lastDay,
+              nextPeriod.paymentDeadline,
+              SubmissionStatus.Next,
+              inProgress = false,
+              isOldest = false
+            ))
+          ))
+        )
 
       val paymentsService = mock[PaymentsService]
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWrapperEmptyExclusions)
         .overrides(
+          bind[ReturnStatusConnector].toInstance(returnStatusConnector),
           bind[PaymentsService].toInstance(paymentsService)
         )
         .build()
@@ -117,7 +157,12 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           paymentsViewModel,
           appConfig.amendRegistrationUrl,
           Some(appConfig.leaveThisServiceUrl),
-          None
+          None,
+          ReturnsViewModel(
+            Seq(
+              Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
+            )
+          )(messages(application))
         )(request, messages(application)).toString
       }
     }
@@ -136,8 +181,24 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
       val paymentsService = mock[PaymentsService]
 
+      when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
+        Future.successful(
+          Right(CurrentReturns(
+            Seq(Return(
+              nextPeriod,
+              nextPeriod.firstDay,
+              nextPeriod.lastDay,
+              nextPeriod.paymentDeadline,
+              SubmissionStatus.Next,
+              inProgress = false,
+              isOldest = false
+            ))
+          ))
+        )
+
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWrapperEmptyExclusions)
         .overrides(
+          bind[ReturnStatusConnector].toInstance(returnStatusConnector),
           bind[PaymentsService].toInstance(paymentsService)
         )
         .build()
@@ -162,9 +223,375 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           paymentsViewModel,
           appConfig.amendRegistrationUrl,
           None,
-          Some(appConfig.cancelYourRequestToLeaveUrl)
+          Some(appConfig.cancelYourRequestToLeaveUrl),
+          ReturnsViewModel(
+            Seq(
+              Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
+            )
+          )(messages(application))
         )(request, messages(application)).toString
       }
+    }
+
+    "must return OK and the correct view" - {
+
+      "when there are no returns due" in {
+        val registrationWrapper: RegistrationWrapper = arbitrary[RegistrationWrapper].sample.value
+
+        val registrationWrapperEmptyExclusions: RegistrationWrapper =
+          registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
+
+        when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
+          Future.successful(
+            Right(CurrentReturns(
+              Seq(Return(
+                nextPeriod,
+                nextPeriod.firstDay,
+                nextPeriod.lastDay,
+                nextPeriod.paymentDeadline,
+                SubmissionStatus.Next,
+                inProgress = false,
+                isOldest = false
+              ))
+            ))
+          )
+
+        val paymentsService = mock[PaymentsService]
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWrapperEmptyExclusions)
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[PaymentsService].toInstance(paymentsService)
+          )
+          .build()
+
+
+        val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty)(messages(application))
+        when(paymentsService.prepareFinancialData()(any(), any())) thenReturn
+          Future.successful(PrepareData(List.empty, List.empty, 0, 0, iossNumber))
+
+        running(application) {
+
+          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad(waypoints).url)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[YourAccountView]
+          val appConfig = application.injector.instanceOf[FrontendAppConfig]
+
+          status(result) mustBe OK
+          contentAsString(result) mustBe view(
+            registrationWrapper.vatInfo.getName,
+            iossNumber,
+            paymentsViewModel,
+            appConfig.amendRegistrationUrl,
+            Some(appConfig.leaveThisServiceUrl),
+            None,
+            ReturnsViewModel(
+              Seq(
+                Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
+              )
+            )(messages(application))
+          )(request, messages(application)).toString
+        }
+      }
+
+      "when there is 1 return due" in {
+        val registrationWrapper: RegistrationWrapper = arbitrary[RegistrationWrapper].sample.value
+
+        val registrationWrapperEmptyExclusions: RegistrationWrapper =
+          registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
+
+        when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
+          Future.successful(
+            Right(CurrentReturns(
+              Seq(Return.fromPeriod(period, Due, inProgress = false, isOldest = false
+              ))
+            ))
+          )
+
+        val paymentsService = mock[PaymentsService]
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWrapperEmptyExclusions)
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[PaymentsService].toInstance(paymentsService)
+          )
+          .build()
+
+
+        val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty)(messages(application))
+        when(paymentsService.prepareFinancialData()(any(), any())) thenReturn
+          Future.successful(PrepareData(List.empty, List.empty, 0, 0, iossNumber))
+
+        running(application) {
+
+          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad(waypoints).url)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[YourAccountView]
+          val appConfig = application.injector.instanceOf[FrontendAppConfig]
+
+          status(result) mustBe OK
+          contentAsString(result) mustBe view(
+            registrationWrapper.vatInfo.getName,
+            iossNumber,
+            paymentsViewModel,
+            appConfig.amendRegistrationUrl,
+            Some(appConfig.leaveThisServiceUrl),
+            None,
+            ReturnsViewModel(
+              Seq(
+                Return.fromPeriod(period, Due, inProgress = false, isOldest = false)
+              )
+            )(messages(application))
+          )(request, messages(application)).toString
+        }
+      }
+
+      "and 1 return overdue" in {
+
+        val firstPeriod = Period(LocalDate.now.minusYears(1).getYear, Month.JANUARY)
+        val secondPeriod = Period(LocalDate.now.minusYears(1).getYear, Month.FEBRUARY)
+
+        val registrationWrapper: RegistrationWrapper = arbitrary[RegistrationWrapper].sample.value
+
+        val registrationWrapperEmptyExclusions: RegistrationWrapper =
+          registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
+
+        when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
+          Future.successful(
+            Right(CurrentReturns(
+              Seq(
+                Return.fromPeriod(secondPeriod, Due, inProgress = false, isOldest = false),
+                Return.fromPeriod(firstPeriod, Overdue, inProgress = false, isOldest = true),
+              )
+            ))
+          )
+
+        val paymentsService = mock[PaymentsService]
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWrapperEmptyExclusions)
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[PaymentsService].toInstance(paymentsService)
+          )
+          .build()
+
+
+        val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty)(messages(application))
+        when(paymentsService.prepareFinancialData()(any(), any())) thenReturn
+          Future.successful(PrepareData(List.empty, List.empty, 0, 0, iossNumber))
+
+        running(application) {
+
+          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad(waypoints).url)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[YourAccountView]
+          val appConfig = application.injector.instanceOf[FrontendAppConfig]
+
+          status(result) mustBe OK
+          contentAsString(result) mustBe view(
+            registrationWrapper.vatInfo.getName,
+            iossNumber,
+            paymentsViewModel,
+            appConfig.amendRegistrationUrl,
+            Some(appConfig.leaveThisServiceUrl),
+            None,
+            ReturnsViewModel(
+              Seq(
+                Return.fromPeriod(secondPeriod, Due, inProgress = false, isOldest = false),
+                Return.fromPeriod(firstPeriod, Overdue, inProgress = false, isOldest = true)
+              )
+            )(messages(application))
+          )(request, messages(application)).toString
+        }
+      }
+
+      "when there is 1 return overdue" in {
+
+        val period = Period(LocalDate.now.minusYears(1).getYear, Month.JANUARY)
+
+        val registrationWrapper: RegistrationWrapper = arbitrary[RegistrationWrapper].sample.value
+
+        val registrationWrapperEmptyExclusions: RegistrationWrapper =
+          registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
+
+        when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
+          Future.successful(
+            Right(CurrentReturns(
+              Seq(
+                Return.fromPeriod(period, Overdue, inProgress = false, isOldest = true),
+              )
+            ))
+          )
+
+        val paymentsService = mock[PaymentsService]
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWrapperEmptyExclusions)
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[PaymentsService].toInstance(paymentsService)
+          )
+          .build()
+
+
+        val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty)(messages(application))
+        when(paymentsService.prepareFinancialData()(any(), any())) thenReturn
+          Future.successful(PrepareData(List.empty, List.empty, 0, 0, iossNumber))
+
+        running(application) {
+
+          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad(waypoints).url)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[YourAccountView]
+          val appConfig = application.injector.instanceOf[FrontendAppConfig]
+
+          status(result) mustBe OK
+          contentAsString(result) mustBe view(
+            registrationWrapper.vatInfo.getName,
+            iossNumber,
+            paymentsViewModel,
+            appConfig.amendRegistrationUrl,
+            Some(appConfig.leaveThisServiceUrl),
+            None,
+            ReturnsViewModel(
+              Seq(
+                Return.fromPeriod(period, Overdue, inProgress = false, isOldest = true)
+              )
+            )(messages(application))
+          )(request, messages(application)).toString
+        }
+      }
+
+      "when there is 2 returns overdue" in {
+        val firstPeriod = Period(LocalDate.now.minusYears(1).getYear, Month.JANUARY)
+        val secondPeriod = Period(LocalDate.now.minusYears(1).getYear, Month.FEBRUARY)
+
+        val registrationWrapper: RegistrationWrapper = arbitrary[RegistrationWrapper].sample.value
+
+        val registrationWrapperEmptyExclusions: RegistrationWrapper =
+          registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
+
+        when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
+          Future.successful(
+            Right(CurrentReturns(
+              Seq(
+                Return.fromPeriod(firstPeriod, Overdue, inProgress = false, isOldest = true),
+                Return.fromPeriod(secondPeriod, Overdue, inProgress = false, isOldest = false)
+              )
+            ))
+          )
+
+        val paymentsService = mock[PaymentsService]
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWrapperEmptyExclusions)
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[PaymentsService].toInstance(paymentsService)
+          )
+          .build()
+
+
+        val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty)(messages(application))
+        when(paymentsService.prepareFinancialData()(any(), any())) thenReturn
+          Future.successful(PrepareData(List.empty, List.empty, 0, 0, iossNumber))
+
+        running(application) {
+
+          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad(waypoints).url)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[YourAccountView]
+          val appConfig = application.injector.instanceOf[FrontendAppConfig]
+
+          status(result) mustBe OK
+          contentAsString(result) mustBe view(
+            registrationWrapper.vatInfo.getName,
+            iossNumber,
+            paymentsViewModel,
+            appConfig.amendRegistrationUrl,
+            Some(appConfig.leaveThisServiceUrl),
+            None,
+            ReturnsViewModel(
+              Seq(
+                Return.fromPeriod(firstPeriod, Overdue, inProgress = false, isOldest = true),
+                Return.fromPeriod(secondPeriod, Overdue, inProgress = false, isOldest = false),
+              )
+            )(messages(application))
+          )(request, messages(application)).toString
+        }
+      }
+
+      "when there is multiple returns overdue and one due" in {
+        val firstPeriod = Period(LocalDate.now.minusYears(1).getYear, Month.JANUARY)
+        val secondPeriod = Period(LocalDate.now.minusYears(1).getYear, Month.FEBRUARY)
+        val thirdPeriod = Period(LocalDate.now.minusYears(1).getYear, Month.MARCH)
+
+        val registrationWrapper: RegistrationWrapper = arbitrary[RegistrationWrapper].sample.value
+
+        val registrationWrapperEmptyExclusions: RegistrationWrapper =
+          registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
+
+        when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
+          Future.successful(
+            Right(CurrentReturns(
+              Seq(
+                Return.fromPeriod(firstPeriod, Overdue, inProgress = false, isOldest = true),
+                Return.fromPeriod(secondPeriod, Overdue, inProgress = false, isOldest = false),
+                Return.fromPeriod(thirdPeriod, Due, inProgress = false, isOldest = false)
+              )
+            ))
+          )
+
+        val paymentsService = mock[PaymentsService]
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWrapperEmptyExclusions)
+          .overrides(
+            bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+            bind[PaymentsService].toInstance(paymentsService)
+          )
+          .build()
+
+
+        val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty)(messages(application))
+        when(paymentsService.prepareFinancialData()(any(), any())) thenReturn
+          Future.successful(PrepareData(List.empty, List.empty, 0, 0, iossNumber))
+
+        running(application) {
+
+          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad(waypoints).url)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[YourAccountView]
+          val appConfig = application.injector.instanceOf[FrontendAppConfig]
+
+          status(result) mustBe OK
+          contentAsString(result) mustBe view(
+            registrationWrapper.vatInfo.getName,
+            iossNumber,
+            paymentsViewModel,
+            appConfig.amendRegistrationUrl,
+            Some(appConfig.leaveThisServiceUrl),
+            None,
+            ReturnsViewModel(
+              Seq(
+                Return.fromPeriod(firstPeriod, Overdue, inProgress = false, isOldest = true),
+                Return.fromPeriod(secondPeriod, Overdue, inProgress = false, isOldest = false),
+                Return.fromPeriod(thirdPeriod, Due, inProgress = false, isOldest = false)
+              )
+            )(messages(application))
+          )(request, messages(application)).toString
+        }
+      }
+
     }
   }
 }

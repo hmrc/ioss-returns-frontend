@@ -40,14 +40,22 @@ error.summary.title = There is a problem
 yourAccount.title = Your Import One Stop Shop Account
 yourAccount.heading = Your Import One Stop Shop Account
 yourAccount.iossNumber = VAT registration number: {0}
+yourAccount.paragraph = You can correct a previous return when you submit your next one.
 yourAccount.yourReturns.heading = Your returns
 yourAccount.yourReturns.startReturn = Start your {0} return
+yourAccount.yourReturns.dueReturn.startReturn = Start your return
+yourAccount.yourReturns.returnDue = Your {0} return is due by {1}.
+yourAccount.yourReturns.returnsOverdue.singular = You have an overdue return.
+yourAccount.yourReturns.returnsOverdue = You have an overdue return.
+yourAccount.yourReturns.returnsOverdue.multiple =  You have {0} overdue returns.
+yourAccount.yourReturns.onlyReturnsOverdue = You have {0} overdue returns.
 yourAccount.payment.heading = Payments
 yourAccount.details.heading = Details
 yourAccount.details.viewSubmittedReturns = View submitted returns
 yourAccount.details.changeYourRegistration = Change your registration
 yourAccount.details.cancelYourRequestToLeave = Cancel your request to leave
 yourAccount.details.leaveThisService = Leave this service
+yourAccount.details.previousReturn = View submitted returns
 yourAccount.payment.heading = Payments
 yourAccount.payment.dueHeading = Due Payments
 yourAccount.payment.overdueHeading = Overdue Payments
@@ -58,6 +66,7 @@ yourAccount.payment.dueAmountOwed = You owe <span class="govuk-body govuk-!-font
 yourAccount.payment.dueAmountMaybeOwed = You may still owe VAT for {0}. You must pay this by {1}.
 yourAccount.payment.overdueAmountOwed = You owe <span class="govuk-body govuk-!-font-weight-bold">{0}</span> for {1}, which was due by {2}.
 yourAccount.payment.overdueAmountMaybeOwed = You may still owe VAT for {0}, which was due by {1}.
+yourAccount.nextPeriod = You can complete your next return from <span class="govuk-body govuk-!-font-weight-bold">{1}</span>.
 
 checkYourAnswers.title = Check Your Answers
 checkYourAnswers.heading = Check Your Answers

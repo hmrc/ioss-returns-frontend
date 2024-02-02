@@ -17,6 +17,7 @@
 @import controllers.previousReturns.{routes => prevRoutes}
 @import pages.EmptyWaypoints
 @import viewmodels._
+@import viewmodels.yourAccount._
 
 @import java.time.Month
 
@@ -31,7 +32,8 @@
         paymentsViewModel: PaymentsViewModel,
         changeYourRegistrationUrl: String,
         leaveThisServiceUrl: Option[String],
-        cancelYourRequestToLeaveUrl: Option[String]
+        cancelYourRequestToLeaveUrl: Option[String],
+  returnsViewModel: ReturnsViewModel
 )(implicit request: Request[_], messages: Messages)
 
 @layout(
@@ -46,15 +48,33 @@
         <span class="govuk-caption-m">@messages("yourAccount.iossNumber", iossNumber)</span>
     </h1>
 
-    <div class="flex-container govuk-grid-row">
-        <div class="tile tile-no-border">
-            <div id="next-return" class="tile-body">
-                <h2 class="govuk-heading-m">@messages("yourAccount.yourReturns.heading")</h2>
-                <p class="govuk-body">
-                    <a class="govuk-link" href="@routes.StartReturnController.onPageLoad(period = Period(2023, Month.OCTOBER))" id="start-return">
-                    @messages("yourAccount.yourReturns.startReturn", "October 2023")
-                    </a>
-                </p>
+    <p class="govuk-body">@messages("yourAccount.paragraph")</p>
+
+  <div class="flex-container govuk-grid-row">
+    <div class="tile tile-no-border">
+      <div id="next-return" class="tile-body">
+        <h2 class="govuk-heading-m">@messages("yourAccount.yourReturns.heading")</h2>
+          @for(paragraph <- returnsViewModel.contents) {
+            @paragraph match {
+                case simple: ParagraphSimple => {
+                    <p class="govuk-body">
+                        @Html(simple.content)
+                    </p>
+                }
+                case pWithId: ParagraphWithId => {
+                    <p class="govuk-body" id="@pWithId.id">
+                         @Html(pWithId.content)
+                    </p>
+                }
+            }
+          }
+          @for(link <- returnsViewModel.linkToStart) {
+            <p class="govuk-body">
+                <a class="govuk-link" href="@{link.url}" id="@{link.id}">
+                    @link.linkText
+                </a>
+            </p>
+          }
             </div>
         </div>
 
