@@ -233,7 +233,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
       }
     }
 
-    "must return OK and the correct view with no saved answers" - {
+    "must return OK and the correct view" - {
 
       "when there are no returns due" in {
         val registrationWrapper: RegistrationWrapper = arbitrary[RegistrationWrapper].sample.value

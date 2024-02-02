@@ -118,7 +118,7 @@
 
  @if(missingData.isEmpty) {
   @formHelper(action = routes.CheckYourAnswersController.onSubmit(waypoints, false)) {
-   @button(messages("site.continue", waypoints, routes.CheckYourAnswersController.onPageLoad(waypoints).url))
+   @button(messages("site.submit", waypoints, routes.CheckYourAnswersController.onPageLoad(waypoints).url))
   }
  } else {
   <h2 class="govuk-heading-m push--top">@messages("error.missing_answers_header")</h2>
