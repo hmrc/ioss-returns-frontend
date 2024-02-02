@@ -22,6 +22,7 @@ import models.etmp._
 import models.financialdata.Charge
 import models.payments.{Payment, PaymentStatus}
 import org.scalacheck.Arbitrary.arbitrary
+import org.scalacheck.Gen.option
 import org.scalacheck.{Arbitrary, Gen}
 import queries.{OptionalSalesAtVatRate, SalesToCountryWithOptionalSales, VatRateWithOptionalSalesFromCountry}
 
@@ -478,4 +479,10 @@ trait ModelGenerators {
       )
     }
   }
+
+  implicit lazy val arbitrarySchemeType: Arbitrary[SchemeType] =
+    Arbitrary {
+      Gen.oneOf(SchemeType.values)
+    }
+
 }

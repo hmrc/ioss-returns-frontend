@@ -31,6 +31,7 @@
         iossNumber: String,
         paymentsViewModel: PaymentsViewModel,
         changeYourRegistrationUrl: String,
+        rejoinRegistrationUrl: Option[String],
         leaveThisServiceUrl: Option[String],
         cancelYourRequestToLeaveUrl: Option[String],
   returnsViewModel: ReturnsViewModel
@@ -119,6 +120,14 @@
                     @messages("yourAccount.details.changeYourRegistration")
                     </a>
                 </p>
+
+                @rejoinRegistrationUrl.map{ url =>
+                    <p class="govuk-body">
+                        <a class="govuk-link" href="@url" id="rejoin-scheme">
+                        @messages("yourAccount.details.rejoinThisService")
+                        </a>
+                    </p>
+                }
 
                 @leaveThisServiceUrl.map { url =>
                     <p class="govuk-body">

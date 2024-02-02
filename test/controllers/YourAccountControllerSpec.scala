@@ -38,7 +38,7 @@ import viewmodels.PaymentsViewModel
 import viewmodels.yourAccount.{CurrentReturns, Return, ReturnsViewModel}
 import views.html.YourAccountView
 
-import java.time.{LocalDate, Month}
+import java.time.{Clock, LocalDate, Month}
 import scala.concurrent.Future
 
 class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generators with BeforeAndAfterEach {
@@ -156,6 +156,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           iossNumber,
           paymentsViewModel,
           appConfig.amendRegistrationUrl,
+          None,
           Some(appConfig.leaveThisServiceUrl),
           None,
           ReturnsViewModel(
@@ -165,6 +166,85 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           )(messages(application))
         )(request, messages(application)).toString
       }
+    }
+
+    "must return OK with rejoinThisService link" in {
+      val registrationWrapperWithExclusion: RegistrationWrapper = createRegistrationWrapperWithExclusion(LocalDate.now())
+
+      when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
+        Future.successful(
+          Right(CurrentReturns(
+            Seq(Return(
+              nextPeriod,
+              nextPeriod.firstDay,
+              nextPeriod.lastDay,
+              nextPeriod.paymentDeadline,
+              SubmissionStatus.Next,
+              inProgress = false,
+              isOldest = false
+            ))
+          ))
+        )
+
+      val paymentsService = mock[PaymentsService]
+
+      val application = applicationBuilder(
+        userAnswers = Some(emptyUserAnswers),
+        registration = registrationWrapperWithExclusion,
+        clock = Some(Clock.systemUTC()))
+        .overrides(
+          bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+          bind[PaymentsService].toInstance(paymentsService)
+        )
+        .build()
+
+
+      val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty)(messages(application))
+      when(paymentsService.prepareFinancialData()(any(), any())) thenReturn
+        Future.successful(PrepareData(List.empty, List.empty, 0, 0, iossNumber))
+
+      running(application) {
+
+        val request = FakeRequest(GET, routes.YourAccountController.onPageLoad(waypoints).url)
+
+        val result = route(application, request).value
+
+        val view = application.injector.instanceOf[YourAccountView]
+        val appConfig = application.injector.instanceOf[FrontendAppConfig]
+
+        status(result) mustBe OK
+        contentAsString(result) mustBe view(
+          registrationWrapperWithExclusion.vatInfo.getName,
+          iossNumber,
+          paymentsViewModel,
+          appConfig.amendRegistrationUrl,
+          Some(appConfig.rejoinThisServiceUrl),
+          None,
+          None,
+          ReturnsViewModel(
+            Seq(
+              Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
+            )
+          )(messages(application))
+        )(request, messages(application)).toString
+      }
+    }
+
+    def createRegistrationWrapperWithExclusion(effectiveDate: LocalDate) = {
+      val registration = registrationWrapper.registration
+
+      registrationWrapper.copy(
+        registration = registration.copy(
+          exclusions = List(
+            EtmpExclusion(
+              exclusionReason = NoLongerSupplies,
+              effectiveDate = effectiveDate,
+              decisionDate = LocalDate.now(),
+              quarantine = false
+            )
+          )
+        )
+      )
     }
 
     "must return OK with cancelYourRequestToLeave link and without leaveThisService link when a trader is excluded" in {
@@ -222,6 +302,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           iossNumber,
           paymentsViewModel,
           appConfig.amendRegistrationUrl,
+          None,
           None,
           Some(appConfig.cancelYourRequestToLeaveUrl),
           ReturnsViewModel(
@@ -285,6 +366,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             iossNumber,
             paymentsViewModel,
             appConfig.amendRegistrationUrl,
+            None,
             Some(appConfig.leaveThisServiceUrl),
             None,
             ReturnsViewModel(
@@ -339,6 +421,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             iossNumber,
             paymentsViewModel,
             appConfig.amendRegistrationUrl,
+            None,
             Some(appConfig.leaveThisServiceUrl),
             None,
             ReturnsViewModel(
@@ -399,6 +482,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             iossNumber,
             paymentsViewModel,
             appConfig.amendRegistrationUrl,
+            None,
             Some(appConfig.leaveThisServiceUrl),
             None,
             ReturnsViewModel(
@@ -458,6 +542,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             iossNumber,
             paymentsViewModel,
             appConfig.amendRegistrationUrl,
+            None,
             Some(appConfig.leaveThisServiceUrl),
             None,
             ReturnsViewModel(
@@ -517,6 +602,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             iossNumber,
             paymentsViewModel,
             appConfig.amendRegistrationUrl,
+            None,
             Some(appConfig.leaveThisServiceUrl),
             None,
             ReturnsViewModel(
@@ -579,6 +665,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             iossNumber,
             paymentsViewModel,
             appConfig.amendRegistrationUrl,
+            None,
             Some(appConfig.leaveThisServiceUrl),
             None,
             ReturnsViewModel(
@@ -591,7 +678,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           )(request, messages(application)).toString
         }
       }
-
     }
   }
 }

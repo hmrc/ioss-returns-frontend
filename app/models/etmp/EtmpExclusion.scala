@@ -28,7 +28,6 @@ case class EtmpExclusion(
                           quarantine: Boolean
                         )
 
-
 object EtmpExclusion {
 
   implicit val format: OFormat[EtmpExclusion] = Json.format[EtmpExclusion]

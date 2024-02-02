@@ -88,9 +88,11 @@ class YourAccountController @Inject()(
 
     val lastExclusion: Option[EtmpExclusion] = request.registrationWrapper.registration.exclusions.maxByOption(_.effectiveDate)
 
+    val now: LocalDate = LocalDate.now(clock)
+
     val cancelYourRequestToLeaveUrl = lastExclusion match {
       case Some(exclusion) if Seq(NoLongerSupplies, VoluntarilyLeaves, TransferringMSID).contains(exclusion.exclusionReason) &&
-        LocalDate.now(clock).isBefore(exclusion.effectiveDate) => Some(appConfig.cancelYourRequestToLeaveUrl)
+          now.isBefore(exclusion.effectiveDate) => Some(appConfig.cancelYourRequestToLeaveUrl)
       case _ => None
     }
 
@@ -100,11 +102,18 @@ class YourAccountController @Inject()(
       None
     }
 
+    val rejoinUrl = if(request.registrationWrapper.registration.canRejoinRegistration(now)){
+      Some(appConfig.rejoinThisServiceUrl)
+    }else {
+      None
+    }
+
     Ok(view(
       request.registrationWrapper.vatInfo.getName,
       request.iossNumber,
       PaymentsViewModel(currentPayments.duePayments, currentPayments.overduePayments),
       appConfig.amendRegistrationUrl,
+      rejoinUrl,
       leaveThisServiceUrl,
       cancelYourRequestToLeaveUrl,
       ReturnsViewModel(
@@ -134,11 +143,20 @@ class YourAccountController @Inject()(
       None
     }
 
+    val now: LocalDate = LocalDate.now(clock)
+    
+    val rejoinUrl = if(request.registrationWrapper.registration.canRejoinRegistration(now)){
+      Some(appConfig.rejoinThisServiceUrl)
+    }else {
+      None
+    }
+
     Ok(view(
       request.registrationWrapper.vatInfo.getName,
       request.iossNumber,
       PaymentsViewModel(Seq.empty, Seq.empty),
       appConfig.amendRegistrationUrl,
+      rejoinUrl,
       leaveThisServiceUrl,
       cancelYourRequestToLeaveUrl,
       ReturnsViewModel(
@@ -148,5 +166,6 @@ class YourAccountController @Inject()(
       )
     )).toFuture
   }
+
 
 }
