@@ -77,7 +77,7 @@ yourAccount.leftService = You have left this service.
 yourAccount.leftService.outstanding = You have left this service. You must complete and pay any outstanding returns.
 
 yourAccount.removedFromService = We''ve removed you from this service.
-yourAccount.removedFromService.outstanding = We've removed you from this service, but you must complete and pay your final return.
+yourAccount.removedFromService.outstanding = We''ve removed you from this service, but you must complete and pay your final return.
 
 yourAccount.quarantined = We''ve removed you from this service. You cannot rejoin until {0}.
 yourAccount.quarantined.outstanding = We''ve removed you from this service, but you must complete and pay your final return. You cannot rejoin until {0}.
