@@ -26,8 +26,6 @@ import java.time.LocalDate
 
 class EtmpDisplayRegistrationSpec extends SpecBase with TableDrivenPropertyChecks {
 
-
-
   private val tradingNames: Seq[EtmpTradingName] = etmpDisplayRegistration.tradingNames
   private val schemeDetails = etmpDisplayRegistration.schemeDetails
   private val bankDetails: EtmpBankDetails = etmpDisplayRegistration.bankDetails
