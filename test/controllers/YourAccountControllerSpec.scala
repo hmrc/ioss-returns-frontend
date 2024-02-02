@@ -159,6 +159,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           None,
           Some(appConfig.leaveThisServiceUrl),
           None,
+          exclusionsEnabled = true,
+          maybeExclusion = None,
+          hasSubmittedFinalReturn = false,
           ReturnsViewModel(
             Seq(
               Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
@@ -275,6 +278,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             ))
           ))
         )
+      val maybeExclusion: Option[EtmpExclusion] = registrationWrapper.registration.exclusions.lastOption
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWrapperEmptyExclusions)
         .overrides(
@@ -305,6 +309,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           None,
           None,
           Some(appConfig.cancelYourRequestToLeaveUrl),
+          exclusionsEnabled = true,
+          maybeExclusion = Some(exclusion),
+          hasSubmittedFinalReturn = false,
           ReturnsViewModel(
             Seq(
               Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
@@ -650,33 +657,34 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(paymentsService.prepareFinancialData()(any(), any())) thenReturn
           Future.successful(PrepareData(List.empty, List.empty, 0, 0, iossNumber))
 
-        running(application) {
+      running(application) {
 
-          val request = FakeRequest(GET, routes.YourAccountController.onPageLoad(waypoints).url)
+        val request = FakeRequest(GET, routes.YourAccountController.onPageLoad(waypoints).url)
 
-          val result = route(application, request).value
+        val result = route(application, request).value
 
-          val view = application.injector.instanceOf[YourAccountView]
-          val appConfig = application.injector.instanceOf[FrontendAppConfig]
+        val view = application.injector.instanceOf[YourAccountView]
+        val appConfig = application.injector.instanceOf[FrontendAppConfig]
 
-          status(result) mustBe OK
-          contentAsString(result) mustBe view(
-            registrationWrapper.vatInfo.getName,
-            iossNumber,
-            paymentsViewModel,
-            appConfig.amendRegistrationUrl,
-            None,
-            Some(appConfig.leaveThisServiceUrl),
-            None,
-            ReturnsViewModel(
-              Seq(
-                Return.fromPeriod(firstPeriod, Overdue, inProgress = false, isOldest = true),
-                Return.fromPeriod(secondPeriod, Overdue, inProgress = false, isOldest = false),
-                Return.fromPeriod(thirdPeriod, Due, inProgress = false, isOldest = false)
-              )
-            )(messages(application))
-          )(request, messages(application)).toString
-        }
+        status(result) mustBe OK
+        contentAsString(result) mustBe view(
+          registrationWrapper.vatInfo.getName,
+          iossNumber,
+          paymentsViewModel,
+          appConfig.amendRegistrationUrl,
+          None,
+          Some(appConfig.cancelYourRequestToLeaveUrl),
+          exclusionsEnabled = true,
+          maybeExclusion = Some(exclusion),
+          hasSubmittedFinalReturn = false,
+          ReturnsViewModel(
+            Seq(
+              Return.fromPeriod(firstPeriod, Overdue, inProgress = false, isOldest = true),
+              Return.fromPeriod(secondPeriod, Overdue, inProgress = false, isOldest = false),
+              Return.fromPeriod(thirdPeriod, Due, inProgress = false, isOldest = false)
+            )
+          )(messages(application))
+        )(request, messages(application)).toString
       }
     }
   }
