@@ -138,15 +138,11 @@
             }
         }
 
-        @if(exclusionsEnabled) {
-            @if(maybeExclusion.isDefined) {
-                @if(!hasSubmittedFinalReturn) {
-                    <p class="govuk-body">@messages("yourAccount.previousReturn.correct")</p>
-                } else {
-                    <p class="govuk-body">@messages("yourAccount.requestLeaveService.p1")</p>
-                }
+        @if(maybeExclusion.isDefined) {
+            @if(hasSubmittedFinalReturn) {
+                <p class="govuk-body">@messages("yourAccount.previousReturn.correct")</p>
             } else {
-                <p class="govuk-body">@messages("yourAccount.paragraph")</p>
+                <p class="govuk-body">@messages("yourAccount.requestLeaveService.p1")</p>
             }
         } else {
             <p class="govuk-body">@messages("yourAccount.paragraph")</p>
@@ -160,27 +156,28 @@
                 <h2 class="govuk-heading-m">@messages("yourAccount.yourReturns.heading")</h2>
                 @if(exclusionsEnabled && !hasSubmittedFinalReturn) {
                     <p class="govuk-body">@messages("yourAccount.finalReturn.complete")</p>
-                }
-                @for(paragraph <- returnsViewModel.contents) {
-                    @paragraph match {
-                        case simple: ParagraphSimple => {
-                            <p class="govuk-body">
-                                @Html(simple.content)
-                            </p>
-                        }
-                        case pWithId: ParagraphWithId => {
-                            <p class="govuk-body" id="@pWithId.id">
-                                @Html(pWithId.content)
-                            </p>
+                } else {
+                    @for(paragraph <- returnsViewModel.contents) {
+                        @paragraph match {
+                            case simple: ParagraphSimple => {
+                                <p class="govuk-body">
+                                    @Html(simple.content)
+                                </p>
+                            }
+                            case pWithId: ParagraphWithId => {
+                                <p class="govuk-body" id="@pWithId.id">
+                                    @Html(pWithId.content)
+                                </p>
+                            }
                         }
                     }
-                }
-                @for(link <- returnsViewModel.linkToStart) {
-                <p class="govuk-body">
-                    <a class="govuk-link" href="@{link.url}" id="@{link.id}">
-                        @link.linkText
-                    </a>
-                </p>
+                    @for(link <- returnsViewModel.linkToStart) {
+                    <p class="govuk-body">
+                        <a class="govuk-link" href="@{link.url}" id="@{link.id}">
+                            @link.linkText
+                        </a>
+                    </p>
+                    }
                 }
             </div>
         </div>

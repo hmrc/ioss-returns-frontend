@@ -18,7 +18,7 @@ package controllers
 
 import base.SpecBase
 import config.FrontendAppConfig
-import connectors.ReturnStatusConnector
+import connectors.{FinancialDataConnector, ReturnStatusConnector}
 import generators.Generators
 import models.SubmissionStatus._
 import models.{Period, RegistrationWrapper, SubmissionStatus}
@@ -70,9 +70,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           List(paymentOverdue1, paymentOverdue2).map(_.amountOwed).sum,
           iossNumber)
         val registrationWrapper: RegistrationWrapper = arbitrary[RegistrationWrapper].sample.value
-        val paymentsService = mock[PaymentsService]
-        when(paymentsService.prepareFinancialData()(any(), any())) thenReturn
-          Future.successful(prepareData)
+        val financialDataConnector = mock[FinancialDataConnector]
+        when(financialDataConnector.prepareFinancialData()(any())) thenReturn
+          Future.successful(Right(prepareData))
 
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
@@ -85,14 +85,14 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 SubmissionStatus.Next,
                 inProgress = false,
                 isOldest = false
-              ))
-            ))
+              )), finalReturnsCompleted = false
+            )),
           )
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWrapper)
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
-            bind[PaymentsService].to(paymentsService)
+            bind[FinancialDataConnector].to(financialDataConnector)
           )
           .build()
 
@@ -123,23 +123,23 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               SubmissionStatus.Next,
               inProgress = false,
               isOldest = false
-            ))
+            )), finalReturnsCompleted = false
           ))
         )
 
-      val paymentsService = mock[PaymentsService]
+      val financialDataConnector = mock[FinancialDataConnector]
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWrapperEmptyExclusions)
         .overrides(
           bind[ReturnStatusConnector].toInstance(returnStatusConnector),
-          bind[PaymentsService].toInstance(paymentsService)
+          bind[FinancialDataConnector].toInstance(financialDataConnector)
         )
         .build()
 
 
       val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty)(messages(application))
-      when(paymentsService.prepareFinancialData()(any(), any())) thenReturn
-        Future.successful(PrepareData(List.empty, List.empty, 0, 0, iossNumber))
+      when(financialDataConnector.prepareFinancialData()(any())) thenReturn
+        Future.successful(Right(PrepareData(List.empty, List.empty, 0, 0, iossNumber)))
 
       running(application) {
 
@@ -262,7 +262,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
       val registrationWrapperEmptyExclusions: RegistrationWrapper =
         registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq(exclusion)))
 
-      val paymentsService = mock[PaymentsService]
+      val financialDataConnector = mock[FinancialDataConnector]
 
       when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
         Future.successful(
@@ -275,7 +275,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               SubmissionStatus.Next,
               inProgress = false,
               isOldest = false
-            ))
+            )), finalReturnsCompleted = false
           ))
         )
       val maybeExclusion: Option[EtmpExclusion] = registrationWrapper.registration.exclusions.lastOption
@@ -283,13 +283,13 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWrapperEmptyExclusions)
         .overrides(
           bind[ReturnStatusConnector].toInstance(returnStatusConnector),
-          bind[PaymentsService].toInstance(paymentsService)
+          bind[FinancialDataConnector].toInstance(financialDataConnector)
         )
         .build()
 
       val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty)(messages(application))
-      when(paymentsService.prepareFinancialData()(any(), any())) thenReturn
-        Future.successful(PrepareData(List.empty, List.empty, 0, 0, iossNumber))
+      when(financialDataConnector.prepareFinancialData()(any())) thenReturn
+        Future.successful(Right(PrepareData(List.empty, List.empty, 0, 0, iossNumber)))
 
       running(application) {
 
@@ -340,23 +340,23 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 SubmissionStatus.Next,
                 inProgress = false,
                 isOldest = false
-              ))
+              )), finalReturnsCompleted = false
             ))
           )
 
-        val paymentsService = mock[PaymentsService]
+        val financialDataConnector = mock[FinancialDataConnector]
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWrapperEmptyExclusions)
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
-            bind[PaymentsService].toInstance(paymentsService)
+            bind[FinancialDataConnector].toInstance(financialDataConnector)
           )
           .build()
 
 
         val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty)(messages(application))
-        when(paymentsService.prepareFinancialData()(any(), any())) thenReturn
-          Future.successful(PrepareData(List.empty, List.empty, 0, 0, iossNumber))
+        when(financialDataConnector.prepareFinancialData()(any())) thenReturn
+          Future.successful(Right(PrepareData(List.empty, List.empty, 0, 0, iossNumber)))
 
         running(application) {
 
@@ -398,23 +398,23 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           Future.successful(
             Right(CurrentReturns(
               Seq(Return.fromPeriod(period, Due, inProgress = false, isOldest = false
-              ))
+              )), finalReturnsCompleted = false
             ))
           )
 
-        val paymentsService = mock[PaymentsService]
+        val financialDataConnector = mock[FinancialDataConnector]
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWrapperEmptyExclusions)
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
-            bind[PaymentsService].toInstance(paymentsService)
+            bind[FinancialDataConnector].toInstance(financialDataConnector)
           )
           .build()
 
 
         val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty)(messages(application))
-        when(paymentsService.prepareFinancialData()(any(), any())) thenReturn
-          Future.successful(PrepareData(List.empty, List.empty, 0, 0, iossNumber))
+        when(financialDataConnector.prepareFinancialData()(any())) thenReturn
+          Future.successful(Right(PrepareData(List.empty, List.empty, 0, 0, iossNumber)))
 
         running(application) {
 
@@ -462,23 +462,23 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               Seq(
                 Return.fromPeriod(secondPeriod, Due, inProgress = false, isOldest = false),
                 Return.fromPeriod(firstPeriod, Overdue, inProgress = false, isOldest = true),
-              )
+              ), finalReturnsCompleted = false
             ))
           )
 
-        val paymentsService = mock[PaymentsService]
+        val financialDataConnector = mock[FinancialDataConnector]
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWrapperEmptyExclusions)
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
-            bind[PaymentsService].toInstance(paymentsService)
+            bind[FinancialDataConnector].toInstance(financialDataConnector)
           )
           .build()
 
 
         val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty)(messages(application))
-        when(paymentsService.prepareFinancialData()(any(), any())) thenReturn
-          Future.successful(PrepareData(List.empty, List.empty, 0, 0, iossNumber))
+        when(financialDataConnector.prepareFinancialData()(any())) thenReturn
+          Future.successful(Right(PrepareData(List.empty, List.empty, 0, 0, iossNumber)))
 
         running(application) {
 
@@ -525,23 +525,23 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             Right(CurrentReturns(
               Seq(
                 Return.fromPeriod(period, Overdue, inProgress = false, isOldest = true),
-              )
+              ), finalReturnsCompleted = false
             ))
           )
 
-        val paymentsService = mock[PaymentsService]
+        val financialDataConnector = mock[FinancialDataConnector]
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWrapperEmptyExclusions)
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
-            bind[PaymentsService].toInstance(paymentsService)
+            bind[FinancialDataConnector].toInstance(financialDataConnector)
           )
           .build()
 
 
         val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty)(messages(application))
-        when(paymentsService.prepareFinancialData()(any(), any())) thenReturn
-          Future.successful(PrepareData(List.empty, List.empty, 0, 0, iossNumber))
+        when(financialDataConnector.prepareFinancialData()(any())) thenReturn
+          Future.successful(Right(PrepareData(List.empty, List.empty, 0, 0, iossNumber)))
 
         running(application) {
 
@@ -588,23 +588,23 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               Seq(
                 Return.fromPeriod(firstPeriod, Overdue, inProgress = false, isOldest = true),
                 Return.fromPeriod(secondPeriod, Overdue, inProgress = false, isOldest = false)
-              )
+              ), finalReturnsCompleted = false
             ))
           )
 
-        val paymentsService = mock[PaymentsService]
+        val financialDataConnector = mock[FinancialDataConnector]
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWrapperEmptyExclusions)
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
-            bind[PaymentsService].toInstance(paymentsService)
+            bind[FinancialDataConnector].toInstance(financialDataConnector)
           )
           .build()
 
 
         val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty)(messages(application))
-        when(paymentsService.prepareFinancialData()(any(), any())) thenReturn
-          Future.successful(PrepareData(List.empty, List.empty, 0, 0, iossNumber))
+        when(financialDataConnector.prepareFinancialData()(any())) thenReturn
+          Future.successful(Right(PrepareData(List.empty, List.empty, 0, 0, iossNumber)))
 
         running(application) {
 
@@ -654,23 +654,23 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 Return.fromPeriod(firstPeriod, Overdue, inProgress = false, isOldest = true),
                 Return.fromPeriod(secondPeriod, Overdue, inProgress = false, isOldest = false),
                 Return.fromPeriod(thirdPeriod, Due, inProgress = false, isOldest = false)
-              )
+              ), finalReturnsCompleted = false
             ))
           )
 
-        val paymentsService = mock[PaymentsService]
+        val financialDataConnector = mock[FinancialDataConnector]
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWrapperEmptyExclusions)
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
-            bind[PaymentsService].toInstance(paymentsService)
+            bind[FinancialDataConnector].toInstance(financialDataConnector)
           )
           .build()
 
 
         val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty)(messages(application))
-        when(paymentsService.prepareFinancialData()(any(), any())) thenReturn
-          Future.successful(PrepareData(List.empty, List.empty, 0, 0, iossNumber))
+        when(financialDataConnector.prepareFinancialData()(any())) thenReturn
+          Future.successful(Right(PrepareData(List.empty, List.empty, 0, 0, iossNumber)))
 
         running(application) {
 
