@@ -281,7 +281,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             )), finalReturnsCompleted = false
           ))
         )
-      val maybeExclusion: Option[EtmpExclusion] = registrationWrapper.registration.exclusions.lastOption
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWrapperEmptyExclusions)
         .overrides(

@@ -40,7 +40,7 @@ class PaymentsService @Inject()(
     }
   }
 
-  def makePayment(iossNumber: String, period: Period, amountOwed: BigDecimal)(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[ReturnPaymentResponse] = {
+  def makePayment(iossNumber: String, period: Period, amountOwed: BigDecimal)(implicit hc: HeaderCarrier): Future[ReturnPaymentResponse] = {
     val paymentRequest =
       PaymentRequest(
         iossNumber,

@@ -54,8 +54,6 @@ class CorrectionReturnPeriodController @Inject()(
       val selectedYear = request.userAnswers.get(CorrectionReturnYearPage(index)).getOrElse(0)
 
       fulfilledObligations.map { obligations =>
-        val periodKeys = obligations.map(obligation => ConvertPeriodKey.yearFromEtmpPeriodKey(obligation.periodKey)).distinct
-
         val obligationYears = obligations.filter(obligation => ConvertPeriodKey.yearFromEtmpPeriodKey(obligation.periodKey) == selectedYear)
 
         val correctionPeriod = obligationYears.map(obligation => ConvertPeriodKey.periodkeyToPeriod(obligation.periodKey))

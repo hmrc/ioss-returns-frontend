@@ -18,13 +18,12 @@ package viewmodels.checkAnswers.corrections
 
 import models.{Index, UserAnswers}
 import pages.Waypoints
-import play.api.i18n.Messages
 import queries.DeriveCompletedCorrectionPeriods
 import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.ListItem
 
 object VatPeriodCorrectionsListSummary {
 
-  def getCompletedRows(waypoints: Waypoints, answers: UserAnswers)(implicit messages: Messages): Seq[ListItem] = {
+  def getCompletedRows(waypoints: Waypoints, answers: UserAnswers): Seq[ListItem] = {
     answers
       .get(DeriveCompletedCorrectionPeriods).getOrElse(List.empty).sortBy(_.firstDay.toEpochDay).zipWithIndex.map{
       case (correctionPeriod, index) =>

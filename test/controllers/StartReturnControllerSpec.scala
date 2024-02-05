@@ -28,7 +28,6 @@ import play.api.data.Form
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import views.html.StartReturnView
-import scala.concurrent.ExecutionContext.Implicits.global
 
 class StartReturnControllerSpec extends SpecBase with MockitoSugar with ScalaCheckPropertyChecks {
 

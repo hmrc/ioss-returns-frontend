@@ -38,7 +38,7 @@ class PaymentControllerSpec extends SpecBase with MockitoSugar {
 
     "should make request to pay-api successfully" in {
 
-      when(mockPaymentService.makePayment(any(), any(), any())(any(), any())) thenReturn Right(paymentResponse).toFuture
+      when(mockPaymentService.makePayment(any(), any(), any())(any())) thenReturn Right(paymentResponse).toFuture
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(bind[PaymentsService].toInstance(mockPaymentService))
@@ -56,7 +56,7 @@ class PaymentControllerSpec extends SpecBase with MockitoSugar {
 
     "should handle a failed request to pay-api" in {
 
-      when(mockPaymentService.makePayment(any(), any(), any())(any(), any())) thenReturn Left(InvalidJson).toFuture
+      when(mockPaymentService.makePayment(any(), any(), any())(any())) thenReturn Left(InvalidJson).toFuture
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(bind[PaymentsService].toInstance(mockPaymentService))
