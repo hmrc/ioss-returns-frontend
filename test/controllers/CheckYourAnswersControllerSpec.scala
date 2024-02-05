@@ -17,16 +17,19 @@
 package controllers
 
 import base.SpecBase
+import models.audit.{ReturnsAuditModel, SubmissionResult}
+import models.requests.DataRequest
 import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito
-import org.mockito.Mockito.when
+import org.mockito.Mockito.{times, verify, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import pages.corrections.CorrectPreviousReturnPage
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import services.{CoreVatReturnService, SalesAtVatRateService}
+import services.{AuditService, CoreVatReturnService, SalesAtVatRateService}
 import viewmodels.govuk.SummaryListFluency
 
 import scala.concurrent.Future
@@ -35,10 +38,12 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
   private val salesAtVatRateService = mock[SalesAtVatRateService]
   private val mockCoreVatReturnService = mock[CoreVatReturnService]
+  private val mockAuditService = mock[AuditService]
 
   override def beforeEach(): Unit = {
     Mockito.reset(salesAtVatRateService)
     Mockito.reset(mockCoreVatReturnService)
+    Mockito.reset(mockAuditService)
     super.beforeEach()
   }
 
@@ -168,8 +173,10 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         when(mockCoreVatReturnService.submitCoreVatReturn(any())(any())) thenReturn
           Future.successful(remainingAmount)
 
-        val application = applicationBuilder(userAnswers = Some(completeUserAnswers))
+        val userAnswers = completeUserAnswers
+        val application = applicationBuilder(userAnswers = Some(userAnswers))
           .overrides(bind[CoreVatReturnService].toInstance(mockCoreVatReturnService))
+          .overrides(bind[AuditService].toInstance(mockAuditService))
           .build()
 
         running(application) {
@@ -177,8 +184,14 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
           val result = route(application, request).value
 
+          implicit val dataRequest: DataRequest[_] =
+            DataRequest(request, testCredentials, vrn, userAnswersId, registrationWrapper, userAnswers)
+
+          val expectedAuditEvent = ReturnsAuditModel.build(userAnswers, SubmissionResult.Success)
+
           status(result) mustEqual SEE_OTHER
           redirectLocation(result).value mustEqual controllers.submissionResults.routes.SuccessfullySubmittedController.onPageLoad().url
+          verify(mockAuditService, times(1)).audit(eqTo(expectedAuditEvent))(any(), any())
         }
       }
 
@@ -186,8 +199,10 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         when(mockCoreVatReturnService.submitCoreVatReturn(any())(any())) thenReturn
           Future.failed(new RuntimeException("Failed submission"))
 
-        val application = applicationBuilder(userAnswers = Some(completeUserAnswers))
+        val userAnswers = completeUserAnswers
+        val application = applicationBuilder(userAnswers = Some(userAnswers))
           .overrides(bind[CoreVatReturnService].toInstance(mockCoreVatReturnService))
+          .overrides(bind[AuditService].toInstance(mockAuditService))
           .build()
 
         running(application) {
@@ -195,8 +210,14 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
           val result = route(application, request).value
 
+          implicit val dataRequest: DataRequest[_] =
+            DataRequest(request, testCredentials, vrn, userAnswersId, registrationWrapper, userAnswers)
+
+          val expectedAuditEvent = ReturnsAuditModel.build(userAnswers, SubmissionResult.Failure)
+
           status(result) mustEqual SEE_OTHER
           redirectLocation(result).value mustEqual controllers.submissionResults.routes.ReturnSubmissionFailureController.onPageLoad().url
+          verify(mockAuditService, times(1)).audit(eqTo(expectedAuditEvent))(any(), any())
         }
       }
     }

@@ -22,5 +22,4 @@ trait JsonAuditModel {
   val auditType: String
   val transactionName: String
   val detail: JsValue
-
 }
