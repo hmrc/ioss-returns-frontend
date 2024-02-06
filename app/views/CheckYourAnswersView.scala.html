@@ -81,27 +81,28 @@
  }
 
  @if(totalVatOnSales > 0) {
-  <table class="govuk-table govuk-!-margin-bottom-8 govuk-summary-card">
-   <thead class="govuk-table__head govuk-summary-card__title govuk-!-padding-top-0">
-    <tr class="govuk-!-padding-top-0">
-     <td colspan="2" class="govuk-!-padding-top-0">
+  <div class="govuk-summary-card">
      @if(containsCorrections) {
-      <p class="govuk-summary-card__title-wrapper">@messages("checkYourAnswers.heading.corrections.vatOwned")</p>
+      <div class="govuk-summary-card__title-wrapper">
+       <h2 class="govuk-summary-card__title">@messages("checkYourAnswers.heading.corrections.vatOwned")</h2>
+      </div>
      } else {
-      <p class="govuk-summary-card__title-wrapper  govuk-!-margin-0">@messages("checkYourAnswers.heading.vatOwned")</p>
+      <div class="govuk-summary-card__title-wrapper  govuk-!-margin-0">
+       <h2 class="govuk-summary-card__title">@messages("checkYourAnswers.heading.vatOwned")</h2>
+      </div>
      }
-     </td>
-    </tr>
-   </thead>
-   <tbody class="govuk-table__body">
-   @for(totalVatToCountry <- totalVatToCountries) {
-    <tr class="govuk-table__row govuk-summary-card__content ">
-     <td class="govuk-table__cell govuk-!-padding-5"><strong>@totalVatToCountry.country.name</strong></td>
-     <td class="govuk-table__cell" style="text-align:right; padding-top: 25px; padding-right: 200px">@Html(currencyFormat(totalVatToCountry.totalVat))</td>
-    </tr>
-   }
-   </tbody>
-  </table>
+
+   <div class="govuk-summary-card__content ">
+    <dl class="govuk-summary-list">
+      @for(totalVatToCountry <- totalVatToCountries) {
+         <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key"><strong>@totalVatToCountry.country.name</strong></dt>
+          <dd class="govuk-summary-list__value govuk-summary-list__value  govuk-table__cell--numeric govuk-!-padding-right-9 ">@Html(currencyFormat(totalVatToCountry.totalVat))</dd>
+         </div>
+      }
+    </dl>
+   </div>
+  </div>
  }
 
  <dl class="govuk-summary-list govuk-!-margin-bottom-9 govuk-summary-card">
