@@ -36,7 +36,8 @@ object CorrectionReturnPeriodSummary {
     if(periods.nonEmpty) {
       Some(SummaryListRowViewModel(
         key = messages("checkYourAnswers.correctionLabel.l2"),
-        value = ValueViewModel(HtmlContent(periods.mkString("</br>"))),
+        value = ValueViewModel(HtmlContent(periods.mkString("</br>")))
+          .withCssClass("govuk-summary-list__value  govuk-table__cell--numeric govuk-!-padding-right-9"),
         actions = Seq(
           ActionItemViewModel(
             "site.change",

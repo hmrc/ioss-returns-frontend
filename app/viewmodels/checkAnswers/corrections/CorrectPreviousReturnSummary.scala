@@ -33,8 +33,9 @@ object CorrectPreviousReturnSummary  {
         val value = if (answer) "site.yes" else "site.no"
 
         SummaryListRowViewModel(
-          key     = "correctPreviousReturn.checkYourAnswersLabel",
-          value   = ValueViewModel(value),
+          key     = "checkYourAnswers.label.correctionsMade",
+          value   = ValueViewModel(value)
+            .withCssClass("govuk-summary-list__value  govuk-table__cell--numeric govuk-!-padding-right-9"),
           actions = Seq(
             ActionItemViewModel("site.change", controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(waypoints).url)
               .withVisuallyHiddenText(messages("correctPreviousReturn.change.hidden"))
