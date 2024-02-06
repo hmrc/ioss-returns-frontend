@@ -33,15 +33,18 @@ object CorrectionReturnPeriodSummary {
         correction => correction.correctionReturnPeriod.displayText
       }
 
+    val period = answers.period
+
     if(periods.nonEmpty) {
       Some(SummaryListRowViewModel(
         key = messages("checkYourAnswers.correctionLabel.l2"),
-        value = ValueViewModel(HtmlContent(periods.mkString("</br>"))),
+        value = ValueViewModel(HtmlContent(periods.mkString("</br>")))
+          .withCssClass("govuk-summary-list__value  govuk-table__cell--numeric govuk-!-padding-right-9"),
         actions = Seq(
           ActionItemViewModel(
             "site.change",
-            controllers.corrections.routes.CorrectPreviousReturnController
-              .onPageLoad(waypoints).url
+            controllers.corrections.routes.VatPeriodCorrectionsListWithFormController
+              .onPageLoad(waypoints, period).url
           ).withVisuallyHiddenText(messages("correctionReturnPeriod.change.hidden"))
             .withAttribute(("id", "change-correction-periods"))
         )

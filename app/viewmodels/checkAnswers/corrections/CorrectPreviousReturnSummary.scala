@@ -34,7 +34,8 @@ object CorrectPreviousReturnSummary  {
 
         SummaryListRowViewModel(
           key     = "correctPreviousReturn.checkYourAnswersLabel",
-          value   = ValueViewModel(value),
+          value   = ValueViewModel(value)
+            .withCssClass("govuk-summary-list__value  govuk-table__cell--numeric govuk-!-padding-right-9"),
           actions = Seq(
             ActionItemViewModel("site.change", controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(waypoints).url)
               .withVisuallyHiddenText(messages("correctPreviousReturn.change.hidden"))
