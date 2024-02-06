@@ -17,7 +17,7 @@
 package viewmodels.checkAnswers.corrections
 
 import models.UserAnswers
-import pages.Waypoints
+import pages.{CheckAnswersPage, Waypoints}
 import pages.corrections.CorrectPreviousReturnPage
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
@@ -26,7 +26,7 @@ import viewmodels.implicits._
 
 object CorrectPreviousReturnSummary  {
 
-  def row(answers: UserAnswers, waypoints: Waypoints)(implicit messages: Messages): Option[SummaryListRow] =
+  def row(answers: UserAnswers, waypoints: Waypoints, sourcePage: CheckAnswersPage)(implicit messages: Messages): Option[SummaryListRow] =
     answers.get(CorrectPreviousReturnPage(0)).map {
       answer =>
 
@@ -37,7 +37,7 @@ object CorrectPreviousReturnSummary  {
           value   = ValueViewModel(value)
             .withCssClass("govuk-summary-list__value  govuk-table__cell--numeric govuk-!-padding-right-9"),
           actions = Seq(
-            ActionItemViewModel("site.change", controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(waypoints).url)
+            ActionItemViewModel("site.change", CorrectPreviousReturnPage(0).changeLink(waypoints, sourcePage).url)
               .withVisuallyHiddenText(messages("correctPreviousReturn.change.hidden"))
               .withAttribute(("id", "change-corrections"))
           )
