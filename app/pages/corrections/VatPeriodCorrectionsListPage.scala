@@ -37,7 +37,7 @@ final case class VatPeriodCorrectionsListPage(
                                                period: Period,
                                                addAnother: Boolean,
                                                override val index: Option[Index] = None
-                                             ) extends AddItemPage(index) with Page {
+                                             ) extends AddItemPage(index) {
 
   override val normalModeUrlFragment: String = VatPeriodCorrectionsListPage.normalModeUrlFragment
   override val checkModeUrlFragment: String = VatPeriodCorrectionsListPage.checkModeUrlFragment
@@ -53,7 +53,7 @@ final case class VatPeriodCorrectionsListPage(
   override def toString: String = "VatPeriodCorrectionsList"
 
   override def route(waypoints: Waypoints): Call = {
-    controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(waypoints, period)
+    controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onPageLoad(waypoints, period)
   }
 
   override protected def nextPageCheckMode(waypoints: NonEmptyWaypoints, answers: UserAnswers): Page =

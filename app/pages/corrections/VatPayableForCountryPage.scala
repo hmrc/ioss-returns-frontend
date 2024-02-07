@@ -17,7 +17,7 @@
 package pages.corrections
 
 import models.{Index, UserAnswers}
-import pages.{JourneyRecoveryPage, Page, QuestionPage, Waypoints}
+import pages.{JourneyRecoveryPage, NonEmptyWaypoints, Page, QuestionPage, Waypoints}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
@@ -27,6 +27,8 @@ case class VatPayableForCountryPage(periodIndex: Index, countryIndex: Index) ext
 
   override def toString: String = "vatPayableForCountry"
 
+  override protected def nextPageCheckMode(waypoints: NonEmptyWaypoints, answers: UserAnswers): Page =
+    nextPageNormalMode(waypoints, answers)
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
     answers.get(VatPayableForCountryPage(periodIndex, countryIndex)) match {
       case Some(true) => CorrectionListCountriesPage(periodIndex)
