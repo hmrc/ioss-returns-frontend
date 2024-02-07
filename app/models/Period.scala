@@ -111,14 +111,14 @@ object Period {
   val reads: Reads[Period] = {
     (
       (__ \ "year").read[Int] and
-        (__ \ "month").read[Int].map(Month.of)
+        (__ \ "month").read[String].map(m => Month.of(m.substring(1).toInt))
       )((year, month) => Period(year, month))
   }
 
   val writes: OWrites[Period] = {
     (
       (__ \ "year").write[Int] and
-        (__ \ "month").write[Int].contramap[Month](_.getValue)
+        (__ \ "month").write[String].contramap[Month](m => s"M${m.getValue}")
       )(unlift(Period.unapply))
   }
 
