@@ -19,14 +19,46 @@ package pages.corrections
 import controllers.actions.AuthenticatedControllerComponents
 import models.corrections.PeriodWithCorrections
 import models.{Index, Period, UserAnswers}
-import pages.{CheckYourAnswersPage, Page, Waypoints}
+import pages.{AddItemPage, CheckYourAnswersPage, NonEmptyWaypoints, Page, Waypoints}
+import play.api.libs.json.{JsObject, JsPath}
 import play.api.mvc.Call
-import queries.{AllCorrectionPeriodsQuery, CorrectionPeriodQuery, DeriveNumberOfCorrectionPeriods}
+import queries.{AllCorrectionPeriodsQuery, CorrectionPeriodQuery, Derivable, DeriveNumberOfCorrectionPeriods}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
-case class VatPeriodCorrectionsListPage(period: Period, addAnother: Boolean) extends Page {
+object VatPeriodCorrectionsListPage {
+
+  val normalModeUrlFragment: String = "vat-correction-periods-add"
+  val checkModeUrlFragment: String = "change-vat-correction-periods-add"
+}
+
+final case class VatPeriodCorrectionsListPage(
+                                               period: Period,
+                                               addAnother: Boolean,
+                                               override val index: Option[Index] = None
+                                             ) extends AddItemPage(index) with Page {
+
+  override val normalModeUrlFragment: String = VatPeriodCorrectionsListPage.normalModeUrlFragment
+  override val checkModeUrlFragment: String = VatPeriodCorrectionsListPage.checkModeUrlFragment
+
+
+  override def isTheSamePage(other: Page): Boolean = other match {
+    case _: VatPeriodCorrectionsListPage => true
+    case _ => false
+  }
+
+  override def path: JsPath = JsPath \ toString
+
+  override def toString: String = "VatPeriodCorrectionsList"
+
+  override def route(waypoints: Waypoints): Call = {
+    controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(waypoints, period)
+  }
+
+  override protected def nextPageCheckMode(waypoints: NonEmptyWaypoints, answers: UserAnswers): Page =
+    nextPageNormalMode(waypoints, answers)
+
   override def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page = {
     if (addAnother) {
       answers.get(DeriveNumberOfCorrectionPeriods) match {
@@ -37,6 +69,8 @@ case class VatPeriodCorrectionsListPage(period: Period, addAnother: Boolean) ext
       CheckYourAnswersPage
     }
   }
+
+  override def deriveNumberOfItems: Derivable[Seq[JsObject], Int] = DeriveNumberOfCorrectionPeriods
 
   def cleanup(userAnswers: UserAnswers, cc: AuthenticatedControllerComponents)(implicit ec: ExecutionContext): Future[Try[UserAnswers]] = {
     val periodsWithCorrections: Seq[PeriodWithCorrections] = userAnswers.get(AllCorrectionPeriodsQuery).getOrElse(List.empty)
@@ -57,7 +91,5 @@ case class VatPeriodCorrectionsListPage(period: Period, addAnother: Boolean) ext
     } yield finalAnswers
   }
 
-  override def route(waypoints: Waypoints): Call = {
-    controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(waypoints, period)
-  }
+
 }
