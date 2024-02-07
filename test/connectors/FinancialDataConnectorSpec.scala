@@ -200,7 +200,7 @@ trait FinancialDataConnectorFixture {
       |    {
       |      "period": {
       |        "year": 2021,
-      |        "month": 9
+      |        "month": "M9"
       |      },
       |      "amountOwed": 1000,
       |      "dateDue": "2021-10-31",
