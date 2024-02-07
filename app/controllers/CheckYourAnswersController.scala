@@ -21,6 +21,7 @@ import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
 import models.requests.DataRequest
 import models.ValidationError
+import models.audit.{ReturnsAuditModel, SubmissionResult}
 import pages.{CheckYourAnswersPage, Waypoints}
 import pages.corrections.CorrectPreviousReturnPage
 import play.api.i18n.{I18nSupport, Messages}
@@ -43,6 +44,7 @@ class CheckYourAnswersController @Inject()(
                                             cc: AuthenticatedControllerComponents,
                                             salesAtVatRateService: SalesAtVatRateService,
                                             coreVatReturnService: CoreVatReturnService,
+                                            auditService: AuditService,
                                             view: CheckYourAnswersView
                                           )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
@@ -81,6 +83,7 @@ class CheckYourAnswersController @Inject()(
     implicit request =>
       val userAnswers = request.userAnswers
       coreVatReturnService.submitCoreVatReturn(userAnswers).flatMap { remainingTotalAmountVatDueGBP =>
+        auditService.audit(ReturnsAuditModel.build(userAnswers, SubmissionResult.Success))
         userAnswers.set(TotalAmountVatDueGBPQuery, remainingTotalAmountVatDueGBP) match {
           case Failure(exception) =>
             logger.error(s"Couldn't update users answers with remaining owed vat ${exception.getMessage}", exception)
@@ -93,6 +96,7 @@ class CheckYourAnswersController @Inject()(
       }.recover {
         case e: Exception =>
           logger.error(s"Error while submitting VAT return ${e.getMessage}", e)
+          auditService.audit(ReturnsAuditModel.build(userAnswers, SubmissionResult.Failure))
           Redirect(controllers.submissionResults.routes.ReturnSubmissionFailureController.onPageLoad().url)
       }
   }
