@@ -17,7 +17,8 @@
 package viewmodels.checkAnswers.corrections
 
 import models.UserAnswers
-import pages.Waypoints
+import pages.corrections.VatPeriodCorrectionsListPage
+import pages.{CheckAnswersPage, Waypoints}
 import play.api.i18n.Messages
 import queries.AllCorrectionPeriodsQuery
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
@@ -27,7 +28,7 @@ import viewmodels.implicits._
 
 object CorrectionReturnPeriodSummary {
 
-  def getAllRows(answers: UserAnswers, waypoints: Waypoints)(implicit messages: Messages): Option[SummaryListRow] = {
+  def getAllRows(answers: UserAnswers, waypoints: Waypoints, sourcePage: CheckAnswersPage)(implicit messages: Messages): Option[SummaryListRow] = {
     val periods =
       answers.get(AllCorrectionPeriodsQuery).getOrElse(List.empty).map {
         correction => correction.correctionReturnPeriod.displayText
@@ -43,8 +44,7 @@ object CorrectionReturnPeriodSummary {
         actions = Seq(
           ActionItemViewModel(
             "site.change",
-            controllers.corrections.routes.VatPeriodCorrectionsListWithFormController
-              .onPageLoad(waypoints, period).url
+            VatPeriodCorrectionsListPage(period, true).changeLink(waypoints, sourcePage).url
           ).withVisuallyHiddenText(messages("correctionReturnPeriod.change.hidden"))
             .withAttribute(("id", "change-correction-periods"))
         )
