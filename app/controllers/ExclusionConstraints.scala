@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-package models.payments
+package controllers
 
-import play.api.libs.json.Json
+import java.time.{Clock, LocalDate}
 
-final case class PrepareData(
-                              duePayments: List[Payment],
-                              overduePayments: List[Payment],
-                              excludedPayments: List[Payment],
-                              totalAmountOwed: BigDecimal,
-                              totalAmountOverdue: BigDecimal,
-                              iossNumber: String
-                            )
+object ExclusionConstraints {
 
-object PrepareData {
-  implicit val format = Json.format[PrepareData]
+  def hasActiveReturnWindowExpired(dueDate: LocalDate, clock: Clock): Boolean = {
+    val today = LocalDate.now(clock)
+    today.isAfter(dueDate.plusYears(3))
+  }
+
+  def hasActivePaymentWindowExpired(paymentDeadline: LocalDate, clock: Clock): Boolean = {
+    val today = LocalDate.now(clock)
+    today.isAfter(paymentDeadline.plusYears(3))
+  }
 }

@@ -18,6 +18,7 @@ package controllers
 
 import config.FrontendAppConfig
 import connectors.{FinancialDataConnector, ReturnStatusConnector}
+import controllers.ExclusionConstraints.hasActiveReturnWindowExpired
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
 import models.etmp.EtmpExclusion
@@ -100,6 +101,10 @@ class YourAccountController @Inject()(
     } else {
       None
     }
+
+    val hasReturnWindowExpired = for {
+      currentReturn <- currentReturns.returns
+    } yield hasActiveReturnWindowExpired(currentReturn.dueDate, clock)
 
     val paymentsViewModel = PaymentsViewModel(currentPayments.duePayments, currentPayments.overduePayments)
     Ok(view(

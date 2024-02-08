@@ -50,7 +50,7 @@ class SubmittedReturnsHistoryController @Inject()(
         obligations <- obligationsService.getFulfilledObligations(request.iossNumber)
         preparedFinancialData <- paymentsService.prepareFinancialData()
         periods = obligations.map(_.periodKey).map(Period.fromKey)
-        allUnpaidPayments = preparedFinancialData.duePayments ++ preparedFinancialData.overduePayments
+        allUnpaidPayments = preparedFinancialData.duePayments ++ preparedFinancialData.overduePayments ++ preparedFinancialData.excludedPayments
         periodWithFinancialData <- getPeriodWithFinancialData(periods, allUnpaidPayments)
       } yield {
 
