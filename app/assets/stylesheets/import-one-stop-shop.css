@@ -75,3 +75,7 @@ html[data-useragent*='MSIE 10.0'] .flex-container .tile {
 .corrections-no-border {
     border: 0;
 }
+
+.width-auto {
+    width: auto;
+}

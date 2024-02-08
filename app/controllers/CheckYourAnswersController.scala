@@ -153,6 +153,6 @@ class CheckYourAnswersController @Inject()(
         BusinessVRNSummary.row(request.vrn),
         ReturnPeriodSummary.row(request.userAnswers, waypoints)
       ).flatten
-    )
+    ).withCssClass("govuk-summary-card govuk-summary-card__content govuk-!-display-block width-auto")
   }
 }

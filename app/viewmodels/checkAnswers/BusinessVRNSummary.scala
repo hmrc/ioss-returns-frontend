@@ -19,15 +19,17 @@ package viewmodels.checkAnswers
 import play.api.i18n.Messages
 import play.twirl.api.HtmlFormat
 import uk.gov.hmrc.domain.Vrn
+import uk.gov.hmrc.govukfrontend.views.Aliases.Key
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
 import viewmodels.govuk.summarylist._
 import viewmodels.implicits._
 
 object BusinessVRNSummary {
 
+  val name = "checkYourAnswers.label.businessVrn"
   def row(vrn: Vrn)(implicit messages: Messages): Option[SummaryListRow] = {
     Some(SummaryListRowViewModel(
-      key = "checkYourAnswers.label.businessVrn",
+      key = Key(name).withCssClass("govuk-!-width-one-third"),
       value = ValueViewModel(HtmlFormat.escape(vrn.vrn).toString).withCssClass("govuk-table__cell--numeric"),
       actions = Seq.empty
     ))
