@@ -48,7 +48,7 @@ object CorrectionListCountriesSummary  {
 
           val countryNameRow = SummaryListRowViewModel(
             key = Key(name)
-              .withCssClass("govuk-!-font-size-24"),
+              .withCssClass("govuk-!-font-size-24 govuk-!-width-one-third"),
             value = ValueViewModel(HtmlContent("")),
             actions = List.empty
           )
