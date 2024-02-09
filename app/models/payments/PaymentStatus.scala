@@ -34,6 +34,8 @@ object PaymentStatus {
 
   case object NilReturn extends PaymentStatus
 
+  case object Excluded extends PaymentStatus
+
   implicit val reads: Reads[PaymentStatus] = JsPath
     .read[String]
     .map(_.toUpperCase)
@@ -43,6 +45,7 @@ object PaymentStatus {
       case "PAID" => Paid
       case "UNKNOWN" => Unknown
       case "NIL_RETURN" => NilReturn
+      case "EXCLUDED" => Excluded
     }
   implicit val writes: Writes[PaymentStatus] = WritesString[PaymentStatus] {
     case Unpaid => "UNPAID"
@@ -50,10 +53,11 @@ object PaymentStatus {
     case Paid => "PAID"
     case Unknown => "UNKNOWN"
     case NilReturn => "NIL_RETURN"
+    case Excluded => "EXCLUDED"
   }
 
   val values: Seq[PaymentStatus] = Seq(
-    Unpaid, Partial, Paid, Unknown, NilReturn
+    Unpaid, Partial, Paid, Unknown, NilReturn, Excluded
   )
 
   implicit val enumerable: Enumerable[PaymentStatus] =

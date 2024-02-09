@@ -18,14 +18,15 @@ package controllers.previousReturns
 
 import base.SpecBase
 import connectors.{FinancialDataConnector, VatReturnConnector}
-import models.UnexpectedResponseStatus
-import models.etmp.{EtmpVatReturn, EtmpVatReturnCorrection}
+import models.etmp.{EtmpExclusion, EtmpExclusionReason, EtmpVatReturn, EtmpVatReturnCorrection}
 import models.financialdata.Charge
+import models.requests.OptionalDataRequest
+import models.{Period, RegistrationWrapper, UnexpectedResponseStatus}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.mockito.Mockito.when
 import org.scalacheck.Arbitrary.arbitrary
-import org.scalatest.BeforeAndAfterEach
+import org.scalatest.{BeforeAndAfterEach, PrivateMethodTester}
 import org.scalatestplus.mockito.MockitoSugar.mock
 import pages.JourneyRecoveryPage
 import play.api.i18n.Messages
@@ -33,6 +34,7 @@ import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import testUtils.EtmpVatReturnData.etmpVatReturn
+import testUtils.RegistrationData.etmpDisplayRegistration
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{Card, CardTitle}
 import utils.FutureSyntax.FutureOps
@@ -42,7 +44,7 @@ import views.html.previousReturns.SubmittedReturnForPeriodView
 
 import java.time.{LocalDate, LocalDateTime}
 
-class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfterEach {
+class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfterEach with PrivateMethodTester {
 
   private val vatReturn = etmpVatReturn
   private val charge: Charge = arbitraryCharge.arbitrary.sample.value
@@ -118,8 +120,8 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
           val outstandingAmount: BigDecimal = charge.outstandingAmount
           val vatDeclared = vatReturn.totalVATAmountDueForAllMSGBP
 
-          status(result) mustEqual OK
-          contentAsString(result) mustEqual
+          status(result) mustBe OK
+          contentAsString(result) mustBe
             view(
               waypoints,
               period,
@@ -196,8 +198,8 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
           val outstandingAmount: BigDecimal = charge.outstandingAmount
           val vatDeclared = vatReturn.totalVATAmountDueForAllMSGBP
 
-          status(result) mustEqual OK
-          contentAsString(result) mustEqual
+          status(result) mustBe OK
+          contentAsString(result) mustBe
             view(
               waypoints,
               period,
@@ -283,8 +285,8 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
           val outstandingAmount: BigDecimal = charge.outstandingAmount
           val vatDeclared = vatReturnPositiveCorrections.totalVATAmountDueForAllMSGBP
 
-          status(result) mustEqual OK
-          contentAsString(result) mustEqual
+          status(result) mustBe OK
+          contentAsString(result) mustBe
             view(
               waypoints,
               period,
@@ -377,8 +379,8 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
           val outstandingAmount: BigDecimal = BigDecimal(0)
           val vatDeclared = nilEtmpVatReturn.totalVATAmountDueForAllMSGBP
 
-          status(result) mustEqual OK
-          contentAsString(result) mustEqual
+          status(result) mustBe OK
+          contentAsString(result) mustBe
             view(
               waypoints,
               period,
@@ -453,8 +455,8 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
           val outstandingAmount: BigDecimal = vatReturn.totalVATAmountPayable
           val vatDeclared = vatReturn.totalVATAmountDueForAllMSGBP
 
-          status(result) mustEqual OK
-          contentAsString(result) mustEqual
+          status(result) mustBe OK
+          contentAsString(result) mustBe
             view(
               waypoints,
               period,
@@ -466,6 +468,107 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
               outstandingAmount,
               vatDeclared,
               displayPayNow = vatDeclared > 0 && outstandingAmount > 0
+            )(request, messages(application)).toString
+        }
+      }
+
+      "when there are exclusions present and vat return due date has exceeded 3 years" in {
+
+        val date = LocalDate.ofInstant(stubClockAtArbitraryDate.instant(), stubClockAtArbitraryDate.getZone)
+        val exceededDate = date.minusYears(3).minusMonths(2)
+        val exceededPeriod = Period(exceededDate.getYear, exceededDate.getMonth)
+        val vatReturnNoCorrections = vatReturn.copy(correctionPreviousVATReturn = Seq.empty, periodKey = exceededPeriod.toEtmpPeriodString)
+
+        val etmpExclusion: EtmpExclusion = EtmpExclusion(
+          exclusionReason = EtmpExclusionReason.NoLongerSupplies,
+          effectiveDate = LocalDate.now(stubClockAtArbitraryDate).plusMonths(6),
+          decisionDate = LocalDate.now(stubClockAtArbitraryDate).minusMonths(7),
+          quarantine = false
+        )
+
+        val registrationWrapper = RegistrationWrapper(
+          vatInfo = arbitraryVatInfo.arbitrary.sample.value,
+          registration = etmpDisplayRegistration.copy(exclusions = Seq(etmpExclusion))
+        )
+
+        val application = applicationBuilder(userAnswers = None, registration = registrationWrapper)
+          .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
+          .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
+          .build()
+
+        running(application) {
+          when(mockVatReturnConnector.get(any())(any())) thenReturn Right(vatReturnNoCorrections).toFuture
+          when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Right(Some(charge)).toFuture
+
+          implicit val msgs: Messages = messages(application)
+
+          val request =
+            OptionalDataRequest(
+              FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoad(waypoints, exceededPeriod).url),
+              testCredentials,
+              vrn,
+              iossNumber,
+              registrationWrapper,
+              None
+            )
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[SubmittedReturnForPeriodView]
+
+          val mainSummaryList = SummaryListViewModel(
+            rows = Seq(
+              SubmittedReturnForPeriodSummary.rowVatDeclared(vatReturnNoCorrections),
+              SubmittedReturnForPeriodSummary.rowAmountPaid(Some(charge.clearedAmount)),
+              SubmittedReturnForPeriodSummary.rowRemainingAmount(Some(charge.outstandingAmount)),
+              SubmittedReturnForPeriodSummary.rowReturnSubmittedDate(vatReturnNoCorrections),
+              SubmittedReturnForPeriodSummary.rowPaymentDueDate(exceededPeriod),
+              SubmittedReturnForPeriodSummary.rowReturnReference(vatReturnNoCorrections),
+              SubmittedReturnForPeriodSummary.rowPaymentReference(vatReturnNoCorrections)
+            ).flatten
+          )
+
+          val salesToEuAndNiSummaryList = SummaryListViewModel(
+            rows =
+              Seq(
+                PreviousReturnsTotalNetValueOfSalesSummary.row(vatReturnNoCorrections),
+                PreviousReturnsTotalVatOnSalesSummary.row(vatReturnNoCorrections)
+              ).flatten
+          ).withCard(
+            card = Card(
+              title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.salesToEuNi.title"))))
+            )
+          )
+
+          val correctionRowsSummaryList = PreviousReturnsCorrectionsSummary.correctionRows(vatReturnNoCorrections)
+
+          val negativeAndZeroBalanceCorrectionCountriesSummaryList =
+            PreviousReturnsDeclaredVATNoPaymentDueSummary.summaryRowsOfNegativeAndZeroValues(vatReturnNoCorrections)
+
+          val vatOwedSummaryList = SummaryListViewModel(
+            rows = PreviousReturnsVatOwedSummary.row(vatReturnNoCorrections)
+          ).withCard(
+            card = Card(
+              title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.vatOwed.title"))))
+            )
+          )
+
+          val outstandingAmount: BigDecimal = charge.outstandingAmount
+          val vatDeclared = vatReturnNoCorrections.totalVATAmountDueForAllMSGBP
+
+          status(result) mustBe OK
+          contentAsString(result) mustBe
+            view(
+              waypoints,
+              exceededPeriod,
+              mainSummaryList,
+              salesToEuAndNiSummaryList,
+              correctionRowsSummaryList,
+              negativeAndZeroBalanceCorrectionCountriesSummaryList,
+              vatOwedSummaryList,
+              outstandingAmount,
+              vatDeclared,
+              displayPayNow = false
             )(request, messages(application)).toString
         }
       }
@@ -486,8 +589,101 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
+        status(result) mustBe SEE_OTHER
         redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
+      }
+    }
+
+    ".hasActiveReturnWindowExpired" - {
+
+      "must return true if active return window has expired" in {
+
+        val dueDate: LocalDate = LocalDate.now(stubClockAtArbitraryDate).minusYears(3).minusDays(1)
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+
+        running(application) {
+
+          val controller = application.injector.instanceOf[SubmittedReturnForPeriodController]
+
+          val privateMethodCall = PrivateMethod[Boolean](Symbol("hasActiveWindowExpired"))
+          val result = controller invokePrivate privateMethodCall(dueDate)
+
+          result mustBe true
+        }
+      }
+
+      "must return false if active return window is on the day of expiry" in {
+
+        val dueDate: LocalDate = LocalDate.now(stubClockAtArbitraryDate).minusYears(3)
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+
+        running(application) {
+
+          val controller = application.injector.instanceOf[SubmittedReturnForPeriodController]
+
+          val privateMethodCall = PrivateMethod[Boolean](Symbol("hasActiveWindowExpired"))
+          val result = controller invokePrivate privateMethodCall(dueDate)
+
+          result mustBe false
+        }
+      }
+
+      "must return false if active return window has not expired" in {
+
+        val dueDate: LocalDate = LocalDate.now(stubClockAtArbitraryDate).minusYears(2)
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+
+        running(application) {
+
+          val controller = application.injector.instanceOf[SubmittedReturnForPeriodController]
+
+          val privateMethodCall = PrivateMethod[Boolean](Symbol("hasActiveWindowExpired"))
+          val result = controller invokePrivate privateMethodCall(dueDate)
+
+          result mustBe false
+        }
+      }
+    }
+
+    ".isCurrentlyExcluded" - {
+
+      "must return false if there is an exclusion that is a reversal" in {
+
+        val etmpExclusionWithReversal: Seq[EtmpExclusion] = Seq(arbitraryEtmpExclusion.arbitrary.sample.value
+          .copy(exclusionReason = EtmpExclusionReason.Reversal))
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+
+        running(application) {
+
+          val controller = application.injector.instanceOf[SubmittedReturnForPeriodController]
+
+          val privateMethodCall = PrivateMethod[Boolean](Symbol("isCurrentlyExcluded"))
+          val result = controller invokePrivate privateMethodCall(etmpExclusionWithReversal)
+
+          result mustBe false
+        }
+      }
+
+      "must return true if there is an exclusion that is not a reversal" in {
+
+        val etmpExclusionWithoutReversal: Seq[EtmpExclusion] = Seq(arbitraryEtmpExclusion.arbitrary.sample.value
+          .copy(exclusionReason = EtmpExclusionReason.NoLongerSupplies))
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+
+        running(application) {
+
+          val controller = application.injector.instanceOf[SubmittedReturnForPeriodController]
+
+          val privateMethodCall = PrivateMethod[Boolean](Symbol("isCurrentlyExcluded"))
+          val result = controller invokePrivate privateMethodCall(etmpExclusionWithoutReversal)
+
+          result mustBe true
+        }
       }
     }
   }

@@ -62,8 +62,8 @@ class SubmittedReturnForPeriodController @Inject()(
         val vatDeclared = etmpVatReturn.totalVATAmountDueForAllMSGBP
 
         val displayPayNow = !(isCurrentlyExcluded(request.registrationWrapper.registration.exclusions) &&
-          hasActiveWindowExpired(period.paymentDeadline)) &&
-            (etmpVatReturn.totalVATAmountDueForAllMSGBP > 0 && outstanding > 0)
+          hasActiveWindowExpired(Period.fromKey(etmpVatReturn.periodKey).paymentDeadline)) &&
+          (etmpVatReturn.totalVATAmountDueForAllMSGBP > 0 && outstanding > 0)
 
         Ok(view(
           waypoints = waypoints,
@@ -132,7 +132,7 @@ class SubmittedReturnForPeriodController @Inject()(
 
   private def isCurrentlyExcluded(exclusions: Seq[EtmpExclusion]): Boolean = {
     val maybeExclusion = exclusions.headOption
-    maybeExclusion.nonEmpty || maybeExclusion.exists(_.exclusionReason != EtmpExclusionReason.Reversal)
+    maybeExclusion.exists(_.exclusionReason != EtmpExclusionReason.Reversal)
   }
 
   private def hasActiveWindowExpired(dueDate: LocalDate): Boolean = {
