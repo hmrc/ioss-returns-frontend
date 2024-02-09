@@ -17,11 +17,13 @@
 package controllers
 
 import com.google.inject.Inject
+import connectors.ReturnStatusConnector
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
 import models.requests.DataRequest
 import models.ValidationError
 import models.audit.{ReturnsAuditModel, SubmissionResult}
+import models.etmp.EtmpExclusion
 import pages.{CheckYourAnswersPage, Waypoints}
 import pages.corrections.CorrectPreviousReturnPage
 import play.api.i18n.{I18nSupport, Messages}
@@ -45,6 +47,7 @@ class CheckYourAnswersController @Inject()(
                                             salesAtVatRateService: SalesAtVatRateService,
                                             coreVatReturnService: CoreVatReturnService,
                                             auditService: AuditService,
+                                            returnStatusConnector: ReturnStatusConnector,
                                             view: CheckYourAnswersView
                                           )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
@@ -68,15 +71,39 @@ class CheckYourAnswersController @Inject()(
 
       val summaryLists = getAllSummaryLists(request, businessSummaryList, salesFromEuSummaryList, waypoints)
 
-      Future(Ok(view(
-        waypoints,
-        summaryLists,
-        request.userAnswers.period,
-        totalVatToCountries,
-        totalVatOnSales,
-        noPaymentDueCountries,
-        containsCorrections,
-        errors.map(_.errorMessage))))
+      val maybeExclusion: Option[EtmpExclusion] = request.registrationWrapper.registration.exclusions.lastOption
+
+      val getCurrentReturns = returnStatusConnector.getCurrentReturns(request.iossNumber)
+
+      getCurrentReturns.map {
+        case Right(currentReturn) =>
+          val hasSubmittedFinalReturn = currentReturn.finalReturnsCompleted
+          Ok(view(
+            waypoints,
+            summaryLists,
+            request.userAnswers.period,
+            totalVatToCountries,
+            totalVatOnSales,
+            noPaymentDueCountries,
+            containsCorrections,
+            errors.map(_.errorMessage),
+            maybeExclusion,
+            hasSubmittedFinalReturn
+          ))
+        case Left(_) =>
+          Ok(view(
+            waypoints,
+            summaryLists,
+            request.userAnswers.period,
+            totalVatToCountries,
+            totalVatOnSales,
+            noPaymentDueCountries,
+            containsCorrections,
+            errors.map(_.errorMessage),
+            maybeExclusion,
+            hasSubmittedFinalReturn = false
+          ))
+      }
   }
 
   def onSubmit(waypoints: Waypoints, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndRequireData().async {

@@ -16,8 +16,10 @@
 
 package controllers
 
+import connectors.ReturnStatusConnector
 import controllers.actions._
 import forms.StartReturnFormProvider
+import models.etmp.EtmpExclusion
 import models.{Period, UserAnswers}
 import pages.{StartReturnPage, Waypoints}
 import play.api.data.Form
@@ -35,6 +37,7 @@ class StartReturnController @Inject()(
                                        override val messagesApi: MessagesApi,
                                        cc: AuthenticatedControllerComponents,
                                        formProvider: StartReturnFormProvider,
+                                       returnStatusConnector: ReturnStatusConnector,
                                        view: StartReturnView,
                                        clock: Clock
                                      )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
@@ -43,18 +46,39 @@ class StartReturnController @Inject()(
 
   val form: Form[Boolean] = formProvider()
 
-  def onPageLoad(waypoints: Waypoints, period: Period): Action[AnyContent] = (cc.authAndGetOptionalData andThen cc.checkExcludedTraderOptional(period)) {
+  def onPageLoad(waypoints: Waypoints, period: Period): Action[AnyContent] = (cc.authAndGetOptionalData andThen cc.checkExcludedTraderOptional(period)).async {
     implicit request =>
       // TODO check for starting correct period
-      Ok(view(form, waypoints, period))
+
+      val maybeExclusion: Option[EtmpExclusion] = request.registrationWrapper.registration.exclusions.lastOption
+
+      val getCurrentReturns = returnStatusConnector.getCurrentReturns(request.iossNumber)
+
+      getCurrentReturns.map {
+        case Right(currentReturn) =>
+          val hasFinalReturn = currentReturn.finalReturnsCompleted
+            Ok(view(form, waypoints, period, maybeExclusion, hasFinalReturn))
+        case Left(_) =>
+          Ok(view(form, waypoints, period, maybeExclusion, hasFinalReturn = false))
+      }
   }
 
   def onSubmit(waypoints: Waypoints, period: Period): Action[AnyContent] = (cc.authAndGetOptionalData andThen cc.checkExcludedTraderOptional(period)).async {
     implicit request =>
 
+      val maybeExclusion: Option[EtmpExclusion] = request.registrationWrapper.registration.exclusions.lastOption
+
+      val getCurrentReturns = returnStatusConnector.getCurrentReturns(request.iossNumber)
+
       form.bindFromRequest().fold(
         formWithErrors =>
-          BadRequest(view(formWithErrors, waypoints, period)).toFuture,
+          getCurrentReturns.map {
+            case Right(currentReturn) =>
+              val hasFinalReturn = currentReturn.finalReturnsCompleted
+                BadRequest(view(formWithErrors, waypoints, period, maybeExclusion, hasFinalReturn))
+            case Left(_) =>
+              BadRequest(view(formWithErrors, waypoints, period, maybeExclusion, hasFinalReturn = false))
+          },
 
         value => {
 

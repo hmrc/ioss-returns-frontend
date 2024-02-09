@@ -18,6 +18,7 @@ package controllers.corrections
 
 import controllers.actions._
 import forms.corrections.CorrectPreviousReturnFormProvider
+import models.etmp.EtmpExclusion
 import pages.Waypoints
 import pages.corrections.CorrectPreviousReturnPage
 import play.api.data.Form
@@ -49,6 +50,8 @@ class CorrectPreviousReturnController @Inject()(
 
       val fulfilledObligations = obligationService.getFulfilledObligations(request.iossNumber)
 
+      val maybeExclusion: Option[EtmpExclusion] = request.registrationWrapper.registration.exclusions.lastOption
+
       fulfilledObligations.flatMap { obligations =>
 
         val etmpObligationDetails = obligations.size
@@ -58,7 +61,7 @@ class CorrectPreviousReturnController @Inject()(
           case Some(value) => form.fill(value)
         }
 
-        Future.successful(Ok(view(preparedForm, waypoints, period)))
+        Future.successful(Ok(view(preparedForm, waypoints, period, maybeExclusion)))
       }
   }
 
@@ -69,13 +72,15 @@ class CorrectPreviousReturnController @Inject()(
 
       val fulfilledObligations = obligationService.getFulfilledObligations(request.iossNumber)
 
+      val maybeExclusion: Option[EtmpExclusion] = request.registrationWrapper.registration.exclusions.lastOption
+
       fulfilledObligations.flatMap { obligations =>
 
         val etmpObligationDetails = obligations.size
 
         form.bindFromRequest().fold(
           formWithErrors =>
-            Future.successful(BadRequest(view(formWithErrors, waypoints, period))),
+            Future.successful(BadRequest(view(formWithErrors, waypoints, period, maybeExclusion))),
 
           value =>
             for {

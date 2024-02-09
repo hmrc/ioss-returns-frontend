@@ -15,6 +15,7 @@
  *@
 
 @import components.ButtonGroup
+@import models.etmp.EtmpExclusion
 
 @this(
     layout: templates.Layout,
@@ -24,9 +25,16 @@
     button: ButtonGroup
 )
 
-@(form: Form[_], waypoints: Waypoints, period: Period)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, period: Period, maybeExclusion: Option[EtmpExclusion], hasFinalReturn: Boolean)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = title(form, messages("startReturn.title", period.displayText))) {
+@layout(pageTitle = title(
+    form,
+    if(maybeExclusion.isDefined && !hasFinalReturn) {
+        messages("startReturn.finalReturn")
+    } else {
+        messages("startReturn.title", period.displayText)
+    }
+)) {
 
     @formHelper(action = routes.StartReturnController.onSubmit(waypoints, period), Symbol("autoComplete") -> "off") {
 
@@ -37,7 +45,13 @@
         @govukRadios(
             RadiosViewModel.yesNo(
                 field = form("value"),
-                legend = LegendViewModel(messages("startReturn.heading", period.displayText)).asPageHeading()
+                legend = LegendViewModel(
+                    if(maybeExclusion.isDefined) {
+                        messages("startReturn.finalReturn")
+                    } else {
+                        messages("startReturn.heading", period.displayText)
+                    }
+                ).asPageHeading()
             )
         )
 

@@ -16,6 +16,7 @@
 
 @import utils.CurrencyFormatter.currencyFormat
 @import components.ButtonGroup
+@import models.etmp.EtmpExclusion
 
 @this(
         layout: templates.Layout,
@@ -34,7 +35,9 @@
         totalVatOnSales: BigDecimal,
         noPaymentDueCountries: List[TotalVatToCountry],
         containsCorrections: Boolean,
-        missingData: List[String]
+        missingData: List[String],
+        maybeExclusion: Option[EtmpExclusion],
+        hasSubmittedFinalReturn: Boolean,
 )(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(messages("checkYourAnswers.title"))) {
@@ -116,6 +119,13 @@
    <dd></dd>
   </div>
  </dl>
+
+ @if(maybeExclusion.isDefined && !hasSubmittedFinalReturn) {
+   @govukWarningText(WarningText(
+     iconFallbackText = Option(messages("site.warning")),
+     content = Text(messages("checkYourAnswers.corrections.warning"))
+   ))
+ }
 
  @if(missingData.isEmpty) {
   @formHelper(action = routes.CheckYourAnswersController.onSubmit(waypoints, false)) {
