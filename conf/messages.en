@@ -152,7 +152,8 @@ vatRatesFromCountry.hint = Select all that apply.
 vatRatesFromCountry.twelvePercent = 12%
 vatRatesFromCountry.twentyPercent = 20%
 vatRatesFromCountry.checkYourAnswersLabel = VAT rate
-vatRatesFromCountry.error.required = Select which VAT rates did you sell goods at
+vatRatesFromCountry.error.required = Select which VAT rates you sold goods at
+vatRatesFromCountry.error.invalid = Select which VAT rates you sold goods at
 vatRatesFromCountry.change.hidden = VAT rates from country
 
 salesToCountry.title = What were your sales at {0} rate excluding VAT?
