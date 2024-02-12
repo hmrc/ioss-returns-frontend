@@ -46,7 +46,7 @@
         } else {
 
             <div class="govuk-accordion" data-module="govuk-accordion" id="accordion-with-summary-sections">
-            @for((year, periodWithFinancialData) <- periodsWithFinancialData) {
+            @for((year, periodWithFinancialData) <- periodsWithFinancialData.toList.sortBy(_._1)) {
                 <div class="govuk-accordion__section">
                     <div class="govuk-accordion__section-header">
                         <h2 class="govuk-accordion__section-heading">
