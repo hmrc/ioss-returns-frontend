@@ -110,8 +110,8 @@ class CheckYourAnswersController @Inject()(
     if (request.userAnswers.get(CorrectPreviousReturnPage(0)).isDefined) {
       val correctionsSummaryList = SummaryListViewModel(
         rows = Seq(
-          CorrectPreviousReturnSummary.row(request.userAnswers, waypoints),
-          CorrectionReturnPeriodSummary.getAllRows(request.userAnswers, waypoints)
+          CorrectPreviousReturnSummary.row(request.userAnswers, waypoints, CheckYourAnswersPage),
+          CorrectionReturnPeriodSummary.getAllRows(request.userAnswers, waypoints, CheckYourAnswersPage)
         ).flatten
       ).withCard(
         card = Card(
