@@ -73,7 +73,7 @@ class DeleteVatRateSalesForCountryControllerSpec extends SpecBase with MockitoSu
       }
     }
 
-    "must delete a record and then redirect to the mini check your answer page (even if there is no vat sales in user answers after the deletion), when Yes is submitted" in {
+    "must delete a record and then redirect to the mini check your answer page, when Yes is submitted" in {
 
       val mockSessionRepository = mock[SessionRepository]
 
@@ -100,36 +100,6 @@ class DeleteVatRateSalesForCountryControllerSpec extends SpecBase with MockitoSu
       }
     }
 
-    "must delete a record and then redirect to the mini check your answer page when Yes is submitted" in {
-
-      val mockSessionRepository = mock[SessionRepository]
-
-      when(mockSessionRepository.set(any())) thenReturn true.toFuture
-
-      val updatedAnswer = baseAnswers.set(VatRatesFromCountryPage(index, index + 1), List[VatRateFromCountry](vatRateFromCountry)).success.value
-        .set(SalesToCountryPage(index, index + 1), salesValue).success.value
-        .set(VatOnSalesPage(index, index + 1), vatOnSalesValue).success.value
-
-      val application =
-        applicationBuilder(userAnswers = Some(updatedAnswer))
-          .overrides(
-            bind[SessionRepository].toInstance(mockSessionRepository)
-          )
-          .build()
-
-      running(application) {
-        val request =
-          FakeRequest(POST, deleteVatRateSalesForCountryRoute)
-            .withFormUrlEncodedBody(("value", "true"))
-
-        val result = route(application, request).value
-
-        val expectedAnswers = baseAnswers.remove(VatRateFromCountryQuery(index, index)).success.value
-
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe DeleteVatRateSalesForCountryPage(index, index).navigate(waypoints, emptyUserAnswers, expectedAnswers).url
-      }
-    }
 
     "must not delete a record and then redirect to the next page when No is submitted" in {
 
