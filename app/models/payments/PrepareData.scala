@@ -16,16 +16,18 @@
 
 package models.payments
 
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, OFormat}
 
 final case class PrepareData(
                               duePayments: List[Payment],
                               overduePayments: List[Payment],
+                              excludedPayments: List[Payment],
                               totalAmountOwed: BigDecimal,
                               totalAmountOverdue: BigDecimal,
                               iossNumber: String
                             )
 
 object PrepareData {
-  implicit val format = Json.format[PrepareData]
+
+  implicit val format: OFormat[PrepareData] = Json.format[PrepareData]
 }

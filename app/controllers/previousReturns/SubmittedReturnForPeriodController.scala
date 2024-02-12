@@ -20,7 +20,7 @@ import connectors.{FinancialDataConnector, VatReturnConnector}
 import controllers.actions._
 import logging.Logging
 import models.Period
-import models.etmp.EtmpVatReturn
+import models.etmp.{EtmpExclusion, EtmpExclusionReason, EtmpVatReturn}
 import pages.{JourneyRecoveryPage, Waypoints}
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -31,11 +31,13 @@ import viewmodels.govuk.summarylist._
 import viewmodels.previousReturns._
 import views.html.previousReturns.SubmittedReturnForPeriodView
 
+import java.time.{Clock, LocalDate}
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
 class SubmittedReturnForPeriodController @Inject()(
                                                     override val messagesApi: MessagesApi,
+                                                    clock: Clock,
                                                     cc: AuthenticatedControllerComponents,
                                                     vatReturnConnector: VatReturnConnector,
                                                     financialDataConnector: FinancialDataConnector,
@@ -52,37 +54,28 @@ class SubmittedReturnForPeriodController @Inject()(
       } yield (etmpVatReturnResult, getChargeResult)
     }.map {
       case (Right(etmpVatReturn), chargeResponse) =>
+        val maybeCharge = chargeResponse.fold(_ => None, charge => charge)
 
-        val maybeCharge = chargeResponse match {
-          case Right(charge) => charge
-          case _ => None
-        }
-
-        val clearedAmount = maybeCharge.map(_.clearedAmount)
         val outstandingAmount = maybeCharge.map(_.outstandingAmount)
-
-        val mainSummaryList = SummaryListViewModel(rows = getMainSummaryList(etmpVatReturn, period, clearedAmount, outstandingAmount))
-        val salesToEuAndNiSummaryList = getSalesToEuAndNiSummaryList(etmpVatReturn)
-        val correctionRowsSummaryList = PreviousReturnsCorrectionsSummary.correctionRows(etmpVatReturn)
-        val negativeAndZeroBalanceCorrectionCountriesSummaryList =
-          PreviousReturnsDeclaredVATNoPaymentDueSummary.summaryRowsOfNegativeAndZeroValues(etmpVatReturn)
-        val vatOwedSummaryList = getVatOwedSummaryList(etmpVatReturn)
 
         val outstanding = outstandingAmount.getOrElse(etmpVatReturn.totalVATAmountPayable)
         val vatDeclared = etmpVatReturn.totalVATAmountDueForAllMSGBP
-        val displayPayNow = etmpVatReturn.totalVATAmountDueForAllMSGBP > 0 && outstanding > 0
+
+        val displayPayNow = !(isCurrentlyExcluded(request.registrationWrapper.registration.exclusions) &&
+          hasActiveWindowExpired(Period.fromKey(etmpVatReturn.periodKey).paymentDeadline)) &&
+          (etmpVatReturn.totalVATAmountDueForAllMSGBP > 0 && outstanding > 0)
 
         Ok(view(
-          waypoints,
-          period,
-          mainSummaryList,
-          salesToEuAndNiSummaryList,
-          correctionRowsSummaryList,
-          negativeAndZeroBalanceCorrectionCountriesSummaryList,
-          vatOwedSummaryList,
-          outstanding,
-          vatDeclared,
-          displayPayNow
+          waypoints = waypoints,
+          period = period,
+          mainSummaryList = SummaryListViewModel(rows = getMainSummaryList(etmpVatReturn, period, maybeCharge.map(_.clearedAmount), outstandingAmount)),
+          salesToEuAndNiSummaryList = getSalesToEuAndNiSummaryList(etmpVatReturn),
+          correctionRows = PreviousReturnsCorrectionsSummary.correctionRows(etmpVatReturn),
+          negativeAndZeroBalanceCorrectionCountries = PreviousReturnsDeclaredVATNoPaymentDueSummary.summaryRowsOfNegativeAndZeroValues(etmpVatReturn),
+          vatOwedSummaryList = getVatOwedSummaryList(etmpVatReturn),
+          totalVatPayable = outstanding,
+          vatDeclared = vatDeclared,
+          displayPayNow = displayPayNow
         ))
       case (Left(error), _) =>
         logger.error(s"Unexpected result from api while getting ETMP VAT return: $error")
@@ -135,5 +128,15 @@ class SubmittedReturnForPeriodController @Inject()(
         }))
       )
     )
+  }
+
+  private def isCurrentlyExcluded(exclusions: Seq[EtmpExclusion]): Boolean = {
+    val maybeExclusion = exclusions.headOption
+    maybeExclusion.exists(_.exclusionReason != EtmpExclusionReason.Reversal)
+  }
+
+  private def hasActiveWindowExpired(dueDate: LocalDate): Boolean = {
+    val today = LocalDate.now(clock)
+    today.isAfter(dueDate.plusYears(3))
   }
 }

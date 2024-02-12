@@ -61,6 +61,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val paymentDue2 = Payment(periodDue2, 10, periodDue2.paymentDeadline, PaymentStatus.Unpaid)
         val prepareData = PrepareData(List(paymentDue1, paymentDue2),
           List(paymentOverdue1, paymentOverdue2),
+          List.empty,
           List(paymentDue1,
             paymentDue2,
             paymentOverdue1,
@@ -138,7 +139,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
       val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty)(messages(application))
       when(financialDataConnector.prepareFinancialData()(any())) thenReturn
-        Future.successful(Right(PrepareData(List.empty, List.empty, 0, 0, iossNumber)))
+        Future.successful(Right(PrepareData(List.empty, List.empty, List.empty, 0, 0, iossNumber)))
 
       running(application) {
 
@@ -204,7 +205,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
       val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty)(messages(application))
       when(mockFinancialDataConnector.prepareFinancialData()(any())) thenReturn
-        Future.successful(Right(PrepareData(List.empty, List.empty, 0, 0, iossNumber)))
+        Future.successful(Right(PrepareData(List.empty, List.empty, List.empty, 0, 0, iossNumber)))
 
       running(application) {
 
@@ -260,7 +261,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         NoLongerSupplies,
         LocalDate.now(stubClockAtArbitraryDate).plusDays(2),
         LocalDate.now(stubClockAtArbitraryDate).minusDays(1),
-        false
+        quarantine = false
       )
       val registrationWrapperEmptyExclusions: RegistrationWrapper =
         registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq(exclusion)))
@@ -291,7 +292,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
       val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty)(messages(application))
       when(financialDataConnector.prepareFinancialData()(any())) thenReturn
-        Future.successful(Right(PrepareData(List.empty, List.empty, 0, 0, iossNumber)))
+        Future.successful(Right(PrepareData(List.empty, List.empty, List.empty, 0, 0, iossNumber)))
 
       running(application) {
 
@@ -358,7 +359,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty)(messages(application))
         when(financialDataConnector.prepareFinancialData()(any())) thenReturn
-          Future.successful(Right(PrepareData(List.empty, List.empty, 0, 0, iossNumber)))
+          Future.successful(Right(PrepareData(List.empty, List.empty, List.empty, 0, 0, iossNumber)))
 
         running(application) {
 
@@ -416,7 +417,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty)(messages(application))
         when(financialDataConnector.prepareFinancialData()(any())) thenReturn
-          Future.successful(Right(PrepareData(List.empty, List.empty, 0, 0, iossNumber)))
+          Future.successful(Right(PrepareData(List.empty, List.empty, List.empty, 0, 0, iossNumber)))
 
         running(application) {
 
@@ -480,7 +481,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty)(messages(application))
         when(financialDataConnector.prepareFinancialData()(any())) thenReturn
-          Future.successful(Right(PrepareData(List.empty, List.empty, 0, 0, iossNumber)))
+          Future.successful(Right(PrepareData(List.empty, List.empty, List.empty, 0, 0, iossNumber)))
 
         running(application) {
 
@@ -543,7 +544,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty)(messages(application))
         when(financialDataConnector.prepareFinancialData()(any())) thenReturn
-          Future.successful(Right(PrepareData(List.empty, List.empty, 0, 0, iossNumber)))
+          Future.successful(Right(PrepareData(List.empty, List.empty, List.empty, 0, 0, iossNumber)))
 
         running(application) {
 
@@ -606,7 +607,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty)(messages(application))
         when(financialDataConnector.prepareFinancialData()(any())) thenReturn
-          Future.successful(Right(PrepareData(List.empty, List.empty, 0, 0, iossNumber)))
+          Future.successful(Right(PrepareData(List.empty, List.empty, List.empty, 0, 0, iossNumber)))
 
         running(application) {
 
@@ -672,7 +673,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty)(messages(application))
         when(financialDataConnector.prepareFinancialData()(any())) thenReturn
-          Future.successful(Right(PrepareData(List.empty, List.empty, 0, 0, iossNumber)))
+          Future.successful(Right(PrepareData(List.empty, List.empty, List.empty, 0, 0, iossNumber)))
 
         running(application) {
 

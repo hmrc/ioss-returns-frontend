@@ -54,6 +54,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
     PrepareData(
       duePayments = List(payments.head),
       overduePayments = payments.tail,
+      excludedPayments = List.empty,
       totalAmountOwed = payments.map(_.amountOwed).sum,
       totalAmountOverdue = BigDecimal(0),
       iossNumber = iossNumber
@@ -64,6 +65,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
     PrepareData(
       duePayments = List.empty,
       overduePayments = List.empty,
+      excludedPayments = List.empty,
       totalAmountOwed = BigDecimal(0),
       totalAmountOverdue = BigDecimal(0),
       iossNumber = iossNumber
@@ -105,8 +107,8 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
 
         val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(waypoints, periodsWithFinancialData)(request, messages(application)).toString
+        status(result) mustBe OK
+        contentAsString(result) mustBe view(waypoints, periodsWithFinancialData)(request, messages(application)).toString
       }
     }
 
@@ -130,8 +132,8 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
 
         val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(waypoints, periodsWithFinancialData)(request, messages(application)).toString
+        status(result) mustBe OK
+        contentAsString(result) mustBe view(waypoints, periodsWithFinancialData)(request, messages(application)).toString
       }
     }
 
@@ -151,6 +153,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
         PrepareData(
           duePayments = List(payments.head.copy(period = Period(2023, Month.APRIL))),
           overduePayments = payments.tail,
+          excludedPayments = List.empty,
           totalAmountOwed = payments.map(_.amountOwed).sum,
           totalAmountOverdue = BigDecimal(0),
           iossNumber = iossNumber
@@ -179,8 +182,8 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
 
         val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(waypoints, periodsWithFinancialData)(request, messages(application)).toString
+        status(result) mustBe OK
+        contentAsString(result) mustBe view(waypoints, periodsWithFinancialData)(request, messages(application)).toString
       }
     }
 
@@ -206,6 +209,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
         PrepareData(
           duePayments = List(payments.head.copy(period = Period(2023, Month.JUNE))),
           overduePayments = payments.tail,
+          excludedPayments = List.empty,
           totalAmountOwed = payments.map(_.amountOwed).sum,
           totalAmountOverdue = BigDecimal(0),
           iossNumber = iossNumber
@@ -234,8 +238,57 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
 
         val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(waypoints, periodsWithFinancialData)(request, messages(application)).toString
+        status(result) mustBe OK
+        contentAsString(result) mustBe view(waypoints, periodsWithFinancialData)(request, messages(application)).toString
+      }
+    }
+
+    "must return OK and the correct view for a GET when there are exclusions" in {
+
+      val payments: List[Payment] =
+        obligationPeriods.map { period =>
+          Payment(
+            period = period,
+            amountOwed = BigDecimal(0),
+            dateDue = period.paymentDeadline,
+            paymentStatus = PaymentStatus.Excluded
+          )
+        }.toList
+
+      val prepareData: PrepareData = {
+        PrepareData(
+          duePayments = List(payments.head.copy(period = Period(2023, Month.JUNE))),
+          overduePayments = payments.tail,
+          excludedPayments = List(payments.head),
+          totalAmountOwed = payments.map(_.amountOwed).sum,
+          totalAmountOverdue = BigDecimal(0),
+          iossNumber = iossNumber
+        )
+      }
+
+      val periodsWithFinancialData: Map[Int, Seq[(Period, Payment)]] = obligationPeriods.flatMap { period =>
+        Map(period -> payments.filter(_.period == period).head)
+      }.groupBy(_._1.year)
+
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(bind[ObligationsService].toInstance(mockObligationsService))
+        .overrides(bind[PaymentsService].toInstance(mockPaymentsService))
+        .build()
+
+      running(application) {
+
+        when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn obligationDetails.toFuture
+        when(mockPaymentsService.prepareFinancialData()(any(), any())) thenReturn prepareData.toFuture
+
+        val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
+
+        val result = route(application, request).value
+
+        val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
+
+        status(result) mustBe OK
+        contentAsString(result) mustBe view(waypoints, periodsWithFinancialData)(request, messages(application)).toString
       }
     }
 

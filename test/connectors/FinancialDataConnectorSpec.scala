@@ -188,6 +188,7 @@ trait FinancialDataConnectorFixture {
         PaymentStatus.Partial
       )
     ),
+    Nil,
     1000,
     1000,
     "IM9001234567"
@@ -206,6 +207,8 @@ trait FinancialDataConnectorFixture {
       |      "dateDue": "2021-10-31",
       |      "paymentStatus": "PARTIAL"
       |    }
+      |  ],
+      |   "excludedPayments": [
       |  ],
       |  "totalAmountOwed": 1000,
       |  "totalAmountOverdue": 1000,
