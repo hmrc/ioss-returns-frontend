@@ -53,7 +53,7 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar with ScalaChe
         val view = application.injector.instanceOf[StartReturnView]
 
         status(result) mustBe OK
-        contentAsString(result) mustBe view(form, waypoints, period, None, hasFinalReturn = false)(request, messages(application)).toString
+        contentAsString(result) mustBe view(form, waypoints, period, None, isFinalReturn = false)(request, messages(application)).toString
       }
     }
 
@@ -111,7 +111,7 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar with ScalaChe
         val result = route(application, request).value
 
         status(result) mustBe BAD_REQUEST
-        contentAsString(result) mustBe view(boundForm, waypoints, period, None, hasFinalReturn = false)(request, messages(application)).toString
+        contentAsString(result) mustBe view(boundForm, waypoints, period, None, isFinalReturn = false)(request, messages(application)).toString
       }
     }
 
@@ -176,7 +176,7 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar with ScalaChe
           waypoints,
           period,
           Some(noLongerSuppliesExclusion),
-          hasFinalReturn = false
+          isFinalReturn = true
         )(request, messages(application)).toString
       }
     }

@@ -25,11 +25,11 @@
     button: ButtonGroup
 )
 
-@(form: Form[_], waypoints: Waypoints, period: Period, maybeExclusion: Option[EtmpExclusion], hasFinalReturn: Boolean)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, period: Period, maybeExclusion: Option[EtmpExclusion], isFinalReturn: Boolean)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(
     form,
-    if(maybeExclusion.isDefined && !hasFinalReturn) {
+    if(maybeExclusion.isDefined && isFinalReturn) {
         messages("startReturn.finalReturn")
     } else {
         messages("startReturn.title", period.displayText)
@@ -46,7 +46,7 @@
             RadiosViewModel.yesNo(
                 field = form("value"),
                 legend = LegendViewModel(
-                    if(maybeExclusion.isDefined) {
+                    if(maybeExclusion.isDefined && isFinalReturn) {
                         messages("startReturn.finalReturn")
                     } else {
                         messages("startReturn.heading", period.displayText)

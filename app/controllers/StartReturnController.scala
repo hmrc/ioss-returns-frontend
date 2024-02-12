@@ -16,7 +16,6 @@
 
 package controllers
 
-import connectors.ReturnStatusConnector
 import controllers.actions._
 import forms.StartReturnFormProvider
 import models.etmp.EtmpExclusion
@@ -25,11 +24,13 @@ import pages.{StartReturnPage, Waypoints}
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import services.PeriodService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax.FutureOps
 import views.html.StartReturnView
 
-import java.time.{Clock, Instant}
+import java.time.format.DateTimeFormatter
+import java.time.{Clock, Instant, LocalDate}
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -37,7 +38,7 @@ class StartReturnController @Inject()(
                                        override val messagesApi: MessagesApi,
                                        cc: AuthenticatedControllerComponents,
                                        formProvider: StartReturnFormProvider,
-                                       returnStatusConnector: ReturnStatusConnector,
+                                       periodService: PeriodService,
                                        view: StartReturnView,
                                        clock: Clock
                                      )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
@@ -46,21 +47,22 @@ class StartReturnController @Inject()(
 
   val form: Form[Boolean] = formProvider()
 
-  def onPageLoad(waypoints: Waypoints, period: Period): Action[AnyContent] = (cc.authAndGetOptionalData andThen cc.checkExcludedTraderOptional(period)).async {
+  def onPageLoad(waypoints: Waypoints, period: Period): Action[AnyContent] = (cc.authAndGetOptionalData andThen cc.checkExcludedTraderOptional(period)) {
     implicit request =>
       // TODO check for starting correct period
 
       val maybeExclusion: Option[EtmpExclusion] = request.registrationWrapper.registration.exclusions.lastOption
 
-      val getCurrentReturns = returnStatusConnector.getCurrentReturns(request.iossNumber)
+      val nextPeriodString = periodService.getNextPeriod(period).displayYearMonth
 
-      getCurrentReturns.map {
-        case Right(currentReturn) =>
-          val hasFinalReturn = currentReturn.finalReturnsCompleted
-            Ok(view(form, waypoints, period, maybeExclusion, hasFinalReturn))
-        case Left(_) =>
-          Ok(view(form, waypoints, period, maybeExclusion, hasFinalReturn = false))
+      val nextPeriod: LocalDate = LocalDate.parse(nextPeriodString, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+
+      val isFinalReturn = maybeExclusion.fold(false) { exclusions =>
+        nextPeriod.isAfter(exclusions.effectiveDate)
       }
+
+      Ok(view(form, waypoints, period, maybeExclusion, isFinalReturn))
+
   }
 
   def onSubmit(waypoints: Waypoints, period: Period): Action[AnyContent] = (cc.authAndGetOptionalData andThen cc.checkExcludedTraderOptional(period)).async {
@@ -68,17 +70,17 @@ class StartReturnController @Inject()(
 
       val maybeExclusion: Option[EtmpExclusion] = request.registrationWrapper.registration.exclusions.lastOption
 
-      val getCurrentReturns = returnStatusConnector.getCurrentReturns(request.iossNumber)
+      val nextPeriodString = periodService.getNextPeriod(period).displayYearMonth
+
+      val nextPeriod: LocalDate = LocalDate.parse(nextPeriodString, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+
+      val isFinalReturn = maybeExclusion.fold(false) { exclusions =>
+        nextPeriod.isAfter(exclusions.effectiveDate)
+      }
 
       form.bindFromRequest().fold(
         formWithErrors =>
-          getCurrentReturns.map {
-            case Right(currentReturn) =>
-              val hasFinalReturn = currentReturn.finalReturnsCompleted
-                BadRequest(view(formWithErrors, waypoints, period, maybeExclusion, hasFinalReturn))
-            case Left(_) =>
-              BadRequest(view(formWithErrors, waypoints, period, maybeExclusion, hasFinalReturn = false))
-          },
+          BadRequest(view(formWithErrors, waypoints, period, maybeExclusion, isFinalReturn)).toFuture,
 
         value => {
 
