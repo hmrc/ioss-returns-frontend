@@ -37,7 +37,7 @@
         containsCorrections: Boolean,
         missingData: List[String],
         maybeExclusion: Option[EtmpExclusion],
-        hasSubmittedFinalReturn: Boolean,
+        isFinalReturn: Boolean,
 )(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(messages("checkYourAnswers.title"))) {
