@@ -85,7 +85,7 @@ class CorrectPreviousReturnControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[CorrectPreviousReturnView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, waypoints, period, maybeExclusion = None)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, waypoints, period, maybeExclusion = None, isFinalReturn = false)(request, messages(application)).toString
       }
     }
 
@@ -107,7 +107,13 @@ class CorrectPreviousReturnControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(true), waypoints, period, maybeExclusion = None)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(
+          form.fill(true),
+          waypoints,
+          period,
+          maybeExclusion = None,
+          isFinalReturn = false
+        )(request, messages(application)).toString
       }
     }
 
@@ -187,7 +193,13 @@ class CorrectPreviousReturnControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, waypoints, period, maybeExclusion = None)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(
+          boundForm,
+          waypoints,
+          period,
+          maybeExclusion = None,
+          isFinalReturn = false
+        )(request, messages(application)).toString
       }
     }
 
