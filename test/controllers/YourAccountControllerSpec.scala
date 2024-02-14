@@ -182,7 +182,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               nextPeriod.firstDay,
               nextPeriod.lastDay,
               nextPeriod.paymentDeadline,
-              SubmissionStatus.Next,
+              SubmissionStatus.Complete,
               inProgress = false,
               isOldest = false
             )),
@@ -223,6 +223,72 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           paymentsViewModel,
           appConfig.amendRegistrationUrl,
           Some(appConfig.rejoinThisServiceUrl),
+          None,
+          None,
+          exclusionsEnabled = true,
+          Some(registrationWrapperWithExclusion.registration.exclusions.head),
+          hasSubmittedFinalReturn = true,
+          ReturnsViewModel(
+            Seq(
+              Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
+            )
+          )(messages(application))
+        )(request, messages(application)).toString
+      }
+    }
+
+    "must return OK with no rejoinThisService link when there is an outstanding return, which is within 3 years from due date" in {
+      val registrationWrapperWithExclusion: RegistrationWrapper = createRegistrationWrapperWithExclusion(LocalDate.now())
+
+      when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
+        Future.successful(
+          Right(CurrentReturns(
+            Seq(Return(
+              nextPeriod,
+              nextPeriod.firstDay,
+              nextPeriod.lastDay,
+              nextPeriod.paymentDeadline,
+              SubmissionStatus.Due,
+              inProgress = false,
+              isOldest = false
+            )),
+            finalReturnsCompleted = true
+          ))
+        )
+
+      val mockFinancialDataConnector = mock[FinancialDataConnector]
+
+      val application = applicationBuilder(
+        userAnswers = Some(emptyUserAnswers),
+        registration = registrationWrapperWithExclusion,
+        clock = Some(Clock.systemUTC()))
+        .overrides(
+          bind[ReturnStatusConnector].toInstance(returnStatusConnector),
+          bind[FinancialDataConnector].toInstance(mockFinancialDataConnector)
+        )
+        .build()
+
+
+      val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty)(messages(application))
+      when(mockFinancialDataConnector.prepareFinancialData()(any())) thenReturn
+        Future.successful(Right(PrepareData(List.empty, List.empty, List.empty, 0, 0, iossNumber)))
+
+      running(application) {
+
+        val request = FakeRequest(GET, routes.YourAccountController.onPageLoad(waypoints).url)
+
+        val result = route(application, request).value
+
+        val view = application.injector.instanceOf[YourAccountView]
+        val appConfig = application.injector.instanceOf[FrontendAppConfig]
+
+        status(result) mustBe OK
+        contentAsString(result) mustBe view(
+          registrationWrapperWithExclusion.vatInfo.getName,
+          iossNumber,
+          paymentsViewModel,
+          appConfig.amendRegistrationUrl,
+          None,
           None,
           None,
           exclusionsEnabled = true,
