@@ -39,7 +39,7 @@ error.summary.title = There is a problem
 
 yourAccount.title = Your Import One Stop Shop Account
 yourAccount.heading = Your Import One Stop Shop Account
-yourAccount.iossNumber = VAT registration number: {0}
+yourAccount.iossNumber = IOSS number: {0}
 yourAccount.paragraph = You can correct a previous return when you submit your next one.
 yourAccount.yourReturns.heading = Your returns
 yourAccount.yourReturns.startReturn = Start your {0} return
