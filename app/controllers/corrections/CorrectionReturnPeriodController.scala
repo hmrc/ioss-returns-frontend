@@ -16,6 +16,7 @@
 
 package controllers.corrections
 
+import controllers.CheckCorrectionsTimeLimit.isOlderThanThreeYears
 import controllers.actions._
 import forms.corrections.CorrectionReturnPeriodFormProvider
 import models.{Index, Period}
@@ -29,18 +30,21 @@ import queries.corrections.DeriveCompletedCorrectionPeriods
 import services.ObligationsService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.ConvertPeriodKey
+import utils.ConvertPeriodKey.yearFromEtmpPeriodKey
 import views.html.corrections.CorrectionReturnPeriodView
 
+import java.time.{Clock, LocalDate}
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class CorrectionReturnPeriodController @Inject()(
-                                         override val messagesApi: MessagesApi,
-                                         cc: AuthenticatedControllerComponents,
-                                         formProvider: CorrectionReturnPeriodFormProvider,
-                                         obligationService: ObligationsService,
-                                         view: CorrectionReturnPeriodView
-                                 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                                  override val messagesApi: MessagesApi,
+                                                  cc: AuthenticatedControllerComponents,
+                                                  formProvider: CorrectionReturnPeriodFormProvider,
+                                                  obligationService: ObligationsService,
+                                                  view: CorrectionReturnPeriodView,
+                                                  clock: Clock
+                                                )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
@@ -51,9 +55,13 @@ class CorrectionReturnPeriodController @Inject()(
 
       val fulfilledObligations = obligationService.getFulfilledObligations(request.iossNumber)
 
+      val filteredFulfilledObligations = fulfilledObligations.map { obligations =>
+        obligations.filter(obligation => !isOlderThanThreeYears(Period.fromKey(obligation.periodKey).paymentDeadline, clock))
+      }
+
       val selectedYear = request.userAnswers.get(CorrectionReturnYearPage(index)).getOrElse(0)
 
-      fulfilledObligations.map { obligations =>
+      filteredFulfilledObligations.map { obligations =>
         val obligationYears = obligations.filter(obligation => ConvertPeriodKey.yearFromEtmpPeriodKey(obligation.periodKey) == selectedYear)
 
         val correctionPeriod = obligationYears.map(obligation => ConvertPeriodKey.periodkeyToPeriod(obligation.periodKey))
@@ -82,9 +90,14 @@ class CorrectionReturnPeriodController @Inject()(
       val period = request.userAnswers.period
 
       val fulfilledObligations = obligationService.getFulfilledObligations(request.iossNumber)
+
+      val filteredFulfilledObligations = fulfilledObligations.map { obligations =>
+        obligations.filter(obligation => !isOlderThanThreeYears(Period.fromKey(obligation.periodKey).paymentDeadline, clock))
+      }
+
       val selectedYear = request.userAnswers.get(CorrectionReturnYearPage(index)).getOrElse(0)
 
-      fulfilledObligations.flatMap { obligations =>
+      filteredFulfilledObligations.flatMap { obligations =>
 
         val obligationYears = obligations.filter(obligation => ConvertPeriodKey.yearFromEtmpPeriodKey(obligation.periodKey) == selectedYear)
 
@@ -101,7 +114,8 @@ class CorrectionReturnPeriodController @Inject()(
           formWithErrors => {
             Future.successful(BadRequest(
               view(formWithErrors, waypoints, period, correctionPeriod, index)
-            ))},
+            ))
+          },
 
           value =>
             for {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,16 @@
  * limitations under the License.
  */
 
-package config
+package controllers
 
-object Constants {
+import config.Constants.correctionsPeriodsLimit
 
-    val maxCurrencyAmount: BigDecimal = 1000000000
-    val minCurrencyAmount: BigDecimal = -1000000000
-    val correctionsPeriodsLimit: Int = 3
+import java.time.{Clock, LocalDate}
 
+object CheckCorrectionsTimeLimit {
+
+  def isOlderThanThreeYears(dueDate: LocalDate, clock: Clock): Boolean = {
+    val today: LocalDate = LocalDate.now(clock)
+    today.isAfter(dueDate.plusYears(correctionsPeriodsLimit))
+  }
 }

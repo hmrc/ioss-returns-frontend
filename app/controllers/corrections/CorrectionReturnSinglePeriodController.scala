@@ -16,6 +16,7 @@
 
 package controllers.corrections
 
+import controllers.CheckCorrectionsTimeLimit.isOlderThanThreeYears
 import controllers.actions._
 import forms.corrections.CorrectionReturnSinglePeriodFormProvider
 import models.{Index, Period}
@@ -31,16 +32,18 @@ import utils.ConvertPeriodKey
 import utils.FutureSyntax.FutureOps
 import views.html.corrections.CorrectionReturnSinglePeriodView
 
+import java.time.Clock
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class CorrectionReturnSinglePeriodController @Inject()(
-                                         override val messagesApi: MessagesApi,
-                                         cc: AuthenticatedControllerComponents,
-                                         formProvider: CorrectionReturnSinglePeriodFormProvider,
-                                         obligationService: ObligationsService,
-                                         view: CorrectionReturnSinglePeriodView
-                                 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                                        override val messagesApi: MessagesApi,
+                                                        cc: AuthenticatedControllerComponents,
+                                                        formProvider: CorrectionReturnSinglePeriodFormProvider,
+                                                        obligationService: ObligationsService,
+                                                        view: CorrectionReturnSinglePeriodView,
+                                                        clock: Clock
+                                                      )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
@@ -53,10 +56,14 @@ class CorrectionReturnSinglePeriodController @Inject()(
 
       val fulfilledObligations = obligationService.getFulfilledObligations(request.iossNumber)
 
-      fulfilledObligations.flatMap { obligations =>
+      val filteredFulfilledObligations = fulfilledObligations.map { obligations =>
+        obligations.filter(obligation => !isOlderThanThreeYears(Period.fromKey(obligation.periodKey).paymentDeadline, clock))
+      }
+
+      filteredFulfilledObligations.flatMap { obligations =>
         val completedCorrectionPeriods: List[Period] = request.userAnswers.get(DeriveCompletedCorrectionPeriods).getOrElse(List.empty)
 
-        val correctionMonths = obligations.map (obligation => ConvertPeriodKey.periodkeyToPeriod(obligation.periodKey))
+        val correctionMonths = obligations.map(obligation => ConvertPeriodKey.periodkeyToPeriod(obligation.periodKey))
 
         val uncompletedCorrectionPeriods = correctionMonths.diff(completedCorrectionPeriods).distinct
 
@@ -77,32 +84,34 @@ class CorrectionReturnSinglePeriodController @Inject()(
 
       val fulfilledObligations = obligationService.getFulfilledObligations(request.iossNumber)
 
-      fulfilledObligations.flatMap { obligations =>
+      val filteredFulfilledObligations = fulfilledObligations.map { obligations =>
+        obligations.filter(obligation => !isOlderThanThreeYears(Period.fromKey(obligation.periodKey).paymentDeadline, clock))
+      }
+
+      filteredFulfilledObligations.flatMap { obligations =>
 
         val completedCorrectionPeriods: List[Period] = request.userAnswers.get(DeriveCompletedCorrectionPeriods).getOrElse(List.empty)
 
-        val correctionMonths = obligations.map (obligation => ConvertPeriodKey.periodkeyToPeriod(obligation.periodKey))
+        val correctionMonths = obligations.map(obligation => ConvertPeriodKey.periodkeyToPeriod(obligation.periodKey))
 
         val uncompletedCorrectionPeriods = correctionMonths.diff(completedCorrectionPeriods).distinct
 
         uncompletedCorrectionPeriods.size match {
           case 0 => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
-          case 1 => form.bindFromRequest ().fold(
+          case 1 => form.bindFromRequest().fold(
             formWithErrors => {
               Future.successful(BadRequest(view(formWithErrors, waypoints, period, uncompletedCorrectionPeriods.head, index)))
             },
             value =>
-                for {
-                  updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionReturnSinglePeriodPage(index), value))
-                  updatedWithPeriodAnswers <- Future.fromTry(updatedAnswers.set(CorrectionReturnPeriodPage(index), uncompletedCorrectionPeriods.head))
-                  _ <- cc.sessionRepository.set(updatedWithPeriodAnswers)
-                } yield Redirect(CorrectionReturnSinglePeriodPage(index).navigate(waypoints, request.userAnswers, updatedWithPeriodAnswers).route)
+              for {
+                updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionReturnSinglePeriodPage(index), value))
+                updatedWithPeriodAnswers <- Future.fromTry(updatedAnswers.set(CorrectionReturnPeriodPage(index), uncompletedCorrectionPeriods.head))
+                _ <- cc.sessionRepository.set(updatedWithPeriodAnswers)
+              } yield Redirect(CorrectionReturnSinglePeriodPage(index).navigate(waypoints, request.userAnswers, updatedWithPeriodAnswers).route)
 
           )
           case _ => Future.successful(Redirect(controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(waypoints, index)))
         }
       }
   }
-
-
 }
