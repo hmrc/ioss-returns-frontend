@@ -48,7 +48,7 @@ object RegistrationData extends SpecBase {
     postcode = Some(arbitrary[String].sample.value)
   )
   val etmpSchemeDetails: EtmpSchemeDetails = EtmpSchemeDetails(
-    commencementDate = LocalDate.now.format(eisDateFormatter),
+    commencementDate = LocalDate.now,
     euRegistrationDetails = Seq(etmpDisplayEuRegistrationDetails),
     previousEURegistrationDetails = Seq(etmpEuPreviousRegistrationDetails),
     websites = Seq(arbitrary[EtmpWebsite].sample.value),
