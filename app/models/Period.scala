@@ -87,6 +87,27 @@ final case class Period(year: Int, month: Month) {
     s"${month.getDisplayName(TextStyle.FULL, Locale.ENGLISH)}"
 
   override def toString: String = s"$year-M${month.getValue}"
+
+  def getNext: Period = {
+    if (this.month == Month.DECEMBER)
+      Period(this.year + 1, Month.JANUARY)
+    else
+      Period(this.year, this.month.plus(1))
+  }
+
+  def getPrevious: Period = {
+    if (this.month == Month.JANUARY)
+      Period(this.year - 1, Month.DECEMBER)
+    else
+      Period(this.year, this.month.minus(1))
+  }
+
+  def isBefore(other: Period): Boolean = {
+    val yearMonth: YearMonth = YearMonth.of(year, month)
+    val yearMonthOther: YearMonth = YearMonth.of(other.year, other.month)
+
+    yearMonth.isBefore(yearMonthOther)
+  }
 }
 
 object Period {
