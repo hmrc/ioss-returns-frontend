@@ -19,8 +19,8 @@ package controllers.corrections
 import base.SpecBase
 import controllers.routes
 import forms.corrections.CorrectionReturnPeriodFormProvider
-import models.{Index, Period, UserAnswers}
 import models.etmp.{EtmpObligationDetails, EtmpObligationsFulfilmentStatus}
+import models.{Index, Period, UserAnswers}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito.{times, verify, when}
@@ -36,12 +36,16 @@ import utils.ConvertPeriodKey
 import utils.FutureSyntax.FutureOps
 import views.html.corrections.CorrectionReturnPeriodView
 
-import java.time.Month
+import java.time._
 import scala.concurrent.Future
 
 class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
 
-  private val periodKeys = Seq("23AL", "23AK")
+  private val date: LocalDate = LocalDate.of(2026, 5, 13)
+  private val instant: Instant = date.atStartOfDay(ZoneId.systemDefault).toInstant
+  private val stubbedClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+
+  private val periodKeys = Seq("23AL", "23AK", "23AD")
 
   val selectedYear: UserAnswers = emptyUserAnswers.set(CorrectionReturnYearPage(Index(0)), 2023).success.value
 
@@ -57,6 +61,14 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
     EtmpObligationDetails(
       status = EtmpObligationsFulfilmentStatus.Fulfilled,
       periodKey = "23AK"
+    ),
+    EtmpObligationDetails(
+      status = EtmpObligationsFulfilmentStatus.Fulfilled,
+      periodKey = "23AD"
+    ),
+    EtmpObligationDetails(
+      status = EtmpObligationsFulfilmentStatus.Fulfilled,
+      periodKey = "23AC"
     )
   )
 
@@ -81,11 +93,13 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
 
   "CorrectionReturnPeriod Controller" - {
 
-    "must return OK and the correct view for a GET" in {
+    "must return OK and the correct view for a GET" - {
+
+      "and must not contain correction years and months older than 3 years from the due date (payment deadline)" in {
 
       when(obligationService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
 
-      val application = applicationBuilder(userAnswers = Some(selectedYear))
+      val application = applicationBuilder(userAnswers = Some(selectedYear), clock = Some(stubbedClock))
         .overrides(bind[ObligationsService].toInstance(obligationService))
         .build()
 
@@ -101,12 +115,13 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
           form, waypoints, period, monthNames, index)(request, messages(application)).toString
       }
     }
+  }
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
       when(obligationService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
 
-      val application = applicationBuilder(userAnswers = Some(selectedYear))
+      val application = applicationBuilder(userAnswers = Some(selectedYear), clock = Some(stubbedClock))
         .overrides(bind[ObligationsService].toInstance(obligationService))
         .build()
 
@@ -134,7 +149,7 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
       val application =
-        applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(stubbedClock))
           .overrides(bind[ObligationsService].toInstance(obligationService))
           .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
           .build()
@@ -158,7 +173,7 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
 
       when(obligationService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
 
-      val application = applicationBuilder(userAnswers = Some(selectedYear))
+      val application = applicationBuilder(userAnswers = Some(selectedYear), clock = Some(stubbedClock))
         .overrides(bind[ObligationsService].toInstance(obligationService))
         .build()
 

@@ -19,8 +19,8 @@ package controllers.corrections
 import base.SpecBase
 import controllers.routes
 import forms.corrections.CorrectionReturnYearFormProvider
-import models.etmp.{EtmpObligationDetails, EtmpObligationsFulfilmentStatus}
 import models.Index
+import models.etmp.{EtmpObligationDetails, EtmpObligationsFulfilmentStatus}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito
@@ -37,11 +37,16 @@ import services.ObligationsService
 import utils.FutureSyntax.FutureOps
 import views.html.corrections.CorrectionReturnYearView
 
+import java.time.{Clock, Instant, LocalDate, ZoneId}
 import scala.concurrent.Future
 
 class CorrectionReturnYearControllerSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
 
-  private val periodKeys = Seq("23AL", "23AK" , "22AK")
+  private val date: LocalDate = LocalDate.of(2024, 2, 13)
+  private val instant: Instant = date.atStartOfDay(ZoneId.systemDefault).toInstant
+  private val stubbedClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+
+  private val periodKeys = Seq("23AL", "23AK" , "22AK", "21AA")
 
   private val periodYears: Seq[Int] = periodKeys.map { periodYear =>
     s"20${periodYear.substring(0, 2)}".toInt
@@ -63,6 +68,14 @@ class CorrectionReturnYearControllerSpec extends SpecBase with MockitoSugar with
     EtmpObligationDetails(
       status = EtmpObligationsFulfilmentStatus.Fulfilled,
       periodKey = "22AK"
+    ),
+    EtmpObligationDetails(
+      status = EtmpObligationsFulfilmentStatus.Fulfilled,
+      periodKey = "21AA"
+    ),
+    EtmpObligationDetails(
+      status = EtmpObligationsFulfilmentStatus.Fulfilled,
+      periodKey = "20AL"
     )
   )
 
@@ -78,11 +91,11 @@ class CorrectionReturnYearControllerSpec extends SpecBase with MockitoSugar with
 
   "CorrectionReturnYear Controller" - {
 
-    "must return OK and the correct view for a GET" in {
+    "must return OK and the correct view for a GET and must not contain correction years older than 3 years from the due date (payment deadline)" in {
 
       when(obligationService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(stubbedClock))
         .overrides(bind[ObligationsService].toInstance(obligationService))
         .build()
 
@@ -104,9 +117,9 @@ class CorrectionReturnYearControllerSpec extends SpecBase with MockitoSugar with
 
       when(obligationService.getFulfilledObligations(any())(any())).thenReturn(Future.successful(etmpObligationDetails))
 
-      val userAnswers = emptyUserAnswers.set(CorrectionReturnYearPage(Index(0)), 2021).success.value
+      val userAnswers = emptyUserAnswers.set(CorrectionReturnYearPage(Index(0)), 2024).success.value
 
-      val application = applicationBuilder(userAnswers = Some(userAnswers))
+      val application = applicationBuilder(userAnswers = Some(userAnswers), clock = Some(stubbedClock))
         .overrides(bind[ObligationsService].toInstance(obligationService))
         .build()
 
@@ -139,7 +152,7 @@ class CorrectionReturnYearControllerSpec extends SpecBase with MockitoSugar with
         )))
 
       val application =
-        applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(stubbedClock))
           .overrides(bind[ObligationsService].toInstance(obligationService))
           .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
           .build()
@@ -161,7 +174,7 @@ class CorrectionReturnYearControllerSpec extends SpecBase with MockitoSugar with
 
       when(obligationService.getFulfilledObligations(any())(any())).thenReturn(Future.successful(etmpObligationDetails))
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(stubbedClock))
         .overrides(bind[ObligationsService].toInstance(obligationService))
         .build()
 
