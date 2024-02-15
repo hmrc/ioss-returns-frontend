@@ -43,13 +43,15 @@ class StartReturnController @Inject()(
 
   val form: Form[Boolean] = formProvider()
 
-  def onPageLoad(waypoints: Waypoints, period: Period): Action[AnyContent] = (cc.authAndGetOptionalData andThen cc.checkExcludedTraderOptional(period)) {
+  def onPageLoad(waypoints: Waypoints, period: Period): Action[AnyContent] = (cc.authAndGetOptionalData andThen
+    cc.checkExcludedTraderOptional(period) andThen cc.checkCommencementDateOptional(period)) {
     implicit request =>
       // TODO check for starting correct period
       Ok(view(form, waypoints, period))
   }
 
-  def onSubmit(waypoints: Waypoints, period: Period): Action[AnyContent] = (cc.authAndGetOptionalData andThen cc.checkExcludedTraderOptional(period)).async {
+  def onSubmit(waypoints: Waypoints, period: Period): Action[AnyContent] = (cc.authAndGetOptionalData andThen
+    cc.checkExcludedTraderOptional(period) andThen cc.checkCommencementDateOptional(period)).async {
     implicit request =>
 
       form.bindFromRequest().fold(

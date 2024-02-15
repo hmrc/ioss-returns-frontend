@@ -34,12 +34,13 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.ListItem
 import views.html.corrections.VatPeriodCorrectionsListView
 
-import java.time.Month
+import java.time.{LocalDate, Month}
 import scala.concurrent.Future
 
 class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
   private val year = 2021
   private val periodJuly2021 = Period(year, Month.JULY)
+  override def commencementDate: LocalDate = periodJuly2021.lastDay.minusDays(1)
 
   private lazy val vatPeriodCorrectionsListRoute = controllers
     .corrections.routes.VatPeriodCorrectionsListController.onPageLoad(EmptyWaypoints, periodJuly2021).url

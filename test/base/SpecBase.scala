@@ -60,9 +60,14 @@ trait SpecBase
   val twentyPercentVatRate = VatRateFromCountry(20, VatRateType.Reduced, arbitrary[LocalDate].sample.value)
   val fivePercentVatRate = VatRateFromCountry(5, VatRateType.Reduced, arbitrary[LocalDate].sample.value)
 
-  val registrationWrapper: RegistrationWrapper = {
+  def commencementDate: LocalDate = period.lastDay.minusDays(1)
+
+  lazy val registrationWrapper: RegistrationWrapper = {
     val arbirtyRegistration = Arbitrary.arbitrary[RegistrationWrapper].sample.value
-    arbirtyRegistration.copy(registration = arbirtyRegistration.registration.copy(exclusions = Seq.empty))
+    arbirtyRegistration.copy(registration = arbirtyRegistration.registration.copy(
+      schemeDetails = arbirtyRegistration.registration.schemeDetails.copy(commencementDate = commencementDate),
+      exclusions = Seq.empty
+    ))
   }
 
   val arbitraryDate: LocalDate = datesBetween(LocalDate.of(2023, 3, 1), LocalDate.of(2025, 12, 31)).sample.value

@@ -47,6 +47,10 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
 
   def checkExcludedTraderOptional: CheckExcludedTraderOptionalFilter
 
+  def checkCommencementDate: CheckCommencementDateFilter
+
+  def checkCommencementDateOptional: CheckCommencementDateOptionalFilter
+
   def auth: ActionBuilder[IdentifierRequest, AnyContent] =
     actionBuilder andThen identify
 
@@ -65,7 +69,7 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
   }
 
   def authAndRequireData(): ActionBuilder[DataRequest, AnyContent] = {
-    authAndGetOptionalData() andThen requireData andThen checkExcludedTrader()
+    authAndGetOptionalData() andThen requireData andThen checkExcludedTrader() andThen checkCommencementDate()
   }
 
   def authAndGetDataAndCorrectionEligible(): ActionBuilder[DataRequest, AnyContent] = {
@@ -91,5 +95,7 @@ case class DefaultAuthenticatedControllerComponents @Inject()(
                                                                checkBouncedEmail: CheckBouncedEmailFilterProvider,
                                                                requirePreviousReturns: CheckSubmittedReturnsFilterProvider,
                                                                checkExcludedTrader: CheckExcludedTraderFilter,
-                                                               checkExcludedTraderOptional: CheckExcludedTraderOptionalFilter
+                                                               checkExcludedTraderOptional: CheckExcludedTraderOptionalFilter,
+                                                               checkCommencementDate: CheckCommencementDateFilter,
+                                                               checkCommencementDateOptional: CheckCommencementDateOptionalFilter
                                                              ) extends AuthenticatedControllerComponents
