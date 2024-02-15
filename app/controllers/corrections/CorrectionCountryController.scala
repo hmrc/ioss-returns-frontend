@@ -16,20 +16,19 @@
 
 package controllers.corrections
 
-import connectors.{RegistrationConnector, VatReturnConnector}
+import connectors.VatReturnConnector
 import controllers.actions._
 import forms.corrections.CorrectionCountryFormProvider
-import models.{Index, Period}
+import models.Index
 import pages.Waypoints
 import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import queries.{AllCorrectionCountriesQuery, CorrectionPeriodQuery}
+import queries.AllCorrectionCountriesQuery
+import services.CorrectionsService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import utils.FutureSyntax.FutureOps
 import views.html.corrections.CorrectionCountryView
 
-import java.time.LocalDate
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -38,47 +37,54 @@ class CorrectionCountryController @Inject()(
                                              cc: AuthenticatedControllerComponents,
                                              formProvider: CorrectionCountryFormProvider,
                                              vatReturnConnector: VatReturnConnector,
+                                             correctionsService: CorrectionsService,
                                              view: CorrectionCountryView
                                            )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with CorrectionBaseController {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(waypoints: Waypoints, periodIndex: Index, index: Index): Action[AnyContent] = cc.authAndRequireData() {
+  def onPageLoad(waypoints: Waypoints, periodIndex: Index, index: Index): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
 
-      getCountry(waypoints, periodIndex, index) { country =>
+//      getCountry(waypoints, periodIndex, index) { country =>
 
-        val period = request.userAnswers.period
+        getCorrectionReturnPeriod(waypoints, periodIndex) { correctionReturnPeriod =>
 
-        val periodFrom = request.userAnswers.get(CorrectionPeriodQuery(periodIndex)).map(_.correctionReturnPeriod).getOrElse()
+          val period = request.userAnswers.period
 
-        val x = Future.sequence(getAllPeriods(periodFrom, period).sortBy(_.firstDay).map(vatReturnConnector.get))
+          val allReturnsInPeriodRange = Future.sequence(correctionsService.getAllPeriods(correctionReturnPeriod, period).sortBy(_.firstDay).map(vatReturnConnector.get))
 
-//         Get original vat return and filter by country and get vat amount
-          val originalVatReturnAmount = for {
-            etmpVatReturnResult <- vatReturnConnector.get(period)
-          } yield etmpVatReturnResult.map { vatReturn =>
-            vatReturn.goodsSupplied.filter(_.msOfConsumption == country.code)
+//          for {
+//            x <- allReturnsInPeriodRange
+//          } yield
+//          println(s"allReturnsInPeriodRange: $x")
 
+          // Get original vat return and filter by country and get vat amount
+//          val originalVatReturnAmount = for {
+//            etmpVatReturnResult <- vatReturnConnector.get(period)
+//          } yield etmpVatReturnResult.map { vatReturn =>
+//            vatReturn.goodsSupplied.filter(_.msOfConsumption == country.code)
+//
+//          }
+
+          val form = formProvider(
+            index,
+            request.userAnswers.get(AllCorrectionCountriesQuery(periodIndex))
+              .getOrElse(Seq.empty)
+              .map(_.correctionCountry)
+          )
+
+          val preparedForm = request.userAnswers.get(CorrectionCountryPage(periodIndex, index)) match {
+            case None => form
+            case Some(value) => form.fill(value)
           }
 
-        val form = formProvider(
-          index,
-          request.userAnswers.get(AllCorrectionCountriesQuery(periodIndex))
-            .getOrElse(Seq.empty)
-            .map(_.correctionCountry)
-        )
-
-        val preparedForm = request.userAnswers.get(CorrectionCountryPage(periodIndex, index)) match {
-          case None => form
-          case Some(value) => form.fill(value)
+          request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex)) match {
+            case Some(correctionPeriod) => Ok(view(preparedForm, waypoints, period, periodIndex, correctionPeriod, index))
+            case None => Redirect(controllers.routes.JourneyRecoveryController.onPageLoad().url)
+          }
         }
-
-        request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex)) match {
-          case Some(correctionPeriod) => Ok(view(preparedForm, waypoints, period, periodIndex, correctionPeriod, index))
-          case None => Redirect(controllers.routes.JourneyRecoveryController.onPageLoad().url)
-        }
-      }
+//      }
   }
 
   def onSubmit(waypoints: Waypoints, periodIndex: Index, index: Index): Action[AnyContent] = cc.authAndRequireData().async {
@@ -106,19 +112,5 @@ class CorrectionCountryController @Inject()(
             _ <- cc.sessionRepository.set(updatedAnswers)
           } yield Redirect(CorrectionCountryPage(periodIndex, index).navigate(waypoints, request.userAnswers, updatedAnswers).route)
       )
-  }
-
-  def getAllPeriods(periodFrom: Period, periodTo: Period): Seq[Period] = {
-
-    def getAllPeriodsInRange(currentPeriods: Seq[Period], periodFrom: Period, periodTo: Period): Seq[Period] = {
-      (periodFrom, periodTo) match {
-        case (pf, pt) if pf.isBefore(pt) =>
-          val updatedPeriod = currentPeriods :+ pf
-          getAllPeriodsInRange(updatedPeriod, pf.getNext, pt)
-        case _ => currentPeriods
-      }
-    }
-
-    getAllPeriodsInRange(Seq.empty, periodFrom, periodTo)
   }
 }

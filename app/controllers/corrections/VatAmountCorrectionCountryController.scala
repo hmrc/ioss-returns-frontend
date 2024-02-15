@@ -49,6 +49,7 @@ class VatAmountCorrectionCountryController @Inject()(
         val period = request.userAnswers.period
         val correctionPeriod = request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex))
 
+        // TODO -> Use getCorrectionReturnPeriod -> Change all other uses of request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex))
         correctionPeriod match {
           case Some(correctionPeriod) =>
             withCountryCorrected(waypoints, period, periodIndex, countryIndex) {
@@ -95,6 +96,7 @@ class VatAmountCorrectionCountryController @Inject()(
       }
     }
 
+  // TODO -> Remove this ???
 
   private def withCountryCorrected(waypoints: Waypoints, period: Period, periodIndex: Index, index: Index)
                                   (block: Country => Future[Result])
@@ -110,6 +112,7 @@ class VatAmountCorrectionCountryController @Inject()(
               ).route))
         }
         )(country =>
+          // TODO -> Could add if statement here to determine if we redirect to this page or not based on ???
           request.userAnswers.get(UndeclaredCountryCorrectionPage(periodIndex, index)) match {
               case Some(true) =>
                 block(country)

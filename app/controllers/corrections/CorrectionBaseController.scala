@@ -60,7 +60,7 @@ trait CorrectionBaseController {
       .getOrElse(Redirect(JourneyRecoveryPage.route(waypoints)).toFuture)
 
   protected def getCorrectionReturnPeriod(waypoints: Waypoints, periodIndex: Index)
-                                         (block: Period => Future[Result])
+                                         (block: Period => Result)
                                          (implicit request: DataRequest[AnyContent]): Future[Result] =
     request.userAnswers
       .get(CorrectionPeriodQuery(periodIndex))
