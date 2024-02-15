@@ -105,6 +105,7 @@ checkYourAnswers.label.country = Country
 checkYourAnswers.label.amount = Amount
 checkYourAnswers.heading.vatOwned = VAT owed
 checkYourAnswers.heading.corrections.vatOwned = VAT owed (including corrections)
+checkYourAnswers.corrections.warning = After you submit your return, you will not be able to make any corrections using the Import One Stop Shop service.
 
 journeyRecovery.continue.title = Sorry, there is a problem with the service
 journeyRecovery.continue.heading = Sorry, there is a problem with the service
@@ -131,6 +132,7 @@ startReturn.heading = Do you want to start your return for {0}?
 startReturn.checkYourAnswersLabel = startReturn
 startReturn.error.required = Select yes if you want to start your return
 startReturn.change.hidden = Start return
+startReturn.finalReturn = Do you want to start your final return?
 
 soldGoods.title = Did you make eligible sales into the EU or Northern Ireland in {0}?
 soldGoods.heading = Did you make eligible sales into the EU or Northern Ireland in {0}?
@@ -227,6 +229,7 @@ correctPreviousReturn.heading = Do you want to correct a previous return?
 correctPreviousReturn.checkYourAnswersLabel = Corrections
 correctPreviousReturn.error.required = Select yes if you want to correct a previous return
 correctPreviousReturn.change.hidden = if you want to correct a previous return
+correctPreviousReturn.lastChance.hint = This is your last chance to correct a previous return on this service.
 
 correctionReturnSinglePeriod.title = Do you want to correct the VAT amounts in your {0} return?
 correctionReturnSinglePeriod.heading = Do you want to correct the VAT amounts in your {0} return?

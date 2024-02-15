@@ -18,16 +18,19 @@ package controllers
 
 import controllers.actions._
 import forms.StartReturnFormProvider
+import models.etmp.EtmpExclusion
 import models.{Period, UserAnswers}
 import pages.{StartReturnPage, Waypoints}
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import services.PeriodService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax.FutureOps
 import views.html.StartReturnView
 
-import java.time.{Clock, Instant}
+import java.time.format.DateTimeFormatter
+import java.time.{Clock, Instant, LocalDate}
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -35,6 +38,7 @@ class StartReturnController @Inject()(
                                        override val messagesApi: MessagesApi,
                                        cc: AuthenticatedControllerComponents,
                                        formProvider: StartReturnFormProvider,
+                                       periodService: PeriodService,
                                        view: StartReturnView,
                                        clock: Clock
                                      )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
@@ -46,15 +50,37 @@ class StartReturnController @Inject()(
   def onPageLoad(waypoints: Waypoints, period: Period): Action[AnyContent] = (cc.authAndGetOptionalData andThen cc.checkExcludedTraderOptional(period)) {
     implicit request =>
       // TODO check for starting correct period
-      Ok(view(form, waypoints, period))
+
+      val maybeExclusion: Option[EtmpExclusion] = request.registrationWrapper.registration.exclusions.lastOption
+
+      val nextPeriodString = periodService.getNextPeriod(period).displayYearMonth
+
+      val nextPeriod: LocalDate = LocalDate.parse(nextPeriodString, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+
+      val isFinalReturn = maybeExclusion.fold(false) { exclusions =>
+        nextPeriod.isAfter(exclusions.effectiveDate)
+      }
+
+      Ok(view(form, waypoints, period, maybeExclusion, isFinalReturn))
+
   }
 
   def onSubmit(waypoints: Waypoints, period: Period): Action[AnyContent] = (cc.authAndGetOptionalData andThen cc.checkExcludedTraderOptional(period)).async {
     implicit request =>
 
+      val maybeExclusion: Option[EtmpExclusion] = request.registrationWrapper.registration.exclusions.lastOption
+
+      val nextPeriodString = periodService.getNextPeriod(period).displayYearMonth
+
+      val nextPeriod: LocalDate = LocalDate.parse(nextPeriodString, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+
+      val isFinalReturn = maybeExclusion.fold(false) { exclusions =>
+        nextPeriod.isAfter(exclusions.effectiveDate)
+      }
+
       form.bindFromRequest().fold(
         formWithErrors =>
-          BadRequest(view(formWithErrors, waypoints, period)).toFuture,
+          BadRequest(view(formWithErrors, waypoints, period, maybeExclusion, isFinalReturn)).toFuture,
 
         value => {
 

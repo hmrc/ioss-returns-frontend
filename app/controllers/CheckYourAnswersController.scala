@@ -22,6 +22,7 @@ import logging.Logging
 import models.requests.DataRequest
 import models.ValidationError
 import models.audit.{ReturnsAuditModel, SubmissionResult}
+import models.etmp.EtmpExclusion
 import pages.{CheckYourAnswersPage, Waypoints}
 import pages.corrections.CorrectPreviousReturnPage
 import play.api.i18n.{I18nSupport, Messages}
@@ -37,6 +38,8 @@ import viewmodels.checkAnswers.corrections.{CorrectPreviousReturnSummary, Correc
 import viewmodels.govuk.summarylist._
 import views.html.CheckYourAnswersView
 
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
@@ -45,12 +48,13 @@ class CheckYourAnswersController @Inject()(
                                             salesAtVatRateService: SalesAtVatRateService,
                                             coreVatReturnService: CoreVatReturnService,
                                             auditService: AuditService,
+                                            periodService: PeriodService,
                                             view: CheckYourAnswersView
                                           )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndRequireData().async {
+  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndRequireData() {
     implicit request =>
 
       val errors: List[ValidationError] = Nil // TODO
@@ -68,7 +72,20 @@ class CheckYourAnswersController @Inject()(
 
       val summaryLists = getAllSummaryLists(request, businessSummaryList, salesFromEuSummaryList, waypoints)
 
-      Future(Ok(view(
+      val maybeExclusion: Option[EtmpExclusion] = request.registrationWrapper.registration.exclusions.lastOption
+
+      val period = request.userAnswers.period
+
+      val nextPeriodString = periodService.getNextPeriod(period).displayYearMonth
+
+      val nextPeriod: LocalDate = LocalDate.parse(nextPeriodString, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+
+      val isFinalReturn = maybeExclusion.fold(false) { exclusions =>
+        nextPeriod.isAfter(exclusions.effectiveDate)
+      }
+
+
+      Ok(view(
         waypoints,
         summaryLists,
         request.userAnswers.period,
@@ -76,7 +93,10 @@ class CheckYourAnswersController @Inject()(
         totalVatOnSales,
         noPaymentDueCountries,
         containsCorrections,
-        errors.map(_.errorMessage))))
+        errors.map(_.errorMessage),
+        maybeExclusion,
+        isFinalReturn
+      ))
   }
 
   def onSubmit(waypoints: Waypoints, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndRequireData().async {

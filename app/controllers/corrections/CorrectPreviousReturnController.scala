@@ -18,15 +18,18 @@ package controllers.corrections
 
 import controllers.actions._
 import forms.corrections.CorrectPreviousReturnFormProvider
+import models.etmp.EtmpExclusion
 import pages.Waypoints
 import pages.corrections.CorrectPreviousReturnPage
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import services.ObligationsService
+import services.{ObligationsService, PeriodService}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.corrections.CorrectPreviousReturnView
 
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -35,6 +38,7 @@ class CorrectPreviousReturnController @Inject()(
                                          cc: AuthenticatedControllerComponents,
                                          formProvider: CorrectPreviousReturnFormProvider,
                                          obligationService: ObligationsService,
+                                         periodService: PeriodService,
                                          view: CorrectPreviousReturnView
                                  )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
@@ -49,6 +53,16 @@ class CorrectPreviousReturnController @Inject()(
 
       val fulfilledObligations = obligationService.getFulfilledObligations(request.iossNumber)
 
+      val maybeExclusion: Option[EtmpExclusion] = request.registrationWrapper.registration.exclusions.lastOption
+
+      val nextPeriodString = periodService.getNextPeriod(period).displayYearMonth
+
+      val nextPeriod: LocalDate = LocalDate.parse(nextPeriodString, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+
+      val isFinalReturn = maybeExclusion.fold(false) { exclusions =>
+        nextPeriod.isAfter(exclusions.effectiveDate)
+      }
+
       fulfilledObligations.flatMap { obligations =>
 
         val etmpObligationDetails = obligations.size
@@ -58,7 +72,7 @@ class CorrectPreviousReturnController @Inject()(
           case Some(value) => form.fill(value)
         }
 
-        Future.successful(Ok(view(preparedForm, waypoints, period)))
+        Future.successful(Ok(view(preparedForm, waypoints, period, maybeExclusion, isFinalReturn)))
       }
   }
 
@@ -69,13 +83,23 @@ class CorrectPreviousReturnController @Inject()(
 
       val fulfilledObligations = obligationService.getFulfilledObligations(request.iossNumber)
 
+      val maybeExclusion: Option[EtmpExclusion] = request.registrationWrapper.registration.exclusions.lastOption
+
+      val nextPeriodString = periodService.getNextPeriod(period).displayYearMonth
+
+      val nextPeriod: LocalDate = LocalDate.parse(nextPeriodString, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+
+      val isFinalReturn = maybeExclusion.fold(false) { exclusions =>
+        nextPeriod.isAfter(exclusions.effectiveDate)
+      }
+
       fulfilledObligations.flatMap { obligations =>
 
         val etmpObligationDetails = obligations.size
 
         form.bindFromRequest().fold(
           formWithErrors =>
-            Future.successful(BadRequest(view(formWithErrors, waypoints, period))),
+            Future.successful(BadRequest(view(formWithErrors, waypoints, period, maybeExclusion, isFinalReturn))),
 
           value =>
             for {
