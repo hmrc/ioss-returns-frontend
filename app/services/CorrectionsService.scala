@@ -16,13 +16,62 @@
 
 package services
 
-import models.Period
+import connectors.VatReturnConnector
+import logging.Logging
+import models.etmp.EtmpVatReturn
+import models.{Country, Period}
+import uk.gov.hmrc.http.HeaderCarrier
 
+import javax.inject.Inject
 import scala.annotation.tailrec
+import scala.concurrent.{ExecutionContext, Future}
 
-class CorrectionsService {
+class CorrectionsService @Inject()(
+                                    vatReturnConnector: VatReturnConnector
+                                  )(implicit ec: ExecutionContext) extends Logging {
 
-  def getAllPeriods(periodFrom: Period, periodTo: Period): Seq[Period] = {
+  def getAccumulativeVatForCountryTotalAmount(
+                                           periodFrom: Period,
+                                           periodTo: Period,
+                                           country: Country
+                                         )(implicit hc: HeaderCarrier): Future[BigDecimal] = {
+    for {
+      etmpVatReturnList <- getAllReturnsInPeriodRange(periodFrom, periodTo)
+    } yield {
+      val firstReturn = etmpVatReturnList.head
+      val firstReturnGoodsSuppliedValue = firstReturn.goodsSupplied.filter(_.msOfConsumption == country.code).map(_.vatAmountGBP).sum
+
+      val otherReturnsCorrectionsAmountsForCorrectionPeriodAndCountry = etmpVatReturnList.tail.flatMap { etmpVatReturn =>
+        etmpVatReturn.correctionPreviousVATReturn.filter(correctionPreviousVATReturn =>
+            correctionPreviousVATReturn.msOfConsumption == country.code && correctionPreviousVATReturn.periodKey == periodFrom.toEtmpPeriodString)
+          .map(_.totalVATAmountCorrectionGBP)
+      }.sum
+
+      firstReturnGoodsSuppliedValue + otherReturnsCorrectionsAmountsForCorrectionPeriodAndCountry
+    }
+  }
+
+  private def getAllReturnsInPeriodRange(
+                                          correctionReturnPeriod: Period,
+                                          returnPeriod: Period
+                                        )(implicit hc: HeaderCarrier): Future[Seq[EtmpVatReturn]] = {
+    Future.sequence(
+      getAllPeriods(correctionReturnPeriod, returnPeriod)
+        .sortBy(_.firstDay)
+        .map(period =>
+          vatReturnConnector.get(period)
+            .map {
+              case Left(error) =>
+                val message = s"Error when trying to retrieve vat return from getAllReturnsInPeriodRange with error: ${error.body}"
+                logger.error(message)
+                throw new Exception(message)
+              case Right(etmpVatReturn) => etmpVatReturn
+            }
+        )
+    )
+  }
+
+  private def getAllPeriods(periodFrom: Period, periodTo: Period): Seq[Period] = {
 
     @tailrec
     def getAllPeriodsInRange(currentPeriods: Seq[Period], periodFrom: Period, periodTo: Period): Seq[Period] = {

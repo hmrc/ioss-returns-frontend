@@ -17,10 +17,10 @@
 package controllers.corrections
 
 import controllers.JourneyRecoverySyntax._
-import models.{Country, Index, Period}
 import models.requests.DataRequest
-import pages.{JourneyRecoveryPage, SoldToCountryPage, Waypoints}
+import models.{Country, Index, Period}
 import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage}
+import pages.{JourneyRecoveryPage, Waypoints}
 import play.api.mvc.Results.Redirect
 import play.api.mvc.{AnyContent, Result}
 import queries.{CorrectionPeriodQuery, DeriveNumberOfCorrections}
