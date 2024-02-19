@@ -30,7 +30,7 @@ class CheckCommencementDateOptionalFilterImpl(startReturnPeriod: Period)(implici
 
   override protected def filter[A](request: OptionalDataRequest[A]): Future[Option[Result]] = {
     if (startReturnPeriod.lastDay.isBefore(request.registrationWrapper.registration.schemeDetails.commencementDate)) {
-      Future(Some(Redirect(routes.NoOtherPeriodsAvailableController.onPageLoad()))) // TODO: maybe should redirect to a different controller
+      Future(Some(Redirect(routes.NoOtherPeriodsAvailableController.onPageLoad())))
     } else {
       Future.successful(None)
     }
