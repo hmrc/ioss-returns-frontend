@@ -30,10 +30,9 @@ import queries.corrections.DeriveCompletedCorrectionPeriods
 import services.ObligationsService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.ConvertPeriodKey
-import utils.ConvertPeriodKey.yearFromEtmpPeriodKey
 import views.html.corrections.CorrectionReturnPeriodView
 
-import java.time.{Clock, LocalDate}
+import java.time.Clock
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
