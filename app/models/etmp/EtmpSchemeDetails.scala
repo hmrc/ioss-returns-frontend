@@ -18,8 +18,10 @@ package models.etmp
 
 import play.api.libs.json.{Json, OFormat}
 
+import java.time.LocalDate
+
 case class EtmpSchemeDetails(
-                              commencementDate: String,
+                              commencementDate: LocalDate,
                               euRegistrationDetails: Seq[EtmpDisplayEuRegistrationDetails],
                               previousEURegistrationDetails: Seq[EtmpPreviousEuRegistrationDetails],
                               websites: Seq[EtmpWebsite],

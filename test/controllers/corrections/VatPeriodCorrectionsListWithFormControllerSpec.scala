@@ -35,7 +35,7 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.ListItem
 import views.html.corrections.VatPeriodAvailableCorrectionsListView
 
-import java.time.Month
+import java.time.{LocalDate, Month}
 import scala.concurrent.Future
 
 class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
@@ -73,6 +73,8 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
 
   val year = 2021
   val periodJuly2021: Period = Period(year, Month.JULY)
+
+  override def commencementDate: LocalDate = periodJuly2021.lastDay.minusDays(1)
 
   override def completeUserAnswers: UserAnswers = emptyUserAnswers.copy(period = periodJuly2021)
 

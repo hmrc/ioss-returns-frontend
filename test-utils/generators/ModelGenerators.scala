@@ -261,7 +261,7 @@ trait ModelGenerators {
   implicit val arbitraryEtmpSchemeDetails: Arbitrary[EtmpSchemeDetails] = {
     Arbitrary {
       for {
-        commencementDate <- arbitrary[String]
+        commencementDate <- arbitrary[LocalDate]
         euRegistrationDetails <- Gen.listOfN(5, arbitraryEtmpEuRegistrationDetails.arbitrary)
         previousEURegistrationDetails <- Gen.listOfN(5, arbitraryEtmpPreviousEURegistrationDetails.arbitrary)
         websites <- Gen.listOfN(10, arbitraryWebsite.arbitrary)

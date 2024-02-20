@@ -20,6 +20,7 @@ import config.FrontendAppConfig
 import connectors.{FinancialDataConnector, ReturnStatusConnector}
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
+import models.SubmissionStatus
 import models.etmp.EtmpExclusion
 import models.etmp.EtmpExclusionReason.{NoLongerSupplies, Reversal, TransferringMSID, VoluntarilyLeaves}
 import models.payments._
@@ -35,6 +36,7 @@ import views.html.YourAccountView
 import java.time.{Clock, LocalDate}
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
+import CheckCorrectionsTimeLimit.isOlderThanThreeYears
 
 class YourAccountController @Inject()(
                                        cc: AuthenticatedControllerComponents,
@@ -77,7 +79,7 @@ class YourAccountController @Inject()(
   private def preparedViewWithFinancialData(
                                              currentReturns: CurrentReturns,
                                              currentPayments: PrepareData
-                                           )(implicit  request: RegistrationRequest[AnyContent]): Result = {
+                                           )(implicit request: RegistrationRequest[AnyContent]): Result = {
 
     val maybeExclusion: Option[EtmpExclusion] = request.registrationWrapper.registration.exclusions.lastOption
 
@@ -95,7 +97,12 @@ class YourAccountController @Inject()(
       None
     }
 
-    val rejoinUrl = if(request.registrationWrapper.registration.canRejoinRegistration(now)){
+    val existsOutstandingReturn = currentReturns.returns.exists { currentReturn =>
+      Seq(SubmissionStatus.Due, SubmissionStatus.Overdue, SubmissionStatus.Next).contains(currentReturn.submissionStatus) &&
+        !isOlderThanThreeYears(currentReturn.dueDate, clock)
+    }
+
+    val rejoinUrl = if (request.registrationWrapper.registration.canRejoinRegistration(now) && !existsOutstandingReturn) {
       Some(appConfig.rejoinThisServiceUrl)
     } else {
       None
