@@ -29,9 +29,10 @@ class VatAmountCorrectionCountryFormProviderSpec extends DecimalFieldBehaviours 
   private val country = "Country"
 
   val minimum = 0
-  val maximum = maxCurrencyAmount
+  val maximum: BigDecimal = maxCurrencyAmount
+  val maximumCorrectionAmount: BigDecimal = 0
 
-  val form = new VatAmountCorrectionCountryFormProvider()(country)
+  val form = new VatAmountCorrectionCountryFormProvider()(country, maximumCorrectionAmount)
 
   ".value" - {
 
@@ -69,7 +70,7 @@ class VatAmountCorrectionCountryFormProviderSpec extends DecimalFieldBehaviours 
       fieldName,
       minimum = 0,
 
-      expectedError = FormError(fieldName, "vatAmountCorrectionCountry.error.negative", Seq(CurrencyFormatter.currencyFormat(0)))
+      expectedError = FormError(fieldName, "vatAmountCorrectionCountry.error.negative", Seq(CurrencyFormatter.currencyFormat(maximumCorrectionAmount)))
     )
 
     behave like mandatoryField(
@@ -79,7 +80,7 @@ class VatAmountCorrectionCountryFormProviderSpec extends DecimalFieldBehaviours 
     )
 
     "show correct error" in {
-      val form = new VatAmountCorrectionCountryFormProvider()(country)
+      val form = new VatAmountCorrectionCountryFormProvider()(country, minimum)
 
       val result = form.bind(Map(fieldName -> (maximum + 0.01).toString)).apply(fieldName)
       result.errors mustEqual Seq(FormError(fieldName, "vatAmountCorrectionCountry.error.outOfRange.undeclared", Seq(0, maximum)))
@@ -87,21 +88,25 @@ class VatAmountCorrectionCountryFormProviderSpec extends DecimalFieldBehaviours 
 
 
     "show correct error when country undeclared" in {
-      val form = new VatAmountCorrectionCountryFormProvider()(country)
+      val form = new VatAmountCorrectionCountryFormProvider()(country, minimum)
 
       val result = form.bind(Map(fieldName -> (maximum + 0.01).toString)).apply(fieldName)
       result.errors mustEqual Seq(FormError(fieldName, "vatAmountCorrectionCountry.error.outOfRange.undeclared", Seq(0, maximum)))
     }
 
-    "fail when value is negative" in {
+    "fail when value is more than the original declared amount" in {
 
-      val form = new VatAmountCorrectionCountryFormProvider()(country)
+      val form = new VatAmountCorrectionCountryFormProvider()(country, maximumCorrectionAmount)
 
       forAll(validDataGeneratorForOutOfRangeNegative -> "validDataItem") {
         dataItem: String =>
           val result = form.bind(Map(fieldName -> dataItem)).apply(fieldName)
           result.value.value mustBe dataItem
-          result.errors mustBe List(FormError(fieldName, "vatAmountCorrectionCountry.error.negative", Seq(CurrencyFormatter.currencyFormat(0))))
+          result.errors mustBe List(FormError(
+            fieldName,
+            "vatAmountCorrectionCountry.error.negative",
+            Seq(CurrencyFormatter.currencyFormat(maximumCorrectionAmount))
+          ))
       }
     }
   }

@@ -34,7 +34,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 
-class CorrectionsServiceSpec extends SpecBase with PrivateMethodTester with BeforeAndAfterEach {
+class CorrectionServiceSpec extends SpecBase with PrivateMethodTester with BeforeAndAfterEach {
 
   private implicit lazy val hc: HeaderCarrier = HeaderCarrier()
   private val mockVatReturnConnector: VatReturnConnector = mock[VatReturnConnector]
@@ -50,7 +50,7 @@ class CorrectionsServiceSpec extends SpecBase with PrivateMethodTester with Befo
     Mockito.reset(mockVatReturnConnector)
   }
 
-  "CorrectionsService" - {
+  "CorrectionService" - {
 
     ".getAccumulativeVatForCountryTotalAmount" - {
 
@@ -124,6 +124,7 @@ class CorrectionsServiceSpec extends SpecBase with PrivateMethodTester with Befo
         )
 
         val accumulativeVatTotalAmount: BigDecimal = BigDecimal(350)
+        val isPreviouslyDeclaredCountry: Boolean = true
 
         val periodFrom: Period = period1
         val periodTo: Period = period4
@@ -132,11 +133,11 @@ class CorrectionsServiceSpec extends SpecBase with PrivateMethodTester with Befo
         when(mockVatReturnConnector.get(eqTo(period2))(any())) thenReturn Right(vatReturn2WithCorrection).toFuture
         when(mockVatReturnConnector.get(eqTo(period3))(any())) thenReturn Right(vatReturn3WithCorrection).toFuture
 
-        val service = new CorrectionsService(mockVatReturnConnector)
+        val service = new CorrectionService(mockVatReturnConnector)
 
         val result = service.getAccumulativeVatForCountryTotalAmount(periodFrom, periodTo, country1).futureValue
 
-        result mustBe accumulativeVatTotalAmount
+        result mustBe (isPreviouslyDeclaredCountry, accumulativeVatTotalAmount)
         verify(mockVatReturnConnector, times(1)).get(eqTo(period1))(any())
         verify(mockVatReturnConnector, times(1)).get(eqTo(period2))(any())
         verify(mockVatReturnConnector, times(1)).get(eqTo(period3))(any())
@@ -151,7 +152,7 @@ class CorrectionsServiceSpec extends SpecBase with PrivateMethodTester with Befo
 
         when(mockVatReturnConnector.get(any())(any())) thenReturn Left(UnexpectedResponseStatus(NOT_FOUND, "error")).toFuture
 
-        val service = new CorrectionsService(mockVatReturnConnector)
+        val service = new CorrectionService(mockVatReturnConnector)
 
         val result = service.getAccumulativeVatForCountryTotalAmount(periodFrom, periodTo, country)
 
@@ -171,7 +172,7 @@ class CorrectionsServiceSpec extends SpecBase with PrivateMethodTester with Befo
 
         when(mockVatReturnConnector.get(any())(any())) thenReturn Right(vatReturn).toFuture
 
-        val service = new CorrectionsService(mockVatReturnConnector)
+        val service = new CorrectionService(mockVatReturnConnector)
 
         val getAllReturnsInPeriodRange = PrivateMethod[Future[Seq[EtmpVatReturn]]](Symbol("getAllReturnsInPeriodRange"))
 
@@ -191,7 +192,7 @@ class CorrectionsServiceSpec extends SpecBase with PrivateMethodTester with Befo
 
         when(mockVatReturnConnector.get(any())(any())) thenReturn Left(UnexpectedResponseStatus(NOT_FOUND, errorMessage)).toFuture
 
-        val service = new CorrectionsService(mockVatReturnConnector)
+        val service = new CorrectionService(mockVatReturnConnector)
 
         val getAllReturnsInPeriodRange = PrivateMethod[Future[Seq[EtmpVatReturn]]](Symbol("getAllReturnsInPeriodRange"))
 
@@ -200,7 +201,7 @@ class CorrectionsServiceSpec extends SpecBase with PrivateMethodTester with Befo
         whenReady(result.failed) { exp =>
 
           exp mustBe a[Exception]
-          exp.getMessage mustBe s"Error when trying to retrieve vat return from getAllReturnsInPeriodRange with error: $errorMessage"
+          exp.getMessage mustBe s"Error when trying to retrieve vat return from getAllPeriods with error: $errorMessage"
         }
       }
     }
@@ -212,7 +213,7 @@ class CorrectionsServiceSpec extends SpecBase with PrivateMethodTester with Befo
         val periodFrom: Period = period1
         val periodTo: Period = period1
 
-        val service = new CorrectionsService(mockVatReturnConnector)
+        val service = new CorrectionService(mockVatReturnConnector)
 
         val getAllPeriods = PrivateMethod[Seq[Period]](Symbol("getAllPeriods"))
 
@@ -226,7 +227,7 @@ class CorrectionsServiceSpec extends SpecBase with PrivateMethodTester with Befo
         val periodFrom: Period = period1
         val periodTo: Period = period4
 
-        val service = new CorrectionsService(mockVatReturnConnector)
+        val service = new CorrectionService(mockVatReturnConnector)
 
         val getAllPeriods = PrivateMethod[Seq[Period]](Symbol("getAllPeriods"))
 
@@ -241,7 +242,7 @@ class CorrectionsServiceSpec extends SpecBase with PrivateMethodTester with Befo
         val periodFrom: Period = period1
         val periodTo: Period = period2
 
-        val service = new CorrectionsService(mockVatReturnConnector)
+        val service = new CorrectionService(mockVatReturnConnector)
 
         val getAllPeriods = PrivateMethod[Seq[Period]](Symbol("getAllPeriods"))
 

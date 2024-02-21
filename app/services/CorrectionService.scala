@@ -26,20 +26,21 @@ import javax.inject.Inject
 import scala.annotation.tailrec
 import scala.concurrent.{ExecutionContext, Future}
 
-class CorrectionsService @Inject()(
+class CorrectionService @Inject()(
                                     vatReturnConnector: VatReturnConnector
                                   )(implicit ec: ExecutionContext) extends Logging {
 
   def getAccumulativeVatForCountryTotalAmount(
-                                           periodFrom: Period,
-                                           periodTo: Period,
-                                           country: Country
-                                         )(implicit hc: HeaderCarrier): Future[BigDecimal] = {
+                                               periodFrom: Period,
+                                               periodTo: Period,
+                                               country: Country
+                                             )(implicit hc: HeaderCarrier): Future[(Boolean, BigDecimal)] = {
     for {
       etmpVatReturnList <- getAllReturnsInPeriodRange(periodFrom, periodTo)
     } yield {
       val firstReturn = etmpVatReturnList.head
-      val firstReturnGoodsSuppliedValue = firstReturn.goodsSupplied.filter(_.msOfConsumption == country.code).map(_.vatAmountGBP).sum
+      val firstReturnVatAmountsDeclaredOnCountry = firstReturn.goodsSupplied.filter(_.msOfConsumption == country.code).map(_.vatAmountGBP)
+      val isPreviouslyDeclaredCountry: Boolean = firstReturnVatAmountsDeclaredOnCountry.nonEmpty
 
       val otherReturnsCorrectionsAmountsForCorrectionPeriodAndCountry = etmpVatReturnList.tail.flatMap { etmpVatReturn =>
         etmpVatReturn.correctionPreviousVATReturn.filter(correctionPreviousVATReturn =>
@@ -47,7 +48,7 @@ class CorrectionsService @Inject()(
           .map(_.totalVATAmountCorrectionGBP)
       }.sum
 
-      firstReturnGoodsSuppliedValue + otherReturnsCorrectionsAmountsForCorrectionPeriodAndCountry
+      (isPreviouslyDeclaredCountry, firstReturnVatAmountsDeclaredOnCountry.sum + otherReturnsCorrectionsAmountsForCorrectionPeriodAndCountry)
     }
   }
 
@@ -62,7 +63,7 @@ class CorrectionsService @Inject()(
           vatReturnConnector.get(period)
             .map {
               case Left(error) =>
-                val message = s"Error when trying to retrieve vat return from getAllReturnsInPeriodRange with error: ${error.body}"
+                val message = s"Error when trying to retrieve vat return from getAllPeriods with error: ${error.body}"
                 logger.error(message)
                 throw new Exception(message)
               case Right(etmpVatReturn) => etmpVatReturn

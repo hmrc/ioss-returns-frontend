@@ -26,31 +26,47 @@ import org.mockito.{ArgumentMatchersSugar, Mockito}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
-import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, UndeclaredCountryCorrectionPage, VatAmountCorrectionCountryPage, VatPayableForCountryPage}
+import pages.JourneyRecoveryPage
+import pages.corrections._
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import queries.corrections.{PreviouslyDeclaredCorrectionAmount, PreviouslyDeclaredCorrectionAmountQuery}
 import repositories.SessionRepository
+import utils.FutureSyntax.FutureOps
 import views.html.corrections.VatAmountCorrectionCountryView
-
-import scala.concurrent.Future
 
 class VatAmountCorrectionCountryControllerSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
 
   private val mockSessionRepository = mock[SessionRepository]
 
-  private val selectedCountry = arbitrary[Country].sample.value
+  private val selectedCountry: Country = arbitrary[Country].sample.value
+  private val minimumCorrection: BigDecimal = arbitraryBigDecimal.arbitrary.sample.value
 
   private val formProvider = new VatAmountCorrectionCountryFormProvider()
-  private val form = formProvider(selectedCountry.name)
-  private val userAnswersWithCountryAndPeriod = emptyUserAnswers
-    .set(CorrectionCountryPage(index, index), selectedCountry).flatMap(_.set(UndeclaredCountryCorrectionPage(index, index), true)).success.value
-    .set(CorrectionReturnPeriodPage(index), period).success.value
+  private val form = formProvider(selectedCountry.name, minimumCorrection)
 
   private val validAnswer = BigDecimal(10)
+  private val validAnswerZero = BigDecimal(0)
 
-  private lazy val countryVatCorrectionRoute =
-    VatAmountCorrectionCountryPage(index, index).route(waypoints).url
+  private val userAnswersWithPreviouslyUndeclaredCountry = emptyUserAnswers
+    .set(CorrectionReturnPeriodPage(index), period).success.value
+    .set(CorrectionCountryPage(index, index), selectedCountry).flatMap(_.set(UndeclaredCountryCorrectionPage(index, index), true)).success.value
+    .set(
+      PreviouslyDeclaredCorrectionAmountQuery(index, index),
+      PreviouslyDeclaredCorrectionAmount(previouslyDeclared = false, amount = validAnswerZero)
+    ).success.value
+
+  private val userAnswersWithPreviouslyDeclaredCountry = emptyUserAnswers
+    .set(CorrectionReturnPeriodPage(index), period).success.value
+    .set(CorrectionCountryPage(index, index), selectedCountry).flatMap(_
+      .set(
+        PreviouslyDeclaredCorrectionAmountQuery(index, index),
+        PreviouslyDeclaredCorrectionAmount(previouslyDeclared = true, amount = minimumCorrection)
+      )
+    ).success.value
+
+  private lazy val countryVatCorrectionRoute = VatAmountCorrectionCountryPage(index, index).route(waypoints).url
 
   override def beforeEach(): Unit = {
     Mockito.reset(mockSessionRepository)
@@ -58,8 +74,8 @@ class VatAmountCorrectionCountryControllerSpec extends SpecBase with MockitoSuga
 
   "VatAmountCorrectionCountry Controller" - {
 
-    "must return OK and the correct view for a GET" in {
-      val application = applicationBuilder(userAnswers = Some(userAnswersWithCountryAndPeriod))
+    "must return OK and the correct view for a GET on a previously undeclared country" in {
+      val application = applicationBuilder(userAnswers = Some(userAnswersWithPreviouslyUndeclaredCountry))
         .build()
 
       running(application) {
@@ -69,15 +85,50 @@ class VatAmountCorrectionCountryControllerSpec extends SpecBase with MockitoSuga
 
         val view = application.injector.instanceOf[VatAmountCorrectionCountryView]
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, waypoints, period, index, period, index, selectedCountry)(request, messages(application)).toString
+        status(result) mustBe OK
+        contentAsString(result) mustBe view(form, waypoints, period, index, period, index, selectedCountry, isCountryPreviouslyDeclared = false, validAnswer)(request, messages(application)).toString
+      }
+    }
+
+    "must return OK and the correct view for a GET on a previously declared country" in {
+      val application = applicationBuilder(userAnswers = Some(userAnswersWithPreviouslyDeclaredCountry))
+        .build()
+
+      running(application) {
+        val request = FakeRequest(GET, countryVatCorrectionRoute)
+
+        val result = route(application, request).value
+
+        val view = application.injector.instanceOf[VatAmountCorrectionCountryView]
+
+        status(result) mustBe OK
+        contentAsString(result) mustBe view(form, waypoints, period, index, period, index, selectedCountry, isCountryPreviouslyDeclared = true, minimumCorrection)(request, messages(application)).toString
+      }
+    }
+
+    "must return OK and the correct view for a GET on a previously declared country with a correction amount of ZERO" in {
+      val application = applicationBuilder(userAnswers = Some(userAnswersWithPreviouslyDeclaredCountry
+        .set(
+          PreviouslyDeclaredCorrectionAmountQuery(index, index),
+          PreviouslyDeclaredCorrectionAmount(previouslyDeclared = true, amount = validAnswerZero))
+        .success.value
+      )).build()
+
+      running(application) {
+        val request = FakeRequest(GET, countryVatCorrectionRoute)
+
+        val result = route(application, request).value
+
+        val view = application.injector.instanceOf[VatAmountCorrectionCountryView]
+
+        status(result) mustBe OK
+        contentAsString(result) mustBe view(form, waypoints, period, index, period, index, selectedCountry, isCountryPreviouslyDeclared = true, validAnswerZero)(request, messages(application)).toString
       }
     }
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
-      val userAnswers =
-        userAnswersWithCountryAndPeriod.set(VatAmountCorrectionCountryPage(index, index), validAnswer).success.value
-
+      val userAnswers = userAnswersWithPreviouslyUndeclaredCountry
+        .set(VatAmountCorrectionCountryPage(index, index), validAnswer).success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers))
         .build()
@@ -89,17 +140,17 @@ class VatAmountCorrectionCountryControllerSpec extends SpecBase with MockitoSuga
 
         val result = route(application, request).value
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(
-          form.fill(validAnswer), waypoints, period, index, period, index, selectedCountry)(request, messages(application)).toString
+        status(result) mustBe OK
+        contentAsString(result) mustBe view(
+          form.fill(validAnswer), waypoints, period, index, period, index, selectedCountry, isCountryPreviouslyDeclared = false, minimumCorrection)(request, messages(application)).toString
       }
     }
 
     "must save the answer and redirect to the next page when valid data is submitted" in {
-      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      when(mockSessionRepository.set(any())) thenReturn true.toFuture
 
       val application =
-        applicationBuilder(userAnswers = Some(userAnswersWithCountryAndPeriod))
+        applicationBuilder(userAnswers = Some(userAnswersWithPreviouslyUndeclaredCountry))
           .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
           .build()
 
@@ -109,18 +160,18 @@ class VatAmountCorrectionCountryControllerSpec extends SpecBase with MockitoSuga
             .withFormUrlEncodedBody(("value", validAnswer.toString))
 
         val result = route(application, request).value
-        val expectedAnswers =
-          userAnswersWithCountryAndPeriod.set(VatAmountCorrectionCountryPage(index, index), validAnswer).success.value
+        val expectedAnswers = userAnswersWithPreviouslyUndeclaredCountry
+          .set(VatAmountCorrectionCountryPage(index, index), validAnswer).success.value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual VatPayableForCountryPage(index, index).route(waypoints).url
+        status(result) mustBe SEE_OTHER
+        redirectLocation(result).value mustBe VatPayableForCountryPage(index, index).route(waypoints).url
 
         verify(mockSessionRepository, times(1)).set(ArgumentMatchersSugar.eqTo(expectedAnswers))
       }
     }
 
     "must return a Bad Request and errors when invalid data is submitted" in {
-      val application = applicationBuilder(userAnswers = Some(userAnswersWithCountryAndPeriod))
+      val application = applicationBuilder(userAnswers = Some(userAnswersWithPreviouslyUndeclaredCountry))
         .build()
 
       running(application) {
@@ -134,9 +185,9 @@ class VatAmountCorrectionCountryControllerSpec extends SpecBase with MockitoSuga
 
         val result = route(application, request).value
 
-        status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(
-          boundForm, waypoints, period, index, period, index, selectedCountry)(request, messages(application)).toString
+        status(result) mustBe BAD_REQUEST
+        contentAsString(result) mustBe view(
+          boundForm, waypoints, period, index, period, index, selectedCountry, isCountryPreviouslyDeclared = false, minimumCorrection)(request, messages(application)).toString
       }
     }
 
@@ -149,8 +200,8 @@ class VatAmountCorrectionCountryControllerSpec extends SpecBase with MockitoSuga
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+        status(result) mustBe SEE_OTHER
+        redirectLocation(result).value mustBe controllers.routes.JourneyRecoveryController.onPageLoad().url
       }
     }
 
@@ -163,8 +214,8 @@ class VatAmountCorrectionCountryControllerSpec extends SpecBase with MockitoSuga
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+        status(result) mustBe SEE_OTHER
+        redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
       }
     }
 
@@ -179,9 +230,9 @@ class VatAmountCorrectionCountryControllerSpec extends SpecBase with MockitoSuga
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
+        status(result) mustBe SEE_OTHER
 
-        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+        redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
       }
     }
 
@@ -196,9 +247,9 @@ class VatAmountCorrectionCountryControllerSpec extends SpecBase with MockitoSuga
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
+        status(result) mustBe SEE_OTHER
 
-        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+        redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
       }
     }
   }

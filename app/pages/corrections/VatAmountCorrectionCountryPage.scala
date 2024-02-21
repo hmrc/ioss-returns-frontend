@@ -16,6 +16,7 @@
 
 package pages.corrections
 
+import controllers.corrections.routes
 import models.{Index, UserAnswers}
 import pages.PageConstants.{corrections, correctionsToCountry}
 import pages.{JourneyRecoveryPage, Page, QuestionPage, Waypoints}
@@ -30,11 +31,10 @@ final case class VatAmountCorrectionCountryPage(periodIndex: Index, countryIndex
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
     answers.get(VatAmountCorrectionCountryPage(periodIndex, countryIndex)) match {
-      case Some(_) =>
-        VatPayableForCountryPage(periodIndex, countryIndex)
+      case Some(_) => VatPayableForCountryPage(periodIndex, countryIndex)
       case _ => JourneyRecoveryPage
     }
 
   override def route(waypoints: Waypoints): Call =
-    controllers.corrections.routes.VatAmountCorrectionCountryController.onPageLoad(waypoints, periodIndex, countryIndex)
+    routes.VatAmountCorrectionCountryController.onPageLoad(waypoints, periodIndex, countryIndex)
 }

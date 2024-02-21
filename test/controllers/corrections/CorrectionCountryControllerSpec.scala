@@ -19,19 +19,24 @@ package controllers.corrections
 import base.SpecBase
 import forms.corrections.CorrectionCountryFormProvider
 import models.Country
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito
 import org.mockito.Mockito.when
 import org.scalacheck.Arbitrary
+import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
+import pages.JourneyRecoveryPage
 import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage}
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import queries.corrections.{PreviouslyDeclaredCorrectionAmount, PreviouslyDeclaredCorrectionAmountQuery}
 import repositories.SessionRepository
+import services.CorrectionService
+import utils.FutureSyntax.FutureOps
 import views.html.corrections.CorrectionCountryView
 
-import scala.concurrent.Future
-
-class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
+class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
 
   private val formProvider = new CorrectionCountryFormProvider()
   private val form = formProvider(index, Seq.empty)
@@ -39,7 +44,13 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
 
   private val userAnswers = emptyUserAnswers.set(CorrectionReturnPeriodPage(index), period).success.value
 
-  lazy val correctionCountryRoute: String = routes.CorrectionCountryController.onPageLoad(waypoints, index, index).url
+  private lazy val correctionCountryRoute: String = routes.CorrectionCountryController.onPageLoad(waypoints, index, index).url
+
+  private val mockCorrectionService: CorrectionService = mock[CorrectionService]
+
+  override def beforeEach(): Unit = {
+    Mockito.reset(mockCorrectionService)
+  }
 
   "CorrectionCountry Controller" - {
 
@@ -54,8 +65,8 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
 
         val view = application.injector.instanceOf[CorrectionCountryView]
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, waypoints, period, index, period, index)(request, messages(application)).toString
+        status(result) mustBe OK
+        contentAsString(result) mustBe view(form, waypoints, period, index, period, index)(request, messages(application)).toString
       }
     }
 
@@ -74,23 +85,32 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(country), waypoints, period, index, period, index)(request, messages(application)).toString
+        status(result) mustBe OK
+        contentAsString(result) mustBe view(form.fill(country), waypoints, period, index, period, index)(request, messages(application)).toString
       }
     }
 
     "must redirect to the next page when valid data is submitted" in {
 
+      when(mockCorrectionService.getAccumulativeVatForCountryTotalAmount(any(), any(), any())(any())) thenReturn (false, BigDecimal(0)).toFuture
+
       val mockSessionRepository = mock[SessionRepository]
 
-      val updatedAnswers = emptyUserAnswers.set(CorrectionCountryPage(index, index), country).get
+      val updatedAnswers = emptyUserAnswers
+        .set(CorrectionReturnPeriodPage(index), period).success.value
+        .set(CorrectionCountryPage(index, index), country).success.value
+        .set(
+          PreviouslyDeclaredCorrectionAmountQuery(index, index),
+          PreviouslyDeclaredCorrectionAmount(previouslyDeclared = false, amount = BigDecimal(0))
+        ).success.value
 
-      when(mockSessionRepository.set(updatedAnswers)) thenReturn Future.successful(true)
+      when(mockSessionRepository.set(updatedAnswers)) thenReturn true.toFuture
 
       val application =
-        applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        applicationBuilder(userAnswers = Some(updatedAnswers))
           .overrides(
-            bind[SessionRepository].toInstance(mockSessionRepository),
+            bind[CorrectionService].toInstance(mockCorrectionService),
+            bind[SessionRepository].toInstance(mockSessionRepository)
           )
           .build()
 
@@ -101,14 +121,9 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
+        status(result) mustBe SEE_OTHER
 
-        redirectLocation(result).value mustEqual
-          CorrectionCountryPage(
-            index,
-            index
-          ).navigate(waypoints, emptyUserAnswers, updatedAnswers).url
-
+        redirectLocation(result).value mustBe CorrectionCountryPage(index, index).navigate(waypoints, emptyUserAnswers, updatedAnswers).url
       }
     }
 
@@ -127,8 +142,8 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, waypoints, period, index, period, index)(request, messages(application)).toString
+        status(result) mustBe BAD_REQUEST
+        contentAsString(result) mustBe view(boundForm, waypoints, period, index, period, index)(request, messages(application)).toString
       }
     }
 
@@ -141,8 +156,8 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+        status(result) mustBe SEE_OTHER
+        redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
       }
     }
 
@@ -157,8 +172,8 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+        status(result) mustBe SEE_OTHER
+        redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
       }
     }
   }

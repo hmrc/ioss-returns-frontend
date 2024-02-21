@@ -23,6 +23,7 @@ import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage}
 import pages.{JourneyRecoveryPage, Waypoints}
 import play.api.mvc.Results.Redirect
 import play.api.mvc.{AnyContent, Result}
+import queries.corrections.{PreviouslyDeclaredCorrectionAmount, PreviouslyDeclaredCorrectionAmountQuery}
 import queries.{CorrectionPeriodQuery, DeriveNumberOfCorrections}
 import utils.FutureSyntax.FutureOps
 
@@ -60,11 +61,19 @@ trait CorrectionBaseController {
       .getOrElse(Redirect(JourneyRecoveryPage.route(waypoints)).toFuture)
 
   protected def getCorrectionReturnPeriod(waypoints: Waypoints, periodIndex: Index)
-                                         (block: Period => Result)
+                                         (block: Period => Future[Result])
                                          (implicit request: DataRequest[AnyContent]): Future[Result] =
     request.userAnswers
       .get(CorrectionPeriodQuery(periodIndex))
       .map(_.correctionReturnPeriod)
       .map(block(_))
-      .getOrElse(Redirect(JourneyRecoveryPage.route(waypoints))).toFuture
+      .getOrElse(Redirect(JourneyRecoveryPage.route(waypoints)).toFuture)
+
+  protected def getPreviouslyDeclaredCorrectionAnswers(waypoints: Waypoints, periodIndex: Index, countryIndex: Index)
+                                                      (block: PreviouslyDeclaredCorrectionAmount => Future[Result])
+                                                      (implicit request: DataRequest[AnyContent]): Future[Result] =
+    request.userAnswers
+      .get(PreviouslyDeclaredCorrectionAmountQuery(periodIndex, countryIndex))
+      .map(block(_))
+      .getOrElse(Redirect(JourneyRecoveryPage.route(waypoints)).toFuture)
 }
