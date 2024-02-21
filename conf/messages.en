@@ -416,7 +416,7 @@ submittedReturnsHistory.payNow = Pay now
 submittedReturnsHistory.previousRegistrationReturns = View returns from a previous registration
 submittedReturnsHistory.status.paid = Paid
 submittedReturnsHistory.status.nilreturn = No payment due
-submittedReturnsHistory.status.excluded = Excluded
+submittedReturnsHistory.status.excluded = You must pay this to the countries where you made your sales
 
 noPayments.title = You do not owe any Import One Stop Shop VAT
 noPayments.heading = You do not owe any Import One Stop Shop VAT

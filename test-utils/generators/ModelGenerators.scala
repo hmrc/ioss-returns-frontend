@@ -18,6 +18,7 @@ package generators
 
 import config.Constants.{maxCurrencyAmount, minCurrencyAmount}
 import models._
+import models.enrolments.{EACDEnrolment, EACDEnrolments, EACDIdentifiers}
 import models.etmp._
 import models.financialdata.Charge
 import models.payments.{Payment, PaymentStatus}
@@ -26,10 +27,10 @@ import org.scalacheck.{Arbitrary, Gen}
 import queries.{OptionalSalesAtVatRate, SalesToCountryWithOptionalSales, VatRateWithOptionalSalesFromCountry}
 
 import java.time.{LocalDate, LocalDateTime, Month}
+import java.time.temporal.ChronoUnit
 import scala.math.BigDecimal.RoundingMode
 
 trait ModelGenerators {
-
   self: Generators =>
 
   implicit val arbitraryBigDecimal: Arbitrary[BigDecimal] =
@@ -107,7 +108,7 @@ trait ModelGenerators {
       } yield Period(year, quarter)
     }
 
-   val arbitraryPeriodKey: Arbitrary[String] = {
+  val arbitraryPeriodKey: Arbitrary[String] = {
     Arbitrary {
       for {
         year <- Gen.choose(2022, 2099).map(_.toString)
@@ -483,5 +484,42 @@ trait ModelGenerators {
     Arbitrary {
       Gen.oneOf(SchemeType.values)
     }
+
+  implicit val arbitraryEACDIdentifiers: Arbitrary[EACDIdentifiers] = {
+    Arbitrary {
+      for {
+        key <- Gen.alphaStr
+        value <- Gen.alphaStr
+      } yield EACDIdentifiers(
+        key = key,
+        value = value
+      )
+    }
+  }
+
+  implicit val arbitraryEACDEnrolment: Arbitrary[EACDEnrolment] = {
+    Arbitrary {
+      for {
+        service <- Gen.alphaStr
+        state <- Gen.alphaStr
+        identifiers <- Gen.listOfN(2, arbitraryEACDIdentifiers.arbitrary)
+      } yield EACDEnrolment(
+        service = service,
+        state = state,
+        activationDate = Some(LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS)),
+        identifiers = identifiers
+      )
+    }
+  }
+
+  implicit val arbitraryEACDEnrolments: Arbitrary[EACDEnrolments] = {
+    Arbitrary {
+      for {
+        enrolments <- Gen.listOfN(2, arbitraryEACDEnrolment.arbitrary)
+      } yield EACDEnrolments(
+        enrolments = enrolments
+      )
+    }
+  }
 
 }

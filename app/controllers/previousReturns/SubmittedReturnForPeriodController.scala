@@ -61,9 +61,13 @@ class SubmittedReturnForPeriodController @Inject()(
         val outstanding = outstandingAmount.getOrElse(etmpVatReturn.totalVATAmountPayable)
         val vatDeclared = etmpVatReturn.totalVATAmountDueForAllMSGBP
 
-        val displayPayNow = !(isCurrentlyExcluded(request.registrationWrapper.registration.exclusions) &&
-          hasActiveWindowExpired(Period.fromKey(etmpVatReturn.periodKey).paymentDeadline)) &&
+        val currentReturnExcluded = isCurrentlyExcluded(request.registrationWrapper.registration.exclusions) &&
+          hasActiveWindowExpired(Period.fromKey(etmpVatReturn.periodKey).paymentDeadline)
+
+        val displayPayNow = !currentReturnExcluded &&
           (etmpVatReturn.totalVATAmountDueForAllMSGBP > 0 && outstanding > 0)
+
+        val returnIsExcludedAndOutstandingAmount = currentReturnExcluded && (etmpVatReturn.totalVATAmountDueForAllMSGBP > 0 && outstanding > 0)
 
         Ok(view(
           waypoints = waypoints,
@@ -75,7 +79,8 @@ class SubmittedReturnForPeriodController @Inject()(
           vatOwedSummaryList = getVatOwedSummaryList(etmpVatReturn),
           totalVatPayable = outstanding,
           vatDeclared = vatDeclared,
-          displayPayNow = displayPayNow
+          displayPayNow = displayPayNow,
+          returnIsExcludedAndOutstandingAmount = returnIsExcludedAndOutstandingAmount
         ))
       case (Left(error), _) =>
         logger.error(s"Unexpected result from api while getting ETMP VAT return: $error")

@@ -18,6 +18,7 @@ package connectors
 
 import config.Service
 import models.RegistrationWrapper
+import models.enrolments.EACDEnrolments
 import play.api.Configuration
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions}
 import uk.gov.hmrc.http.HttpReads.Implicits._
@@ -32,5 +33,8 @@ class RegistrationConnector @Inject()(config: Configuration, httpClient: HttpCli
 
   def get()(implicit hc: HeaderCarrier): Future[RegistrationWrapper] =
     httpClient.GET[RegistrationWrapper](s"$baseUrl/registration")
+
+  def getAccounts()(implicit hc: HeaderCarrier): Future[EACDEnrolments] =
+    httpClient.GET[EACDEnrolments](s"$baseUrl/accounts")
 
 }

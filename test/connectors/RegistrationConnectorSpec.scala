@@ -20,6 +20,7 @@ import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock._
 import generators.Generators
 import models.RegistrationWrapper
+import models.enrolments.EACDEnrolments
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.Application
@@ -59,6 +60,29 @@ class RegistrationConnectorSpec
         val result = connector.get().futureValue
 
         result mustEqual registration
+      }
+    }
+
+  }
+
+  ".getAccounts" - {
+    val url = s"/ioss-registration/accounts"
+
+    "must return a registration when the server provides one" in {
+
+      val app = application
+
+      running(app) {
+        val connector = app.injector.instanceOf[RegistrationConnector]
+        val eACDEnrolments = arbitrary[EACDEnrolments].sample.value
+
+        val responseBody = Json.toJson(eACDEnrolments).toString
+
+        server.stubFor(get(urlEqualTo(url)).willReturn(ok().withBody(responseBody)))
+
+        val result = connector.getAccounts().futureValue
+
+        result mustEqual eACDEnrolments
       }
     }
 

@@ -132,7 +132,8 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
               vatOwedSummaryList,
               outstandingAmount,
               vatDeclared,
-              displayPayNow = vatDeclared > 0 && outstandingAmount > 0
+              displayPayNow = vatDeclared > 0 && outstandingAmount > 0,
+              returnIsExcludedAndOutstandingAmount = false
             )(request, messages(application)).toString
         }
       }
@@ -210,7 +211,8 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
               vatOwedSummaryList,
               outstandingAmount,
               vatDeclared,
-              displayPayNow = vatDeclared > 0 && outstandingAmount > 0
+              displayPayNow = vatDeclared > 0 && outstandingAmount > 0,
+              returnIsExcludedAndOutstandingAmount = false
             )(request, messages(application)).toString
         }
       }
@@ -297,7 +299,8 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
               vatOwedSummaryList,
               outstandingAmount,
               vatDeclared,
-              displayPayNow = vatDeclared > 0 && outstandingAmount > 0
+              displayPayNow = vatDeclared > 0 && outstandingAmount > 0,
+              returnIsExcludedAndOutstandingAmount = false
             )(request, messages(application)).toString
         }
       }
@@ -391,7 +394,8 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
               vatOwedSummaryList,
               outstandingAmount,
               vatDeclared,
-              displayPayNow = vatDeclared > 0 && outstandingAmount > 0
+              displayPayNow = vatDeclared > 0 && outstandingAmount > 0,
+              returnIsExcludedAndOutstandingAmount = false
             )(request, messages(application)).toString
         }
       }
@@ -467,7 +471,8 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
               vatOwedSummaryList,
               outstandingAmount,
               vatDeclared,
-              displayPayNow = vatDeclared > 0 && outstandingAmount > 0
+              displayPayNow = vatDeclared > 0 && outstandingAmount > 0,
+              returnIsExcludedAndOutstandingAmount = false
             )(request, messages(application)).toString
         }
       }
@@ -568,7 +573,8 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
               vatOwedSummaryList,
               outstandingAmount,
               vatDeclared,
-              displayPayNow = false
+              displayPayNow = false,
+              returnIsExcludedAndOutstandingAmount = false
             )(request, messages(application)).toString
         }
       }
