@@ -18,8 +18,9 @@ package controllers.corrections
 
 import base.SpecBase
 import forms.corrections.VatPayableForCountryFormProvider
-import models.{Country, Index}
+import models.{Country, Index, UserAnswers}
 import org.scalatestplus.mockito.MockitoSugar
+import pages.JourneyRecoveryPage
 import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, VatAmountCorrectionCountryPage, VatPayableForCountryPage}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -29,6 +30,9 @@ class VatPayableForCountryControllerSpec extends SpecBase with MockitoSugar {
 
   private val formProvider = new VatPayableForCountryFormProvider()
   private val form = formProvider(Country("DE", "Germany"), BigDecimal(1000))
+
+  private val baseUserAnswers: UserAnswers = emptyUserAnswers
+    .set()
 
   private lazy val vatPayableForCountryRoute = controllers.corrections.routes.VatPayableForCountryController.onPageLoad(waypoints, index, Index(0)).url
 
@@ -51,8 +55,8 @@ class VatPayableForCountryControllerSpec extends SpecBase with MockitoSugar {
 
         val view = application.injector.instanceOf[VatPayableForCountryView]
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, waypoints, index, Index(0), Country("DE", "Germany"), period, BigDecimal(1000))(request, messages(application)).toString
+        status(result) mustBe OK
+        contentAsString(result) mustBe view(form, waypoints, index, Index(0), Country("DE", "Germany"), period, BigDecimal(1000))(request, messages(application)).toString
       }
     }
 
@@ -74,8 +78,8 @@ class VatPayableForCountryControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(
+        status(result) mustBe OK
+        contentAsString(result) mustBe view(
           form.fill(true),
           waypoints,
           index,
@@ -106,8 +110,8 @@ class VatPayableForCountryControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
         val expectedAnswers = userAnswers.set(VatPayableForCountryPage(index, Index(0)), true).success.value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual VatPayableForCountryPage(index, Index(0)).navigate(waypoints, userAnswers, expectedAnswers).url
+        status(result) mustBe SEE_OTHER
+        redirectLocation(result).value mustBe VatPayableForCountryPage(index, Index(0)).navigate(waypoints, userAnswers, expectedAnswers).url
       }
     }
 
@@ -133,8 +137,8 @@ class VatPayableForCountryControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(
+        status(result) mustBe BAD_REQUEST
+        contentAsString(result) mustBe view(
           boundForm,
           waypoints,
           index,
@@ -157,8 +161,8 @@ class VatPayableForCountryControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+        status(result) mustBe SEE_OTHER
+        redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
       }
     }
 
@@ -171,8 +175,8 @@ class VatPayableForCountryControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+        status(result) mustBe SEE_OTHER
+        redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
       }
     }
 
@@ -187,8 +191,8 @@ class VatPayableForCountryControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+        status(result) mustBe SEE_OTHER
+        redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
       }
     }
 
@@ -203,8 +207,8 @@ class VatPayableForCountryControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+        status(result) mustBe SEE_OTHER
+        redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
       }
     }
   }

@@ -106,6 +106,8 @@ checkYourAnswers.label.amount = Amount
 checkYourAnswers.heading.vatOwned = VAT owed
 checkYourAnswers.heading.corrections.vatOwned = VAT owed (including corrections)
 checkYourAnswers.corrections.warning = After you submit your return, you will not be able to make any corrections using the Import One Stop Shop service.
+checkYourAnswers.noPaymentsDue.heading = VAT declared where no payment is due
+checkYourAnswers.noPaymentsDue.caption = The tax authorities in countries where you declared too much VAT are responsible for refunding any overpayments.
 
 journeyRecovery.continue.title = Sorry, there is a problem with the service
 journeyRecovery.continue.heading = Sorry, there is a problem with the service

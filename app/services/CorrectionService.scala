@@ -27,8 +27,8 @@ import scala.annotation.tailrec
 import scala.concurrent.{ExecutionContext, Future}
 
 class CorrectionService @Inject()(
-                                    vatReturnConnector: VatReturnConnector
-                                  )(implicit ec: ExecutionContext) extends Logging {
+                                   vatReturnConnector: VatReturnConnector
+                                 )(implicit ec: ExecutionContext) extends Logging {
 
   def getAccumulativeVatForCountryTotalAmount(
                                                periodFrom: Period,
@@ -40,15 +40,18 @@ class CorrectionService @Inject()(
     } yield {
       val firstReturn = etmpVatReturnList.head
       val firstReturnVatAmountsDeclaredOnCountry = firstReturn.goodsSupplied.filter(_.msOfConsumption == country.code).map(_.vatAmountGBP)
-      val isPreviouslyDeclaredCountry: Boolean = firstReturnVatAmountsDeclaredOnCountry.nonEmpty
+
 
       val otherReturnsCorrectionsAmountsForCorrectionPeriodAndCountry = etmpVatReturnList.tail.flatMap { etmpVatReturn =>
         etmpVatReturn.correctionPreviousVATReturn.filter(correctionPreviousVATReturn =>
-            correctionPreviousVATReturn.msOfConsumption == country.code && correctionPreviousVATReturn.periodKey == periodFrom.toEtmpPeriodString)
-          .map(_.totalVATAmountCorrectionGBP)
-      }.sum
+            correctionPreviousVATReturn.msOfConsumption == country.code && correctionPreviousVATReturn.periodKey == periodFrom.toEtmpPeriodString
+          ).map(_.totalVATAmountCorrectionGBP)
+      }
 
-      (isPreviouslyDeclaredCountry, firstReturnVatAmountsDeclaredOnCountry.sum + otherReturnsCorrectionsAmountsForCorrectionPeriodAndCountry)
+      val isPreviouslyDeclaredCountry: Boolean = firstReturnVatAmountsDeclaredOnCountry.nonEmpty ||
+        otherReturnsCorrectionsAmountsForCorrectionPeriodAndCountry.nonEmpty
+
+      (isPreviouslyDeclaredCountry, firstReturnVatAmountsDeclaredOnCountry.sum + otherReturnsCorrectionsAmountsForCorrectionPeriodAndCountry.sum)
     }
   }
 

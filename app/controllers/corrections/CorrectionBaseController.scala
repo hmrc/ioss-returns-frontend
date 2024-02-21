@@ -19,7 +19,7 @@ package controllers.corrections
 import controllers.JourneyRecoverySyntax._
 import models.requests.DataRequest
 import models.{Country, Index, Period}
-import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage}
+import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, VatAmountCorrectionCountryPage}
 import pages.{JourneyRecoveryPage, Waypoints}
 import play.api.mvc.Results.Redirect
 import play.api.mvc.{AnyContent, Result}
