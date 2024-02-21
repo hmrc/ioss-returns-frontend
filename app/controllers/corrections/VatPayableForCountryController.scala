@@ -96,26 +96,4 @@ class VatPayableForCountryController @Inject()(
         }
       }
   }
-
-  //  private def withAmountPeriodAndCountryCorrected(periodIndex: Index, countryIndex: Index)
-  //                                                 (block: ((Country, Period, BigDecimal)) => Future[Result])
-  //                                                 (
-  //                                                   implicit request: DataRequest[AnyContent]
-  //                                                 ): Future[Result] = {
-  //    val correctionPeriod = request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex))
-  //    correctionPeriod match {
-  //      case Some(correctionPeriod) =>
-  //        val result: Option[(Country, Period, BigDecimal)] = for {
-  //          selectedCountry <- request.userAnswers.get(CorrectionCountryPage(periodIndex, countryIndex))
-  //          correctionAmount <- request.userAnswers.get(VatAmountCorrectionCountryPage(periodIndex, countryIndex))
-  //        } yield (selectedCountry, correctionPeriod, correctionAmount)
-  //
-  //        result
-  //          .fold(
-  //            Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
-  //          )(block(_))
-  //      case _ =>
-  //        Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
-  //    }
-  //  }
 }

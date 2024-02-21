@@ -41,7 +41,6 @@ class CorrectionService @Inject()(
       val firstReturn = etmpVatReturnList.head
       val firstReturnVatAmountsDeclaredOnCountry = firstReturn.goodsSupplied.filter(_.msOfConsumption == country.code).map(_.vatAmountGBP)
 
-
       val otherReturnsCorrectionsAmountsForCorrectionPeriodAndCountry = etmpVatReturnList.tail.flatMap { etmpVatReturn =>
         etmpVatReturn.correctionPreviousVATReturn.filter(correctionPreviousVATReturn =>
             correctionPreviousVATReturn.msOfConsumption == country.code && correctionPreviousVATReturn.periodKey == periodFrom.toEtmpPeriodString

@@ -44,7 +44,7 @@
 
  <h1 class="govuk-heading-l">@messages("checkYourAnswers.heading")</h1>
 
- @if(!missingData.isEmpty) {
+ @if(missingData.nonEmpty) {
   @govukWarningText(WarningText(
    iconFallbackText = Option(messages("site.warning")),
    content = Text(messages("error.missing_answers"))
