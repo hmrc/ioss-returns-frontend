@@ -252,7 +252,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               inProgress = false,
               isOldest = false
             )),
-            finalReturnsCompleted = true
+            finalReturnsCompleted = false
           ))
         )
 
