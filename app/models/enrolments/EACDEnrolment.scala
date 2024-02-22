@@ -25,7 +25,7 @@ import java.time.format.DateTimeFormatter
 case class EACDEnrolment(service: String, state: String, activationDate: Option[LocalDateTime], identifiers: Seq[EACDIdentifiers])
 
 object EACDEnrolment {
-  private val dateTimeEACDFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS'Z'")
+  private val dateTimeEACDFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")
 
   val reads: Reads[EACDEnrolment] = {
     (
