@@ -34,7 +34,8 @@
         vatOwedSummaryList: SummaryList,
         totalVatPayable: BigDecimal,
         vatDeclared: BigDecimal,
-        displayPayNow: Boolean
+        displayPayNow: Boolean,
+        returnIsExcludedAndOutstandingAmount: Boolean
 )(implicit request: Request[_], messages: Messages)
 
     @layout(pageTitle = titleNoForm(messages("submittedReturnForPeriod.title", period.displayText))) {
@@ -68,6 +69,12 @@
                 <a class="govuk-button" id="pay-now" href="@paymentRoutes.PaymentController.makePayment(waypoints, period, (totalVatPayable * 100).toLong).url">@messages("submittedReturnForPeriod.payNow")</a>
             </p>
         }
+
+       @if(returnIsExcludedAndOutstandingAmount) {
+        <p class="govuk-!-margin-bottom-5">
+            @messages("submittedReturnForPeriod.otherCountryVatOwed")
+        </p>
+       }
 
         @if(salesToEuAndNiSummaryList.rows) {
             <h2 class="govuk-heading-m">@messages("submittedReturnForPeriod.details")</h2>

@@ -23,6 +23,7 @@ import logging.Logging
 import models.requests.IdentifierRequest
 import play.api.mvc._
 import play.api.mvc.Results._
+import services.AccountService
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.AffinityGroup.{Individual, Organisation}
 import uk.gov.hmrc.auth.core.retrieve._
@@ -37,6 +38,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class IdentifierAction @Inject()(
                                   override val authConnector: AuthConnector,
+                                  accountService: AccountService,
                                   config: FrontendAppConfig
                                 )
                                 (implicit val executionContext: ExecutionContext)
@@ -59,9 +61,9 @@ class IdentifierAction @Inject()(
       Retrievals.credentialRole ) {
 
       case Some(credentials) ~ enrolments ~ Some(Organisation) ~ _ ~ Some(credentialRole) if credentialRole == User =>
-        (findVrnFromEnrolments(enrolments), findIossNumberFromEnrolments(enrolments), hasIossEnrolment(enrolments)) match {
-          case (Some(vrn), Some(iossNumber), true) =>
-            getSuccessfulResponse(request, credentials, vrn, iossNumber)
+        (findVrnFromEnrolments(enrolments), hasIossEnrolment(enrolments)) match {
+          case (Some(vrn), true) =>
+            getSuccessfulResponse(request, credentials, vrn)
           case _ => throw InsufficientEnrolments()
         }
 
@@ -69,9 +71,9 @@ class IdentifierAction @Inject()(
         throw UnsupportedCredentialRole()
 
       case Some(credentials) ~ enrolments ~ Some(Individual) ~ confidence ~ _ =>
-        (findVrnFromEnrolments(enrolments), findIossNumberFromEnrolments(enrolments), hasIossEnrolment(enrolments)) match {
-          case (Some(vrn), Some(iossNumber), true) =>
-            checkConfidenceAndGetResponse(request, credentials, vrn, iossNumber, confidence)
+        (findVrnFromEnrolments(enrolments), hasIossEnrolment(enrolments)) match {
+          case (Some(vrn), true) =>
+            checkConfidenceAndGetResponse(request, credentials, vrn, confidence)
           case _ =>
             throw InsufficientEnrolments()
         }
@@ -90,22 +92,23 @@ class IdentifierAction @Inject()(
   private def getSuccessfulResponse[A](
                                         request: Request[A],
                                         credentials: Credentials,
-                                        vrn: Vrn,
-                                        iossNumber: String
-                                      ): Future[Either[Result, IdentifierRequest[A]]] = {
-    val identifierRequest = IdentifierRequest(request, credentials, vrn, iossNumber)
-    Right(identifierRequest).toFuture
+                                        vrn: Vrn
+                                      )(implicit hc: HeaderCarrier): Future[Either[Result, IdentifierRequest[A]]] = {
+    accountService.getLatestAccount.map { iossNumber =>
+      val identifierRequest = IdentifierRequest(request, credentials, vrn, iossNumber)
+      Right(identifierRequest)
+    }
+
   }
 
   private def checkConfidenceAndGetResponse[A](
                                                 request: Request[A],
                                                 credentials: Credentials,
                                                 vrn: Vrn,
-                                                iossNumber: String,
                                                 confidence: ConfidenceLevel
-                                              ): Future[Either[Result, IdentifierRequest[A]]] = {
+                                              )(implicit hc: HeaderCarrier): Future[Either[Result, IdentifierRequest[A]]] = {
     if (confidence >= ConfidenceLevel.L200) {
-      getSuccessfulResponse(request, credentials, vrn, iossNumber)
+      getSuccessfulResponse(request, credentials, vrn)
     } else {
       throw InsufficientConfidenceLevel()
     }
@@ -120,8 +123,5 @@ class IdentifierAction @Inject()(
       .flatMap { enrolment => enrolment.identifiers.find(_.key == "VRN").map(e => Vrn(e.value))
       } orElse enrolments.enrolments.find(_.key == "HMCE-VATDEC-ORG")
       .flatMap { enrolment => enrolment.identifiers.find(_.key == "VATRegNo").map(e => Vrn(e.value)) }
-
-  private def findIossNumberFromEnrolments(enrolments: Enrolments): Option[String] =
-    enrolments.enrolments.find(_.key == config.iossEnrolment).flatMap(_.identifiers.find(_.key == "IOSSNumber").map(_.value))
 
 }
