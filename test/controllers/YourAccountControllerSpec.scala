@@ -250,7 +250,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               nextPeriod.paymentDeadline,
               SubmissionStatus.Due,
               inProgress = false,
-              isOldest = false
+              isOldest = true
             )),
             finalReturnsCompleted = false
           ))
@@ -293,10 +293,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           None,
           exclusionsEnabled = true,
           Some(registrationWrapperWithExclusion.registration.exclusions.head),
-          hasSubmittedFinalReturn = true,
+          hasSubmittedFinalReturn = false,
           ReturnsViewModel(
             Seq(
-              Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
+              Return.fromPeriod(nextPeriod, SubmissionStatus.Due, inProgress = false, isOldest = false)
             )
           )(messages(application))
         )(request, messages(application)).toString
