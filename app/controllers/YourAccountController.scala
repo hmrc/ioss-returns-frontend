@@ -97,9 +97,15 @@ class YourAccountController @Inject()(
       None
     }
 
-    val existsOutstandingReturn = currentReturns.returns.exists { currentReturn =>
-      Seq(SubmissionStatus.Due, SubmissionStatus.Overdue, SubmissionStatus.Next).contains(currentReturn.submissionStatus) &&
-        !isOlderThanThreeYears(currentReturn.dueDate, clock)
+    val existsOutstandingReturn = {
+      if(currentReturns.finalReturnsCompleted) {
+        false
+      } else {
+        currentReturns.returns.exists { currentReturn =>
+          Seq(SubmissionStatus.Due, SubmissionStatus.Overdue, SubmissionStatus.Next).contains(currentReturn.submissionStatus) &&
+            !isOlderThanThreeYears(currentReturn.dueDate, clock)
+        }
+      }
     }
 
     val rejoinUrl = if (request.registrationWrapper.registration.canRejoinRegistration(now) && !existsOutstandingReturn) {
