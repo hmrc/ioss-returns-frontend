@@ -361,6 +361,7 @@ submittedReturnForPeriod.heading = Submitted return for {0}
 submittedReturnForPeriod.summary = Summary
 submittedReturnForPeriod.details = Details
 submittedReturnForPeriod.payNow = Pay now
+submittedReturnForPeriod.otherCountryVatOwed = You must pay any outstanding VAT from this return directly to the countries where you made your sales.
 
 submittedReturnForPeriod.summary.vatDeclared = VAT declared
 submittedReturnForPeriod.summary.amountPaid = Amount paid

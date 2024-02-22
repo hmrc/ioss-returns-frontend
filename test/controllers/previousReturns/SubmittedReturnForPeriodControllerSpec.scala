@@ -477,105 +477,229 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
         }
       }
 
-      "when there are exclusions present and vat return due date has exceeded 3 years" in {
+      "when there are exclusions present and vat return due date has exceeded 3 years" - {
+        "and nothing owed" in {
 
-        val date = LocalDate.ofInstant(stubClockAtArbitraryDate.instant(), stubClockAtArbitraryDate.getZone)
-        val exceededDate = date.minusYears(3).minusMonths(2)
-        val exceededPeriod = Period(exceededDate.getYear, exceededDate.getMonth)
-        val vatReturnNoCorrections = vatReturn.copy(correctionPreviousVATReturn = Seq.empty, periodKey = exceededPeriod.toEtmpPeriodString)
-
-        val etmpExclusion: EtmpExclusion = EtmpExclusion(
-          exclusionReason = EtmpExclusionReason.NoLongerSupplies,
-          effectiveDate = LocalDate.now(stubClockAtArbitraryDate).plusMonths(6),
-          decisionDate = LocalDate.now(stubClockAtArbitraryDate).minusMonths(7),
-          quarantine = false
-        )
-
-        val registrationWrapper = RegistrationWrapper(
-          vatInfo = arbitraryVatInfo.arbitrary.sample.value,
-          registration = etmpDisplayRegistration.copy(exclusions = Seq(etmpExclusion))
-        )
-
-        val application = applicationBuilder(userAnswers = None, registration = registrationWrapper)
-          .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
-          .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
-          .build()
-
-        running(application) {
-          when(mockVatReturnConnector.get(any())(any())) thenReturn Right(vatReturnNoCorrections).toFuture
-          when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Right(Some(charge)).toFuture
-
-          implicit val msgs: Messages = messages(application)
-
-          val request =
-            OptionalDataRequest(
-              FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoad(waypoints, exceededPeriod).url),
-              testCredentials,
-              vrn,
-              iossNumber,
-              registrationWrapper,
-              None
-            )
-
-          val result = route(application, request).value
-
-          val view = application.injector.instanceOf[SubmittedReturnForPeriodView]
-
-          val mainSummaryList = SummaryListViewModel(
-            rows = Seq(
-              SubmittedReturnForPeriodSummary.rowVatDeclared(vatReturnNoCorrections),
-              SubmittedReturnForPeriodSummary.rowAmountPaid(Some(charge.clearedAmount)),
-              SubmittedReturnForPeriodSummary.rowRemainingAmount(Some(charge.outstandingAmount)),
-              SubmittedReturnForPeriodSummary.rowReturnSubmittedDate(vatReturnNoCorrections),
-              SubmittedReturnForPeriodSummary.rowPaymentDueDate(exceededPeriod),
-              SubmittedReturnForPeriodSummary.rowReturnReference(vatReturnNoCorrections),
-              SubmittedReturnForPeriodSummary.rowPaymentReference(vatReturnNoCorrections)
-            ).flatten
+          val charge = Charge(
+            period = period,
+            originalAmount = BigDecimal(1000),
+            outstandingAmount = BigDecimal(0),
+            clearedAmount = BigDecimal(1000)
           )
 
-          val salesToEuAndNiSummaryList = SummaryListViewModel(
-            rows =
-              Seq(
-                PreviousReturnsTotalNetValueOfSalesSummary.row(vatReturnNoCorrections),
-                PreviousReturnsTotalVatOnSalesSummary.row(vatReturnNoCorrections)
+          val date = LocalDate.ofInstant(stubClockAtArbitraryDate.instant(), stubClockAtArbitraryDate.getZone)
+          val exceededDate = date.minusYears(3).minusMonths(2)
+          val exceededPeriod = Period(exceededDate.getYear, exceededDate.getMonth)
+          val vatReturnNoCorrections = vatReturn.copy(correctionPreviousVATReturn = Seq.empty, periodKey = exceededPeriod.toEtmpPeriodString)
+
+          val etmpExclusion: EtmpExclusion = EtmpExclusion(
+            exclusionReason = EtmpExclusionReason.NoLongerSupplies,
+            effectiveDate = LocalDate.now(stubClockAtArbitraryDate).plusMonths(6),
+            decisionDate = LocalDate.now(stubClockAtArbitraryDate).minusMonths(7),
+            quarantine = false
+          )
+
+          val registrationWrapper = RegistrationWrapper(
+            vatInfo = arbitraryVatInfo.arbitrary.sample.value,
+            registration = etmpDisplayRegistration.copy(exclusions = Seq(etmpExclusion))
+          )
+
+          val application = applicationBuilder(userAnswers = None, registration = registrationWrapper)
+            .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
+            .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
+            .build()
+
+          running(application) {
+            when(mockVatReturnConnector.get(any())(any())) thenReturn Right(vatReturnNoCorrections).toFuture
+            when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Right(Some(charge)).toFuture
+
+            implicit val msgs: Messages = messages(application)
+
+            val request =
+              OptionalDataRequest(
+                FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoad(waypoints, exceededPeriod).url),
+                testCredentials,
+                vrn,
+                iossNumber,
+                registrationWrapper,
+                None
+              )
+
+            val result = route(application, request).value
+
+            val view = application.injector.instanceOf[SubmittedReturnForPeriodView]
+
+            val mainSummaryList = SummaryListViewModel(
+              rows = Seq(
+                SubmittedReturnForPeriodSummary.rowVatDeclared(vatReturnNoCorrections),
+                SubmittedReturnForPeriodSummary.rowAmountPaid(Some(charge.clearedAmount)),
+                SubmittedReturnForPeriodSummary.rowRemainingAmount(Some(charge.outstandingAmount)),
+                SubmittedReturnForPeriodSummary.rowReturnSubmittedDate(vatReturnNoCorrections),
+                SubmittedReturnForPeriodSummary.rowPaymentDueDate(exceededPeriod),
+                SubmittedReturnForPeriodSummary.rowReturnReference(vatReturnNoCorrections),
+                SubmittedReturnForPeriodSummary.rowPaymentReference(vatReturnNoCorrections)
               ).flatten
-          ).withCard(
-            card = Card(
-              title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.salesToEuNi.title"))))
             )
+
+            val salesToEuAndNiSummaryList = SummaryListViewModel(
+              rows =
+                Seq(
+                  PreviousReturnsTotalNetValueOfSalesSummary.row(vatReturnNoCorrections),
+                  PreviousReturnsTotalVatOnSalesSummary.row(vatReturnNoCorrections)
+                ).flatten
+            ).withCard(
+              card = Card(
+                title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.salesToEuNi.title"))))
+              )
+            )
+
+            val correctionRowsSummaryList = PreviousReturnsCorrectionsSummary.correctionRows(vatReturnNoCorrections)
+
+            val negativeAndZeroBalanceCorrectionCountriesSummaryList =
+              PreviousReturnsDeclaredVATNoPaymentDueSummary.summaryRowsOfNegativeAndZeroValues(vatReturnNoCorrections)
+
+            val vatOwedSummaryList = SummaryListViewModel(
+              rows = PreviousReturnsVatOwedSummary.row(vatReturnNoCorrections)
+            ).withCard(
+              card = Card(
+                title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.vatOwed.title"))))
+              )
+            )
+
+            val outstandingAmount: BigDecimal = charge.outstandingAmount
+            val vatDeclared = vatReturnNoCorrections.totalVATAmountDueForAllMSGBP
+
+            println(outstandingAmount)
+            println(vatDeclared)
+
+            status(result) mustBe OK
+            contentAsString(result) mustBe
+              view(
+                waypoints,
+                exceededPeriod,
+                mainSummaryList,
+                salesToEuAndNiSummaryList,
+                correctionRowsSummaryList,
+                negativeAndZeroBalanceCorrectionCountriesSummaryList,
+                vatOwedSummaryList,
+                outstandingAmount,
+                vatDeclared,
+                displayPayNow = false,
+                returnIsExcludedAndOutstandingAmount = false
+              )(request, messages(application)).toString
+          }
+        }
+
+        "and something owed" in {
+
+          val charge = Charge(
+            period = period,
+            originalAmount = BigDecimal(1000),
+            outstandingAmount = BigDecimal(500),
+            clearedAmount = BigDecimal(500)
           )
 
-          val correctionRowsSummaryList = PreviousReturnsCorrectionsSummary.correctionRows(vatReturnNoCorrections)
+          val date = LocalDate.ofInstant(stubClockAtArbitraryDate.instant(), stubClockAtArbitraryDate.getZone)
+          val exceededDate = date.minusYears(3).minusMonths(2)
+          val exceededPeriod = Period(exceededDate.getYear, exceededDate.getMonth)
+          val vatReturnNoCorrections = vatReturn.copy(correctionPreviousVATReturn = Seq.empty, periodKey = exceededPeriod.toEtmpPeriodString)
 
-          val negativeAndZeroBalanceCorrectionCountriesSummaryList =
-            PreviousReturnsDeclaredVATNoPaymentDueSummary.summaryRowsOfNegativeAndZeroValues(vatReturnNoCorrections)
-
-          val vatOwedSummaryList = SummaryListViewModel(
-            rows = PreviousReturnsVatOwedSummary.row(vatReturnNoCorrections)
-          ).withCard(
-            card = Card(
-              title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.vatOwed.title"))))
-            )
+          val etmpExclusion: EtmpExclusion = EtmpExclusion(
+            exclusionReason = EtmpExclusionReason.NoLongerSupplies,
+            effectiveDate = LocalDate.now(stubClockAtArbitraryDate).plusMonths(6),
+            decisionDate = LocalDate.now(stubClockAtArbitraryDate).minusMonths(7),
+            quarantine = false
           )
 
-          val outstandingAmount: BigDecimal = charge.outstandingAmount
-          val vatDeclared = vatReturnNoCorrections.totalVATAmountDueForAllMSGBP
+          val registrationWrapper = RegistrationWrapper(
+            vatInfo = arbitraryVatInfo.arbitrary.sample.value,
+            registration = etmpDisplayRegistration.copy(exclusions = Seq(etmpExclusion))
+          )
 
-          status(result) mustBe OK
-          contentAsString(result) mustBe
-            view(
-              waypoints,
-              exceededPeriod,
-              mainSummaryList,
-              salesToEuAndNiSummaryList,
-              correctionRowsSummaryList,
-              negativeAndZeroBalanceCorrectionCountriesSummaryList,
-              vatOwedSummaryList,
-              outstandingAmount,
-              vatDeclared,
-              displayPayNow = false,
-              returnIsExcludedAndOutstandingAmount = false
-            )(request, messages(application)).toString
+          val application = applicationBuilder(userAnswers = None, registration = registrationWrapper)
+            .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
+            .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
+            .build()
+
+          running(application) {
+            when(mockVatReturnConnector.get(any())(any())) thenReturn Right(vatReturnNoCorrections).toFuture
+            when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Right(Some(charge)).toFuture
+
+            implicit val msgs: Messages = messages(application)
+
+            val request =
+              OptionalDataRequest(
+                FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoad(waypoints, exceededPeriod).url),
+                testCredentials,
+                vrn,
+                iossNumber,
+                registrationWrapper,
+                None
+              )
+
+            val result = route(application, request).value
+
+            val view = application.injector.instanceOf[SubmittedReturnForPeriodView]
+
+            val mainSummaryList = SummaryListViewModel(
+              rows = Seq(
+                SubmittedReturnForPeriodSummary.rowVatDeclared(vatReturnNoCorrections),
+                SubmittedReturnForPeriodSummary.rowAmountPaid(Some(charge.clearedAmount)),
+                SubmittedReturnForPeriodSummary.rowRemainingAmount(Some(charge.outstandingAmount)),
+                SubmittedReturnForPeriodSummary.rowReturnSubmittedDate(vatReturnNoCorrections),
+                SubmittedReturnForPeriodSummary.rowPaymentDueDate(exceededPeriod),
+                SubmittedReturnForPeriodSummary.rowReturnReference(vatReturnNoCorrections),
+                SubmittedReturnForPeriodSummary.rowPaymentReference(vatReturnNoCorrections)
+              ).flatten
+            )
+
+            val salesToEuAndNiSummaryList = SummaryListViewModel(
+              rows =
+                Seq(
+                  PreviousReturnsTotalNetValueOfSalesSummary.row(vatReturnNoCorrections),
+                  PreviousReturnsTotalVatOnSalesSummary.row(vatReturnNoCorrections)
+                ).flatten
+            ).withCard(
+              card = Card(
+                title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.salesToEuNi.title"))))
+              )
+            )
+
+            val correctionRowsSummaryList = PreviousReturnsCorrectionsSummary.correctionRows(vatReturnNoCorrections)
+
+            val negativeAndZeroBalanceCorrectionCountriesSummaryList =
+              PreviousReturnsDeclaredVATNoPaymentDueSummary.summaryRowsOfNegativeAndZeroValues(vatReturnNoCorrections)
+
+            val vatOwedSummaryList = SummaryListViewModel(
+              rows = PreviousReturnsVatOwedSummary.row(vatReturnNoCorrections)
+            ).withCard(
+              card = Card(
+                title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.vatOwed.title"))))
+              )
+            )
+
+            val outstandingAmount: BigDecimal = charge.outstandingAmount
+            val vatDeclared = vatReturnNoCorrections.totalVATAmountDueForAllMSGBP
+
+            println(outstandingAmount)
+            println(vatDeclared)
+
+            status(result) mustBe OK
+            contentAsString(result) mustBe
+              view(
+                waypoints,
+                exceededPeriod,
+                mainSummaryList,
+                salesToEuAndNiSummaryList,
+                correctionRowsSummaryList,
+                negativeAndZeroBalanceCorrectionCountriesSummaryList,
+                vatOwedSummaryList,
+                outstandingAmount,
+                vatDeclared,
+                displayPayNow = false,
+                returnIsExcludedAndOutstandingAmount = true
+              )(request, messages(application)).toString
+          }
         }
       }
     }
