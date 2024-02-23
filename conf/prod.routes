@@ -2,4 +2,3 @@
 ->         /pay-vat-on-goods-sold-to-eu/import-one-stop-shop-returns-payments        app.Routes
 ->         /                                                                         health.Routes
 
-GET        /admin/metrics                                                            @com.kenshoo.play.metrics.MetricsController.metrics
