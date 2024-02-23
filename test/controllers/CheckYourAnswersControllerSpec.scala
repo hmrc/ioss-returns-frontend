@@ -19,29 +19,40 @@ package controllers
 import base.SpecBase
 import models.audit.{ReturnsAuditModel, SubmissionResult}
 import models.requests.DataRequest
+import models.{Country, TotalVatToCountry, UserAnswers}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
-import pages.corrections.CorrectPreviousReturnPage
+import pages.corrections._
+import pages.{CheckYourAnswersPage, SoldGoodsPage}
+import play.api.i18n.Messages
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import queries.corrections.{PreviouslyDeclaredCorrectionAmount, PreviouslyDeclaredCorrectionAmountQuery}
 import services.{AuditService, CoreVatReturnService, SalesAtVatRateService}
+import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
+import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{Card, CardTitle, SummaryList, SummaryListRow}
+import viewmodels.checkAnswers._
+import viewmodels.checkAnswers.corrections.{CorrectPreviousReturnSummary, CorrectionNoPaymentDueSummary, CorrectionReturnPeriodSummary}
 import viewmodels.govuk.SummaryListFluency
+import views.html.CheckYourAnswersView
 
 import scala.concurrent.Future
 
 class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with SummaryListFluency with BeforeAndAfterEach {
 
-  private val salesAtVatRateService = mock[SalesAtVatRateService]
+  private val country: Country = arbitraryCountry.arbitrary.sample.value
+
+  private val mockSalesAtVatRateService = mock[SalesAtVatRateService]
   private val mockCoreVatReturnService = mock[CoreVatReturnService]
   private val mockAuditService = mock[AuditService]
 
   override def beforeEach(): Unit = {
-    Mockito.reset(salesAtVatRateService)
+    Mockito.reset(mockSalesAtVatRateService)
     Mockito.reset(mockCoreVatReturnService)
     Mockito.reset(mockAuditService)
     super.beforeEach()
@@ -99,7 +110,6 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
       }
 
-
       "when correct previous return is true" - {
 
         "must contain VAT declared to EU countries after corrections heading if there were corrections and all totals are positive" in {
@@ -125,26 +135,100 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           }
         }
 
-        "must contain VAT declared where no payment is due heading if there were negative totals after corrections" in {
+        "must return OK and the correct view for a GET when there are negative totals within corrections" in {
 
-          val application = applicationBuilder(userAnswers = Some(completeUserAnswers.set(CorrectPreviousReturnPage(0), true).success.value))
+          val previouslyDeclaredCorrectionAmount: BigDecimal = BigDecimal(1500)
+          val previouslyDeclaredNegativeCorrectionAmount: BigDecimal = BigDecimal(-1000)
+
+          val userAnswersWithCorrections: UserAnswers = emptyUserAnswers
+            .set(SoldGoodsPage, false).success.value
+            .set(CorrectPreviousReturnPage(0), true).success.value
+            .set(CorrectionReturnYearPage(index), period.year).success.value
+            .set(CorrectionReturnPeriodPage(index), period).success.value
+            .set(CorrectionCountryPage(index, index), country).success.value
+            .set(
+              PreviouslyDeclaredCorrectionAmountQuery(index, index),
+              PreviouslyDeclaredCorrectionAmount(previouslyDeclared = true, amount = previouslyDeclaredCorrectionAmount)
+            ).success.value
+            .set(VatAmountCorrectionCountryPage(index, index), previouslyDeclaredNegativeCorrectionAmount).success.value
+            .set(VatPayableForCountryPage(index, index), true).success.value
+
+          val totalVatToCountries: List[TotalVatToCountry] = List.empty
+          val noPaymentsDue: List[TotalVatToCountry] = List(TotalVatToCountry(country = country, totalVat = previouslyDeclaredNegativeCorrectionAmount))
+          val totalVatOnSales: BigDecimal = BigDecimal(0)
+
+          when(mockSalesAtVatRateService.getTotalNetSales(any())) thenReturn None
+          when(mockSalesAtVatRateService.getTotalVatOnSales(any())) thenReturn None
+          when(mockSalesAtVatRateService.getTotalVatOwedAfterCorrections(any())) thenReturn BigDecimal(0)
+          when(mockSalesAtVatRateService.getVatOwedToCountries(eqTo(userAnswersWithCorrections))) thenReturn (noPaymentsDue ++ totalVatToCountries)
+
+          val application = applicationBuilder(userAnswers = Some(userAnswersWithCorrections))
+            .overrides(bind[SalesAtVatRateService].toInstance(mockSalesAtVatRateService))
             .build()
 
           running(application) {
+
+            implicit val msgs: Messages = messages(application)
+
             val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad(waypoints).url)
+
+            val view = application.injector.instanceOf[CheckYourAnswersView]
 
             val result = route(application, request).value
 
+            val businessSummaryList: SummaryList = SummaryListViewModel(
+              rows = Seq(
+                BusinessNameSummary.row(registrationWrapper),
+                BusinessVRNSummary.row(vrn),
+                ReturnPeriodSummary.row(userAnswersWithCorrections, waypoints)
+              ).flatten
+            ).withCssClass("govuk-summary-card govuk-summary-card__content govuk-!-display-block width-auto")
+
+            val salesFromEuSummaryList: SummaryList = SummaryListViewModel(
+              rows = Seq(
+                SoldGoodsSummary.row(userAnswersWithCorrections, waypoints, CheckYourAnswersPage),
+                TotalNetValueOfSalesSummary.row(userAnswersWithCorrections, None, waypoints, CheckYourAnswersPage),
+                TotalVatOnSalesSummary.row(userAnswersWithCorrections, None, waypoints, CheckYourAnswersPage)
+              ).flatten
+            ).withCard(
+              card = Card(
+                title = Some(CardTitle(content = HtmlContent(msgs("checkYourAnswers.sales.heading"))))
+              )
+            )
+
+            val correctionsSummaryList: SummaryList = SummaryListViewModel(
+              rows = Seq(
+                CorrectPreviousReturnSummary.row(userAnswersWithCorrections, waypoints, CheckYourAnswersPage),
+                CorrectionReturnPeriodSummary.getAllRows(userAnswersWithCorrections, waypoints, CheckYourAnswersPage)
+              ).flatten
+            ).withCard(
+              card = Card(
+                title = Some(CardTitle(content = HtmlContent(msgs("checkYourAnswers.correction.heading"))))
+              )
+            )
+
+            val allSummaryLists = Seq(
+              (None, businessSummaryList),
+              (None, salesFromEuSummaryList),
+              (None, correctionsSummaryList)
+            )
+
+            val noPaymentsDueSummaryList: Seq[SummaryListRow] = CorrectionNoPaymentDueSummary.row(noPaymentsDue)
+
             status(result) mustEqual OK
-            contentAsString(result).contains("Business name") mustBe true
-            contentAsString(result).contains("UK VAT registration number") mustBe true
-            contentAsString(result).contains("Return month") mustBe true
-            contentAsString(result).contains("Sales to EU countries and Northern Ireland") mustBe true
-            contentAsString(result).contains("Sales made") mustBe true
-            contentAsString(result).contains("Sales excluding VAT") mustBe true
-            contentAsString(result).contains("Corrections") mustBe true
-            contentAsString(result).contains("VAT owed") mustBe true
-            contentAsString(result).contains("Total VAT payable") mustBe true
+            contentAsString(result) mustBe
+              view(
+                waypoints,
+                allSummaryLists,
+                period,
+                totalVatToCountries,
+                totalVatOnSales,
+                noPaymentsDueSummaryList,
+                containsCorrections = true,
+                List.empty,
+                None,
+                isFinalReturn = false
+              )(request, messages(application)).toString
           }
         }
       }
