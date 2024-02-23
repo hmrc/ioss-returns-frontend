@@ -44,7 +44,7 @@ object CorrectionReturnPeriodSummary {
         actions = Seq(
           ActionItemViewModel(
             "site.change",
-            VatPeriodCorrectionsListPage(period, true).changeLink(waypoints, sourcePage).url
+            VatPeriodCorrectionsListPage(period, addAnother = true).changeLink(waypoints, sourcePage).url
           ).withVisuallyHiddenText(messages("correctionReturnPeriod.change.hidden"))
             .withAttribute(("id", "change-correction-periods"))
         )

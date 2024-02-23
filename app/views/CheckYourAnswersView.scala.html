@@ -72,7 +72,7 @@
                                 <dt class="govuk-summary-list__key">
                                 @noPaymentDueCountry.key.content.asHtml
                                 </dt>
-                                <dd class="govuk-summary-list__value govuk-table__cell--numeric govuk-!-width-one-third">
+                                <dd class="govuk-summary-list__value govuk-table__cell--numeric govuk-!-padding-right-9">
                                 @noPaymentDueCountry.value.content.asHtml
                                 </dd>
                             </div>
@@ -101,7 +101,7 @@
                     @for(totalVatToCountry <- totalVatToCountries) {
                         <div class="govuk-summary-list__row ">
                             <dt class="govuk-summary-list__key"><strong>@totalVatToCountry.country.name</strong></dt>
-                            <dd class="govuk-summary-list__value govuk-summary-list__value  govuk-table__cell--numeric govuk-!-padding-right-9">
+                            <dd class="govuk-summary-list__value govuk-table__cell--numeric govuk-!-padding-right-9">
                             @Html(currencyFormat(totalVatToCountry.totalVat))
                             </dd>
                         </div>
