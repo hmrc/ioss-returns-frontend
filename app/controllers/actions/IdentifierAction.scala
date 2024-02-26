@@ -61,21 +61,26 @@ class IdentifierAction @Inject()(
       Retrievals.credentialRole ) {
 
       case Some(credentials) ~ enrolments ~ Some(Organisation) ~ _ ~ Some(credentialRole) if credentialRole == User =>
-        (findVrnFromEnrolments(enrolments), hasIossEnrolment(enrolments)) match {
-          case (Some(vrn), true) =>
-            getSuccessfulResponse(request, credentials, vrn)
-          case _ => throw InsufficientEnrolments()
+        findIossFromEnrolments(enrolments).map { maybeIossNumber =>
+          (findVrnFromEnrolments(enrolments), maybeIossNumber) match {
+            case (Some(vrn), Some(iossNumber)) =>
+              getSuccessfulResponse(request, credentials, vrn, iossNumber)
+            case _ => throw InsufficientEnrolments()
+          }
         }
+
 
       case _ ~ _ ~ Some(Organisation) ~ _ ~ Some(credentialRole) if credentialRole == Assistant =>
         throw UnsupportedCredentialRole()
 
       case Some(credentials) ~ enrolments ~ Some(Individual) ~ confidence ~ _ =>
-        (findVrnFromEnrolments(enrolments), hasIossEnrolment(enrolments)) match {
-          case (Some(vrn), true) =>
-            checkConfidenceAndGetResponse(request, credentials, vrn, confidence)
-          case _ =>
-            throw InsufficientEnrolments()
+        findIossFromEnrolments(enrolments).map { maybeIossNumber =>
+          (findVrnFromEnrolments(enrolments), maybeIossNumber) match {
+            case (Some(vrn), Some(iossNumber)) =>
+              checkConfidenceAndGetResponse(request, credentials, vrn, iossNumber, confidence)
+            case _ =>
+              throw InsufficientEnrolments()
+          }
         }
 
       case _ =>
@@ -92,12 +97,11 @@ class IdentifierAction @Inject()(
   private def getSuccessfulResponse[A](
                                         request: Request[A],
                                         credentials: Credentials,
-                                        vrn: Vrn
-                                      )(implicit hc: HeaderCarrier): Future[Either[Result, IdentifierRequest[A]]] = {
-    accountService.getLatestAccount.map { iossNumber =>
-      val identifierRequest = IdentifierRequest(request, credentials, vrn, iossNumber)
-      Right(identifierRequest)
-    }
+                                        vrn: Vrn,
+                                        iossNumber: String
+                                      )(implicit hc: HeaderCarrier): Either[Result, IdentifierRequest[A]] = {
+    val identifierRequest = IdentifierRequest(request, credentials, vrn, iossNumber)
+    Right(identifierRequest)
 
   }
 
@@ -105,17 +109,25 @@ class IdentifierAction @Inject()(
                                                 request: Request[A],
                                                 credentials: Credentials,
                                                 vrn: Vrn,
+                                                iossNumber: String,
                                                 confidence: ConfidenceLevel
-                                              )(implicit hc: HeaderCarrier): Future[Either[Result, IdentifierRequest[A]]] = {
+                                              )(implicit hc: HeaderCarrier): Either[Result, IdentifierRequest[A]] = {
     if (confidence >= ConfidenceLevel.L200) {
-      getSuccessfulResponse(request, credentials, vrn)
+      getSuccessfulResponse(request, credentials, vrn, iossNumber)
     } else {
       throw InsufficientConfidenceLevel()
     }
   }
 
-  private def hasIossEnrolment(enrolments: Enrolments): Boolean = {
-    enrolments.enrolments.exists(_.key == config.iossEnrolment)
+  private def findIossFromEnrolments(enrolments: Enrolments)(implicit hc: HeaderCarrier): Future[Option[String]] = {
+    val filteredIossNumbers = enrolments.enrolments.filter(_.key == config.iossEnrolment).flatMap(_.identifiers.filter(_.key == "IOSSNumber").map(_.value)).toSeq
+
+    filteredIossNumbers match {
+      case firstEnrolment :: Nil => Some(firstEnrolment).toFuture
+      case multipleEnrolments if multipleEnrolments.nonEmpty =>
+        accountService.getLatestAccount().map(x => Some(x))
+      case _ => None.toFuture
+    }
   }
 
   private def findVrnFromEnrolments(enrolments: Enrolments): Option[Vrn] =
