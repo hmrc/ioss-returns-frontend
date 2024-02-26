@@ -39,7 +39,7 @@ object VatReturnHttpParser extends Logging {
               Left(InvalidJson)
           }
         case _ =>
-          logger.warn("Failed to retrieve charge data")
+          logger.warn("Failed to retrieve vat return")
           Left(UnexpectedResponseStatus(response.status, response.body))
       }
     }

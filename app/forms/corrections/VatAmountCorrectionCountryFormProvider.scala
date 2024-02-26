@@ -22,7 +22,7 @@ import play.api.data.Form
 import javax.inject.Inject
 
 class VatAmountCorrectionCountryFormProvider @Inject() extends Mappings {
-  def apply(country: String): Form[BigDecimal] =
+  def apply(country: String, maximumCorrectionAmount: BigDecimal): Form[BigDecimal] =
     Form(
       "value" -> currency(
         "vatAmountCorrectionCountry.error.required",
@@ -30,6 +30,6 @@ class VatAmountCorrectionCountryFormProvider @Inject() extends Mappings {
         "vatAmountCorrectionCountry.error.nonNumeric",
         args = Seq(country))
         .verifying(nonZero("vatAmountCorrectionCountry.error.nonZero"))
-        .verifying(minimumValueWithCurrency(0, "vatAmountCorrectionCountry.error.negative"))
+        .verifying(minimumValueWithCurrency(-maximumCorrectionAmount, "vatAmountCorrectionCountry.error.negative"))
         .verifying(maximumValueWithCurrency(maximum = maxCurrencyAmount, "vatAmountCorrectionCountry.error.outOfRange.undeclared")))
 }

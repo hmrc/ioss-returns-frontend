@@ -14,7 +14,6 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.hmrcfrontend.views.config.HmrcPageHeadingLegend
 @import components.ButtonGroup
 @import viewmodels.LegendSize
 @import pages.corrections.UndeclaredCountryCorrectionPage
@@ -31,7 +30,7 @@
 
 @layout(pageTitle = title(form, messages("undeclaredCountryCorrection.title"))) {
 
-    @formHelper(action = controllers.corrections.routes.UndeclaredCountryCorrectionController.onSubmit(waypoints, periodIndex, countryIndex), 'autoComplete -> "off") {
+    @formHelper(action = controllers.corrections.routes.UndeclaredCountryCorrectionController.onSubmit(waypoints, periodIndex, countryIndex), Symbol("autoComplete") -> "off") {
 
 
         @if(form.errors.nonEmpty) {

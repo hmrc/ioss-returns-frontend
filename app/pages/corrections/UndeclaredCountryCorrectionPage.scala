@@ -16,6 +16,7 @@
 
 package pages.corrections
 
+import controllers.corrections.routes
 import models.{Index, UserAnswers}
 import pages.PageConstants.{corrections, correctionsToCountry}
 import pages.{JourneyRecoveryPage, Page, QuestionPage, Waypoints}
@@ -36,5 +37,5 @@ case class UndeclaredCountryCorrectionPage(periodIndex: Index, countryIndex: Ind
     }
 
   override def route(waypoints: Waypoints): Call =
-    controllers.corrections.routes.UndeclaredCountryCorrectionController.onPageLoad(waypoints, periodIndex,countryIndex)
+    routes.UndeclaredCountryCorrectionController.onPageLoad(waypoints, periodIndex, countryIndex)
 }

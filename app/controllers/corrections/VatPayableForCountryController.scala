@@ -18,13 +18,13 @@ package controllers.corrections
 
 import controllers.actions._
 import forms.corrections.VatPayableForCountryFormProvider
-import models.requests.DataRequest
-import models.{Country, Index, Period}
+import models.Index
 import pages.Waypoints
-import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, VatAmountCorrectionCountryPage, VatPayableForCountryPage}
+import pages.corrections.{VatAmountCorrectionCountryPage, VatPayableForCountryPage}
 import play.api.i18n.I18nSupport
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.FutureSyntax.FutureOps
 import views.html.corrections.VatPayableForCountryView
 
 import javax.inject.Inject
@@ -34,61 +34,66 @@ class VatPayableForCountryController @Inject()(
                                                 cc: AuthenticatedControllerComponents,
                                                 formProvider: VatPayableForCountryFormProvider,
                                                 view: VatPayableForCountryView
-                                              )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                              )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with CorrectionBaseController {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
   def onPageLoad(waypoints: Waypoints, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible().async {
     implicit request =>
 
-      withAmountPeriodAndCountryCorrected(periodIndex, countryIndex) { data => {
-        val (selectedCountry, correctionPeriod, correctionAmount) = data
-          val form = formProvider(selectedCountry, correctionAmount)
-          val preparedForm = request.userAnswers.get(VatPayableForCountryPage(periodIndex, countryIndex)) match {
-            case None => form
-            case Some(value) => form.fill(value)
+      getCorrectionReturnPeriod(waypoints, periodIndex) { correctionReturnPeriod =>
+        getCountry(waypoints, periodIndex, countryIndex) { country =>
+          getPreviouslyDeclaredCorrectionAnswers(waypoints, periodIndex, countryIndex) { previouslyDeclaredCorrectionAnswers =>
+
+            val correctionAmount = request.userAnswers.get(
+              VatAmountCorrectionCountryPage(periodIndex, countryIndex)
+            ).getOrElse(BigDecimal(0))
+
+            val calculatedCorrectionAmount = if (previouslyDeclaredCorrectionAnswers.previouslyDeclared) {
+              previouslyDeclaredCorrectionAnswers.amount + correctionAmount
+            } else {
+              correctionAmount
+            }
+
+            val form = formProvider(country, calculatedCorrectionAmount)
+            val preparedForm = request.userAnswers.get(VatPayableForCountryPage(periodIndex, countryIndex)) match {
+              case None => form
+              case Some(value) => form.fill(value)
+            }
+            Ok(view(preparedForm, waypoints, periodIndex, countryIndex, country, correctionReturnPeriod, calculatedCorrectionAmount)).toFuture
           }
-          Future.successful(Ok(view(preparedForm, waypoints, periodIndex, countryIndex, selectedCountry, correctionPeriod, correctionAmount)))
         }
       }
   }
 
   def onSubmit(waypoints: Waypoints, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible().async {
-      implicit request =>
-        withAmountPeriodAndCountryCorrected(periodIndex, countryIndex) { data => {
-          val (selectedCountry, correctionPeriod, correctionAmount) = data
-            val form = formProvider(selectedCountry, correctionAmount)
+    implicit request =>
+      getCorrectionReturnPeriod(waypoints, periodIndex) { correctionReturnPeriod =>
+        getCountry(waypoints, periodIndex, countryIndex) { country =>
+          getPreviouslyDeclaredCorrectionAnswers(waypoints, periodIndex, countryIndex) { previouslyDeclaredCorrectionAnswers =>
+
+            val correctionAmount = request.userAnswers.get(
+              VatAmountCorrectionCountryPage(periodIndex, countryIndex)
+            ).getOrElse(BigDecimal(0))
+
+            val calculatedCorrectionAmount = if (previouslyDeclaredCorrectionAnswers.previouslyDeclared) {
+              previouslyDeclaredCorrectionAnswers.amount + correctionAmount
+            } else {
+              correctionAmount
+            }
+
+            val form = formProvider(country, calculatedCorrectionAmount)
             form.bindFromRequest().fold(
               formWithErrors =>
-                Future.successful(BadRequest(view(formWithErrors, waypoints, periodIndex, countryIndex, selectedCountry, correctionPeriod, correctionAmount))),
+                BadRequest(view(formWithErrors, waypoints, periodIndex, countryIndex, country, correctionReturnPeriod, calculatedCorrectionAmount)).toFuture,
               value =>
+
                 for {
                   updatedAnswers <- Future.fromTry(request.userAnswers.set(VatPayableForCountryPage(periodIndex, countryIndex), value))
                 } yield Redirect(VatPayableForCountryPage(periodIndex, countryIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route)
             )
           }
         }
-    }
-
-  private def withAmountPeriodAndCountryCorrected(periodIndex: Index, countryIndex: Index)
-                                                 (block: ((Country, Period, BigDecimal)) => Future[Result])
-                                                 (
-                                                   implicit request: DataRequest[AnyContent]
-                                                 ): Future[Result] = {
-    val correctionPeriod = request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex))
-    correctionPeriod match {
-      case Some(correctionPeriod) =>
-        val result: Option[(Country, Period, BigDecimal)] = for {
-          selectedCountry <- request.userAnswers.get(CorrectionCountryPage (periodIndex, countryIndex))
-          correctionAmount <- request.userAnswers.get(VatAmountCorrectionCountryPage (periodIndex, countryIndex))
-        } yield (selectedCountry, correctionPeriod, correctionAmount)
-
-        result
-          .fold (
-            Future.successful (Redirect (controllers.routes.JourneyRecoveryController.onPageLoad () ) )
-          ) (block (_) )
-      case _ =>
-        Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
-    }
+      }
   }
 }

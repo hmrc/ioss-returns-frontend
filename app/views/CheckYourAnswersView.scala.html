@@ -14,7 +14,6 @@
  * limitations under the License.
  *@
 
-@import utils.CurrencyFormatter.currencyFormat
 @import components.ButtonGroup
 @import models.etmp.EtmpExclusion
 
@@ -33,115 +32,116 @@
         period: Period,
         totalVatToCountries: List[TotalVatToCountry],
         totalVatOnSales: BigDecimal,
-        noPaymentDueCountries: List[TotalVatToCountry],
+        noPaymentDueSummaryList: Seq[SummaryListRow],
         containsCorrections: Boolean,
         missingData: List[String],
         maybeExclusion: Option[EtmpExclusion],
         isFinalReturn: Boolean,
 )(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = titleNoForm(messages("checkYourAnswers.title"))) {
+    @layout(pageTitle = titleNoForm(messages("checkYourAnswers.title"))) {
 
 
- <h1 class="govuk-heading-l">@messages("checkYourAnswers.heading")</h1>
+        <h1 class="govuk-heading-l">@messages("checkYourAnswers.heading")</h1>
 
- @if(!missingData.isEmpty) {
-  @govukWarningText(WarningText(
-   iconFallbackText = Option(messages("site.warning")),
-   content = Text(messages("error.missing_answers"))
-  ))
- }
+        @if(missingData.nonEmpty) {
+            @govukWarningText(WarningText(
+                iconFallbackText = Option(messages("site.warning")),
+                content = Text(messages("error.missing_answers"))
+            ))
+        }
 
- @summaryLists.map { case (heading, summaryList) =>
-  @if(heading.isDefined) {
-   <h2 class="govuk-heading-l">@messages(heading.get)</h2>
-  }
-  @govukSummaryList(summaryList)
- }
- @if(containsCorrections) {
-  @if(noPaymentDueCountries.nonEmpty) {
-   <table class="govuk-table">
-    <caption class="govuk-table__caption">
-     <p class="govuk-table__caption--m">@messages("checkYourAnswers.noPaymentsDue.heading")</p>
-     <p class="govuk-body">@messages("checkYourAnswers.noPaymentsDue.caption")</p>
-    </caption>
-    <thead class="govuk-table__head">
-     <tr class="govuk-table__row">
-      <th scope="col" class="govuk-table__header govuk-!-width-one-third">@messages("checkYourAnswers.label.country")</th>
-      <th scope="col" class="govuk-table__header">@messages("checkYourAnswers.label.amount")</th>
-     </tr>
-    </thead>
-    <tbody class="govuk-table__body">
-    @for(noPaymentDueCountry <- noPaymentDueCountries) {
-     <tr class="govuk-table__row">
-      <td class="govuk-table__cell">@noPaymentDueCountry.country.name</td>
-      <td class="govuk-table__cell">@Html(currencyFormat(noPaymentDueCountry.totalVat))</td>
-     </tr>
-    }
-    </tbody>
-   </table>
-  }
- }
+        @summaryLists.map { case (heading, summaryList) =>
+            @if(heading.isDefined) {
+                <h2 class="govuk-heading-l">@messages(heading.get)</h2>
+            }
+            @govukSummaryList(summaryList)
+        }
+        
+        @if(containsCorrections) {
+            @if(noPaymentDueSummaryList.nonEmpty) {
+                <div class="govuk-summary-card">
+                    <div class="govuk-summary-card__title-wrapper">
+                        <h2 class="govuk-summary-card__title">@messages("checkYourAnswers.noPaymentsDue.heading")</h2>
+                    </div>
+                    <div class="govuk-summary-card__content">
+                        <p class="govuk-body">@messages("checkYourAnswers.noPaymentsDue.p1")</p>
+                        <dl class="govuk-summary-list">
+                        @for(noPaymentDueCountry <- noPaymentDueSummaryList) {
+                            <div class="govuk-summary-list__row">
+                                <dt class="govuk-summary-list__key">
+                                @noPaymentDueCountry.key.content.asHtml
+                                </dt>
+                                <dd class="govuk-summary-list__value govuk-table__cell--numeric govuk-!-padding-right-9">
+                                @noPaymentDueCountry.value.content.asHtml
+                                </dd>
+                            </div>
+                        }
+                        </dl>
+                    </div>
+                </div>
+            }
+        }
 
-    @if(totalVatOnSales > 0) {
-        <div class=" govuk-summary-card">
-            @if(containsCorrections) {
-      <div class="govuk-summary-card__title-wrapper">
-                <h2 class="govuk-summary-card__title">@messages("checkYourAnswers.heading.corrections.vatOwned")</h2>
-      </div>
-                        } else {
-                            <div class="govuk-summary-card__title-wrapper  govuk-!-margin-0">
-                                <h2 class="govuk-summary-card__title">@messages("checkYourAnswers.heading.vatOwned")
-                            </h2>
-                        </div>
-                    }
-
-            <div class="govuk-summary-card__content ">
-            <dl class="govuk-summary-list">
-                @for(totalVatToCountry <- totalVatToCountries) {
-                    <div class="govuk-summary-list__row ">
-                        <dt class="govuk-summary-list__key"><strong>@totalVatToCountry.country.name</strong></dt>
-                        <dd class="govuk-summary-list__value govuk-summary-list__value  govuk-table__cell--numeric govuk-!-padding-right-9">
-                            @Html(currencyFormat(totalVatToCountry.totalVat))
-                        </dd>
+        @if(totalVatOnSales > 0) {
+            <div class=" govuk-summary-card">
+                @if(containsCorrections) {
+                    <div class="govuk-summary-card__title-wrapper">
+                        <h2 class="govuk-summary-card__title">@messages("checkYourAnswers.heading.corrections.vatOwned")</h2>
+                    </div>
+                } else {
+                    <div class="govuk-summary-card__title-wrapper  govuk-!-margin-0">
+                        <h2 class="govuk-summary-card__title">@messages("checkYourAnswers.heading.vatOwned")
+                        </h2>
                     </div>
                 }
-            </dl>
-        </div>
-  </div>
+
+                <div class="govuk-summary-card__content ">
+                    <dl class="govuk-summary-list">
+                    @for(totalVatToCountry <- totalVatToCountries) {
+                        <div class="govuk-summary-list__row ">
+                            <dt class="govuk-summary-list__key"><strong>@totalVatToCountry.country.name</strong></dt>
+                            <dd class="govuk-summary-list__value govuk-table__cell--numeric govuk-!-padding-right-9">
+                            @Html(currencyFormat(totalVatToCountry.totalVat))
+                            </dd>
+                        </div>
+                    }
+                    </dl>
+                </div>
+            </div>
+        }
+
+        <dl class="govuk-summary-list govuk-!-margin-bottom-9 govuk-summary-card">
+            <div class="govuk-summary-card__title-wrapper" style="padding-bottom: 2px">
+                <dd class="govuk-summary-list__key govuk-heading-m govuk-!-width-one-third">
+                @messages("checkYourAnswers.totalVatPayable.heading")
+                </dd>
+                <dd class="govuk-summary-list__value govuk-!-padding-right-0 govuk-!-font-size-24">
+                @Html(currencyFormatWithAccuracy(totalVatOnSales))
+                </dd>
+                <dd></dd>
+            </div>
+        </dl>
+
+        @if(maybeExclusion.isDefined && isFinalReturn) {
+            @govukWarningText(WarningText(
+                iconFallbackText = Option(messages("site.warning")),
+                content = Text(messages("checkYourAnswers.corrections.warning"))
+            ))
+        }
+
+        @if(missingData.isEmpty) {
+            @formHelper(action = routes.CheckYourAnswersController.onSubmit(waypoints, incompletePromptShown = false)) {
+                @button(messages("site.submit", waypoints, routes.CheckYourAnswersController.onPageLoad(waypoints).url))
+            }
+        } else {
+            <h2 class="govuk-heading-m push--top">@messages("error.missing_answers_header")</h2>
+            <p class="govuk-body">@messages("error.missing_answers_prompt.general")</p>
+
+            @formHelper(action = routes.CheckYourAnswersController.onSubmit(waypoints, incompletePromptShown = true)) {
+                @govukButton(
+                    ButtonViewModel(messages("error.resolve_missing_answers"))
+                )
+            }
+        }
     }
-
- <dl class="govuk-summary-list govuk-!-margin-bottom-9 govuk-summary-card">
-  <div class="govuk-summary-card__title-wrapper" style="padding-bottom: 2px">
-   <dd class="govuk-summary-list__key govuk-heading-m govuk-!-width-one-third">
-   @messages("checkYourAnswers.totalVatPayable.heading")
-   </dd>
-   <dd class="govuk-summary-list__value govuk-!-padding-right-0 govuk-!-font-size-24">
-   @Html(currencyFormatWithAccuracy(totalVatOnSales))
-   </dd>
-   <dd></dd>
-  </div>
- </dl>
-
-    @if(maybeExclusion.isDefined && isFinalReturn) {
-        @govukWarningText(WarningText(
-            iconFallbackText = Option(messages("site.warning")),
-            content = Text(messages("checkYourAnswers.corrections.warning"))
-        ))
-    }
-
- @if(missingData.isEmpty) {
-  @formHelper(action = routes.CheckYourAnswersController.onSubmit(waypoints, false)) {
-   @button(messages("site.submit", waypoints, routes.CheckYourAnswersController.onPageLoad(waypoints).url))
-  }
- } else {
-  <h2 class="govuk-heading-m push--top">@messages("error.missing_answers_header")</h2>
-  <p class="govuk-body">@messages("error.missing_answers_prompt.general")</p>
-
-  @formHelper(action = routes.CheckYourAnswersController.onSubmit(waypoints, true)) {
-   @govukButton(
-    ButtonViewModel(messages("error.resolve_missing_answers"))
-   )
-  }
- }
-}

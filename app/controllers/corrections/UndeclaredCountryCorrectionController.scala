@@ -18,12 +18,11 @@ package controllers.corrections
 
 import controllers.actions._
 import forms.corrections.UndeclaredCountryCorrectionFormProvider
-import models.requests.DataRequest
-import models.{Country, Index, Period}
+import models.Index
 import pages.Waypoints
-import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, UndeclaredCountryCorrectionPage}
+import pages.corrections.UndeclaredCountryCorrectionPage
 import play.api.i18n.I18nSupport
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax.FutureOps
 import views.html.corrections.UndeclaredCountryCorrectionView
@@ -36,67 +35,49 @@ class UndeclaredCountryCorrectionController @Inject()(
                                                        formProvider: UndeclaredCountryCorrectionFormProvider,
                                                        view: UndeclaredCountryCorrectionView
                                                      )(implicit ec: ExecutionContext)
-  extends FrontendBaseController with I18nSupport {
+  extends FrontendBaseController with I18nSupport with CorrectionBaseController {
 
   private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
   def onPageLoad(waypoints: Waypoints, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible().async {
-      implicit request => {
+    implicit request =>
 
-        val period = request.userAnswers.period
-        val correctionPeriod = request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex))
+      getCorrectionReturnPeriod(waypoints, periodIndex) { correctionReturnPeriod =>
+        getCountry(waypoints, periodIndex, countryIndex) { country =>
 
-        correctionPeriod match {
-          case Some(correctionPeriod) =>
-            withCountryCorrected(period, periodIndex, countryIndex) {
-              country => {
-                val preparedForm = request
-                  .userAnswers.get(UndeclaredCountryCorrectionPage(periodIndex, countryIndex)) match {
-                  case None => form
-                  case Some (value) => form.fill (value)
-                }
-                Future.successful(Ok(view(preparedForm, waypoints, period, country, correctionPeriod, periodIndex, countryIndex)))
-              }
-            }
-          case _ =>
-            Redirect(controllers.routes.JourneyRecoveryController.onPageLoad().url).toFuture
+          val period = request.userAnswers.period
+
+          val preparedForm = request.userAnswers.get(UndeclaredCountryCorrectionPage(periodIndex, countryIndex)) match {
+            case None => form
+            case Some(value) => form.fill(value)
+          }
+          Ok(view(preparedForm, waypoints, period, country, correctionReturnPeriod, periodIndex, countryIndex)).toFuture
         }
       }
-    }
+  }
+
 
   def onSubmit(waypoints: Waypoints, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible().async {
-      implicit request =>
-        val period = request.userAnswers.period
-        val correctionPeriod = request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex))
+    implicit request =>
 
-        correctionPeriod match {
-          case Some(correctionPeriod) =>
-            withCountryCorrected (period, periodIndex, countryIndex) {
-              country =>
-                form.bindFromRequest ().fold (
-                  formWithErrors => Future.successful(BadRequest(
-                    view(formWithErrors, waypoints, period, country, correctionPeriod, periodIndex, countryIndex))),
-                  value =>
-                    for {
-                      updatedAnswers <- Future.fromTry (
-                        request.userAnswers.set(UndeclaredCountryCorrectionPage (periodIndex, countryIndex), value))
-                      _ <- cc.sessionRepository.set(updatedAnswers)
-                    } yield Redirect(UndeclaredCountryCorrectionPage(periodIndex, countryIndex).navigate (waypoints, request.userAnswers, updatedAnswers).route)
-                )
-            }
-          case _ =>
-            Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+      getCorrectionReturnPeriod(waypoints, periodIndex) { correctionReturnPeriod =>
+        getCountry(waypoints, periodIndex, countryIndex) { country =>
+
+          val period = request.userAnswers.period
+
+          form.bindFromRequest().fold(
+            formWithErrors =>
+              BadRequest(view(formWithErrors, waypoints, period, country, correctionReturnPeriod, periodIndex, countryIndex)).toFuture,
+            value =>
+
+              for {
+                updatedAnswers <- Future.fromTry(
+                  request.userAnswers.set(UndeclaredCountryCorrectionPage(periodIndex, countryIndex), value))
+                _ <- cc.sessionRepository.set(updatedAnswers)
+              } yield Redirect(UndeclaredCountryCorrectionPage(periodIndex, countryIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route)
+          )
         }
-    }
-
-  private def withCountryCorrected(period: Period, periodIndex: Index, index: Index)
-                                  (block: Country => Future[Result])
-                                  (implicit request: DataRequest[AnyContent]): Future[Result] =
-    request.userAnswers.get(CorrectionCountryPage(periodIndex, index))
-      .fold(
-        Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
-      )(
-        block(_)
-      )
+      }
+  }
 }

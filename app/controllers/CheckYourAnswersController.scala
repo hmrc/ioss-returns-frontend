@@ -19,12 +19,12 @@ package controllers
 import com.google.inject.Inject
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
-import models.requests.DataRequest
 import models.ValidationError
 import models.audit.{ReturnsAuditModel, SubmissionResult}
 import models.etmp.EtmpExclusion
-import pages.{CheckYourAnswersPage, Waypoints}
+import models.requests.DataRequest
 import pages.corrections.CorrectPreviousReturnPage
+import pages.{CheckYourAnswersPage, Waypoints}
 import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc._
 import queries.{AllCorrectionPeriodsQuery, TotalAmountVatDueGBPQuery}
@@ -34,7 +34,7 @@ import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{CardTitle, SummaryList}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import viewmodels.checkAnswers._
-import viewmodels.checkAnswers.corrections.{CorrectPreviousReturnSummary, CorrectionReturnPeriodSummary}
+import viewmodels.checkAnswers.corrections.{CorrectPreviousReturnSummary, CorrectionNoPaymentDueSummary, CorrectionReturnPeriodSummary}
 import viewmodels.govuk.summarylist._
 import views.html.CheckYourAnswersView
 
@@ -67,8 +67,7 @@ class CheckYourAnswersController @Inject()(
 
       val (noPaymentDueCountries, totalVatToCountries) = salesAtVatRateService.getVatOwedToCountries(request.userAnswers).partition(vat => vat.totalVat <= 0)
 
-      val totalVatOnSales =
-        salesAtVatRateService.getTotalVatOwedAfterCorrections(request.userAnswers)
+      val totalVatOnSales = salesAtVatRateService.getTotalVatOwedAfterCorrections(request.userAnswers)
 
       val summaryLists = getAllSummaryLists(request, businessSummaryList, salesFromEuSummaryList, waypoints)
 
@@ -84,14 +83,13 @@ class CheckYourAnswersController @Inject()(
         nextPeriod.isAfter(exclusions.effectiveDate)
       }
 
-
       Ok(view(
         waypoints,
         summaryLists,
         request.userAnswers.period,
         totalVatToCountries,
         totalVatOnSales,
-        noPaymentDueCountries,
+        noPaymentDueSummaryList = CorrectionNoPaymentDueSummary.row(noPaymentDueCountries),
         containsCorrections,
         errors.map(_.errorMessage),
         maybeExclusion,
@@ -126,7 +124,7 @@ class CheckYourAnswersController @Inject()(
                                   businessSummaryList: SummaryList,
                                   salesFromEuSummaryList: SummaryList,
                                   waypoints: Waypoints
-                                )(implicit messages: Messages) =
+                                )(implicit messages: Messages): Seq[(Option[String], SummaryList)] =
     if (request.userAnswers.get(CorrectPreviousReturnPage(0)).isDefined) {
       val correctionsSummaryList = SummaryListViewModel(
         rows = Seq(
