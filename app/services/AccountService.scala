@@ -16,7 +16,6 @@
 
 package services
 
-import config.FrontendAppConfig
 import connectors.RegistrationConnector
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -24,7 +23,6 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class AccountService @Inject()(
-                              frontendAppConfig: FrontendAppConfig,
                                 registrationConnector: RegistrationConnector
                               )(implicit ec: ExecutionContext) {
 
@@ -34,7 +32,7 @@ class AccountService @Inject()(
         .filter(_.activationDate.isDefined)
         .maxBy(_.activationDate.get)
         .identifiers
-        .filter(_.key == frontendAppConfig.iossEnrolment)
+        .filter(_.key == "IOSSNumber")
         .head
         .value
     }
