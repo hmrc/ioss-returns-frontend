@@ -110,6 +110,8 @@ GET         /past-returns                                                       
 
 GET         /past-returns/:period                                                     controllers.previousReturns.SubmittedReturnForPeriodController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, period: Period)
 
+GET         /return-registration-selection                                            controllers.previousReturns.ReturnRegistrationSelectionController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
+
 GET         /outstanding-payments                                                     controllers.payments.WhichVatPeriodToPayController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
 POST        /outstanding-payments                                                     controllers.payments.WhichVatPeriodToPayController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints)
 

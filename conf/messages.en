@@ -421,6 +421,9 @@ submittedReturnsHistory.status.paid = Paid
 submittedReturnsHistory.status.nilreturn = No payment due
 submittedReturnsHistory.status.excluded = You must pay this to the countries where you made your sales
 
+returnRegistrationSelection.title = Which registration do you want to view?
+returnRegistrationSelection.heading = Which registration do you want to view?
+
 noPayments.title = You do not owe any Import One Stop Shop VAT
 noPayments.heading = You do not owe any Import One Stop Shop VAT
 noPayments.textWithLink = <a class="govuk-link" href={0}>Return to your account</a>
