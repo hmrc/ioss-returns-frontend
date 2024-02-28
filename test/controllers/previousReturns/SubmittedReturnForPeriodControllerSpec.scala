@@ -569,9 +569,6 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             val outstandingAmount: BigDecimal = charge.outstandingAmount
             val vatDeclared = vatReturnNoCorrections.totalVATAmountDueForAllMSGBP
 
-            println(outstandingAmount)
-            println(vatDeclared)
-
             status(result) mustBe OK
             contentAsString(result) mustBe
               view(
@@ -680,9 +677,6 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
 
             val outstandingAmount: BigDecimal = charge.outstandingAmount
             val vatDeclared = vatReturnNoCorrections.totalVATAmountDueForAllMSGBP
-
-            println(outstandingAmount)
-            println(vatDeclared)
 
             status(result) mustBe OK
             contentAsString(result) mustBe
