@@ -93,7 +93,7 @@ checkYourAnswers.heading = Check Your Answers
 checkYourAnswers.label.businessName = Business name
 checkYourAnswers.label.businessVrn = UK VAT registration number
 checkYourAnswers.label.returnPeriod = Return month
-checkYourAnswers.sales.heading = Sales to EU countries and Northern Ireland
+checkYourAnswers.sales.heading = Sales to EU countries, Northern Ireland or both
 checkYourAnswers.salesLabel.l1 = Sales made
 checkYourAnswers.label.netValueOfSales = Sales excluding VAT
 checkYourAnswers.label.vatOnSales = VAT charged
@@ -373,13 +373,13 @@ submittedReturnForPeriod.summary.paymentDueDate = Payment due by
 submittedReturnForPeriod.summary.returnReference = Return reference
 submittedReturnForPeriod.summary.paymentReference = Payment reference
 
-submittedReturnForPeriod.salesToEuNi.title = Sales to EU countries and Northern Ireland
+submittedReturnForPeriod.salesToEuNi.title = Sales to EU countries, Northern Ireland or both
 submittedReturnForPeriod.salesToEuNi.allNetSales = Sales excluding VAT
 submittedReturnForPeriod.salesToEuNi.allVatOnSales = VAT charged
 
 submittedReturnForPeriod.corrections.title = Corrections
 submittedReturnForPeriod.corrections.vatDeclarationNotDue = VAT declared where no payment is due
-submittedReturnForPeriod.corrections.p1 = EU countries and Northern Ireland are responsible for refunding any overpayments.
+submittedReturnForPeriod.corrections.p1 = The tax authorities in countries where you declared too much VAT are responsible for refunding any overpayments.
 submittedReturnForPeriod.corrections.country = {0}
 
 submittedReturnForPeriod.vatOwed.title = VAT owed

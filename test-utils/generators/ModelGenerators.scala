@@ -36,7 +36,7 @@ trait ModelGenerators {
   implicit val arbitraryBigDecimal: Arbitrary[BigDecimal] =
     Arbitrary {
       for {
-        nonDecimalNumber <- arbitrary[Int]
+        nonDecimalNumber <- arbitrary[Int].retryUntil(_ > 0)
         decimalNumber <- arbitrary[Int].retryUntil(_ > 0).retryUntil(_.toString.reverse.head.toString != "0")
       } yield BigDecimal(s"$nonDecimalNumber.$decimalNumber")
     }
