@@ -423,6 +423,7 @@ submittedReturnsHistory.status.excluded = You must pay this to the countries whe
 
 returnRegistrationSelection.title = Which registration do you want to view?
 returnRegistrationSelection.heading = Which registration do you want to view?
+returnRegistrationSelection.hint = IOSS number: {0}
 
 noPayments.title = You do not owe any Import One Stop Shop VAT
 noPayments.heading = You do not owe any Import One Stop Shop VAT

@@ -17,19 +17,39 @@
 @import controllers.payments.{routes => paymentRoutes}
 @import controllers.previousReturns.{routes => prevRoutes}
 @import viewmodels.previousReturns.PreviousReturnsCorrectionsSummary.CorrectionRow
+@import viewmodels.previousReturns.PreviousRegistration
 
 @this(
         layout: templates.Layout,
         govukButton: GovukButton,
-        govukSummaryList: GovukSummaryList
+        govukSummaryList: GovukSummaryList,
+        govukRadios: GovukRadios,
+        button: ButtonGroup
 )
 
 @(
-        waypoints: Waypoints
+        waypoints: Waypoints,
+        form: Form[_],
+        previousRegistrations: Seq[PreviousRegistration]
 )(implicit request: Request[_], messages: Messages)
 
-    @layout(pageTitle = titleNoForm(messages("returnRegistrationSelection.title"))) {
+@layout(pageTitle = titleNoForm(messages("returnRegistrationSelection.title"))) {
 
-        <h1 class="govuk-heading-l">@messages("returnRegistrationSelection.heading")</h1>
+@govukRadios(
+     RadiosViewModel(
+                field  = form("value"),
+                legend = LegendViewModel(messages("returnRegistrationSelection.heading")).asPageHeading(),
+                items = previousRegistrations.map { previousRegistration =>
+                    RadioItem(
+                        content = HtmlContent(Html(previousRegistration.startPeriod.displayText + " to " + previousRegistration.endPeriod.displayText)),
+                        value   = Some(previousRegistration.iossNumber),
+                        id      = Some("value"),
+                        hint    = Some(HintViewModel(messages("returnRegistrationSelection.hint", previousRegistration.iossNumber)))
+                    )
+                }
+            )
+        )
 
-    }
+  @button("site.continue")
+
+}

@@ -16,6 +16,7 @@
 
 package controllers.actions
 
+import config.FrontendAppConfig
 import connectors.RegistrationConnector
 import models.requests.{IdentifierRequest, RegistrationRequest}
 import play.api.mvc.{ActionRefiner, Result}
@@ -26,7 +27,8 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class GetRegistrationAction @Inject()(
-                                       val registrationConnector: RegistrationConnector
+                                       val registrationConnector: RegistrationConnector,
+                                       config: FrontendAppConfig,
                                      )(implicit val executionContext: ExecutionContext)
   extends ActionRefiner[IdentifierRequest, RegistrationRequest] {
 
