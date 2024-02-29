@@ -37,15 +37,6 @@ object SubmittedReturnForPeriodSummary {
     ))
   }
 
-  def rowAmountPaid(clearedAmount: Option[BigDecimal])(implicit messages: Messages): Option[SummaryListRow] = {
-    clearedAmount.map { amount =>
-      SummaryListRowViewModel(
-        key = "submittedReturnForPeriod.summary.amountPaid",
-        value = ValueViewModel(HtmlContent(currencyFormat(amount))).withCssClass("govuk-table__cell--numeric govuk-!-padding-right-0")
-      )
-    }
-  }
-
   def rowRemainingAmount(outstandingAmount: Option[BigDecimal])(implicit messages: Messages): Option[SummaryListRow] = {
     outstandingAmount.map { amount =>
       SummaryListRowViewModel(

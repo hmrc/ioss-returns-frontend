@@ -366,7 +366,6 @@ submittedReturnForPeriod.payNow = Pay now
 submittedReturnForPeriod.otherCountryVatOwed = You must pay any outstanding VAT from this return directly to the countries where you made your sales.
 
 submittedReturnForPeriod.summary.vatDeclared = VAT declared
-submittedReturnForPeriod.summary.amountPaid = Amount paid
 submittedReturnForPeriod.summary.remainingAmount = Amount left to pay
 submittedReturnForPeriod.summary.submittedDate = Return submitted
 submittedReturnForPeriod.summary.paymentDueDate = Payment due by

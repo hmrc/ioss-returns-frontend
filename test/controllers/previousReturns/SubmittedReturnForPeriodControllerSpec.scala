@@ -83,7 +83,6 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
           val mainSummaryList = SummaryListViewModel(
             rows = Seq(
               SubmittedReturnForPeriodSummary.rowVatDeclared(vatReturn),
-              SubmittedReturnForPeriodSummary.rowAmountPaid(Some(charge.clearedAmount)),
               SubmittedReturnForPeriodSummary.rowRemainingAmount(Some(charge.outstandingAmount)),
               SubmittedReturnForPeriodSummary.rowReturnSubmittedDate(vatReturn),
               SubmittedReturnForPeriodSummary.rowPaymentDueDate(period),
@@ -162,7 +161,6 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
           val mainSummaryList = SummaryListViewModel(
             rows = Seq(
               SubmittedReturnForPeriodSummary.rowVatDeclared(vatReturnNoCorrections),
-              SubmittedReturnForPeriodSummary.rowAmountPaid(Some(charge.clearedAmount)),
               SubmittedReturnForPeriodSummary.rowRemainingAmount(Some(charge.outstandingAmount)),
               SubmittedReturnForPeriodSummary.rowReturnSubmittedDate(vatReturnNoCorrections),
               SubmittedReturnForPeriodSummary.rowPaymentDueDate(period),
@@ -250,7 +248,6 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
           val mainSummaryList = SummaryListViewModel(
             rows = Seq(
               SubmittedReturnForPeriodSummary.rowVatDeclared(vatReturnPositiveCorrections),
-              SubmittedReturnForPeriodSummary.rowAmountPaid(Some(charge.clearedAmount)),
               SubmittedReturnForPeriodSummary.rowRemainingAmount(Some(charge.outstandingAmount)),
               SubmittedReturnForPeriodSummary.rowReturnSubmittedDate(vatReturnPositiveCorrections),
               SubmittedReturnForPeriodSummary.rowPaymentDueDate(period),
@@ -345,7 +342,6 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
           val mainSummaryList = SummaryListViewModel(
             rows = Seq(
               SubmittedReturnForPeriodSummary.rowVatDeclared(nilEtmpVatReturn),
-              SubmittedReturnForPeriodSummary.rowAmountPaid(None),
               SubmittedReturnForPeriodSummary.rowRemainingAmount(None),
               SubmittedReturnForPeriodSummary.rowReturnSubmittedDate(nilEtmpVatReturn),
               SubmittedReturnForPeriodSummary.rowPaymentDueDate(period),
@@ -422,7 +418,6 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
           val mainSummaryList = SummaryListViewModel(
             rows = Seq(
               SubmittedReturnForPeriodSummary.rowVatDeclared(vatReturn),
-              SubmittedReturnForPeriodSummary.rowAmountPaid(None),
               SubmittedReturnForPeriodSummary.rowRemainingAmount(None),
               SubmittedReturnForPeriodSummary.rowReturnSubmittedDate(vatReturn),
               SubmittedReturnForPeriodSummary.rowPaymentDueDate(period),
@@ -532,7 +527,6 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             val mainSummaryList = SummaryListViewModel(
               rows = Seq(
                 SubmittedReturnForPeriodSummary.rowVatDeclared(vatReturnNoCorrections),
-                SubmittedReturnForPeriodSummary.rowAmountPaid(Some(charge.clearedAmount)),
                 SubmittedReturnForPeriodSummary.rowRemainingAmount(Some(charge.outstandingAmount)),
                 SubmittedReturnForPeriodSummary.rowReturnSubmittedDate(vatReturnNoCorrections),
                 SubmittedReturnForPeriodSummary.rowPaymentDueDate(exceededPeriod),
@@ -641,7 +635,6 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             val mainSummaryList = SummaryListViewModel(
               rows = Seq(
                 SubmittedReturnForPeriodSummary.rowVatDeclared(vatReturnNoCorrections),
-                SubmittedReturnForPeriodSummary.rowAmountPaid(Some(charge.clearedAmount)),
                 SubmittedReturnForPeriodSummary.rowRemainingAmount(Some(charge.outstandingAmount)),
                 SubmittedReturnForPeriodSummary.rowReturnSubmittedDate(vatReturnNoCorrections),
                 SubmittedReturnForPeriodSummary.rowPaymentDueDate(exceededPeriod),
