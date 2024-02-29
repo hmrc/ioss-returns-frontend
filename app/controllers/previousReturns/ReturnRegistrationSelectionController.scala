@@ -45,7 +45,6 @@ class ReturnRegistrationSelectionController @Inject()(
   protected val controllerComponents: MessagesControllerComponents = cc
 
 
-
   def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetOptionalData().async {
     implicit request =>
       getPreviousRegistrationsStub().map { previousRegistrations =>
@@ -93,5 +92,24 @@ class ReturnRegistrationSelectionController @Inject()(
         )
       )
     )
+  }
+
+  def onSubmit(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetOptionalData().async {
+    implicit request =>
+      getPreviousRegistrationsStub().map { previousRegistrations =>
+        val form: Form[PreviousRegistration] = formProvider(previousRegistrations)
+
+        form.bindFromRequest().fold(
+          formWithErrors => BadRequest(view(waypoints, formWithErrors, previousRegistrations)),
+          value =>
+            Redirect(
+              controllers.previousReturns.routes.PreviousRegistrationSubmittedReturnsHistoryController.onPageLoad(
+                iossNumber = value.iossNumber,
+                startPeriod = value.startPeriod,
+                endPeriod = value.endPeriod
+              )
+            )
+        )
+      }
   }
 }

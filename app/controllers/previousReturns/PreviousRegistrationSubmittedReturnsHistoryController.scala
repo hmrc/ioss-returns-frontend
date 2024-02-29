@@ -18,30 +18,32 @@ package controllers.previousReturns
 
 import controllers.actions._
 import logging.Logging
+import models.Period
 import pages.Waypoints
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.PeriodWithFinancialDataService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.previousReturns.SubmittedReturnsHistoryView
+import viewmodels.previousReturns.PreviousRegistration
+import views.html.previousReturns.PreviousRegistrationSubmittedReturnsHistoryView
 
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
-class SubmittedReturnsHistoryController @Inject()(
+class PreviousRegistrationSubmittedReturnsHistoryController @Inject()(
                                                    override val messagesApi: MessagesApi,
                                                    cc: AuthenticatedControllerComponents,
                                                    periodWithFinancialDataService: PeriodWithFinancialDataService,
-                                                   view: SubmittedReturnsHistoryView
+                                                   view: PreviousRegistrationSubmittedReturnsHistoryView
                                                  )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetOptionalData().async {
+  def onPageLoad(waypoints: Waypoints, iossNumber: String, startPeriod: Period, endPeriod: Period): Action[AnyContent] = cc.authAndGetOptionalData().async {
     implicit request =>
-
-      periodWithFinancialDataService.getPeriodWithFinancialData(request.iossNumber).map { periodWithFinancialData =>
-        Ok(view(waypoints, periodWithFinancialData))
+      periodWithFinancialDataService.getPeriodWithFinancialData(iossNumber).map { periodWithFinancialData =>
+        val previousRegistration = PreviousRegistration(iossNumber, startPeriod, endPeriod)
+        Ok(view(waypoints, previousRegistration, periodWithFinancialData))
       }
   }
 }

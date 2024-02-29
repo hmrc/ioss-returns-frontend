@@ -21,6 +21,8 @@
 
 @this(
         layout: templates.Layout,
+        formHelper: FormWithCSRF,
+        govukErrorSummary: GovukErrorSummary,
         govukButton: GovukButton,
         govukSummaryList: GovukSummaryList,
         govukRadios: GovukRadios,
@@ -35,21 +37,27 @@
 
 @layout(pageTitle = titleNoForm(messages("returnRegistrationSelection.title"))) {
 
-@govukRadios(
-     RadiosViewModel(
-                field  = form("value"),
-                legend = LegendViewModel(messages("returnRegistrationSelection.heading")).asPageHeading(),
-                items = previousRegistrations.map { previousRegistration =>
-                    RadioItem(
-                        content = HtmlContent(Html(previousRegistration.startPeriod.displayText + " to " + previousRegistration.endPeriod.displayText)),
-                        value   = Some(previousRegistration.iossNumber),
-                        id      = Some("value"),
-                        hint    = Some(HintViewModel(messages("returnRegistrationSelection.hint", previousRegistration.iossNumber)))
-                    )
-                }
-            )
-        )
+  @formHelper(action = controllers.previousReturns.routes.ReturnRegistrationSelectionController.onSubmit(waypoints)) {
 
-  @button("site.continue")
+    @if(form.errors.nonEmpty) {
+      @govukErrorSummary(ErrorSummaryViewModel(form))
+    }
 
+    @govukRadios(
+       RadiosViewModel(
+         field  = form("value"),
+         legend = LegendViewModel(messages("returnRegistrationSelection.heading")).asPageHeading(),
+         items = previousRegistrations.map { previousRegistration =>
+           RadioItem(
+             content = HtmlContent(Html(previousRegistration.startPeriod.displayText + " to " + previousRegistration.endPeriod.displayText)),
+             value   = Some(previousRegistration.iossNumber),
+             id      = Some(previousRegistration.iossNumber),
+             hint    = Some(HintViewModel(messages("returnRegistrationSelection.hint", previousRegistration.iossNumber)))
+           )
+         }
+       )
+    )
+
+    @button("site.continue")
+  }
 }
