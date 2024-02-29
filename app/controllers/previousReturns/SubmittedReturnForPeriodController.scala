@@ -72,7 +72,7 @@ class SubmittedReturnForPeriodController @Inject()(
         Ok(view(
           waypoints = waypoints,
           period = period,
-          mainSummaryList = SummaryListViewModel(rows = getMainSummaryList(etmpVatReturn, period, maybeCharge.map(_.clearedAmount), outstandingAmount)),
+          mainSummaryList = SummaryListViewModel(rows = getMainSummaryList(etmpVatReturn, period, outstandingAmount)),
           salesToEuAndNiSummaryList = getSalesToEuAndNiSummaryList(etmpVatReturn),
           correctionRows = PreviousReturnsCorrectionsSummary.correctionRows(etmpVatReturn),
           negativeAndZeroBalanceCorrectionCountries = PreviousReturnsDeclaredVATNoPaymentDueSummary.summaryRowsOfNegativeAndZeroValues(etmpVatReturn),
@@ -93,12 +93,10 @@ class SubmittedReturnForPeriodController @Inject()(
   private def getMainSummaryList(
                                   etmpVatReturn: EtmpVatReturn,
                                   period: Period,
-                                  clearedAmount: Option[BigDecimal],
                                   outstandingAmount: Option[BigDecimal]
                                 )(implicit messages: Messages): Seq[SummaryListRow] = {
     Seq(
       SubmittedReturnForPeriodSummary.rowVatDeclared(etmpVatReturn),
-      SubmittedReturnForPeriodSummary.rowAmountPaid(clearedAmount),
       SubmittedReturnForPeriodSummary.rowRemainingAmount(outstandingAmount),
       SubmittedReturnForPeriodSummary.rowReturnSubmittedDate(etmpVatReturn),
       SubmittedReturnForPeriodSummary.rowPaymentDueDate(period),
