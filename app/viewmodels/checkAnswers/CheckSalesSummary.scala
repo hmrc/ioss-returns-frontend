@@ -50,7 +50,7 @@ object CheckSalesSummary {
                   actions = Some(Actions(
                     items = Seq(
                       ActionItemViewModel("site.remove", DeleteVatRateSalesForCountryPage(countryIndex, Index(vatRateIndex)).route(waypoints).url)
-                        .withVisuallyHiddenText(messages("salesToCountry.remove.hidden")))
+                        .withVisuallyHiddenText(messages("salesToCountry.remove.hidden", vatRateFromCountry.rateForDisplay)))
                   ))
                 )
               )

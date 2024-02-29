@@ -23,8 +23,8 @@ import play.api.i18n.Messages
 import queries.AllCorrectionCountriesQuery
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist._
-import viewmodels.govuk.summarylist._
 import viewmodels.govuk.all.currencyFormat
+import viewmodels.govuk.summarylist._
 import viewmodels.implicits._
 
 object CorrectionListCountriesSummary  {
@@ -59,9 +59,11 @@ object CorrectionListCountriesSummary  {
             actions = List(
               ActionItemViewModel(
                 messages("site.change"), VatAmountCorrectionCountryPage(periodIndex, Index(countryIndex))
-                  .changeLink(waypoints, sourcePage).url),
+                  .changeLink(waypoints, sourcePage).url)
+                .withVisuallyHiddenText(messages("correctionListCountries.change.hidden", name)),
               ActionItemViewModel(messages("site.remove"), controllers.corrections.routes.RemoveCountryCorrectionController
                 .onPageLoad(waypoints, periodIndex, Index(countryIndex)).url)
+                .withVisuallyHiddenText(messages("correctionListCountries.remove.hidden", name))
             )
           )
 
