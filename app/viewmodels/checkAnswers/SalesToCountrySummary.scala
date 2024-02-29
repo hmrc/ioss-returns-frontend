@@ -19,7 +19,6 @@ package viewmodels.checkAnswers
 import models.{Index, UserAnswers, VatRateFromCountry}
 import pages.{AddItemPage, SalesToCountryPage, Waypoints}
 import play.api.i18n.Messages
-import play.twirl.api.Html
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
 import utils.CurrencyFormatter.currencyFormat

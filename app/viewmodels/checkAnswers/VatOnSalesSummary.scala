@@ -17,7 +17,7 @@
 package viewmodels.checkAnswers
 
 import models.{Index, UserAnswers}
-import pages.{AddItemPage, VatOnSalesPage, VatRatesFromCountryPage, Waypoints}
+import pages.{AddItemPage, VatOnSalesPage, Waypoints}
 import play.api.i18n.Messages
 import queries.VatRateFromCountryQuery
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
@@ -31,23 +31,22 @@ object VatOnSalesSummary {
   def row(answers: UserAnswers, waypoints: Waypoints, countryIndex: Index, vatRateIndex: Index, sourcePage: AddItemPage)
          (implicit messages: Messages): Option[SummaryListRow] =
     answers.get(VatOnSalesPage(countryIndex, vatRateIndex)).flatMap { answer =>
-
       answers.get(VatRateFromCountryQuery(countryIndex, vatRateIndex)).map { vatRate =>
 
-          val value = ValueViewModel(
-            HtmlContent(
-              currencyFormat(answer.amount)
-            )
-          ).withCssClass("govuk-table__cell--numeric")
-
-          SummaryListRowViewModel(
-            key = "vatOnSales.checkYourAnswersLabel",
-            value = value,
-            actions = Seq(
-              ActionItemViewModel("site.change", VatOnSalesPage(countryIndex, vatRateIndex).changeLink(waypoints, sourcePage).url)
-                .withVisuallyHiddenText(messages("vatOnSales.change.hidden", vatRate.rateForDisplay))
-            )
+        val value = ValueViewModel(
+          HtmlContent(
+            currencyFormat(answer.amount)
           )
+        ).withCssClass("govuk-table__cell--numeric")
+
+        SummaryListRowViewModel(
+          key = "vatOnSales.checkYourAnswersLabel",
+          value = value,
+          actions = Seq(
+            ActionItemViewModel("site.change", VatOnSalesPage(countryIndex, vatRateIndex).changeLink(waypoints, sourcePage).url)
+              .withVisuallyHiddenText(messages("vatOnSales.change.hidden", vatRate.rateForDisplay))
+          )
+        )
       }
     }
 }
