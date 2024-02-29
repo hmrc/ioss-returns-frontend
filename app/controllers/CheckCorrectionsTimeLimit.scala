@@ -24,6 +24,7 @@ object CheckCorrectionsTimeLimit {
 
   def isOlderThanThreeYears(dueDate: LocalDate, clock: Clock): Boolean = {
     val today: LocalDate = LocalDate.now(clock)
-    today.isAfter(dueDate.plusYears(correctionsPeriodsLimit))
+    val threeYearsFromDueDate = dueDate.plusYears(correctionsPeriodsLimit)
+    today.isAfter(threeYearsFromDueDate) || today == threeYearsFromDueDate
   }
 }
