@@ -19,6 +19,7 @@ package viewmodels.checkAnswers
 import models.{Index, UserAnswers}
 import pages.{AddItemPage, VatOnSalesPage, Waypoints}
 import play.api.i18n.Messages
+import queries.VatRateFromCountryQuery
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
 import viewmodels.govuk.all.currencyFormat
@@ -29,8 +30,8 @@ object VatOnSalesSummary {
 
   def row(answers: UserAnswers, waypoints: Waypoints, countryIndex: Index, vatRateIndex: Index, sourcePage: AddItemPage)
          (implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(VatOnSalesPage(countryIndex, vatRateIndex)).map {
-      answer =>
+    answers.get(VatOnSalesPage(countryIndex, vatRateIndex)).flatMap { answer =>
+      answers.get(VatRateFromCountryQuery(countryIndex, vatRateIndex)).map { vatRate =>
 
         val value = ValueViewModel(
           HtmlContent(
@@ -43,8 +44,9 @@ object VatOnSalesSummary {
           value = value,
           actions = Seq(
             ActionItemViewModel("site.change", VatOnSalesPage(countryIndex, vatRateIndex).changeLink(waypoints, sourcePage).url)
-              .withVisuallyHiddenText(messages("vatOnSales.change.hidden"))
+              .withVisuallyHiddenText(messages("vatOnSales.change.hidden", vatRate.rateForDisplay))
           )
         )
+      }
     }
 }

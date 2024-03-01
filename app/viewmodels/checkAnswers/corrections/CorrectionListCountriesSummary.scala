@@ -23,51 +23,53 @@ import play.api.i18n.Messages
 import queries.AllCorrectionCountriesQuery
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist._
-import viewmodels.govuk.summarylist._
 import viewmodels.govuk.all.currencyFormat
+import viewmodels.govuk.summarylist._
 import viewmodels.implicits._
 
-object CorrectionListCountriesSummary  {
+object CorrectionListCountriesSummary {
 
   def addToListRows(answers: UserAnswers, waypoints: Waypoints, periodIndex: Index, sourcePage: AddItemPage)
                    (implicit messages: Messages): Seq[SummaryList] = {
 
-      answers.get(AllCorrectionCountriesQuery(periodIndex)).getOrElse(List.empty).zipWithIndex.flatMap {
-        case (correctionToCountry, countryIndex) =>
+    answers.get(AllCorrectionCountriesQuery(periodIndex)).getOrElse(List.empty).zipWithIndex.flatMap {
+      case (correctionToCountry, countryIndex) =>
 
-          val name = correctionToCountry.correctionCountry.name
+        val name = correctionToCountry.correctionCountry.name
 
-          val value = correctionToCountry.countryVatCorrection.map {
-            vatCorrectionAmount =>
-              ValueViewModel(
-                HtmlContent(
-                  currencyFormat(vatCorrectionAmount)
-                )
+        val value = correctionToCountry.countryVatCorrection.map {
+          vatCorrectionAmount =>
+            ValueViewModel(
+              HtmlContent(
+                currencyFormat(vatCorrectionAmount)
               )
-          }.getOrElse(ValueViewModel(HtmlContent("")))
-
-          val countryNameRow = SummaryListRowViewModel(
-            key = Key(name)
-              .withCssClass("govuk-!-font-size-24 govuk-!-width-one-third"),
-            value = ValueViewModel(HtmlContent("")),
-            actions = List.empty
-          )
-
-          val mainRow = SummaryListRowViewModel(
-            key = messages("correctionListCountries.checkYourAnswersLabel"),
-            value = value,
-            actions = List(
-              ActionItemViewModel(
-                messages("site.change"), VatAmountCorrectionCountryPage(periodIndex, Index(countryIndex))
-                  .changeLink(waypoints, sourcePage).url),
-              ActionItemViewModel(messages("site.remove"), controllers.corrections.routes.RemoveCountryCorrectionController
-                .onPageLoad(waypoints, periodIndex, Index(countryIndex)).url)
             )
+        }.getOrElse(ValueViewModel(HtmlContent("")))
+
+        val countryNameRow = SummaryListRowViewModel(
+          key = Key(name)
+            .withCssClass("govuk-!-font-size-24 govuk-!-width-one-third"),
+          value = ValueViewModel(HtmlContent("")),
+          actions = List.empty
+        )
+
+        val mainRow = SummaryListRowViewModel(
+          key = messages("correctionListCountries.checkYourAnswersLabel"),
+          value = value,
+          actions = List(
+            ActionItemViewModel(
+              messages("site.change"), VatAmountCorrectionCountryPage(periodIndex, Index(countryIndex))
+                .changeLink(waypoints, sourcePage).url)
+              .withVisuallyHiddenText(messages("correctionListCountries.change.hidden", name)),
+            ActionItemViewModel(messages("site.remove"), controllers.corrections.routes.RemoveCountryCorrectionController
+              .onPageLoad(waypoints, periodIndex, Index(countryIndex)).url)
+              .withVisuallyHiddenText(messages("correctionListCountries.remove.hidden", name))
           )
+        )
 
-          val rows = List(countryNameRow, mainRow)
+        val rows = List(countryNameRow, mainRow)
 
-          List(SummaryList(rows))
-      }
+        List(SummaryList(rows))
+    }
   }
 }

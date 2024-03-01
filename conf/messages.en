@@ -169,7 +169,8 @@ salesToCountry.error.required = Enter your sales at {0} rate excluding VAT
 salesToCountry.error.wholeNumber = Enter your sales at {0} rate excluding VAT using whole numbers
 salesToCountry.error.outOfRange = Sales excluding VAT must be between {0} and {1}
 salesToCountry.error.calculatedVatRateOutOfRange = Add a sales total above £0.02
-salesToCountry.change.hidden = sales excluding VAT
+salesToCountry.change.hidden = sales excluding VAT at the {0} VAT rate
+salesToCountry.remove.hidden = {0} VAT rate
 salesToCountry.hint = For example, £600 or £193.54.
 
 vatOnSales.title = How much VAT did you charge on sales of {0} at {1} VAT rate?
@@ -180,7 +181,7 @@ vatOnSales.amount = Enter VAT charged
 vatOnSales.hint = For example, £600 or £193.54.
 vatOnSales.checkYourAnswersLabel = VAT charged
 vatOnSales.choice.error.required = Select VAT charged
-vatOnSales.change.hidden = VAT charged
+vatOnSales.change.hidden = VAT charged at the {0} VAT rate
 vatOnSales.amount.error.required = Enter the amount of VAT charged
 vatOnSales.amount.error.decimalFormat = Enter the amount of VAT charged up to two decimal places
 vatOnSales.amount.error.calculatedVatRateOutOfRange = Add a sales total above £0.02
@@ -307,8 +308,8 @@ correctionListCountries.heading.plural = You have corrected the VAT amount for {
 correctionListCountries.section = Correction period: {0}
 correctionListCountries.addAnother = Add corrections to VAT for another country?
 correctionListCountries.error.required = Select yes if you want to add corrections to VAT for another country
-correctionListCountries.change.hidden = {0}
-correctionListCountries.remove.hidden = {0}
+correctionListCountries.change.hidden = correction amount for {0}
+correctionListCountries.remove.hidden = correction amount for {0}
 correctionListCountries.maximumReached = You have added corrections to every country
 correctionListCountries.checkYourAnswersLabel = Correction amount
 
@@ -342,7 +343,7 @@ vatPeriodCorrectionsList.addAnother = Add corrections to VAT for another return 
 vatPeriodCorrectionsList.error.required = Select yes if you want to add corrections to VAT for another return period
 
 successfullySubmitted.title = Return submitted
-successfullySubmitted.heading = Your return reference is <strong>{0}</strong>
+successfullySubmitted.heading = Your return reference is <strong style="word-break:break-word">{0}</strong>
 successfullySubmitted.noVatOwed = You do not owe any VAT for {0}.
 successfullySubmitted.payVatOwed = Pay VAT owed
 successfullySubmitted.payPeriodAmount = For <span id="dateRange">{0}</span>, you owe <span class="govuk-!-font-weight-bold">{1}</span>.
@@ -386,9 +387,6 @@ submittedReturnForPeriod.vatOwed.titleWithCorrections = VAT owed (including corr
 
 submittedReturnForPeriod.totalVat.title = Total VAT payable
 
-previousReturns.breadcrumbs.yourAccount = Your IOSS account
-previousReturns.breadcrumbs.submittedReturns = Submitted returns
-
 whichVatPeriodToPay.title = Which month would you like to make a payment for?
 whichVatPeriodToPay.heading = Which month would you like to make a payment for?
 whichVatPeriodToPay.amountKnown = {0}
@@ -419,6 +417,7 @@ submittedReturnsHistory.previousRegistrationReturns = View returns from a previo
 submittedReturnsHistory.status.paid = Paid
 submittedReturnsHistory.status.nilreturn = No payment due
 submittedReturnsHistory.status.excluded = You must pay this to the countries where you made your sales
+submittedReturnsHistory.payNow.hidden = for {0} return
 
 noPayments.title = You do not owe any Import One Stop Shop VAT
 noPayments.heading = You do not owe any Import One Stop Shop VAT
