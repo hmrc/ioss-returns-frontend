@@ -47,7 +47,7 @@ class ReturnRegistrationSelectionController @Inject()(
 
   def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetOptionalData().async {
     implicit request =>
-      getPreviousRegistrationsStub().map { previousRegistrations =>
+      getPreviousRegistrations().map { previousRegistrations =>
         val form: Form[PreviousRegistration] = formProvider(previousRegistrations)
 
         Ok(view(
@@ -58,45 +58,9 @@ class ReturnRegistrationSelectionController @Inject()(
       }
   }
 
-  private def getPreviousRegistrations()(implicit hc: HeaderCarrier): Future[Seq[PreviousRegistration]] = {
-    registrationConnector.getAccounts().map { accounts =>
-      println("accounts: " + accounts)
-      val accountDetails: Seq[(YearMonth, String)] = accounts
-        .enrolments.map(e => e.activationDate -> e.identifiers.find(_.key == "IOSSNumber").map(_.value))
-        .collect {
-          case (Some(activationDate), Some(iossNumber)) => YearMonth.from(activationDate) -> iossNumber
-        }.sortBy(_._1)
-
-      accountDetails.zip(accountDetails.drop(1)).map { case ((activationDate, iossNumber), (nextActivationDate, _)) =>
-        PreviousRegistration(
-          startPeriod = Period(activationDate),
-          endPeriod = Period(nextActivationDate.minusMonths(1)),
-          iossNumber = iossNumber
-        )
-      }
-    }
-  }
-
-  private def getPreviousRegistrationsStub()(implicit hc: HeaderCarrier): Future[Seq[PreviousRegistration]] = {
-    Future.successful(
-      Seq(
-        PreviousRegistration(
-          "IM900987654321",
-          Period(YearMonth.of(2020, 1)),
-          Period(YearMonth.of(2021, 2))
-        ),
-        PreviousRegistration(
-          "IM900987654322",
-          Period(YearMonth.of(2021, 3)),
-          Period(YearMonth.of(2021, 10))
-        )
-      )
-    )
-  }
-
   def onSubmit(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetOptionalData().async {
     implicit request =>
-      getPreviousRegistrationsStub().map { previousRegistrations =>
+      getPreviousRegistrations().map { previousRegistrations =>
         val form: Form[PreviousRegistration] = formProvider(previousRegistrations)
 
         form.bindFromRequest().fold(
@@ -111,5 +75,23 @@ class ReturnRegistrationSelectionController @Inject()(
             )
         )
       }
+  }
+
+  private def getPreviousRegistrations()(implicit hc: HeaderCarrier): Future[Seq[PreviousRegistration]] = {
+    registrationConnector.getAccounts().map { accounts =>
+      val accountDetails: Seq[(YearMonth, String)] = accounts
+        .enrolments.map(e => e.activationDate -> e.identifiers.find(_.key == "IOSSNumber").map(_.value))
+        .collect {
+          case (Some(activationDate), Some(iossNumber)) => YearMonth.from(activationDate) -> iossNumber
+        }.sortBy(_._1)
+
+      accountDetails.zip(accountDetails.drop(1)).map { case ((activationDate, iossNumber), (nextActivationDate, _)) =>
+        PreviousRegistration(
+          startPeriod = Period(activationDate),
+          endPeriod = Period(nextActivationDate.minusMonths(1)),
+          iossNumber = iossNumber
+        )
+      }
+    }
   }
 }
