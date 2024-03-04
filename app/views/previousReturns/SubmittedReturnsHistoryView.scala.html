@@ -17,13 +17,14 @@
 @import controllers.payments.{routes => paymentRoutes}
 @import controllers.previousReturns.{routes => prevRoutes}
 @import models.payments.{Payment, PaymentStatus}
+@import viewmodels.previousReturns.PreviousRegistration
 
 @this(
         layout: templates.Layout,
         govukButton: GovukButton
 )
 
-@(waypoints: Waypoints, periodsWithFinancialData: Map[Int, Seq[(Period, Payment)]])(implicit request: Request[_], messages: Messages)
+@(waypoints: Waypoints, periodsWithFinancialData: Map[Int, Seq[(Period, Payment)]], previousRegistrations: Seq[PreviousRegistration])(implicit request: Request[_], messages: Messages)
 
     @layout(pageTitle = titleNoForm(messages("submittedReturnsHistory.title"))) {
 
@@ -90,7 +91,18 @@
             </div>
 
             <p class="govuk-body">
-                <a class="govuk-link" href="@prevRoutes.ReturnRegistrationSelectionController.onPageLoad(waypoints)">@messages("submittedReturnsHistory.previousRegistrationReturns")</a>
+                @previousRegistrations match {
+                    case Nil => {}
+                    case registration :: Nil => {
+                        <a class="govuk-link"
+                           href="@prevRoutes.PreviousRegistrationSubmittedReturnsHistoryController.onPageLoad(waypoints, registration.iossNumber, registration.startPeriod, registration.endPeriod)">
+                            @messages("submittedReturnsHistory.previousRegistrationReturns", registration.startPeriod.displayText, registration.endPeriod.displayText)</a>
+                    }
+                    case _ => {
+                        <a class="govuk-link" href="@prevRoutes.ReturnRegistrationSelectionController.onPageLoad(waypoints)">@messages("submittedReturnsHistory.previousRegistrationReturnsSelection")</a>
+                    }
+                }
+
             </p>
         }
     }

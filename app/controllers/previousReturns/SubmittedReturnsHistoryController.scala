@@ -21,7 +21,7 @@ import logging.Logging
 import pages.Waypoints
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import services.PeriodWithFinancialDataService
+import services.{PeriodWithFinancialDataService, PreviousRegistrationService}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.previousReturns.SubmittedReturnsHistoryView
 
@@ -32,6 +32,7 @@ class SubmittedReturnsHistoryController @Inject()(
                                                    override val messagesApi: MessagesApi,
                                                    cc: AuthenticatedControllerComponents,
                                                    periodWithFinancialDataService: PeriodWithFinancialDataService,
+                                                   previousRegistrationService: PreviousRegistrationService,
                                                    view: SubmittedReturnsHistoryView
                                                  )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
@@ -40,8 +41,9 @@ class SubmittedReturnsHistoryController @Inject()(
   def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetOptionalData().async {
     implicit request =>
 
-      periodWithFinancialDataService.getPeriodWithFinancialData(request.iossNumber).map { periodWithFinancialData =>
-        Ok(view(waypoints, periodWithFinancialData))
-      }
+      for {
+        periodWithFinancialData <- periodWithFinancialDataService.getPeriodWithFinancialData(request.iossNumber)
+        previousRegistrations <- previousRegistrationService.getPreviousRegistrations()
+      } yield Ok(view(waypoints, periodWithFinancialData, previousRegistrations))
   }
 }
