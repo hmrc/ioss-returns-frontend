@@ -94,12 +94,12 @@
                 @previousRegistrations match {
                     case Nil => {}
                     case registration :: Nil => {
-                        <a class="govuk-link"
+                        <a class="govuk-link" id="view-returns-one-reg"
                            href="@prevRoutes.PreviousRegistrationSubmittedReturnsHistoryController.onPageLoad(waypoints, registration.iossNumber, registration.startPeriod, registration.endPeriod)">
-                            @messages("submittedReturnsHistory.previousRegistrationReturns", registration.startPeriod.displayText, registration.endPeriod.displayText)</a>
+                            @messages("submittedReturnsHistory.viewReturnsOneReg", registration.startPeriod.displayText, registration.endPeriod.displayText)</a>
                     }
                     case _ => {
-                        <a class="govuk-link" href="@prevRoutes.ReturnRegistrationSelectionController.onPageLoad(waypoints)">@messages("submittedReturnsHistory.previousRegistrationReturnsSelection")</a>
+                        <a class="govuk-link" id="return-registration-selection" href="@prevRoutes.ReturnRegistrationSelectionController.onPageLoad(waypoints)">@messages("submittedReturnsHistory.returnRegistrationSelection")</a>
                     }
                 }
 
