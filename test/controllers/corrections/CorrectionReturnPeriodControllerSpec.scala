@@ -20,7 +20,7 @@ import base.SpecBase
 import controllers.routes
 import forms.corrections.CorrectionReturnPeriodFormProvider
 import models.etmp.{EtmpObligationDetails, EtmpObligationsFulfilmentStatus}
-import models.{Index, Period, UserAnswers}
+import models.{Index, Period, StandardPeriod, UserAnswers}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito.{times, verify, when}
@@ -44,10 +44,11 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
   private val date: LocalDate = LocalDate.of(2026, 5, 13)
   private val instant: Instant = date.atStartOfDay(ZoneId.systemDefault).toInstant
   private val stubbedClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
+  private val year = 2023
 
   private val periodKeys = Seq("23AL", "23AK", "23AD")
 
-  val selectedYear: UserAnswers = emptyUserAnswers.set(CorrectionReturnYearPage(Index(0)), 2023).success.value
+  val selectedYear: UserAnswers = emptyUserAnswers.set(CorrectionReturnYearPage(Index(0)), year).success.value
 
   private val monthNames: Seq[Period] = periodKeys.map(ConvertPeriodKey.periodkeyToPeriod)
 
@@ -73,18 +74,18 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
   )
 
   private val testPeriodsList = Seq(
-    Period(2023, Month.JANUARY),
-    Period(2023, Month.FEBRUARY),
-    Period(2023, Month.MARCH),
-    Period(2023, Month.APRIL),
-    Period(2023, Month.MAY),
-    Period(2023, Month.JUNE),
-    Period(2023, Month.JULY),
-    Period(2023, Month.AUGUST),
-    Period(2023, Month.SEPTEMBER),
-    Period(2023, Month.OCTOBER),
-    Period(2023, Month.NOVEMBER),
-    Period(2023, Month.DECEMBER)
+    StandardPeriod(year, Month.JANUARY),
+    StandardPeriod(year, Month.FEBRUARY),
+    StandardPeriod(year, Month.MARCH),
+    StandardPeriod(year, Month.APRIL),
+    StandardPeriod(year, Month.MAY),
+    StandardPeriod(year, Month.JUNE),
+    StandardPeriod(year, Month.JULY),
+    StandardPeriod(year, Month.AUGUST),
+    StandardPeriod(year, Month.SEPTEMBER),
+    StandardPeriod(year, Month.OCTOBER),
+    StandardPeriod(year, Month.NOVEMBER),
+    StandardPeriod(year, Month.DECEMBER)
   )
   private val formProvider = new CorrectionReturnPeriodFormProvider()
   private val form: Form[Period] = formProvider(index, testPeriodsList, Seq.empty)
@@ -157,11 +158,11 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
       running(application) {
         val request =
           FakeRequest(POST, correctionReturnPeriodRoute)
-            .withFormUrlEncodedBody(("value", Period(2023, Month.DECEMBER).toString))
+            .withFormUrlEncodedBody(("value", StandardPeriod(year, Month.DECEMBER).toString))
 
         val result = route(application, request).value
 
-        val expectedAnswers = emptyUserAnswers.set(CorrectionReturnPeriodPage(index), Period(2023, Month.DECEMBER)).success.value
+        val expectedAnswers = emptyUserAnswers.set(CorrectionReturnPeriodPage(index), StandardPeriod(year, Month.DECEMBER)).success.value
 
         status(result) mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual CorrectionReturnPeriodPage(index).navigate(waypoints, expectedAnswers, expectedAnswers).url

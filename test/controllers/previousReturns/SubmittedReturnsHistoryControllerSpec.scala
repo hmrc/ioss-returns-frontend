@@ -20,7 +20,7 @@ import base.SpecBase
 import connectors.VatReturnConnector
 import models.etmp.EtmpVatReturn
 import models.payments.{Payment, PaymentStatus, PrepareData}
-import models.{Period, UnexpectedResponseStatus}
+import models.{Period, StandardPeriod, UnexpectedResponseStatus}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.mockito.Mockito.when
@@ -121,7 +121,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
 
       val prepareData: PrepareData = {
         PrepareData(
-          duePayments = List(payments.head.copy(period = Period(2023, Month.APRIL))),
+          duePayments = List(payments.head.copy(period = StandardPeriod(2023, Month.APRIL))),
           overduePayments = payments.tail,
           excludedPayments = List.empty,
           totalAmountOwed = payments.map(_.amountOwed).sum,
@@ -179,7 +179,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
 
       val prepareData: PrepareData = {
         PrepareData(
-          duePayments = List(payments.head.copy(period = Period(2023, Month.JUNE))),
+          duePayments = List(payments.head.copy(period = StandardPeriod(2023, Month.JUNE))),
           overduePayments = payments.tail,
           excludedPayments = List.empty,
           totalAmountOwed = payments.map(_.amountOwed).sum,
@@ -231,7 +231,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
 
       val prepareData: PrepareData = {
         PrepareData(
-          duePayments = List(payments.head.copy(period = Period(2023, Month.JUNE))),
+          duePayments = List(payments.head.copy(period = StandardPeriod(2023, Month.JUNE))),
           overduePayments = payments.tail,
           excludedPayments = List(payments.head),
           totalAmountOwed = payments.map(_.amountOwed).sum,

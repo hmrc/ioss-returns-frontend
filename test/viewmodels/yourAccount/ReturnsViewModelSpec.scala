@@ -17,7 +17,7 @@
 package viewmodels.yourAccount
 
 import base.SpecBase
-import models.Period
+import models.StandardPeriod
 import models.SubmissionStatus._
 import play.api.Application
 
@@ -26,10 +26,12 @@ import java.time.Month
 class ReturnsViewModelSpec extends SpecBase{
 
   val app: Application = applicationBuilder().build()
+  val year2021 = 2021
+  val year2022 = 2022
 
-  val period1: Period = Period(2021, Month.JULY)
-  val period2: Period = Period(2021, Month.OCTOBER)
-  val period3: Period = Period(2022, Month.JANUARY)
+  val period1: StandardPeriod = StandardPeriod(year2021, Month.JULY)
+  val period2: StandardPeriod = StandardPeriod(year2021, Month.OCTOBER)
+  val period3: StandardPeriod = StandardPeriod(year2022, Month.JANUARY)
 
   "must return correct view model when" - {
 

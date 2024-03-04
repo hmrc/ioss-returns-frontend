@@ -18,7 +18,7 @@ package base
 
 import controllers.actions._
 import generators.{Generators, UserAnswersGenerator}
-import models.{Country, Index, Period, RegistrationWrapper, UserAnswers, VatOnSales, VatOnSalesChoice, VatRateFromCountry, VatRateType}
+import models._
 import org.scalacheck.Arbitrary
 import org.scalacheck.Arbitrary._
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
@@ -52,7 +52,7 @@ trait SpecBase
   val testCredentials: Credentials = Credentials(userAnswersId, "GGW")
   val vrn: Vrn = Vrn("123456789")
   val iossNumber: String = "IM9001234567"
-  val period: Period = Period(2024, Month.MARCH)
+  val period: StandardPeriod = StandardPeriod(2024, Month.MARCH)
   val waypoints: Waypoints = EmptyWaypoints
   val index: Index = Index(0)
   val vatRateIndex: Index = Index(0)

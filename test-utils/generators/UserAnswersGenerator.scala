@@ -79,7 +79,7 @@ trait UserAnswersGenerator extends TryValues {
         }
       } yield UserAnswers (
         id           = id,
-        period       = Period(2021, Month.JULY),
+        period       = StandardPeriod(2021, Month.JULY),
         data         = data.foldLeft(Json.obj()) {
           case (obj, (path, value)) =>
             obj.setObject(path.path, value).get

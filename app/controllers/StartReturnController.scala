@@ -24,9 +24,10 @@ import pages.{StartReturnPage, Waypoints}
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import services.PeriodService
+import services.{PartialReturnPeriodService, PeriodService}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax.FutureOps
+import viewmodels.yourAccount.CurrentReturns
 import views.html.StartReturnView
 
 import java.time.format.DateTimeFormatter
@@ -39,7 +40,9 @@ class StartReturnController @Inject()(
                                        cc: AuthenticatedControllerComponents,
                                        formProvider: StartReturnFormProvider,
                                        periodService: PeriodService,
+                                       partialReturnPeriodService: PartialReturnPeriodService,
                                        view: StartReturnView,
+                                       currentReturns: CurrentReturns,
                                        clock: Clock
                                      )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
@@ -48,7 +51,7 @@ class StartReturnController @Inject()(
   val form: Form[Boolean] = formProvider()
 
   def onPageLoad(waypoints: Waypoints, period: Period): Action[AnyContent] = (cc.authAndGetOptionalData andThen
-    cc.checkExcludedTraderOptional(period) andThen cc.checkCommencementDateOptional(period)) {
+    cc.checkExcludedTraderOptional(period) andThen cc.checkCommencementDateOptional(period)).async {
     implicit request =>
       // TODO check for starting correct period
 
@@ -62,7 +65,10 @@ class StartReturnController @Inject()(
         nextPeriod.isAfter(exclusions.effectiveDate)
       }
 
-      Ok(view(form, waypoints, period, maybeExclusion, isFinalReturn))
+      partialReturnPeriodService.getPartialReturnPeriod(request.registrationWrapper, period).map { maybePartialReturnPeriod =>
+
+        Ok(view(form, waypoints, period, maybeExclusion, isFinalReturn, maybePartialReturnPeriod))
+      }
 
   }
 
@@ -82,7 +88,11 @@ class StartReturnController @Inject()(
 
       form.bindFromRequest().fold(
         formWithErrors =>
-          BadRequest(view(formWithErrors, waypoints, period, maybeExclusion, isFinalReturn)).toFuture,
+
+          partialReturnPeriodService.getPartialReturnPeriod(request.registrationWrapper, period).map { maybePartialReturnPeriod =>
+            BadRequest(view(formWithErrors, waypoints, period, maybeExclusion, isFinalReturn, maybePartialReturnPeriod))
+
+          },
 
         value => {
 
