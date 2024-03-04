@@ -69,7 +69,7 @@ class PartialReturnPeriodService @Inject()(
                                               )(implicit hc: HeaderCarrier): Future[Option[PartialReturnPeriod]] = {
 
     val commencementDateString = registrationWrapper.registration.schemeDetails.commencementDate
-    val commencementDate = LocalDate.parse(commencementDateString)
+    val commencementDate = LocalDate.parse(commencementDateString.toString)
 
     val effectiveDate = maybeExclusion.map { exclusions =>
       exclusions.effectiveDate

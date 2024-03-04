@@ -47,7 +47,7 @@ class PartialReturnPeriodServiceSpec extends SpecBase with BeforeAndAfterEach {
     "return a partial return period when it's the first return and transferring msid" in {
 
       val startDate = period.lastDay.minusDays(10)
-      val commencementDate = startDate.plusDays(1).toString
+      val commencementDate = startDate.plusDays(1)
 
       val transferringMSIDReason = EtmpExclusion(
         TransferringMSID,
@@ -86,7 +86,7 @@ class PartialReturnPeriodServiceSpec extends SpecBase with BeforeAndAfterEach {
 
       val excludedEffectiveDate = period.lastDay.minusDays(10)
       val endDate = excludedEffectiveDate.minusDays(1)
-      val commencementDate = period.firstDay.plusDays(4).toString
+      val commencementDate = period.firstDay.plusDays(4)
 
       val transferringMSIDReason = EtmpExclusion(
         TransferringMSID,
@@ -123,7 +123,7 @@ class PartialReturnPeriodServiceSpec extends SpecBase with BeforeAndAfterEach {
 
     "return None when there is no exclusion" in {
 
-      val commencementDate = period.firstDay.plusDays(4).toString
+      val commencementDate = period.firstDay.plusDays(4)
 
       val registrationWrapperWithoutExclusions: RegistrationWrapper = {
         val updatedSchemeDetails = registrationWrapper.registration.schemeDetails.copy(
@@ -152,7 +152,7 @@ class PartialReturnPeriodServiceSpec extends SpecBase with BeforeAndAfterEach {
     "return None when exclusion reason is not TransferringMSID" in {
 
       val endDate = period.lastDay.minusDays(10)
-      val commencementDate = period.firstDay.plusDays(4).toString
+      val commencementDate = period.firstDay.plusDays(4)
 
       val otherExclusionReason = EtmpExclusion(
         CeasedTrade,

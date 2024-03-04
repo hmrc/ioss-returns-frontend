@@ -56,17 +56,19 @@ trait Period {
     s"${month.getDisplayName(TextStyle.FULL, Locale.ENGLISH)}"
 
   def getNext: Period = {
-    if (this.month == Month.DECEMBER)
+    if (this.month == Month.DECEMBER) {
       StandardPeriod(this.year + 1, Month.JANUARY)
-    else
+    } else {
       StandardPeriod(this.year, this.month.plus(1))
+    }
   }
 
   def getPrevious: Period = {
-    if (this.month == Month.JANUARY)
+    if (this.month == Month.JANUARY) {
       StandardPeriod(this.year - 1, Month.DECEMBER)
-    else
+    } else {
       StandardPeriod(this.year, this.month.minus(1))
+    }
   }
 
   def isBefore(other: Period): Boolean = {
@@ -90,18 +92,6 @@ trait Period {
 
   override def toString: String = s"$year-M${month.getValue}"
 
-}
-
-final case class StandardPeriod(year: Int, month: Month) extends Period {
-
-  val yearMonth: YearMonth = YearMonth.of(year, month)
-  override val firstDay: LocalDate = yearMonth.atDay(1)
-  override val lastDay: LocalDate = yearMonth.atEndOfMonth
-  override val isPartial: Boolean = false
-
-
-  private val lastYearMonthFormatter = DateTimeFormatter.ofPattern("yyyy-MM-d")
-
   def toEtmpPeriodString: String = {
     val lastYearDigits = year.toString.substring(2)
 
@@ -124,6 +114,18 @@ final case class StandardPeriod(year: Int, month: Month) extends Period {
       case Month.DECEMBER => "AL"
     }
   }
+
+
+}
+
+final case class StandardPeriod(year: Int, month: Month) extends Period {
+
+  val yearMonth: YearMonth = YearMonth.of(year, month)
+  override val firstDay: LocalDate = yearMonth.atDay(1)
+  override val lastDay: LocalDate = yearMonth.atEndOfMonth
+  override val isPartial: Boolean = false
+
+  private val lastYearMonthFormatter = DateTimeFormatter.ofPattern("yyyy-MM-d")
 
   def displayYearMonth: String =
     s"${lastDay.format(lastYearMonthFormatter)}"
