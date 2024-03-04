@@ -16,24 +16,20 @@
 
 package controllers.previousReturns
 
-import connectors.RegistrationConnector
 import controllers.actions._
 import forms.ReturnRegistrationSelectionFormProvider
 import logging.Logging
-import models.Period
 import pages.Waypoints
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.PreviousRegistrationService
-import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import viewmodels.previousReturns.PreviousRegistration
 import views.html.previousReturns.ReturnRegistrationSelectionView
 
-import java.time.YearMonth
 import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class ReturnRegistrationSelectionController @Inject()(
                                                        override val messagesApi: MessagesApi,

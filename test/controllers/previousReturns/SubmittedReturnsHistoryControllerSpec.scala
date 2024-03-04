@@ -30,12 +30,13 @@ import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import services.{ObligationsService, PaymentsService}
+import services.{ObligationsService, PaymentsService, PreviousRegistrationService}
 import testUtils.EtmpVatReturnData.etmpVatReturn
 import utils.FutureSyntax.FutureOps
+import viewmodels.previousReturns.PreviousRegistration
 import views.html.previousReturns.SubmittedReturnsHistoryView
 
-import java.time.Month
+import java.time.{Month, YearMonth}
 import scala.concurrent.Future
 
 class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfterEach {
@@ -44,6 +45,19 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
     Gen.listOfN(5, arbitraryObligationDetails.arbitrary).sample.value
 
   private val obligationPeriods: Seq[Period] = obligationDetails.map(_.periodKey).map(Period.fromKey)
+
+  private val previousRegistrations: Seq[PreviousRegistration] = Seq(
+    PreviousRegistration(
+      "IM900987654321",
+      Period(YearMonth.of(2020, 1)),
+      Period(YearMonth.of(2021, 2))
+    ),
+    PreviousRegistration(
+      "IM900987654322",
+      Period(YearMonth.of(2021, 3)),
+      Period(YearMonth.of(2021, 10))
+    )
+  )
 
   private val payments: List[Payment] =
     obligationPeriods.map { period =>
@@ -73,11 +87,13 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
   }
 
   private val mockPaymentsService: PaymentsService = mock[PaymentsService]
+  private val mockPreviousRegistrationService: PreviousRegistrationService = mock[PreviousRegistrationService]
   private val mockObligationsService: ObligationsService = mock[ObligationsService]
   private val mockVatReturnConnector: VatReturnConnector = mock[VatReturnConnector]
 
   override def beforeEach(): Unit = {
     Mockito.reset(mockPaymentsService)
+    Mockito.reset(mockPreviousRegistrationService)
     Mockito.reset(mockObligationsService)
     Mockito.reset(mockVatReturnConnector)
   }
@@ -94,12 +110,14 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(bind[ObligationsService].toInstance(mockObligationsService))
         .overrides(bind[PaymentsService].toInstance(mockPaymentsService))
+        .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
         .build()
 
       running(application) {
 
         when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn obligationDetails.toFuture
         when(mockPaymentsService.prepareFinancialData()(any(), any())) thenReturn prepareData.toFuture
+        when(mockPreviousRegistrationService.getPreviousRegistrations()(any())) thenReturn previousRegistrations.toFuture
 
         val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
 
@@ -108,7 +126,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
         val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
 
         status(result) mustBe OK
-        contentAsString(result) mustBe view(waypoints, periodsWithFinancialData)(request, messages(application)).toString
+        contentAsString(result) mustBe view(waypoints, periodsWithFinancialData, previousRegistrations)(request, messages(application)).toString
       }
     }
 
@@ -119,12 +137,14 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(bind[ObligationsService].toInstance(mockObligationsService))
         .overrides(bind[PaymentsService].toInstance(mockPaymentsService))
+        .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
         .build()
 
       running(application) {
 
         when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn Seq.empty.toFuture
         when(mockPaymentsService.prepareFinancialData()(any(), any())) thenReturn emptyPrepareData.toFuture
+        when(mockPreviousRegistrationService.getPreviousRegistrations()(any())) thenReturn previousRegistrations.toFuture
 
         val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
 
@@ -133,7 +153,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
         val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
 
         status(result) mustBe OK
-        contentAsString(result) mustBe view(waypoints, periodsWithFinancialData)(request, messages(application)).toString
+        contentAsString(result) mustBe view(waypoints, periodsWithFinancialData, previousRegistrations)(request, messages(application)).toString
       }
     }
 
@@ -167,6 +187,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(bind[ObligationsService].toInstance(mockObligationsService))
         .overrides(bind[PaymentsService].toInstance(mockPaymentsService))
+        .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
         .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
         .build()
 
@@ -174,6 +195,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
 
         when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn obligationDetails.toFuture
         when(mockPaymentsService.prepareFinancialData()(any(), any())) thenReturn prepareData.toFuture
+        when(mockPreviousRegistrationService.getPreviousRegistrations()(any())) thenReturn previousRegistrations.toFuture
         when(mockVatReturnConnector.get(any())(any())) thenReturn Right(etmpVatReturn).toFuture
 
         val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
@@ -183,7 +205,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
         val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
 
         status(result) mustBe OK
-        contentAsString(result) mustBe view(waypoints, periodsWithFinancialData)(request, messages(application)).toString
+        contentAsString(result) mustBe view(waypoints, periodsWithFinancialData, previousRegistrations)(request, messages(application)).toString
       }
     }
 
@@ -223,6 +245,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(bind[ObligationsService].toInstance(mockObligationsService))
         .overrides(bind[PaymentsService].toInstance(mockPaymentsService))
+        .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
         .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
         .build()
 
@@ -230,6 +253,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
 
         when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn obligationDetails.toFuture
         when(mockPaymentsService.prepareFinancialData()(any(), any())) thenReturn prepareData.toFuture
+        when(mockPreviousRegistrationService.getPreviousRegistrations()(any())) thenReturn previousRegistrations.toFuture
         when(mockVatReturnConnector.get(any())(any())) thenReturn Right(emptyCorrectionsAndGoodsSuppliedVatReturn).toFuture
 
         val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
@@ -239,7 +263,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
         val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
 
         status(result) mustBe OK
-        contentAsString(result) mustBe view(waypoints, periodsWithFinancialData)(request, messages(application)).toString
+        contentAsString(result) mustBe view(waypoints, periodsWithFinancialData, previousRegistrations)(request, messages(application)).toString
       }
     }
 
@@ -274,11 +298,13 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(bind[ObligationsService].toInstance(mockObligationsService))
         .overrides(bind[PaymentsService].toInstance(mockPaymentsService))
+        .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
         .build()
 
       running(application) {
 
         when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn obligationDetails.toFuture
+        when(mockPreviousRegistrationService.getPreviousRegistrations()(any())) thenReturn previousRegistrations.toFuture
         when(mockPaymentsService.prepareFinancialData()(any(), any())) thenReturn prepareData.toFuture
 
         val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
@@ -288,7 +314,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
         val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
 
         status(result) mustBe OK
-        contentAsString(result) mustBe view(waypoints, periodsWithFinancialData)(request, messages(application)).toString
+        contentAsString(result) mustBe view(waypoints, periodsWithFinancialData, previousRegistrations)(request, messages(application)).toString
       }
     }
 
@@ -297,12 +323,14 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(bind[ObligationsService].toInstance(mockObligationsService))
         .overrides(bind[PaymentsService].toInstance(mockPaymentsService))
+        .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
         .build()
 
       running(application) {
 
         when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn obligationDetails.toFuture
         when(mockPaymentsService.prepareFinancialData()(any(), any())) thenReturn Future.failed(new Exception("Some exception"))
+        when(mockPreviousRegistrationService.getPreviousRegistrations()(any())) thenReturn previousRegistrations.toFuture
 
         val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
 
@@ -317,6 +345,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(bind[ObligationsService].toInstance(mockObligationsService))
         .overrides(bind[PaymentsService].toInstance(mockPaymentsService))
+        .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
         .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
         .build()
 
@@ -324,6 +353,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
 
         when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn obligationDetails.toFuture
         when(mockPaymentsService.prepareFinancialData()(any(), any())) thenReturn emptyPrepareData.toFuture
+        when(mockPreviousRegistrationService.getPreviousRegistrations()(any())) thenReturn previousRegistrations.toFuture
         when(mockVatReturnConnector.get(any())(any())) thenReturn Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "error")).toFuture
 
         val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
