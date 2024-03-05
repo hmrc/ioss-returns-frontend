@@ -27,7 +27,6 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.{PartialReturnPeriodService, PeriodService}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax.FutureOps
-import viewmodels.yourAccount.CurrentReturns
 import views.html.StartReturnView
 
 import java.time.format.DateTimeFormatter
@@ -42,7 +41,6 @@ class StartReturnController @Inject()(
                                        periodService: PeriodService,
                                        partialReturnPeriodService: PartialReturnPeriodService,
                                        view: StartReturnView,
-                                       currentReturns: CurrentReturns,
                                        clock: Clock
                                      )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
