@@ -18,6 +18,7 @@ package controllers
 
 import base.SpecBase
 import forms.StartReturnFormProvider
+import models.PartialReturnPeriod
 import models.etmp.EtmpExclusion
 import models.etmp.EtmpExclusionReason.NoLongerSupplies
 import org.mockito.ArgumentMatchers.any
@@ -33,6 +34,7 @@ import play.api.test.Helpers._
 import services.PartialReturnPeriodService
 import views.html.StartReturnView
 
+import java.time.Month
 import scala.concurrent.Future
 
 class StartReturnControllerSpec extends SpecBase with MockitoSugar with ScalaCheckPropertyChecks {
@@ -64,6 +66,27 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar with ScalaChe
 
         status(result) mustBe OK
         contentAsString(result) mustBe view(form, waypoints, period, None, isFinalReturn = false, None)(request, messages(application)).toString
+      }
+    }
+
+    "must return OK and the correct view for a GET when partial return" in {
+      val partialReturn = Some(PartialReturnPeriod(period.firstDay, period.lastDay, period.year, Month.DECEMBER))
+
+      when(mockPartialReturnPeriodService.getPartialReturnPeriod(any(), any())(any())) thenReturn Future.successful(partialReturn)
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
+        .build()
+
+      running(application) {
+        val request = FakeRequest(GET, startReturnRoute)
+
+        val result = route(application, request).value
+
+        val view = application.injector.instanceOf[StartReturnView]
+
+        status(result) mustBe OK
+        contentAsString(result) mustBe view(form, waypoints, period, None, isFinalReturn = false, partialReturn)(request, messages(application)).toString
       }
     }
 
@@ -139,7 +162,7 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar with ScalaChe
         NoLongerSupplies,
         effectiveDate,
         effectiveDate,
-        false
+        quarantine = false
       )
 
       val application = applicationBuilder(
@@ -169,7 +192,7 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar with ScalaChe
         NoLongerSupplies,
         effectiveDate,
         effectiveDate,
-        false
+        quarantine = false
       )
 
       val application = applicationBuilder(
