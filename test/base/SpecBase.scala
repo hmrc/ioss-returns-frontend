@@ -87,7 +87,6 @@ trait SpecBase
     .set(CorrectPreviousReturnPage(0), true).success.value
     .set(CorrectionReturnYearPage(index), 2023).success.value
 
-
   def messages(app: Application): Messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
 
   protected def applicationBuilder(
