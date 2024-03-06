@@ -16,13 +16,12 @@
 
 package viewmodels.previousReturns
 
-import models.Period
 import play.api.libs.json.{Json, OFormat}
 
-case class PreviousRegistration(iossNumber: String, startPeriod: Period, endPeriod: Period)
+case class SelectedPreviousRegistration(id: String, previousRegistration: PreviousRegistration)
 
-object PreviousRegistration {
+object SelectedPreviousRegistration {
 
-  implicit val format: OFormat[PreviousRegistration] = Json.format[PreviousRegistration]
+  implicit val format: OFormat[SelectedPreviousRegistration] = Json.format[SelectedPreviousRegistration]
 }
 

@@ -14,15 +14,18 @@
  * limitations under the License.
  */
 
-package viewmodels.previousReturns
+package pages
 
-import models.Period
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.JsPath
+import play.api.mvc.Call
+import viewmodels.previousReturns.PreviousRegistration
 
-case class PreviousRegistration(iossNumber: String, startPeriod: Period, endPeriod: Period)
+case object ReturnRegistrationSelectionPage extends QuestionPage[PreviousRegistration] {
 
-object PreviousRegistration {
+  override def path: JsPath = JsPath \ toString
 
-  implicit val format: OFormat[PreviousRegistration] = Json.format[PreviousRegistration]
+  override def toString: String = "returnRegistrationSelection"
+
+  override def route(waypoints: Waypoints): Call =
+    controllers.previousReturns.routes.ReturnRegistrationSelectionController.onPageLoad(waypoints)
 }
-

@@ -29,7 +29,7 @@ class PreviousRegistrationService @Inject()(
                                              registrationConnector: RegistrationConnector
                                            )(implicit ec: ExecutionContext) {
 
-  def getPreviousRegistrations()(implicit hc: HeaderCarrier): Future[Seq[PreviousRegistration]] = {
+  /*def getPreviousRegistrations()(implicit hc: HeaderCarrier): Future[List[PreviousRegistration]] = {
     registrationConnector.getAccounts().map { accounts =>
       val accountDetails: Seq[(YearMonth, String)] = accounts
         .enrolments.map(e => e.activationDate -> e.identifiers.find(_.key == "IOSSNumber").map(_.value))
@@ -43,13 +43,13 @@ class PreviousRegistrationService @Inject()(
           endPeriod = Period(nextActivationDate.minusMonths(1)),
           iossNumber = iossNumber
         )
-      }
+      }.toList
     }
-  }
+  }*/
 
-  /*def getPreviousRegistrations()(implicit hc: HeaderCarrier): Future[Seq[PreviousRegistration]] = {
+  def getPreviousRegistrations()(implicit hc: HeaderCarrier): Future[List[PreviousRegistration]] = {
     Future.successful(
-      Seq(
+      List(
         PreviousRegistration(
           "IM900987654321",
           Period(YearMonth.of(2020, 1)),
@@ -62,5 +62,5 @@ class PreviousRegistrationService @Inject()(
         )
       )
     )
-  }*/
+  }
 }

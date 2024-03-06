@@ -23,60 +23,66 @@ import pages.Waypoints
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import repositories.SelectedPreviousRegistrationRepository
 import services.PreviousRegistrationService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import viewmodels.previousReturns.PreviousRegistration
+import viewmodels.previousReturns.{PreviousRegistration, SelectedPreviousRegistration}
 import views.html.previousReturns.ReturnRegistrationSelectionView
 
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class ReturnRegistrationSelectionController @Inject()(
                                                        override val messagesApi: MessagesApi,
                                                        cc: AuthenticatedControllerComponents,
                                                        formProvider: ReturnRegistrationSelectionFormProvider,
                                                        view: ReturnRegistrationSelectionView,
-                                                       previousRegistrationService: PreviousRegistrationService
+                                                       previousRegistrationService: PreviousRegistrationService,
+                                                       selectedPreviousRegistrationRepository: SelectedPreviousRegistrationRepository
                                                      )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-
   def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetOptionalData().async {
     implicit request =>
-      previousRegistrationService.getPreviousRegistrations().map { previousRegistrations =>
+      for {
+        previousRegistrations <- previousRegistrationService.getPreviousRegistrations()
+        selectedPreviousRegistration <- selectedPreviousRegistrationRepository.get(request.userId)
+      } yield {
         val form: Form[PreviousRegistration] = formProvider(previousRegistrations)
 
-        previousRegistrations.toList match {
+        val preparedForm = selectedPreviousRegistration match {
+          case None => form
+          case Some(value) => form.fill(value.previousRegistration)
+        }
+
+        previousRegistrations match {
           case Nil => Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
-          case registration :: Nil => Redirect(
-            controllers.previousReturns.routes.PreviousRegistrationSubmittedReturnsHistoryController.onPageLoad(
-              iossNumber = registration.iossNumber,
-              startPeriod = registration.startPeriod,
-              endPeriod = registration.endPeriod
-            )
-          )
-          case _ => Ok(view(waypoints, form, previousRegistrations))
+          case _ :: Nil => Redirect(controllers.previousReturns.routes.ViewReturnsMultipleRegController.onPageLoad())
+          case _ => Ok(view(waypoints, preparedForm, previousRegistrations))
         }
       }
   }
 
   def onSubmit(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetOptionalData().async {
     implicit request =>
-      previousRegistrationService.getPreviousRegistrations().map { previousRegistrations =>
-        val form: Form[PreviousRegistration] = formProvider(previousRegistrations)
+      previousRegistrationService.getPreviousRegistrations().flatMap { previousRegistrations =>
+        selectedPreviousRegistrationRepository.get(request.userId).flatMap { selectedPreviousRegistration =>
+          val form: Form[PreviousRegistration] = formProvider(previousRegistrations)
 
-        form.bindFromRequest().fold(
-          formWithErrors => BadRequest(view(waypoints, formWithErrors, previousRegistrations)),
-          value =>
-            Redirect(
-              controllers.previousReturns.routes.PreviousRegistrationSubmittedReturnsHistoryController.onPageLoad(
-                iossNumber = value.iossNumber,
-                startPeriod = value.startPeriod,
-                endPeriod = value.endPeriod
-              )
-            )
-        )
+          val preparedForm = selectedPreviousRegistration match {
+            case None => form
+            case Some(value) => form.fill(value.previousRegistration)
+          }
+
+          preparedForm.bindFromRequest().fold(
+            formWithErrors => Future.successful(BadRequest(view(waypoints, formWithErrors, previousRegistrations))),
+            value =>
+              selectedPreviousRegistrationRepository.set(SelectedPreviousRegistration(request.userId, value)).map { _ =>
+                Redirect(controllers.previousReturns.routes.ViewReturnsMultipleRegController.onPageLoad())
+              }
+          )
+        }
       }
   }
 }

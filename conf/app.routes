@@ -113,7 +113,7 @@ GET         /past-returns/:period                                               
 GET         /return-registration-selection                                            controllers.previousReturns.ReturnRegistrationSelectionController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
 POST        /return-registration-selection                                            controllers.previousReturns.ReturnRegistrationSelectionController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints)
 
-GET         /view-returns-multiple-reg                                                controllers.previousReturns.PreviousRegistrationSubmittedReturnsHistoryController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, iossNumber: String, startPeriod: Period, endPeriod: Period)
+GET         /view-returns-multiple-reg                                                controllers.previousReturns.ViewReturnsMultipleRegController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
 
 GET         /outstanding-payments                                                     controllers.payments.WhichVatPeriodToPayController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
 POST        /outstanding-payments                                                     controllers.payments.WhichVatPeriodToPayController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints)

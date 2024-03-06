@@ -95,7 +95,7 @@
                     case Nil => {}
                     case registration :: Nil => {
                         <a class="govuk-link" id="view-returns-one-reg"
-                           href="@prevRoutes.PreviousRegistrationSubmittedReturnsHistoryController.onPageLoad(waypoints, registration.iossNumber, registration.startPeriod, registration.endPeriod)">
+                           href="@prevRoutes.ViewReturnsMultipleRegController.onPageLoad(waypoints)">
                             @messages("submittedReturnsHistory.viewReturnsOneReg", registration.startPeriod.displayText, registration.endPeriod.displayText)</a>
                     }
                     case _ => {
