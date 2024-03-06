@@ -53,8 +53,15 @@ class PartialReturnPeriodService @Inject()(
                 period.year,
                 period.month
               )))
+            } else if(isFirstReturn(maybeExclusion, period)) {
+              Future.successful(Some(PartialReturnPeriod(
+                excludedTrader.effectiveDate,
+                period.lastDay,
+                period.year,
+                period.month
+              )))
             } else {
-              getMaybeFirstPartialReturnPeriod(registrationWrapper, maybeExclusion)
+              Future.successful(None)
             }
           case _ => Future.successful(None)
         }
@@ -64,9 +71,9 @@ class PartialReturnPeriodService @Inject()(
 
 
   def getMaybeFirstPartialReturnPeriod(
-                                                registrationWrapper: RegistrationWrapper,
-                                                maybeExclusion: Option[EtmpExclusion]
-                                              )(implicit hc: HeaderCarrier): Future[Option[PartialReturnPeriod]] = {
+                                        registrationWrapper: RegistrationWrapper,
+                                        maybeExclusion: Option[EtmpExclusion]
+                                      )(implicit hc: HeaderCarrier): Future[Option[PartialReturnPeriod]] = {
 
     val commencementDateString = registrationWrapper.registration.schemeDetails.commencementDate
     val commencementDate = LocalDate.parse(commencementDateString.toString)
@@ -112,6 +119,16 @@ class PartialReturnPeriodService @Inject()(
 
     maybeExclusion.fold(false) { exclusions =>
       nextPeriod.isAfter(exclusions.effectiveDate)
+    }
+  }
+
+  def isFirstReturn(maybeExclusion: Option[EtmpExclusion], period: Period): Boolean = {
+
+    val nextPeriodString = periodService.getNextPeriod(period).displayYearMonth
+    val nextPeriod: LocalDate = LocalDate.parse(nextPeriodString, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+
+    maybeExclusion.fold(false) { exclusions =>
+      nextPeriod.isBefore(exclusions.effectiveDate)
     }
   }
 
