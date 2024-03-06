@@ -22,6 +22,7 @@ import models.requests.DataRequest
 import pages.{ReturnRegistrationSelectionPage, Waypoints}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc._
+import repositories.SelectedPreviousRegistrationRepository
 import services.{PeriodWithFinancialDataService, PreviousRegistrationService}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import viewmodels.previousReturns.PreviousRegistration
@@ -35,30 +36,26 @@ class ViewReturnsMultipleRegController @Inject()(
                                                   cc: AuthenticatedControllerComponents,
                                                   periodWithFinancialDataService: PeriodWithFinancialDataService,
                                                   previousRegistrationService: PreviousRegistrationService,
+                                                  selectedPreviousRegistrationRepository: SelectedPreviousRegistrationRepository,
                                                   view: ViewReturnsMultipleRegView
                                                 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndRequireData().async {
-    implicit request: DataRequest[AnyContent] =>
-      previousRegistrationService.getPreviousRegistrations().flatMap { previousRegistrations =>
-        previousRegistrations match {
-          case Nil =>
-            println("-- In Nil")
-            Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
-          case registration :: Nil =>
-            println("-- In one registration")
-            okView(waypoints, registration)
-          case registrations =>
-            println("-- In multiple")
-            request.userAnswers.get(ReturnRegistrationSelectionPage) match {
-              case Some(selectedRegistration) if registrations.contains(selectedRegistration) =>
-                okView(waypoints, selectedRegistration)
-              case _ =>
-                Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
-            }
-        }
+  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetOptionalData().async {
+    implicit request =>
+      previousRegistrationService.getPreviousRegistrations().flatMap {
+        case Nil =>
+          Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+        case registration :: Nil =>
+          okView(waypoints, registration)
+        case registrations =>
+          selectedPreviousRegistrationRepository.get(request.userId).flatMap {
+            case Some(selectedRegistration) if registrations.contains(selectedRegistration.previousRegistration) =>
+              okView(waypoints, selectedRegistration.previousRegistration)
+            case _ =>
+              Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+          }
       }
   }
 
