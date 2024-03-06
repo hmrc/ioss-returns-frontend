@@ -34,6 +34,7 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import uk.gov.hmrc.auth.core.retrieve.Credentials
 import uk.gov.hmrc.domain.Vrn
+import viewmodels.previousReturns.{PreviousRegistration, SelectedPreviousRegistration}
 
 import java.time._
 
@@ -73,6 +74,19 @@ trait SpecBase
   val arbitraryDate: LocalDate = datesBetween(LocalDate.of(2023, 3, 1), LocalDate.of(2025, 12, 31)).sample.value
   val arbitraryInstant: Instant = arbitraryDate.atStartOfDay(ZoneId.systemDefault).toInstant
   val stubClockAtArbitraryDate: Clock = Clock.fixed(arbitraryInstant, ZoneId.systemDefault)
+
+  val previousRegistrationIM900987654321: PreviousRegistration = PreviousRegistration(
+    "IM900987654321",
+    Period(YearMonth.of(2020, 1)),
+    Period(YearMonth.of(2021, 2))
+  )
+  val previousRegistrationIM900987654322: PreviousRegistration = PreviousRegistration(
+    "IM900987654322",
+    Period(YearMonth.of(2021, 3)),
+    Period(YearMonth.of(2021, 10))
+  )
+  val selectedPreviousRegistration: SelectedPreviousRegistration = SelectedPreviousRegistration(userAnswersId, previousRegistrationIM900987654322)
+  val previousRegistrations: List[PreviousRegistration] = List(previousRegistrationIM900987654321, previousRegistrationIM900987654322)
 
   def emptyUserAnswers: UserAnswers = UserAnswers(userAnswersId, period, lastUpdated = arbitraryInstant)
 

@@ -46,19 +46,6 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
 
   private val obligationPeriods: Seq[Period] = obligationDetails.map(_.periodKey).map(Period.fromKey)
 
-  private val previousRegistrations: List[PreviousRegistration] = List(
-    PreviousRegistration(
-      "IM900987654321",
-      Period(YearMonth.of(2020, 1)),
-      Period(YearMonth.of(2021, 2))
-    ),
-    PreviousRegistration(
-      "IM900987654322",
-      Period(YearMonth.of(2021, 3)),
-      Period(YearMonth.of(2021, 10))
-    )
-  )
-
   private val payments: List[Payment] =
     obligationPeriods.map { period =>
       arbitraryPayment.arbitrary.sample.value.copy(period = period)

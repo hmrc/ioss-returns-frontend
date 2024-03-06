@@ -67,22 +67,15 @@ class ReturnRegistrationSelectionController @Inject()(
   def onSubmit(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetOptionalData().async {
     implicit request =>
       previousRegistrationService.getPreviousRegistrations().flatMap { previousRegistrations =>
-        selectedPreviousRegistrationRepository.get(request.userId).flatMap { selectedPreviousRegistration =>
-          val form: Form[PreviousRegistration] = formProvider(previousRegistrations)
+        val form: Form[PreviousRegistration] = formProvider(previousRegistrations)
 
-          val preparedForm = selectedPreviousRegistration match {
-            case None => form
-            case Some(value) => form.fill(value.previousRegistration)
-          }
-
-          preparedForm.bindFromRequest().fold(
-            formWithErrors => Future.successful(BadRequest(view(waypoints, formWithErrors, previousRegistrations))),
-            value =>
-              selectedPreviousRegistrationRepository.set(SelectedPreviousRegistration(request.userId, value)).map { _ =>
-                Redirect(controllers.previousReturns.routes.ViewReturnsMultipleRegController.onPageLoad())
-              }
-          )
-        }
+        form.bindFromRequest().fold(
+          formWithErrors => Future.successful(BadRequest(view(waypoints, formWithErrors, previousRegistrations))),
+          value =>
+            selectedPreviousRegistrationRepository.set(SelectedPreviousRegistration(request.userId, value)).map { _ =>
+              Redirect(controllers.previousReturns.routes.ViewReturnsMultipleRegController.onPageLoad())
+            }
+        )
       }
   }
 }
