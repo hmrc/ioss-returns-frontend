@@ -30,6 +30,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SelectedPreviousRegistrationRepository
 import services.PreviousRegistrationService
+import testUtils.PreviousRegistrationData.{previousRegistrations, selectedPreviousRegistration}
 import utils.FutureSyntax.FutureOps
 import viewmodels.previousReturns._
 import views.html.previousReturns.ReturnRegistrationSelectionView
