@@ -18,8 +18,7 @@ package controllers.previousReturns
 
 import controllers.actions._
 import logging.Logging
-import models.requests.DataRequest
-import pages.{ReturnRegistrationSelectionPage, Waypoints}
+import pages.Waypoints
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc._
 import repositories.SelectedPreviousRegistrationRepository

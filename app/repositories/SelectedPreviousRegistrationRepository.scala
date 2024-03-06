@@ -36,11 +36,13 @@ class SelectedPreviousRegistrationRepository @Inject()(
     collectionName = "selected-previous-registration",
     mongoComponent = mongoComponent,
     domainFormat = SelectedPreviousRegistration.format,
+    replaceIndexes = true,
     indexes = Seq(
       IndexModel(
         Indexes.ascending("userId"),
         IndexOptions()
           .name("userIdIdx")
+          .unique(true)
           .expireAfter(appConfig.cacheTtl, TimeUnit.SECONDS)
       )
     )
@@ -49,10 +51,7 @@ class SelectedPreviousRegistrationRepository @Inject()(
   private def byUserId(id: String): Bson = Filters.equal("userId", id)
 
   def get(userId: String): Future[Option[SelectedPreviousRegistration]] =
-    collection
-      .find(byUserId(userId))
-      .headOption()
-
+    collection.find(byUserId(userId)).headOption()
 
   def set(selectedPreviousRegistration: SelectedPreviousRegistration): Future[SelectedPreviousRegistration] = {
     collection

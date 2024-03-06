@@ -1,99 +1,84 @@
 package repositories
 
-import org.mockito.MockitoSugar
+import config.FrontendAppConfig
+import models.Period
+import org.mongodb.scala.model.Filters
 import org.scalatest.OptionValues
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.mockito.MockitoSugar
-import uk.gov.hmrc.mongo.test.{CleanMongoCollectionSupport, PlayMongoRepositorySupport}
-import viewmodels.previousReturns.PreviousRegistration
+import uk.gov.hmrc.mongo.test.PlayMongoRepositorySupport
+import viewmodels.previousReturns.{PreviousRegistration, SelectedPreviousRegistration}
 
+import java.time.YearMonth
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class RegistrationStatusRepositorySpec extends AnyFreeSpec
-  with Matchers
-  with CleanMongoCollectionSupport
-  with PlayMongoRepositorySupport[PreviousRegistration]
-  with ScalaFutures
-  with IntegrationPatience
-  with OptionValues
-  with MockitoSugar {
+class SelectedPreviousRegistrationRepositorySpec
+  extends AnyFreeSpec
+    with Matchers
+    with PlayMongoRepositorySupport[SelectedPreviousRegistration]
+    with ScalaFutures
+    with IntegrationPatience
+    with OptionValues
+    with MockitoSugar {
 
-  private val appConfig = mock[AppConfig]
-  protected val repository =
-    new SelectedPreviousRegistrationRepository(
-      mongoComponent = mongoComponent,
-      appConfig = appConfig
-    )
+  val previousRegistrationIM900987654322: PreviousRegistration = PreviousRegistration(
+    "IM900987654322",
+    Period(YearMonth.of(2021, 3)),
+    Period(YearMonth.of(2021, 10))
+  )
 
-  val registrationStatus: RegistrationStatus = RegistrationStatus("100000001-id",
-    EtmpRegistrationStatus.Success)
+  private val selectedPreviousRegistration: SelectedPreviousRegistration = SelectedPreviousRegistration("id", previousRegistrationIM900987654322)
 
-  ".insert" - {
+  private val mockAppConfig = mock[FrontendAppConfig]
 
-    "must insert data" in {
+  protected override val repository = new SelectedPreviousRegistrationRepository(
+    mongoComponent = mongoComponent,
+    appConfig      = mockAppConfig
+  )
 
-      val insertResult = repository.insert(registrationStatus).futureValue
-      val databaseRecord = findAll().futureValue.headOption.value
+  ".set" - {
 
-      insertResult mustEqual InsertSucceeded
-      databaseRecord mustEqual registrationStatus
-    }
+    "must save data" in {
+      val setResult     = repository.set(selectedPreviousRegistration).futureValue
+      val updatedRecord = find(Filters.equal("userId", selectedPreviousRegistration.userId)).futureValue.headOption.value
 
-    "must not allow duplicate data to be inserted" in {
-
-      repository.insert(registrationStatus).futureValue
-      val secondResult = repository.insert(registrationStatus).futureValue
-
-      secondResult mustEqual AlreadyExists
+      setResult mustEqual selectedPreviousRegistration
+      updatedRecord mustEqual selectedPreviousRegistration
     }
   }
 
-  ".set registration status" - {
+  ".get" - {
 
-    "must update the existing status" in {
+    "must return saved record when one exists for this user id" in {
 
-      repository.insert(registrationStatus).futureValue
-      val updatedRegistrationStatus = registrationStatus.copy(status = EtmpRegistrationStatus.Pending)
+      repository.set(selectedPreviousRegistration).futureValue
 
-      val updatedResult = repository.set(updatedRegistrationStatus).futureValue
+      val result = repository.get(selectedPreviousRegistration.userId).futureValue
 
-      updatedResult mustEqual updatedRegistrationStatus
-    }
-  }
-
-  ".get one" - {
-
-    "must return Saved record when one exists for this subscription id" in {
-
-      insert(registrationStatus).futureValue
-
-      val result = repository.get(registrationStatus.subscriptionId).futureValue
-
-      result.value mustEqual registrationStatus
+      result.value mustEqual selectedPreviousRegistration
     }
 
     "must return None when no data exists" in {
 
-      val result = repository.get("100000002-id").futureValue
+      val result = repository.get("").futureValue
 
       result must not be defined
     }
   }
 
-  ".delete" - {
+  ".clear" - {
 
-    "must return true when saved record is deleted" in {
+    "must remove a record" in {
 
-      insert(registrationStatus).futureValue
+      repository.set(selectedPreviousRegistration).futureValue
 
-      val result = repository.delete(registrationStatus.subscriptionId).futureValue
+      val result = repository.clear(selectedPreviousRegistration.userId).futureValue
 
       result mustEqual true
-
-      val currentAnswers = repository.get(registrationStatus.subscriptionId).futureValue
-      currentAnswers must not be defined
+      repository.get(selectedPreviousRegistration.userId).futureValue must not be defined
     }
   }
 }
+
