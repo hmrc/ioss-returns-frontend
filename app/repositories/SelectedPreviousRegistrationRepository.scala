@@ -16,38 +16,48 @@
 
 package repositories
 
+import config.FrontendAppConfig
 import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.model._
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import viewmodels.previousReturns.SelectedPreviousRegistration
 
+import java.util.concurrent.TimeUnit
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class SelectedPreviousRegistrationRepository @Inject()(
-                                                        mongoComponent: MongoComponent
+                                                        mongoComponent: MongoComponent,
+                                                        appConfig: FrontendAppConfig,
                                                       )(implicit ec: ExecutionContext)
   extends PlayMongoRepository[SelectedPreviousRegistration](
     collectionName = "selected-previous-registration",
     mongoComponent = mongoComponent,
     domainFormat = SelectedPreviousRegistration.format,
-    indexes = Seq.empty
+    indexes = Seq(
+      IndexModel(
+        Indexes.ascending("userId"),
+        IndexOptions()
+          .name("userIdIdx")
+          .expireAfter(appConfig.cacheTtl, TimeUnit.SECONDS)
+      )
+    )
   ) {
 
-  private def byId(id: String): Bson = Filters.equal("_id", id)
+  private def byUserId(id: String): Bson = Filters.equal("userId", id)
 
-  def get(id: String): Future[Option[SelectedPreviousRegistration]] =
+  def get(userId: String): Future[Option[SelectedPreviousRegistration]] =
     collection
-      .find(byId(id))
+      .find(byUserId(userId))
       .headOption()
 
 
   def set(selectedPreviousRegistration: SelectedPreviousRegistration): Future[SelectedPreviousRegistration] = {
     collection
       .replaceOne(
-        filter = byId(selectedPreviousRegistration.id),
+        filter = byUserId(selectedPreviousRegistration.userId),
         replacement = selectedPreviousRegistration,
         options = ReplaceOptions().upsert(true)
       )
@@ -57,7 +67,7 @@ class SelectedPreviousRegistrationRepository @Inject()(
 
   def clear(id: String): Future[Boolean] =
     collection
-      .deleteOne(byId(id))
+      .deleteOne(byUserId(id))
       .toFuture()
       .map(_ => true)
 }
