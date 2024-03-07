@@ -1,4 +1,4 @@
-service.name = ioss-returns-frontend
+service.name = Submit an Import One Stop Shop return and pay VAT
 
 site.back = Back
 site.remove = Remove
@@ -426,3 +426,6 @@ noPayments.textWithLink = <a class="govuk-link" href={0}>Return to your account<
 excludedNotPermitted.title = You cannot use this service
 excludedNotPermitted.heading = You cannot use this service
 excludedNotPermitted.returnToAccount = Return to your account
+
+noReturnsDue.title = You do not have any Import One Stop Shop returns to complete
+noReturnsDue.heading = You do not have any Import One Stop Shop returns to complete
