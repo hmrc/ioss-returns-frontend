@@ -51,6 +51,8 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
 
   def checkCommencementDateOptional: CheckCommencementDateOptionalFilter
 
+  def checkIsCurrentReturnPeriodFilter: CheckIsCurrentReturnPeriodFilter
+
   def auth: ActionBuilder[IdentifierRequest, AnyContent] =
     actionBuilder andThen identify
 
@@ -97,5 +99,6 @@ case class DefaultAuthenticatedControllerComponents @Inject()(
                                                                checkExcludedTrader: CheckExcludedTraderFilter,
                                                                checkExcludedTraderOptional: CheckExcludedTraderOptionalFilter,
                                                                checkCommencementDate: CheckCommencementDateFilter,
-                                                               checkCommencementDateOptional: CheckCommencementDateOptionalFilter
+                                                               checkCommencementDateOptional: CheckCommencementDateOptionalFilter,
+                                                               checkIsCurrentReturnPeriodFilter: CheckIsCurrentReturnPeriodFilter
                                                              ) extends AuthenticatedControllerComponents

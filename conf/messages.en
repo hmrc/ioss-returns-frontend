@@ -450,3 +450,13 @@ excludedNotPermitted.returnToAccount = Return to your account
 
 noReturnsDue.title = You do not have any Import One Stop Shop returns to complete
 noReturnsDue.heading = You do not have any Import One Stop Shop returns to complete
+
+cannotStartExcludedReturn.title = You can no longer complete this return on the IOSS service
+cannotStartExcludedReturn.heading =You can no longer complete this return on the IOSS service
+cannotStartExcludedReturn.p1 =You must complete it with the countries where you made your sales.
+cannotStartExcludedReturn.backToYourAccount = <a class="govuk-link" id="back-to-your-account" href={0}>Back to your account</a>
+
+cannotStartReturn.title = You cannot start this return yet
+cannotStartReturn.heading =You cannot start this return yet
+cannotStartReturn.p1 = You must complete a previous return first.
+cannotStartReturn.backToYourAccount =<a class="govuk-link" id="back-to-your-account" href={0}>Back to your account</a>

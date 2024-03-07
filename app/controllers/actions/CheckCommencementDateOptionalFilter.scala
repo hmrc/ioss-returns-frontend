@@ -29,7 +29,9 @@ class CheckCommencementDateOptionalFilterImpl(startReturnPeriod: Period)(implici
   extends ActionFilter[OptionalDataRequest] {
 
   override protected def filter[A](request: OptionalDataRequest[A]): Future[Option[Result]] = {
-    if (startReturnPeriod.lastDay.isBefore(request.registrationWrapper.registration.schemeDetails.commencementDate)) {
+    val registration = request.registrationWrapper.registration
+
+    if (startReturnPeriod.lastDay.isBefore(registration.schemeDetails.commencementDate)) {
       Future(Some(Redirect(routes.NoOtherPeriodsAvailableController.onPageLoad())))
     } else {
       Future.successful(None)
