@@ -68,7 +68,10 @@
                                     </td>
                                     <td class="govuk-table__cell govuk-table__cell--numeric">
                                     @if(payment.paymentStatus == PaymentStatus.Unpaid || payment.paymentStatus == PaymentStatus.Unknown || payment.paymentStatus == PaymentStatus.Partial) {
-                                        <a class="govuk-link" id="pay-now" href="@paymentRoutes.PaymentController.makePayment(waypoints, period, (payment.amountOwed * 100).toLong)">@messages("viewReturnsMultipleReg.payNow")</a>
+                                        <a class="govuk-link" id="pay-now"
+                                           href="@paymentRoutes.PaymentController.makePayment(waypoints, period, (payment.amountOwed * 100).toLong, Some(previousRegistration.iossNumber))">
+                                            @messages("viewReturnsMultipleReg.payNow")
+                                        </a>
                                     } else {
                                         @messages(s"viewReturnsMultipleReg.status.${payment.paymentStatus.toString.toLowerCase}")
                                     }
