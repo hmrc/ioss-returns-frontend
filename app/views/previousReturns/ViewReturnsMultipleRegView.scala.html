@@ -26,16 +26,16 @@
 
 @(waypoints: Waypoints, previousRegistration: PreviousRegistration, periodsWithFinancialData: Map[Int, Seq[(Period, Payment)]])(implicit request: Request[_], messages: Messages)
 
-    @layout(pageTitle = titleNoForm(messages("previousRegistration.submittedReturnsHistory.title", previousRegistration.startPeriod.displayText, previousRegistration.endPeriod.displayText))) {
+    @layout(pageTitle = titleNoForm(messages("viewReturnsMultipleReg.title", previousRegistration.startPeriod.displayText, previousRegistration.endPeriod.displayText))) {
 
         <h1 class="govuk-heading-l">
-            @messages("previousRegistration.submittedReturnsHistory.heading", previousRegistration.startPeriod.displayText, previousRegistration.endPeriod.displayText)
-            <span class="govuk-caption-l">@messages("previousRegistration.submittedReturnsHistory.iossNumber", previousRegistration.iossNumber)</span>
+            @messages("viewReturnsMultipleReg.heading", previousRegistration.startPeriod.displayText, previousRegistration.endPeriod.displayText)
+            <span class="govuk-caption-l">@messages("viewReturnsMultipleReg.iossNumber", previousRegistration.iossNumber)</span>
         </h1>
 
         @if(periodsWithFinancialData.isEmpty) {
             <br/>
-            <p class="govuk-body-m">@messages("previousRegistration.submittedReturnsHistory.noReturns")</p>
+            <p class="govuk-body-m">@messages("viewReturnsMultipleReg.noReturns")</p>
         } else {
 
             <div class="govuk-accordion" data-module="govuk-accordion" id="accordion-with-summary-sections">
@@ -52,9 +52,9 @@
                         <table class="govuk-table">
                             <thead class="govuk-table__head">
                                 <tr class="govuk-table__row">
-                                    <th scope="col" class="govuk-table__header">@messages("previousRegistration.submittedReturnsHistory.returnPeriod")</th>
-                                    <th scope="col" class="govuk-table__header govuk-table__header--numeric">@messages("previousRegistration.submittedReturnsHistory.amountLeftToPay")</th>
-                                    <th scope="col" class="govuk-table__header govuk-table__header--numeric">@messages("previousRegistration.submittedReturnsHistory.payment")</th>
+                                    <th scope="col" class="govuk-table__header">@messages("viewReturnsMultipleReg.returnPeriod")</th>
+                                    <th scope="col" class="govuk-table__header govuk-table__header--numeric">@messages("viewReturnsMultipleReg.amountLeftToPay")</th>
+                                    <th scope="col" class="govuk-table__header govuk-table__header--numeric">@messages("viewReturnsMultipleReg.payment")</th>
                                 </tr>
                             </thead>
                             <tbody class="govuk-table__body">
@@ -68,9 +68,9 @@
                                     </td>
                                     <td class="govuk-table__cell govuk-table__cell--numeric">
                                     @if(payment.paymentStatus == PaymentStatus.Unpaid || payment.paymentStatus == PaymentStatus.Unknown || payment.paymentStatus == PaymentStatus.Partial) {
-                                        <a class="govuk-link" id="pay-now" href="@paymentRoutes.PaymentController.makePayment(waypoints, period, (payment.amountOwed * 100).toLong)">@messages("previousRegistration.submittedReturnsHistory.payNow")</a>
+                                        <a class="govuk-link" id="pay-now" href="@paymentRoutes.PaymentController.makePayment(waypoints, period, (payment.amountOwed * 100).toLong)">@messages("viewReturnsMultipleReg.payNow")</a>
                                     } else {
-                                        @messages(s"previousRegistration.submittedReturnsHistory.status.${payment.paymentStatus.toString.toLowerCase}")
+                                        @messages(s"viewReturnsMultipleReg.status.${payment.paymentStatus.toString.toLowerCase}")
                                     }
                                     </td>
                                 </tr>
@@ -83,7 +83,7 @@
             </div>
 
             <p class="govuk-body">
-                <a class="govuk-link" id="submitted-returns-history" href="@prevRoutes.SubmittedReturnsHistoryController.onPageLoad(waypoints)">@messages("previousRegistration.submittedReturnsHistory.returnToCurrentRegistration")</a>
+                <a class="govuk-link" id="submitted-returns-history" href="@prevRoutes.SubmittedReturnsHistoryController.onPageLoad(waypoints)">@messages("viewReturnsMultipleReg.returnToCurrentRegistration")</a>
             </p>
         }
     }
