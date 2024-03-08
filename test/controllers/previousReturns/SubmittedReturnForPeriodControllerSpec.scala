@@ -1401,6 +1401,24 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
           redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
         }
       }
+
+      "must redirect to Journey recovery when ioss number is not part of previous registrations or request.iossNumber" in {
+
+        val application = applicationBuilder()
+          .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
+          .build()
+
+        running(application) {
+          when(mockPreviousRegistrationService.getPreviousRegistrations()(any())) thenReturn previousRegistrations.toFuture
+
+          val request = FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoadForIossNumber(waypoints, period, "IM9001111111").url)
+
+          val result = route(application, request).value
+
+          status(result) mustBe SEE_OTHER
+          redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
+        }
+      }
     }
 
     ".hasActiveReturnWindowExpired" - {
