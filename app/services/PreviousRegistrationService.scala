@@ -46,21 +46,4 @@ class PreviousRegistrationService @Inject()(
       }.toList
     }
   }
-
-  /*def getPreviousRegistrations()(implicit hc: HeaderCarrier): Future[List[PreviousRegistration]] = {
-    Future.successful(
-      List(
-        PreviousRegistration(
-          "IM900987654321",
-          Period(YearMonth.of(2020, 1)),
-          Period(YearMonth.of(2021, 2))
-        ),
-        PreviousRegistration(
-          "IM900987654322",
-          Period(YearMonth.of(2021, 3)),
-          Period(YearMonth.of(2021, 10))
-        )
-      )
-    )
-  }*/
 }
