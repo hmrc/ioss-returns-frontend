@@ -40,20 +40,6 @@
 
     @layout(pageTitle = titleNoForm(messages("submittedReturnForPeriod.title", period.displayText))) {
 
-        <div class="govuk-breadcrumbs" style="margin-bottom: 50px;">
-            <ol class="govuk-breadcrumbs__list">
-                <li class="govuk-breadcrumbs__list-item">
-                    <a class="govuk-breadcrumbs__link" href="@routes.YourAccountController.onPageLoad(waypoints)" id="your-account">@messages("previousReturns.breadcrumbs.yourAccount")</a>
-                </li>
-                <li class="govuk-breadcrumbs__list-item">
-                    <a class="govuk-breadcrumbs__link" href="@prevRoutes.SubmittedReturnsHistoryController.onPageLoad(waypoints)" id="submitted-returns">@messages("previousReturns.breadcrumbs.submittedReturns")</a>
-                </li>
-                <li class="govuk-breadcrumbs__list-item">
-                @period.displayText
-                </li>
-            </ol>
-        </div>
-
         <h1 class="govuk-heading-l">@messages("submittedReturnForPeriod.heading", period.displayText)</h1>
 
         <h2 class="govuk-heading-m">@messages("submittedReturnForPeriod.summary")</h2>

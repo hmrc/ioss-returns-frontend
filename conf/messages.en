@@ -93,7 +93,7 @@ checkYourAnswers.heading = Check Your Answers
 checkYourAnswers.label.businessName = Business name
 checkYourAnswers.label.businessVrn = UK VAT registration number
 checkYourAnswers.label.returnPeriod = Return month
-checkYourAnswers.sales.heading = Sales to EU countries and Northern Ireland
+checkYourAnswers.sales.heading = Sales to EU countries, Northern Ireland or both
 checkYourAnswers.salesLabel.l1 = Sales made
 checkYourAnswers.label.netValueOfSales = Sales excluding VAT
 checkYourAnswers.label.vatOnSales = VAT charged
@@ -169,7 +169,8 @@ salesToCountry.error.required = Enter your sales at {0} rate excluding VAT
 salesToCountry.error.wholeNumber = Enter your sales at {0} rate excluding VAT using whole numbers
 salesToCountry.error.outOfRange = Sales excluding VAT must be between {0} and {1}
 salesToCountry.error.calculatedVatRateOutOfRange = Add a sales total above £0.02
-salesToCountry.change.hidden = sales excluding VAT
+salesToCountry.change.hidden = sales excluding VAT at the {0} VAT rate
+salesToCountry.remove.hidden = {0} VAT rate
 salesToCountry.hint = For example, £600 or £193.54.
 
 vatOnSales.title = How much VAT did you charge on sales of {0} at {1} VAT rate?
@@ -180,7 +181,7 @@ vatOnSales.amount = Enter VAT charged
 vatOnSales.hint = For example, £600 or £193.54.
 vatOnSales.checkYourAnswersLabel = VAT charged
 vatOnSales.choice.error.required = Select VAT charged
-vatOnSales.change.hidden = VAT charged
+vatOnSales.change.hidden = VAT charged at the {0} VAT rate
 vatOnSales.amount.error.required = Enter the amount of VAT charged
 vatOnSales.amount.error.decimalFormat = Enter the amount of VAT charged up to two decimal places
 vatOnSales.amount.error.calculatedVatRateOutOfRange = Add a sales total above £0.02
@@ -307,8 +308,8 @@ correctionListCountries.heading.plural = You have corrected the VAT amount for {
 correctionListCountries.section = Correction period: {0}
 correctionListCountries.addAnother = Add corrections to VAT for another country?
 correctionListCountries.error.required = Select yes if you want to add corrections to VAT for another country
-correctionListCountries.change.hidden = {0}
-correctionListCountries.remove.hidden = {0}
+correctionListCountries.change.hidden = correction amount for {0}
+correctionListCountries.remove.hidden = correction amount for {0}
 correctionListCountries.maximumReached = You have added corrections to every country
 correctionListCountries.checkYourAnswersLabel = Correction amount
 
@@ -342,7 +343,7 @@ vatPeriodCorrectionsList.addAnother = Add corrections to VAT for another return 
 vatPeriodCorrectionsList.error.required = Select yes if you want to add corrections to VAT for another return period
 
 successfullySubmitted.title = Return submitted
-successfullySubmitted.heading = Your return reference is <strong>{0}</strong>
+successfullySubmitted.heading = Your return reference is <strong style="word-break:break-word">{0}</strong>
 successfullySubmitted.noVatOwed = You do not owe any VAT for {0}.
 successfullySubmitted.payVatOwed = Pay VAT owed
 successfullySubmitted.payPeriodAmount = For <span id="dateRange">{0}</span>, you owe <span class="govuk-!-font-weight-bold">{1}</span>.
@@ -366,29 +367,25 @@ submittedReturnForPeriod.payNow = Pay now
 submittedReturnForPeriod.otherCountryVatOwed = You must pay any outstanding VAT from this return directly to the countries where you made your sales.
 
 submittedReturnForPeriod.summary.vatDeclared = VAT declared
-submittedReturnForPeriod.summary.amountPaid = Amount paid
 submittedReturnForPeriod.summary.remainingAmount = Amount left to pay
 submittedReturnForPeriod.summary.submittedDate = Return submitted
 submittedReturnForPeriod.summary.paymentDueDate = Payment due by
 submittedReturnForPeriod.summary.returnReference = Return reference
 submittedReturnForPeriod.summary.paymentReference = Payment reference
 
-submittedReturnForPeriod.salesToEuNi.title = Sales to EU countries and Northern Ireland
+submittedReturnForPeriod.salesToEuNi.title = Sales to EU countries, Northern Ireland or both
 submittedReturnForPeriod.salesToEuNi.allNetSales = Sales excluding VAT
 submittedReturnForPeriod.salesToEuNi.allVatOnSales = VAT charged
 
 submittedReturnForPeriod.corrections.title = Corrections
 submittedReturnForPeriod.corrections.vatDeclarationNotDue = VAT declared where no payment is due
-submittedReturnForPeriod.corrections.p1 = EU countries and Northern Ireland are responsible for refunding any overpayments.
+submittedReturnForPeriod.corrections.p1 = The tax authorities in countries where you declared too much VAT are responsible for refunding any overpayments.
 submittedReturnForPeriod.corrections.country = {0}
 
 submittedReturnForPeriod.vatOwed.title = VAT owed
 submittedReturnForPeriod.vatOwed.titleWithCorrections = VAT owed (including corrections)
 
 submittedReturnForPeriod.totalVat.title = Total VAT payable
-
-previousReturns.breadcrumbs.yourAccount = Your IOSS account
-previousReturns.breadcrumbs.submittedReturns = Submitted returns
 
 whichVatPeriodToPay.title = Which month would you like to make a payment for?
 whichVatPeriodToPay.heading = Which month would you like to make a payment for?
@@ -421,6 +418,7 @@ submittedReturnsHistory.viewReturnsOneReg = View returns from {0} to {1}
 submittedReturnsHistory.status.paid = Paid
 submittedReturnsHistory.status.nilreturn = No payment due
 submittedReturnsHistory.status.excluded = You must pay this to the countries where you made your sales
+submittedReturnsHistory.payNow.hidden = for {0} return
 
 viewReturnsMultipleReg.title = Submitted returns from {0} to {1}
 viewReturnsMultipleReg.heading = Submitted returns from {0} to {1}

@@ -75,7 +75,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
             contentAsString(result).contains("Business name") mustBe true
             contentAsString(result).contains("UK VAT registration number") mustBe true
             contentAsString(result).contains("Return month") mustBe true
-            contentAsString(result).contains("Sales to EU countries and Northern Ireland") mustBe true
+            contentAsString(result).contains("Sales to EU countries, Northern Ireland or both") mustBe true
             contentAsString(result).contains("Sales made") mustBe true
             contentAsString(result).contains("Sales excluding VAT") mustBe true
             contentAsString(result).contains("Corrections") mustBe true
@@ -99,7 +99,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
             contentAsString(result).contains("Business name") mustBe true
             contentAsString(result).contains("UK VAT registration number") mustBe true
             contentAsString(result).contains("Return month") mustBe true
-            contentAsString(result).contains("Sales to EU countries and Northern Ireland") mustBe true
+            contentAsString(result).contains("Sales to EU countries, Northern Ireland or both") mustBe true
             contentAsString(result).contains("Sales made") mustBe true
             contentAsString(result).contains("Sales excluding VAT") mustBe true
             contentAsString(result).contains("Corrections") mustBe true
@@ -126,7 +126,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
             contentAsString(result).contains("Business name") mustBe true
             contentAsString(result).contains("UK VAT registration number") mustBe true
             contentAsString(result).contains("Return month") mustBe true
-            contentAsString(result).contains("Sales to EU countries and Northern Ireland") mustBe true
+            contentAsString(result).contains("Sales to EU countries, Northern Ireland or both") mustBe true
             contentAsString(result).contains("Sales made") mustBe true
             contentAsString(result).contains("Sales excluding VAT") mustBe true
             contentAsString(result).contains("Corrections") mustBe true
