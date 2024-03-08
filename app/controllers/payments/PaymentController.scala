@@ -40,30 +40,31 @@ class PaymentController @Inject()(
   protected val controllerComponents: MessagesControllerComponents = cc
   private val paymentsBaseUrl: Service = config.get[Service]("microservice.services.pay-api")
 
-  def makePayment(waypoints: Waypoints, period: Period, amountInPence: Long, previousIossNumber: Option[String]): Action[AnyContent] =
+  def makePayment(waypoints: Waypoints, period: Period, amountInPence: Long): Action[AnyContent] = {
     cc.authAndGetOptionalData().async { implicit request =>
-      withIossNumber(waypoints, request.iossNumber, previousIossNumber) { iossNumber =>
-        val amountOwed = BigDecimal(amountInPence) / 100
+      makePayment(period, amountInPence, request.iossNumber)
+    }
+  }
 
-        paymentsService.makePayment(iossNumber, period, amountOwed).map {
-          case Right(value) => Redirect(value.nextUrl)
-          case _ => Redirect(s"$paymentsBaseUrl/pay/service-unavailable")
+  def makePaymentForIossNumber(waypoints: Waypoints, period: Period, amountInPence: Long, iossNumber: String): Action[AnyContent] = {
+    cc.authAndGetOptionalData().async { implicit request =>
+      previousRegistrationService.getPreviousRegistrations().flatMap { previousRegistrations =>
+        val validIossNumbers: Seq[String] = request.iossNumber :: previousRegistrations.map(_.iossNumber)
+        if (validIossNumbers.contains(iossNumber)) {
+          makePayment(period, amountInPence, iossNumber)
+        } else {
+          Future.successful(Redirect(JourneyRecoveryPage.route(waypoints)))
         }
       }
     }
+  }
 
-  private def withIossNumber(waypoints: Waypoints, requestIossNumber: String, previousIossNumber: Option[String])
-                            (f: String => Future[Result])(implicit hc: HeaderCarrier): Future[Result] = {
-    previousIossNumber match {
-      case Some(iossNumber) =>
-        previousRegistrationService.getPreviousRegistrations().flatMap { previousRegistrations =>
-          if (previousRegistrations.exists(_.iossNumber == iossNumber)) {
-            f(iossNumber)
-          } else {
-            Future.successful(Redirect(JourneyRecoveryPage.route(waypoints)))
-          }
-        }
-      case _ => f(requestIossNumber)
+  private def makePayment(period: Period, amountInPence: Long, iossNumber: String)(implicit hc: HeaderCarrier): Future[Result] = {
+    val amountOwed = BigDecimal(amountInPence) / 100
+
+    paymentsService.makePayment(iossNumber, period, amountOwed).map {
+      case Right(value) => Redirect(value.nextUrl)
+      case _ => Redirect(s"$paymentsBaseUrl/pay/service-unavailable")
     }
   }
 }
