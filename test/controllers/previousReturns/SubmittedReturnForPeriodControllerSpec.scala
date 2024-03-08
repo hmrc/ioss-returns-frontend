@@ -1402,7 +1402,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
         }
       }
 
-      "must redirect to Journey recovery when ioss number is not part of previous registrations or request.iossNumber" in {
+      "must redirect to Journey recovery when IOSS number is not part of previous registrations or request.iossNumber" in {
 
         val application = applicationBuilder()
           .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
