@@ -14,28 +14,23 @@
  * limitations under the License.
  */
 
-package models
+package models.core
 
-import models.core.EisErrorResponse
+import models.{Enumerable, WithName}
 
-sealed trait ErrorResponse {
-  val body: String
-}
+sealed trait SourceType
 
-case object InvalidJson extends ErrorResponse {
-  override val body = "Invalid JSON received"
-}
+object SourceType extends Enumerable.Implicits {
+  case object VATNumber extends WithName("VATNumber") with SourceType
+  case object EUTraderId extends WithName("EUTraderId") with SourceType
+  case object TraderId extends WithName("TraderId") with SourceType
 
-case object NotFound extends ErrorResponse {
-  override val body = "Not found"
-}
+  val values: Seq[SourceType] = Seq(
+    VATNumber,
+    EUTraderId,
+    TraderId
+  )
 
-case class UnexpectedResponseStatus(status: Int, body: String) extends ErrorResponse
-
-
-case class EisError(eisErrorResponse: EisErrorResponse) extends ErrorResponse {
-  override val body: String =
-    s"${eisErrorResponse.timestamp} " +
-      s"${eisErrorResponse.error} " +
-      s"${eisErrorResponse.errorMessage} "
+  implicit val enumerable: Enumerable[SourceType] =
+    Enumerable(values.map(v => v.toString -> v): _*)
 }

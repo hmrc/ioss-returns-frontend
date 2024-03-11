@@ -16,7 +16,7 @@
 
 package models.core
 
-import play.api.libs.json.{Json, JsString, OFormat, Reads, Writes}
+import play.api.libs.json.{JsString, Json, OFormat, Reads, Writes}
 import utils.Formatters.etmpDateTimeFormatter
 
 import java.time.{Instant, LocalDate, LocalDateTime, ZoneId}
@@ -142,8 +142,11 @@ object CoreErrorResponse {
   val REGISTRATION_NOT_FOUND = "OSS_009"
 }
 
+
 case class EisErrorResponse(
-                             errorDetail: CoreErrorResponse
+                             timestamp: Instant,
+                             error: String,
+                             errorMessage: String
                            )
 
 object EisErrorResponse {

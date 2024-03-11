@@ -18,6 +18,7 @@ package services
 
 import base.SpecBase
 import connectors.ReturnStatusConnector
+import models.core.{Match, MatchType}
 import models.etmp.EtmpExclusion
 import models.etmp.EtmpExclusionReason._
 import models.{PartialReturnPeriod, PeriodWithStatus, RegistrationWrapper, SubmissionStatus}
@@ -25,6 +26,7 @@ import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.mockito.MockitoSugar.{mock, when}
 import org.scalatest.BeforeAndAfterEach
+import services.core.CoreRegistrationValidationService
 import uk.gov.hmrc.http.HeaderCarrier
 import utils.FutureSyntax.FutureOps
 
@@ -36,25 +38,31 @@ class PartialReturnPeriodServiceSpec extends SpecBase with BeforeAndAfterEach {
   implicit private lazy val hc: HeaderCarrier = HeaderCarrier()
   private val mockReturnStatusConnector = mock[ReturnStatusConnector]
   private val mockPeriodService = mock[PeriodService]
+  private val mockCoreRegValidationService = mock[CoreRegistrationValidationService]
+
+  private val genericMatch = Match(
+    MatchType.TransferringMSID,
+    "333333333",
+    None,
+    "DE",
+    None,
+    None,
+    None,
+    None,
+    None
+  )
 
   override def beforeEach(): Unit = {
     Mockito.reset(mockReturnStatusConnector)
     Mockito.reset(mockPeriodService)
   }
 
-  "PartialReturnPeriodService#getPartialReturnPeriod should" - {
+  "PartialReturnPeriodService getPartialReturnPeriod should" - {
 
     "return a partial return period when it's the first return and transferring msid" in {
 
       val startDate = period.lastDay.minusDays(10)
       val commencementDate = startDate.plusDays(1)
-
-      val transferringMSIDReason = EtmpExclusion(
-        TransferringMSID,
-        startDate,
-        LocalDate.now(stubClockAtArbitraryDate).minusDays(1),
-        quarantine = false
-      )
 
       val registrationWrapperWithExclusions: RegistrationWrapper = {
         val updatedSchemeDetails = registrationWrapper.registration.schemeDetails.copy(
@@ -62,7 +70,7 @@ class PartialReturnPeriodServiceSpec extends SpecBase with BeforeAndAfterEach {
         )
 
         val updatedRegistration = registrationWrapper.registration.copy(
-          exclusions = Seq(transferringMSIDReason),
+          exclusions = Seq.empty,
           schemeDetails = updatedSchemeDetails
         )
 
@@ -70,12 +78,14 @@ class PartialReturnPeriodServiceSpec extends SpecBase with BeforeAndAfterEach {
       }
 
       when(mockPeriodService.getNextPeriod(any())).thenReturn(period)
+      when(mockCoreRegValidationService.searchIossScheme(any(), any(), any(), any())(any())) thenReturn
+        Some(genericMatch.copy(exclusionEffectiveDate = Some(startDate.toString))).toFuture
       when(mockReturnStatusConnector.listStatuses(any())(any())) thenReturn
         Right(Seq(PeriodWithStatus(period, SubmissionStatus.Due))).toFuture
 
-      val service = new PartialReturnPeriodService(mockReturnStatusConnector, mockPeriodService)
+      val service = new PartialReturnPeriodService(mockReturnStatusConnector, mockCoreRegValidationService, mockPeriodService)
 
-      val result = service.getMaybeFirstPartialReturnPeriod(registrationWrapperWithExclusions, Some(transferringMSIDReason)).futureValue
+      val result = service.getPartialReturnPeriod(registrationWrapperWithExclusions, period).futureValue
 
       val expectedPartialReturnPeriod = Some(PartialReturnPeriod(startDate, period.lastDay, period.year, period.month))
 
@@ -109,10 +119,11 @@ class PartialReturnPeriodServiceSpec extends SpecBase with BeforeAndAfterEach {
       }
 
       when(mockPeriodService.getNextPeriod(any())).thenReturn(period)
+      when(mockCoreRegValidationService.searchIossScheme(any(), any(), any(), any())(any())) thenReturn None.toFuture
       when(mockReturnStatusConnector.listStatuses(any())(any())) thenReturn
         Right(Seq(PeriodWithStatus(period, SubmissionStatus.Due))).toFuture
 
-      val service = new PartialReturnPeriodService(mockReturnStatusConnector, mockPeriodService)
+      val service = new PartialReturnPeriodService(mockReturnStatusConnector, mockCoreRegValidationService, mockPeriodService)
 
       val result = service.getPartialReturnPeriod(registrationWrapperWithExclusions, period).futureValue
 
@@ -139,10 +150,11 @@ class PartialReturnPeriodServiceSpec extends SpecBase with BeforeAndAfterEach {
       }
 
       when(mockPeriodService.getNextPeriod(any())).thenReturn(period)
+      when(mockCoreRegValidationService.searchIossScheme(any(), any(), any(), any())(any())) thenReturn Some(genericMatch).toFuture
       when(mockReturnStatusConnector.listStatuses(any())(any())) thenReturn
         Right(Seq(PeriodWithStatus(period, SubmissionStatus.Due))).toFuture
 
-      val service = new PartialReturnPeriodService(mockReturnStatusConnector, mockPeriodService)
+      val service = new PartialReturnPeriodService(mockReturnStatusConnector, mockCoreRegValidationService, mockPeriodService)
 
       val result = service.getPartialReturnPeriod(registrationWrapperWithoutExclusions, period).futureValue
 
@@ -175,10 +187,11 @@ class PartialReturnPeriodServiceSpec extends SpecBase with BeforeAndAfterEach {
       }
 
       when(mockPeriodService.getNextPeriod(any())).thenReturn(period)
+      when(mockCoreRegValidationService.searchIossScheme(any(), any(), any(), any())(any())) thenReturn None.toFuture
       when(mockReturnStatusConnector.listStatuses(any())(any())) thenReturn
         Right(Seq(PeriodWithStatus(period, SubmissionStatus.Due))).toFuture
 
-      val service = new PartialReturnPeriodService(mockReturnStatusConnector, mockPeriodService)
+      val service = new PartialReturnPeriodService(mockReturnStatusConnector, mockCoreRegValidationService, mockPeriodService)
 
       val result = service.getPartialReturnPeriod(registrationWrapperWithOtherExclusion, period).futureValue
 

@@ -14,28 +14,16 @@
  * limitations under the License.
  */
 
-package models
+package models.core
 
-import models.core.EisErrorResponse
+import play.api.libs.json.{Json, OFormat}
 
-sealed trait ErrorResponse {
-  val body: String
-}
+case class CoreRegistrationRequest(source: String,
+                                   scheme: Option[String],
+                                   searchId: String,
+                                   searchIntermediary: Option[String],
+                                   searchIdIssuedBy: String)
 
-case object InvalidJson extends ErrorResponse {
-  override val body = "Invalid JSON received"
-}
-
-case object NotFound extends ErrorResponse {
-  override val body = "Not found"
-}
-
-case class UnexpectedResponseStatus(status: Int, body: String) extends ErrorResponse
-
-
-case class EisError(eisErrorResponse: EisErrorResponse) extends ErrorResponse {
-  override val body: String =
-    s"${eisErrorResponse.timestamp} " +
-      s"${eisErrorResponse.error} " +
-      s"${eisErrorResponse.errorMessage} "
+object CoreRegistrationRequest {
+  implicit val format: OFormat[CoreRegistrationRequest] = Json.format[CoreRegistrationRequest]
 }

@@ -18,10 +18,14 @@ package services
 
 
 import connectors.ReturnStatusConnector
+import models.core.MatchType
 import models.etmp.EtmpExclusion
 import models.etmp.EtmpExclusionReason.TransferringMSID
+import models.etmp.SchemeType.{IOSSWithIntermediary, IOSSWithoutIntermediary}
 import models.{PartialReturnPeriod, Period, PeriodWithStatus, RegistrationWrapper, SubmissionStatus}
+import services.core.CoreRegistrationValidationService
 import uk.gov.hmrc.http.HeaderCarrier
+import utils.FutureSyntax.FutureOps
 
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -30,6 +34,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class PartialReturnPeriodService @Inject()(
                                             returnStatusConnector: ReturnStatusConnector,
+                                            coreValidationService: CoreRegistrationValidationService,
                                             periodService: PeriodService,
                                           )(implicit ec: ExecutionContext) {
 
@@ -42,64 +47,76 @@ class PartialReturnPeriodService @Inject()(
 
     maybeExclusion match {
       case None =>
-        getMaybeFirstPartialReturnPeriod(registrationWrapper, maybeExclusion)
+        getMaybeFirstPartialReturnPeriod(registrationWrapper)
       case Some(excludedTrader) =>
         excludedTrader.exclusionReason match {
           case TransferringMSID =>
             if (isFinalReturn(maybeExclusion, period)) {
-              Future.successful(Some(PartialReturnPeriod(
+              Some(PartialReturnPeriod(
                 period.firstDay,
                 excludedTrader.effectiveDate,
                 period.year,
                 period.month
-              )))
-            } else if(isFirstReturn(maybeExclusion, period)) {
-              Future.successful(Some(PartialReturnPeriod(
-                excludedTrader.effectiveDate,
-                period.lastDay,
-                period.year,
-                period.month
-              )))
+              )).toFuture
             } else {
-              Future.successful(None)
+              None.toFuture
             }
-          case _ => Future.successful(None)
+          case _ => None.toFuture
         }
     }
   }
 
-
-
-  def getMaybeFirstPartialReturnPeriod(
-                                        registrationWrapper: RegistrationWrapper,
-                                        maybeExclusion: Option[EtmpExclusion]
+  private def getMaybeFirstPartialReturnPeriod(
+                                        registrationWrapper: RegistrationWrapper
                                       )(implicit hc: HeaderCarrier): Future[Option[PartialReturnPeriod]] = {
 
     val commencementDateString = registrationWrapper.registration.schemeDetails.commencementDate
     val commencementDate = LocalDate.parse(commencementDateString.toString)
 
-    val effectiveDate = maybeExclusion.map { exclusions =>
-      exclusions.effectiveDate
-    }
+    registrationWrapper.registration.schemeDetails.previousEURegistrationDetails match {
+      case previousRegistrations =>
+        val filteredDetails = previousRegistrations.filter(
+          details => details.schemeType == IOSSWithoutIntermediary || details.schemeType == IOSSWithIntermediary
+        )
 
-    returnStatusConnector.listStatuses(commencementDate).map {
-      case Right(returnsPeriod) if isFirstPeriod(returnsPeriod, commencementDate) =>
-        val firstReturnPeriod = returnsPeriod.head.period
-        effectiveDate.flatMap {
-          case transferringMsidEffectiveFromDate if isWithinPeriod(firstReturnPeriod, transferringMsidEffectiveFromDate) =>
-            Some(PartialReturnPeriod(
-              transferringMsidEffectiveFromDate,
-              firstReturnPeriod.lastDay,
-              firstReturnPeriod.year,
-              firstReturnPeriod.month
-            ))
-          case _ =>
-            None
-        }
-      case _ =>
-        None
+        Future.sequence(
+          filteredDetails.map { previousIossReg =>
+            coreValidationService.searchIossScheme(
+              searchNumber = previousIossReg.registrationNumber,
+              previousScheme = previousIossReg.schemeType,
+              intermediaryNumber = previousIossReg.intermediaryNumber,
+              countryCode = previousIossReg.issuedBy
+            ).flatMap {
+              case Some(coreRegistrationMatch) if coreRegistrationMatch.matchType == MatchType.TransferringMSID =>
+                coreRegistrationMatch.exclusionEffectiveDate match {
+                  case Some(transferringMsidEffectiveFromDate) =>
+                    val transferringMsidEffectiveLocalDate = LocalDate.parse(transferringMsidEffectiveFromDate)
+                    returnStatusConnector.listStatuses(commencementDate).map {
+                      case Right(returnsPeriod) if isFirstPeriod(returnsPeriod, commencementDate) =>
+                        val firstReturnPeriod = returnsPeriod.head.period
+                        if (isWithinPeriod(firstReturnPeriod, transferringMsidEffectiveLocalDate)) {
+                          Some(PartialReturnPeriod(
+                            transferringMsidEffectiveLocalDate,
+                            firstReturnPeriod.lastDay,
+                            firstReturnPeriod.year,
+                            firstReturnPeriod.month
+                          ))
+                        } else {
+                          None
+                        }
+                      case _ =>
+                        None
+                    }
+                  case _ => None.toFuture
+                }
+              case _ => None.toFuture
+            }
+          }
+        ).map(_.flatten.maxByOption(_.paymentDeadline))
+      case _ => None.toFuture
     }
   }
+
 
   private def isFirstPeriod(periods: Seq[PeriodWithStatus], checkDate: LocalDate): Boolean = {
     val firstUnsubmittedPeriod = periods.filter(period =>
@@ -112,7 +129,7 @@ class PartialReturnPeriodService @Inject()(
     !checkDate.isBefore(period.firstDay) &&
       !checkDate.isAfter(period.lastDay)
 
-  private def isFinalReturn(maybeExclusion: Option[EtmpExclusion], period: Period): Boolean = {
+  def isFinalReturn(maybeExclusion: Option[EtmpExclusion], period: Period): Boolean = {
 
     val nextPeriodString = periodService.getNextPeriod(period).displayYearMonth
     val nextPeriod: LocalDate = LocalDate.parse(nextPeriodString, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
@@ -121,16 +138,5 @@ class PartialReturnPeriodService @Inject()(
       nextPeriod.isAfter(exclusions.effectiveDate)
     }
   }
-
-  def isFirstReturn(maybeExclusion: Option[EtmpExclusion], period: Period): Boolean = {
-
-    val nextPeriodString = periodService.getNextPeriod(period).displayYearMonth
-    val nextPeriod: LocalDate = LocalDate.parse(nextPeriodString, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-
-    maybeExclusion.fold(false) { exclusions =>
-      nextPeriod.isBefore(exclusions.effectiveDate)
-    }
-  }
-
 
 }
