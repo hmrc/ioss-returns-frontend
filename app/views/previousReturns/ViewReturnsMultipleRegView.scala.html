@@ -24,15 +24,18 @@
         govukButton: GovukButton
 )
 
-@(waypoints: Waypoints, periodsWithFinancialData: Map[Int, Seq[(Period, Payment)]], previousRegistrations: Seq[PreviousRegistration])(implicit request: Request[_], messages: Messages)
+@(waypoints: Waypoints, previousRegistration: PreviousRegistration, periodsWithFinancialData: Map[Int, Seq[(Period, Payment)]])(implicit request: Request[_], messages: Messages)
 
-    @layout(pageTitle = titleNoForm(messages("submittedReturnsHistory.title"))) {
+    @layout(pageTitle = titleNoForm(messages("viewReturnsMultipleReg.title", previousRegistration.startPeriod.displayText, previousRegistration.endPeriod.displayText))) {
 
-        <h1 class="govuk-heading-l">@messages("submittedReturnsHistory.heading")</h1>
+        <h1 class="govuk-heading-l">
+            @messages("viewReturnsMultipleReg.heading", previousRegistration.startPeriod.displayText, previousRegistration.endPeriod.displayText)
+            <span class="govuk-caption-l">@messages("viewReturnsMultipleReg.iossNumber", previousRegistration.iossNumber)</span>
+        </h1>
 
         @if(periodsWithFinancialData.isEmpty) {
             <br/>
-            <p class="govuk-body-m">@messages("submittedReturnsHistory.noReturns")</p>
+            <p class="govuk-body-m">@messages("viewReturnsMultipleReg.noReturns")</p>
         } else {
 
             <div class="govuk-accordion" data-module="govuk-accordion" id="accordion-with-summary-sections">
@@ -49,30 +52,28 @@
                         <table class="govuk-table">
                             <thead class="govuk-table__head">
                                 <tr class="govuk-table__row">
-                                    <th scope="col" class="govuk-table__header">@messages("submittedReturnsHistory.returnPeriod")</th>
-                                    <th scope="col" class="govuk-table__header govuk-table__header--numeric">@messages("submittedReturnsHistory.amountLeftToPay")</th>
-                                    <th scope="col" class="govuk-table__header govuk-table__header--numeric">@messages("submittedReturnsHistory.payment")</th>
+                                    <th scope="col" class="govuk-table__header">@messages("viewReturnsMultipleReg.returnPeriod")</th>
+                                    <th scope="col" class="govuk-table__header govuk-table__header--numeric">@messages("viewReturnsMultipleReg.amountLeftToPay")</th>
+                                    <th scope="col" class="govuk-table__header govuk-table__header--numeric">@messages("viewReturnsMultipleReg.payment")</th>
                                 </tr>
                             </thead>
                             <tbody class="govuk-table__body">
                             @for((period, payment) <- periodWithFinancialData) {
                                 <tr class="govuk-table__row">
                                     <td class="govuk-table__cell">
-                                        <a class="govuk-link govuk-body" href="@prevRoutes.SubmittedReturnForPeriodController.onPageLoad(waypoints, period)">@period.displayMonth</a>
+                                        <a class="govuk-link govuk-body" href="@prevRoutes.SubmittedReturnForPeriodController.onPageLoadForIossNumber(waypoints, period, previousRegistration.iossNumber)">@period.displayMonth</a>
                                     </td>
                                     <td class="govuk-table__cell govuk-table__cell--numeric">
                                     @Html(currencyFormat(payment.amountOwed))
                                     </td>
                                     <td class="govuk-table__cell govuk-table__cell--numeric">
                                     @if(payment.paymentStatus == PaymentStatus.Unpaid || payment.paymentStatus == PaymentStatus.Unknown || payment.paymentStatus == PaymentStatus.Partial) {
-                                        <a class="govuk-link" id="pay-now" href="@paymentRoutes.PaymentController.makePayment(waypoints, period, (payment.amountOwed * 100).toLong)">
-                                            @messages("submittedReturnsHistory.payNow")
-                                            <span class="govuk-visually-hidden">
-                                            @Html(messages("submittedReturnsHistory.payNow.hidden", period.displayMonth))
-                                            </span>
+                                        <a class="govuk-link" id="pay-now"
+                                           href="@paymentRoutes.PaymentController.makePaymentForIossNumber(waypoints, period, (payment.amountOwed * 100).toLong, previousRegistration.iossNumber)">
+                                            @messages("viewReturnsMultipleReg.payNow")
                                         </a>
                                     } else {
-                                        @messages(s"submittedReturnsHistory.status.${payment.paymentStatus.toString.toLowerCase}")
+                                        @messages(s"viewReturnsMultipleReg.status.${payment.paymentStatus.toString.toLowerCase}")
                                     }
                                     </td>
                                 </tr>
@@ -85,18 +86,7 @@
             </div>
 
             <p class="govuk-body">
-                @previousRegistrations match {
-                    case Nil => {}
-                    case registration :: Nil => {
-                        <a class="govuk-link" id="view-returns-one-reg"
-                           href="@prevRoutes.ViewReturnsMultipleRegController.onPageLoad(waypoints)">
-                            @messages("submittedReturnsHistory.viewReturnsOneReg", registration.startPeriod.displayText, registration.endPeriod.displayText)</a>
-                    }
-                    case _ => {
-                        <a class="govuk-link" id="return-registration-selection" href="@prevRoutes.ReturnRegistrationSelectionController.onPageLoad(waypoints)">@messages("submittedReturnsHistory.returnRegistrationSelection")</a>
-                    }
-                }
-
+                <a class="govuk-link" id="submitted-returns-history" href="@prevRoutes.SubmittedReturnsHistoryController.onPageLoad(waypoints)">@messages("viewReturnsMultipleReg.returnToCurrentRegistration")</a>
             </p>
         }
     }

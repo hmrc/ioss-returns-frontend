@@ -17,7 +17,6 @@
 package services
 
 import base.SpecBase
-import config.FrontendAppConfig
 import connectors.RegistrationConnector
 import models.enrolments.{EACDEnrolment, EACDEnrolments, EACDIdentifiers}
 import org.mockito.ArgumentMatchers.any

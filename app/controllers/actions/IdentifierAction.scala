@@ -21,11 +21,11 @@ import config.FrontendAppConfig
 import controllers.routes
 import logging.Logging
 import models.requests.IdentifierRequest
-import play.api.mvc._
 import play.api.mvc.Results._
+import play.api.mvc._
 import services.AccountService
-import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.AffinityGroup.{Individual, Organisation}
+import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.domain.Vrn
@@ -99,10 +99,9 @@ class IdentifierAction @Inject()(
                                         credentials: Credentials,
                                         vrn: Vrn,
                                         iossNumber: String
-                                      )(implicit hc: HeaderCarrier): Either[Result, IdentifierRequest[A]] = {
+                                      ): Either[Result, IdentifierRequest[A]] = {
     val identifierRequest = IdentifierRequest(request, credentials, vrn, iossNumber)
     Right(identifierRequest)
-
   }
 
   private def checkConfidenceAndGetResponse[A](
@@ -111,7 +110,7 @@ class IdentifierAction @Inject()(
                                                 vrn: Vrn,
                                                 iossNumber: String,
                                                 confidence: ConfidenceLevel
-                                              )(implicit hc: HeaderCarrier): Either[Result, IdentifierRequest[A]] = {
+                                              ): Either[Result, IdentifierRequest[A]] = {
     if (confidence >= ConfidenceLevel.L200) {
       getSuccessfulResponse(request, credentials, vrn, iossNumber)
     } else {

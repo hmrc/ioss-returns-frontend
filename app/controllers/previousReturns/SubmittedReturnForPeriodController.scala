@@ -16,14 +16,18 @@
 
 package controllers.previousReturns
 
+import connectors.FinancialDataHttpParser.ChargeResponse
+import connectors.VatReturnHttpParser.EtmpVatReturnResponse
 import connectors.{FinancialDataConnector, VatReturnConnector}
 import controllers.actions._
 import logging.Logging
 import models.Period
 import models.etmp.{EtmpExclusion, EtmpExclusionReason, EtmpVatReturn}
+import models.requests.OptionalDataRequest
 import pages.{JourneyRecoveryPage, Waypoints}
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
+import services.PreviousRegistrationService
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{Card, CardTitle, SummaryList, SummaryListRow}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -33,7 +37,7 @@ import views.html.previousReturns.SubmittedReturnForPeriodView
 
 import java.time.{Clock, LocalDate}
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class SubmittedReturnForPeriodController @Inject()(
                                                     override val messagesApi: MessagesApi,
@@ -41,18 +45,37 @@ class SubmittedReturnForPeriodController @Inject()(
                                                     cc: AuthenticatedControllerComponents,
                                                     vatReturnConnector: VatReturnConnector,
                                                     financialDataConnector: FinancialDataConnector,
+                                                    previousRegistrationService: PreviousRegistrationService,
                                                     view: SubmittedReturnForPeriodView
                                                   )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(waypoints: Waypoints, period: Period): Action[AnyContent] = cc.authAndGetOptionalData().async {
-    implicit request => {
-      for {
-        etmpVatReturnResult <- vatReturnConnector.get(period)
-        getChargeResult <- financialDataConnector.getCharge(period)
-      } yield (etmpVatReturnResult, getChargeResult)
-    }.map {
+  def onPageLoad(waypoints: Waypoints, period: Period): Action[AnyContent] = cc.authAndGetOptionalData().async { implicit request =>
+    for {
+      etmpVatReturnResponse <- vatReturnConnector.get(period)
+      chargeResponse <- financialDataConnector.getCharge(period)
+    } yield onPageLoad(waypoints, period, etmpVatReturnResponse, chargeResponse)
+  }
+
+  def onPageLoadForIossNumber(waypoints: Waypoints, period: Period, iossNumber: String): Action[AnyContent] = cc.authAndGetOptionalData().async {
+    implicit request =>
+      previousRegistrationService.getPreviousRegistrations().flatMap { previousRegistrations =>
+        val validIossNumbers: Seq[String] = request.iossNumber :: previousRegistrations.map(_.iossNumber)
+        if (validIossNumbers.contains(iossNumber)) {
+          for {
+            etmpVatReturnResponse <- vatReturnConnector.getForIossNumber(period, iossNumber)
+            chargeResponse <- financialDataConnector.getChargeForIossNumber(period, iossNumber)
+          } yield onPageLoad(waypoints, period, etmpVatReturnResponse, chargeResponse)
+        } else {
+          Future.successful(Redirect(JourneyRecoveryPage.route(waypoints)))
+        }
+      }
+  }
+
+  private def onPageLoad(waypoints: Waypoints, period: Period, etmpVatReturnResponse: EtmpVatReturnResponse, chargeResponse: ChargeResponse)
+                        (implicit request: OptionalDataRequest[AnyContent]): Result = {
+    (etmpVatReturnResponse, chargeResponse) match {
       case (Right(etmpVatReturn), chargeResponse) =>
         val maybeCharge = chargeResponse.fold(_ => None, charge => charge)
 

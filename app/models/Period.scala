@@ -16,22 +16,23 @@
 
 package models
 
-import play.api.i18n.Messages
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import play.api.mvc.{PathBindable, QueryStringBindable}
 import uk.gov.hmrc.govukfrontend.views.Aliases.Text
 import uk.gov.hmrc.govukfrontend.views.viewmodels.radios.RadioItem
 
-import java.time.{LocalDate, Month, YearMonth}
 import java.time.format.{DateTimeFormatter, TextStyle}
+import java.time.{LocalDate, Month, YearMonth}
 import java.util.Locale
 import scala.util.Try
 import scala.util.matching.Regex
 
-final case class Period(year: Int, month: Month) {
-  val firstDay: LocalDate = YearMonth.of(year, month).atDay(1)
-  val lastDay: LocalDate = YearMonth.of(year, month).atEndOfMonth
+final case class Period(year: Int, month: Month) extends Ordered[Period] {
+  val yearMonth: YearMonth = YearMonth.of(year, month)
+
+  val firstDay: LocalDate = yearMonth.atDay(1)
+  val lastDay: LocalDate = yearMonth.atEndOfMonth
 
   private val lastMonthYearFormatter = DateTimeFormatter.ofPattern("MMMM yyyy")
   private val lastYearMonthFormatter = DateTimeFormatter.ofPattern("yyyy-MM-d")
@@ -66,19 +67,13 @@ final case class Period(year: Int, month: Month) {
   }
 
   def displayText: String =
-    s"${month.getDisplayName(TextStyle.FULL, Locale.ENGLISH)} ${year}"
+    s"${month.getDisplayName(TextStyle.FULL, Locale.ENGLISH)} $year"
 
   def displayYearMonth: String =
     s"${lastDay.format(lastYearMonthFormatter)}"
 
   def displayShortText: String =
     s"${lastDay.format(lastMonthYearFormatter)}"
-
-  private val firstDayFormatter = DateTimeFormatter.ofPattern("d MMMM")
-  private val lastDayFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy")
-
-  def displayLongText(implicit messages: Messages): String =
-    s"${firstDay.format(firstDayFormatter)} ${messages("site.to")} ${lastDay.format(lastDayFormatter)}"
 
   def zeroPaddedMonth: String =
     "%02d".format(month.getValue)
@@ -95,23 +90,13 @@ final case class Period(year: Int, month: Month) {
       Period(this.year, this.month.plus(1))
   }
 
-  def getPrevious: Period = {
-    if (this.month == Month.JANUARY)
-      Period(this.year - 1, Month.DECEMBER)
-    else
-      Period(this.year, this.month.minus(1))
-  }
-
-  def isBefore(other: Period): Boolean = {
-    val yearMonth: YearMonth = YearMonth.of(year, month)
-    val yearMonthOther: YearMonth = YearMonth.of(other.year, other.month)
-
-    yearMonth.isBefore(yearMonthOther)
-  }
+  def compare(other: Period): Int = yearMonth.compareTo(other.yearMonth)
 }
 
 object Period {
   private val pattern: Regex = """(\d{4})-M(1[0-2]|[1-9])""".r.anchored
+
+  def apply(yearMonth: YearMonth): Period = Period(yearMonth.getYear, yearMonth.getMonth)
 
   def apply(yearString: String, monthString: String): Try[Period] =
     for {

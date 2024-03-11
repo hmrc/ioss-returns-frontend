@@ -16,28 +16,23 @@
 
 package controllers.previousReturns
 
-import connectors.VatReturnConnector
 import controllers.actions._
 import logging.Logging
-import models.Period
-import models.payments.{Payment, PaymentStatus}
 import pages.Waypoints
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import services.{ObligationsService, PaymentsService}
-import uk.gov.hmrc.http.HeaderCarrier
+import services.{PeriodWithFinancialDataService, PreviousRegistrationService}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.previousReturns.SubmittedReturnsHistoryView
 
 import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class SubmittedReturnsHistoryController @Inject()(
                                                    override val messagesApi: MessagesApi,
                                                    cc: AuthenticatedControllerComponents,
-                                                   paymentsService: PaymentsService,
-                                                   obligationsService: ObligationsService,
-                                                   vatReturnConnector: VatReturnConnector,
+                                                   periodWithFinancialDataService: PeriodWithFinancialDataService,
+                                                   previousRegistrationService: PreviousRegistrationService,
                                                    view: SubmittedReturnsHistoryView
                                                  )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
@@ -47,54 +42,8 @@ class SubmittedReturnsHistoryController @Inject()(
     implicit request =>
 
       for {
-        obligations <- obligationsService.getFulfilledObligations(request.iossNumber)
-        preparedFinancialData <- paymentsService.prepareFinancialData()
-        periods = obligations.map(_.periodKey).map(Period.fromKey)
-        allUnpaidPayments = preparedFinancialData.duePayments ++ preparedFinancialData.overduePayments ++ preparedFinancialData.excludedPayments
-        periodWithFinancialData <- getPeriodWithFinancialData(periods, allUnpaidPayments)
-      } yield {
-
-        Ok(view(waypoints, periodWithFinancialData))
-      }
-  }
-
-  private def getPeriodWithFinancialData(periods: Seq[Period], allUnpaidPayments: List[Payment])
-                                        (implicit hc: HeaderCarrier): Future[Map[Int, Seq[(Period, Payment)]]] = {
-    val futurePeriods = Future(periods)
-
-    for {
-      periods <- futurePeriods
-      allPaymentsForPeriod <- getAllPaymentsForPeriods(periods, allUnpaidPayments)
-    } yield allPaymentsForPeriod.flatten.groupBy(_._1.year)
-  }
-
-  private def getAllPaymentsForPeriods(periods: Seq[Period], allUnpaidPayments: List[Payment])
-                                      (implicit hc: HeaderCarrier): Future[Seq[Map[Period, Payment]]] = {
-
-    Future.sequence(periods.map { period =>
-      allUnpaidPayments.find(_.period == period) match {
-        case Some(payment) =>
-          Future(Map(period -> payment))
-        case _ =>
-          vatReturnConnector.get(period).map {
-            case Right(vatReturn) =>
-              val paymentStatus = if (vatReturn.correctionPreviousVATReturn.isEmpty && vatReturn.goodsSupplied.isEmpty) {
-                PaymentStatus.NilReturn
-              } else {
-                PaymentStatus.Paid
-              }
-              Map(period -> Payment(
-                period = period,
-                amountOwed = 0,
-                dateDue = period.paymentDeadline,
-                paymentStatus = paymentStatus
-              ))
-            case Left(error) =>
-              val exception = new IllegalStateException(s"Unable to get vat return for calculating amount owed ${error.body}")
-              logger.error(exception.getMessage, exception)
-              throw exception
-          }
-      }
-    })
+        periodWithFinancialData <- periodWithFinancialDataService.getPeriodWithFinancialData(request.iossNumber)
+        previousRegistrations <- previousRegistrationService.getPreviousRegistrations()
+      } yield Ok(view(waypoints, periodWithFinancialData, previousRegistrations))
   }
 }
