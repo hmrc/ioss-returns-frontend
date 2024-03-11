@@ -120,3 +120,6 @@ GET         /no-welsh-service                                                   
 GET         /make-payment/:period/:amountInPence                                      controllers.payments.PaymentController.makePayment(waypoints: Waypoints ?= EmptyWaypoints, period: Period, amountInPence: Long)
 
 GET         /excluded-cannot-use-service                                              controllers.ExcludedNotPermittedController.onPageLoad()
+
+GET         /start-return                                                             controllers.StartOutstandingReturnController.onPageLoad()
+GET         /no-returns-due                                                           controllers.NoReturnsDueController.onPageLoad()
