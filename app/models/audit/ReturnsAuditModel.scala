@@ -35,7 +35,7 @@ case class ReturnsAuditModel(
     "userId" -> userId,
     "browserUserAgent" -> userAgent,
     "requestersVrn" -> vrn,
-    "userAnswersDetails" -> Json.toJson(userAnswers)(),
+    "userAnswersDetails" -> Json.toJson(userAnswers),
     "submissionResult" -> Json.toJson(submissionResult)
   )
 }
