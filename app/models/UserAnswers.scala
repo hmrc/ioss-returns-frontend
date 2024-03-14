@@ -19,6 +19,7 @@ package models
 import play.api.libs.json._
 import queries.{Derivable, Gettable, Settable}
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
+import play.api.libs.functional.syntax._
 
 import java.time.Instant
 import scala.util.{Failure, Success, Try}
@@ -76,13 +77,14 @@ final case class UserAnswers(
         page.cleanup(None, updatedAnswers)
     }
   }
+
+  def toUserAnswersForAudit: UserAnswersForAudit =
+    UserAnswersForAudit(period, data)
 }
 
 object UserAnswers {
 
   val reads: Reads[UserAnswers] = {
-
-    import play.api.libs.functional.syntax._
 
     (
       (__ \ "_id").read[String] and
@@ -94,8 +96,6 @@ object UserAnswers {
 
   val writes: OWrites[UserAnswers] = {
 
-    import play.api.libs.functional.syntax._
-
     (
       (__ \ "_id").write[String] and
       (__ \ "period").write[Period] and
@@ -105,4 +105,13 @@ object UserAnswers {
   }
 
   implicit val format: OFormat[UserAnswers] = OFormat(reads, writes)
+
+
+}
+
+case class UserAnswersForAudit(period: Period, data: JsObject = Json.obj())
+
+object UserAnswersForAudit {
+
+  implicit val format: OFormat[UserAnswersForAudit] = Json.format[UserAnswersForAudit]
 }

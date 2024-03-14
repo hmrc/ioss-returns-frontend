@@ -16,15 +16,15 @@
 
 package models.audit
 
-import models.UserAnswers
+import models.{UserAnswers, UserAnswersForAudit}
 import models.requests.DataRequest
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.{Json, JsValue}
 
 case class ReturnsAuditModel(
                               userId: String,
                               userAgent: String,
                               vrn: String,
-                              userAnswers: UserAnswers,
+                              userAnswers: UserAnswersForAudit,
                               submissionResult: SubmissionResult
                             ) extends JsonAuditModel {
 
@@ -50,7 +50,7 @@ object ReturnsAuditModel {
       userId = request.credentials.providerId,
       userAgent = request.headers.get("user-agent").getOrElse(""),
       vrn = request.vrn.vrn,
-      userAnswers = userAnswers,
+      userAnswers = userAnswers.toUserAnswersForAudit,
       submissionResult = submissionResult
     )
   }
