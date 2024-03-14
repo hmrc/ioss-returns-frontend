@@ -39,9 +39,9 @@ class SelectedPreviousRegistrationRepository @Inject()(
     replaceIndexes = true,
     indexes = Seq(
       IndexModel(
-        Indexes.ascending("userId"),
+        Indexes.ascending("lastUpdated"),
         IndexOptions()
-          .name("userIdIdx")
+          .name("lastUpdatedIdx")
           .unique(true)
           .expireAfter(appConfig.cacheTtl, TimeUnit.SECONDS)
       )

@@ -42,7 +42,7 @@ case object YourAccount extends ExternalTargetPage with ParameterlessUrl {
 
 case object ReturnsHistory extends ExternalTargetPage with ParameterlessUrl {
   override val name: String = "returns-history"
-  override val url: String = controllers.routes.YourAccountController.onPageLoad().url // TODO - implement when history view is there
+  override val url: String = controllers.previousReturns.routes.SubmittedReturnsHistoryController.onPageLoad().url
 }
 
 case object StartReturn extends ExternalTargetPage with UrlWithPeriod {

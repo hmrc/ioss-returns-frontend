@@ -115,14 +115,14 @@ class IdentifierActionSpec extends SpecBase with MockitoSugar with BeforeAndAfte
       }
     }
 
-    "when the user is logged in as an Individual with a VAT enrolment, strong credentials and confidence level 200" - {
+    "when the user is logged in as an Individual with a VAT enrolment, strong credentials and confidence level 250" - {
 
       "when user has ioss enrolment must succeed" in {
 
         val application = applicationBuilder(None).build()
 
         when(mockAuthConnector.authorise[RetrievalsType](any(), any())(any(), any()))
-          .thenReturn(Future.successful(Some(testCredentials) ~ vatEnrolmentWithIoss ~ Some(Individual) ~ ConfidenceLevel.L200 ~ None))
+          .thenReturn(Future.successful(Some(testCredentials) ~ vatEnrolmentWithIoss ~ Some(Individual) ~ ConfidenceLevel.L250 ~ None))
         when(mockAccountService.getLatestAccount()(any())) thenReturn iossNumber.toFuture
 
         running(application) {
@@ -142,7 +142,7 @@ class IdentifierActionSpec extends SpecBase with MockitoSugar with BeforeAndAfte
         val application = applicationBuilder(None).build()
 
         when(mockAuthConnector.authorise[RetrievalsType](any(), any())(any(), any()))
-          .thenReturn(Future.successful(Some(testCredentials) ~ vatEnrolmentWithNoIossEnrolment ~ Some(Individual) ~ ConfidenceLevel.L200 ~ None))
+          .thenReturn(Future.successful(Some(testCredentials) ~ vatEnrolmentWithNoIossEnrolment ~ Some(Individual) ~ ConfidenceLevel.L250 ~ None))
 
         running(application) {
           val actionBuilder = application.injector.instanceOf[DefaultActionBuilder]
@@ -204,7 +204,7 @@ class IdentifierActionSpec extends SpecBase with MockitoSugar with BeforeAndAfte
       }
     }
 
-    "when the user has logged in as an Individual with a VAT enrolment and strong credentials, but confidence level less then 200" - {
+    "when the user has logged in as an Individual with a VAT enrolment and strong credentials, but confidence level less then 250" - {
 
       "must be redirected to the Not Registered page" in {
 

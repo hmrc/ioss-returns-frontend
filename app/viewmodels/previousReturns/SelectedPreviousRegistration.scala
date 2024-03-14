@@ -18,7 +18,9 @@ package viewmodels.previousReturns
 
 import play.api.libs.json.{Json, OFormat}
 
-case class SelectedPreviousRegistration(userId: String, previousRegistration: PreviousRegistration)
+import java.time.Instant
+
+case class SelectedPreviousRegistration(userId: String, previousRegistration: PreviousRegistration, lastUpdated: Instant = Instant.now)
 
 object SelectedPreviousRegistration {
 

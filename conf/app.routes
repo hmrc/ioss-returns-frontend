@@ -28,20 +28,20 @@ GET         /your-account                                                       
 GET         /:period/start                                                            controllers.StartReturnController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, period: Period)
 POST        /:period/start                                                            controllers.StartReturnController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, period: Period)
 
-GET         /soldGoods                                                                controllers.SoldGoodsController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
-POST        /soldGoods                                                                controllers.SoldGoodsController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints)
+GET         /sold-goods                                                                controllers.SoldGoodsController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
+POST        /sold-goods                                                                controllers.SoldGoodsController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints)
 
-GET         /soldToCountry/:index                                                     controllers.SoldToCountryController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, index: Index)
-POST        /soldToCountry/:index                                                     controllers.SoldToCountryController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, index: Index)
+GET         /sold-to-country/:index                                                   controllers.SoldToCountryController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, index: Index)
+POST        /sold-to-country/:index                                                   controllers.SoldToCountryController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, index: Index)
 
-GET         /vatRatesFromCountry/:index                                               controllers.VatRatesFromCountryController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, index: Index)
-POST        /vatRatesFromCountry/:index                                               controllers.VatRatesFromCountryController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, index: Index)
+GET         /vat-rates-from-country/:index                                            controllers.VatRatesFromCountryController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, index: Index)
+POST        /vat-rates-from-country/:index                                            controllers.VatRatesFromCountryController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, index: Index)
 
 GET         /sales-to-country/:countryIndex/:nextVatRateIndex                         controllers.SalesToCountryController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, countryIndex: Index, nextVatRateIndex: Index)
 POST        /sales-to-country/:countryIndex/:nextVatRateIndex                         controllers.SalesToCountryController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, countryIndex: Index, nextVatRateIndex: Index)
 
-GET         /vatOnSales/:countryIndex/:nextVatRateIndex                               controllers.VatOnSalesController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, countryIndex: Index, nextVatRateIndex: Index)
-POST        /vatOnSales/:countryIndex/:nextVatRateIndex                               controllers.VatOnSalesController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, countryIndex: Index, nextVatRateIndex: Index)
+GET         /vat-on-sales/:countryIndex/:nextVatRateIndex                             controllers.VatOnSalesController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, countryIndex: Index, nextVatRateIndex: Index)
+POST        /vat-on-sales/:countryIndex/:nextVatRateIndex                             controllers.VatOnSalesController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, countryIndex: Index, nextVatRateIndex: Index)
 
 GET         /no-other-periods-available                                               controllers.NoOtherPeriodsAvailableController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
 
