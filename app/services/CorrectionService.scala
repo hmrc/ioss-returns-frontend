@@ -79,7 +79,7 @@ class CorrectionService @Inject()(
     @tailrec
     def getAllPeriodsInRange(currentPeriods: Seq[Period], periodFrom: Period, periodTo: Period): Seq[Period] = {
       (periodFrom, periodTo) match {
-        case (pf, pt) if pf < pt =>
+        case (pf, pt) if pf isBefore pt =>
           val updatedPeriod = currentPeriods :+ pf
           getAllPeriodsInRange(updatedPeriod, pf.getNext, pt)
         case _ => currentPeriods

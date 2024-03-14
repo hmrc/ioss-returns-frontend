@@ -118,7 +118,7 @@ trait Period {
 
 }
 
-final case class StandardPeriod(year: Int, month: Month) extends Period {
+final case class StandardPeriod(year: Int, month: Month) extends Period with Ordered[StandardPeriod] {
 
   val yearMonth: YearMonth = YearMonth.of(year, month)
   override val firstDay: LocalDate = yearMonth.atDay(1)
@@ -169,6 +169,7 @@ object StandardPeriod {
         id = Some(s"value_$index")
       )
   }
+
 
   def fromString(string: String): Option[StandardPeriod] = {
     Period.fromString(string).map(fromPeriod)

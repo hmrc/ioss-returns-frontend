@@ -19,7 +19,7 @@ package services
 import base.SpecBase
 import connectors.VatReturnConnector
 import models.etmp.{EtmpVatRateType, EtmpVatReturn, EtmpVatReturnCorrection, EtmpVatReturnGoodsSupplied}
-import models.{Country, Period, UnexpectedResponseStatus}
+import models.{Country, Period, StandardPeriod, UnexpectedResponseStatus}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito
@@ -39,7 +39,7 @@ class CorrectionServiceSpec extends SpecBase with PrivateMethodTester with Befor
   private implicit lazy val hc: HeaderCarrier = HeaderCarrier()
   private val mockVatReturnConnector: VatReturnConnector = mock[VatReturnConnector]
 
-  private val period1: Period = period
+  private val period1: StandardPeriod = period
   private val period2: Period = period1.getNext
   private val period3: Period = period2.getNext
   private val period4: Period = period3.getNext
