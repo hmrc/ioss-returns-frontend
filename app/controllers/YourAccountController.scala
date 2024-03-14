@@ -37,12 +37,14 @@ import java.time.{Clock, LocalDate}
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 import CheckCorrectionsTimeLimit.isOlderThanThreeYears
+import services.PreviousRegistrationService
 
 class YourAccountController @Inject()(
                                        cc: AuthenticatedControllerComponents,
                                        financialDataConnector: FinancialDataConnector,
                                        view: YourAccountView,
                                        returnStatusConnector: ReturnStatusConnector,
+                                       previousRegistrationService: PreviousRegistrationService,
                                        clock: Clock,
                                        appConfig: FrontendAppConfig
                                      )(implicit ec: ExecutionContext)
@@ -53,17 +55,25 @@ class YourAccountController @Inject()(
 
   def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request =>
-      val results = getCurrentReturns()
-      results.map {
-        case (Right(availableReturns), Right(vatReturnsWithFinancialData)) =>
-          preparedViewWithFinancialData(availableReturns, vatReturnsWithFinancialData)
-        case (Left(error), error2) =>
-          logger.error(s"there was an error with period with status $error and getting periods with outstanding amounts $error2")
-          throw new Exception(error.toString)
-        case (left, right) =>
-          val message = s"There was an error during period with status $left $right"
-          logger.error(message)
-          throw new Exception(message)
+
+      val prepareFinancialDataResponse = previousRegistrationService.getPreviousRegistrations().flatMap { previousRegistrations =>
+        previousRegistrations.map { previousRegistration =>
+          financialDataConnector.prepareFinancialData(previousRegistration.iossNumber)
+        }
+
+
+        val results = getCurrentReturns()
+        results.map {
+          case (Right(availableReturns), Right(vatReturnsWithFinancialData)) =>
+            preparedViewWithFinancialData(availableReturns, vatReturnsWithFinancialData)
+          case (Left(error), error2) =>
+            logger.error(s"there was an error with period with status $error and getting periods with outstanding amounts $error2")
+            throw new Exception(error.toString)
+          case (left, right) =>
+            val message = s"There was an error during period with status $left $right"
+            logger.error(message)
+            throw new Exception(message)
+        }
       }
   }
 
