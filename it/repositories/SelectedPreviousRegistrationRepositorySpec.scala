@@ -8,7 +8,7 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.mockito.MockitoSugar
-import uk.gov.hmrc.mongo.test.PlayMongoRepositorySupport
+import uk.gov.hmrc.mongo.test.{DefaultPlayMongoRepositorySupport, PlayMongoRepositorySupport}
 import viewmodels.previousReturns.{PreviousRegistration, SelectedPreviousRegistration}
 
 import java.time.{Clock, Instant, YearMonth, ZoneId}
@@ -18,7 +18,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class SelectedPreviousRegistrationRepositorySpec
   extends AnyFreeSpec
     with Matchers
-    with PlayMongoRepositorySupport[SelectedPreviousRegistration]
+    with DefaultPlayMongoRepositorySupport[SelectedPreviousRegistration]
     with ScalaFutures
     with IntegrationPatience
     with OptionValues
