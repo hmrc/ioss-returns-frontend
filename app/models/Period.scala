@@ -16,7 +16,6 @@
 
 package models
 
-import play.api.i18n.Messages
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import play.api.mvc.{PathBindable, QueryStringBindable}
@@ -36,7 +35,6 @@ trait Period {
   val lastDay: LocalDate
   val isPartial: Boolean
 
-  private val firstDayFormatter = DateTimeFormatter.ofPattern("d MMMM")
   private val lastDayFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy")
   private val lastMonthYearFormatter = DateTimeFormatter.ofPattern("MMMM yyyy")
 
@@ -49,9 +47,6 @@ trait Period {
   def displayText: String =
     s"${month.getDisplayName(TextStyle.FULL, Locale.ENGLISH)} $year"
 
-  def displayLongText(implicit messages: Messages): String =
-    s"${firstDay.format(firstDayFormatter)} ${messages("site.to")} ${lastDay.format(lastDayFormatter)}"
-
   def displayMonth: String =
     s"${month.getDisplayName(TextStyle.FULL, Locale.ENGLISH)}"
 
@@ -60,14 +55,6 @@ trait Period {
       StandardPeriod(this.year + 1, Month.JANUARY)
     } else {
       StandardPeriod(this.year, this.month.plus(1))
-    }
-  }
-
-  def getPrevious: Period = {
-    if (this.month == Month.JANUARY) {
-      StandardPeriod(this.year - 1, Month.DECEMBER)
-    } else {
-      StandardPeriod(this.year, this.month.minus(1))
     }
   }
 
@@ -120,7 +107,7 @@ trait Period {
 
 final case class StandardPeriod(year: Int, month: Month) extends Period with Ordered[StandardPeriod] {
 
-  val yearMonth: YearMonth = YearMonth.of(year, month)
+  private val yearMonth: YearMonth = YearMonth.of(year, month)
   override val firstDay: LocalDate = yearMonth.atDay(1)
   override val lastDay: LocalDate = yearMonth.atEndOfMonth
   override val isPartial: Boolean = false
@@ -239,7 +226,7 @@ object Period {
   }
 
   def monthOptions(periods: Seq[Period]): Seq[RadioItem] = periods.zipWithIndex.map {
-    case (value, index) =>
+    case (value, _) =>
       RadioItem(
         content = Text(value.displayMonth),
         value = Some(value.toString),
