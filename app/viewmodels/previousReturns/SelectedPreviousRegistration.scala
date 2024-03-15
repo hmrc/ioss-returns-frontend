@@ -16,7 +16,8 @@
 
 package viewmodels.previousReturns
 
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.{__, OFormat, OWrites, Reads}
+import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 
 import java.time.Instant
 
@@ -24,6 +25,28 @@ case class SelectedPreviousRegistration(userId: String, previousRegistration: Pr
 
 object SelectedPreviousRegistration {
 
-  implicit val format: OFormat[SelectedPreviousRegistration] = Json.format[SelectedPreviousRegistration]
+  val reads: Reads[SelectedPreviousRegistration] = {
+
+    import play.api.libs.functional.syntax._
+
+    (
+      (__ \ "userId").read[String] and
+        (__ \ "previousRegistration").read[PreviousRegistration] and
+        (__ \ "lastUpdated").read(MongoJavatimeFormats.instantFormat)
+      ) (SelectedPreviousRegistration.apply _)
+  }
+
+  val writes: OWrites[SelectedPreviousRegistration] = {
+
+    import play.api.libs.functional.syntax._
+
+    (
+      (__ \ "userId").write[String] and
+        (__ \ "previousRegistration").write[PreviousRegistration] and
+        (__ \ "lastUpdated").write(MongoJavatimeFormats.instantFormat)
+      ) (unlift(SelectedPreviousRegistration.unapply))
+  }
+
+  implicit val format: OFormat[SelectedPreviousRegistration] = OFormat(reads, writes)
 }
 
