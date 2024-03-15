@@ -23,6 +23,7 @@ import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import viewmodels.previousReturns.SelectedPreviousRegistration
 
+import java.time.{Clock, Instant}
 import java.util.concurrent.TimeUnit
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -31,6 +32,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class SelectedPreviousRegistrationRepository @Inject()(
                                                         mongoComponent: MongoComponent,
                                                         appConfig: FrontendAppConfig,
+                                                        clock: Clock
                                                       )(implicit ec: ExecutionContext)
   extends PlayMongoRepository[SelectedPreviousRegistration](
     collectionName = "selected-previous-registration",
@@ -43,6 +45,12 @@ class SelectedPreviousRegistrationRepository @Inject()(
         IndexOptions()
           .name("userIdIdx")
           .unique(true)
+      ),
+      IndexModel(
+        Indexes.ascending("lastUpdated"),
+        IndexOptions()
+          .name("lastUpdatedIdx")
+          .unique(false)
           .expireAfter(appConfig.cacheTtl, TimeUnit.SECONDS)
       )
     )
@@ -54,14 +62,16 @@ class SelectedPreviousRegistrationRepository @Inject()(
     collection.find(byUserId(userId)).headOption()
 
   def set(selectedPreviousRegistration: SelectedPreviousRegistration): Future[SelectedPreviousRegistration] = {
+    val updatedPreviousRegistration = selectedPreviousRegistration.copy(lastUpdated = Instant.now(clock))
+
     collection
       .replaceOne(
         filter = byUserId(selectedPreviousRegistration.userId),
-        replacement = selectedPreviousRegistration,
+        replacement = updatedPreviousRegistration,
         options = ReplaceOptions().upsert(true)
       )
       .toFuture()
-      .map(_ => selectedPreviousRegistration)
+      .map(_ => updatedPreviousRegistration)
   }
 
   def clear(id: String): Future[Boolean] =

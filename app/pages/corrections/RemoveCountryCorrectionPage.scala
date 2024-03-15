@@ -35,7 +35,7 @@ case class RemoveCountryCorrectionPage(periodIndex: Index, countryIndex: Index) 
     answers.get(DeriveNumberOfCorrections(periodIndex)) match {
       case Some(n) if n > 0 => CorrectionListCountriesPage(periodIndex, Some(countryIndex))
       case _ => answers.get(DeriveNumberOfCorrectionPeriods) match {
-        case Some(n) if n > 0 => JourneyRecoveryPage //todo navigate to PeriodCorrectionsList Controller
+        case Some(n) if n > 0 => VatPeriodCorrectionsListPage(answers.period, addAnother = false, None)
         case _ => CorrectPreviousReturnPage(0)
       }
     }

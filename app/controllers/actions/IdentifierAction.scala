@@ -51,8 +51,7 @@ class IdentifierAction @Inject()(
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
 
     authorised(
-      AuthProviders(AuthProvider.GovernmentGateway) and
-        (AffinityGroup.Individual or AffinityGroup.Organisation) and
+      (AffinityGroup.Individual or AffinityGroup.Organisation) and
         CredentialStrength(CredentialStrength.strong)
     ).retrieve( Retrievals.credentials and
       Retrievals.allEnrolments and
@@ -68,7 +67,6 @@ class IdentifierAction @Inject()(
             case _ => throw InsufficientEnrolments()
           }
         }
-
 
       case _ ~ _ ~ Some(Organisation) ~ _ ~ Some(credentialRole) if credentialRole == Assistant =>
         throw UnsupportedCredentialRole()
@@ -111,7 +109,7 @@ class IdentifierAction @Inject()(
                                                 iossNumber: String,
                                                 confidence: ConfidenceLevel
                                               ): Either[Result, IdentifierRequest[A]] = {
-    if (confidence >= ConfidenceLevel.L200) {
+    if (confidence >= ConfidenceLevel.L250) {
       getSuccessfulResponse(request, credentials, vrn, iossNumber)
     } else {
       throw InsufficientConfidenceLevel()
@@ -119,7 +117,11 @@ class IdentifierAction @Inject()(
   }
 
   private def findIossFromEnrolments(enrolments: Enrolments)(implicit hc: HeaderCarrier): Future[Option[String]] = {
-    val filteredIossNumbers = enrolments.enrolments.filter(_.key == config.iossEnrolment).flatMap(_.identifiers.filter(_.key == "IOSSNumber").map(_.value)).toSeq
+    val filteredIossNumbers = enrolments
+      .enrolments
+      .filter(_.key == config.iossEnrolment)
+      .flatMap(_.identifiers.filter(_.key == "IOSSNumber").map(_.value))
+      .toSeq
 
     filteredIossNumbers match {
       case firstEnrolment :: Nil => Some(firstEnrolment).toFuture

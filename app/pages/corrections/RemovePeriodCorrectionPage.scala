@@ -30,8 +30,8 @@ case class RemovePeriodCorrectionPage(periodIndex: Index) extends QuestionPage[B
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
     answers.get(DeriveNumberOfCorrectionPeriods) match {
-      case Some(numberOfPeriods) if numberOfPeriods > 0 => VatPeriodCorrectionsListPage(answers.period, false) //Todo: Addanother??
-      case _ => CorrectPreviousReturnPage(0) //Todo?
+      case Some(numberOfPeriods) if numberOfPeriods > 0 => VatPeriodCorrectionsListPage(answers.period, addAnother = false)
+      case _ => CorrectPreviousReturnPage(0)
     }
 
   override def route(waypoints: Waypoints): Call = controllers.corrections.routes.RemovePeriodCorrectionController.onPageLoad(waypoints, periodIndex)

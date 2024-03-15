@@ -141,7 +141,7 @@ class ReturnRegistrationSelectionControllerSpec extends SpecBase with BeforeAndA
 
       running(application) {
         when(mockPreviousRegistrationService.getPreviousRegistrations()(any())) thenReturn previousRegistrations.toFuture
-        when(mockSelectedPreviousRegistrationRepository.set(selectedPreviousRegistration)) thenReturn Future.successful(selectedPreviousRegistration)
+        when(mockSelectedPreviousRegistrationRepository.set(any())) thenReturn Future.successful(selectedPreviousRegistration)
 
         val request = FakeRequest(POST, routes.ReturnRegistrationSelectionController.onPageLoad(waypoints).url)
           .withFormUrlEncodedBody(("value", selectedPreviousRegistration.previousRegistration.iossNumber))

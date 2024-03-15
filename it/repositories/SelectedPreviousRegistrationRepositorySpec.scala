@@ -8,20 +8,24 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.mockito.MockitoSugar
-import uk.gov.hmrc.mongo.test.PlayMongoRepositorySupport
+import uk.gov.hmrc.mongo.test.{DefaultPlayMongoRepositorySupport, PlayMongoRepositorySupport}
 import viewmodels.previousReturns.{PreviousRegistration, SelectedPreviousRegistration}
 
-import java.time.YearMonth
+import java.time.{Clock, Instant, YearMonth, ZoneId}
+import java.time.temporal.ChronoUnit
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class SelectedPreviousRegistrationRepositorySpec
   extends AnyFreeSpec
     with Matchers
-    with PlayMongoRepositorySupport[SelectedPreviousRegistration]
+    with DefaultPlayMongoRepositorySupport[SelectedPreviousRegistration]
     with ScalaFutures
     with IntegrationPatience
     with OptionValues
     with MockitoSugar {
+
+  private val instant = Instant.now.truncatedTo(ChronoUnit.MILLIS)
+  private val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
   val previousRegistrationIM900987654322: PreviousRegistration = PreviousRegistration(
     "IM900987654322",
@@ -29,13 +33,14 @@ class SelectedPreviousRegistrationRepositorySpec
     Period(YearMonth.of(2021, 10))
   )
 
-  private val selectedPreviousRegistration: SelectedPreviousRegistration = SelectedPreviousRegistration("id", previousRegistrationIM900987654322)
+  private val selectedPreviousRegistration: SelectedPreviousRegistration = SelectedPreviousRegistration("id", previousRegistrationIM900987654322, lastUpdated = Instant.now(stubClock))
 
   private val mockAppConfig = mock[FrontendAppConfig]
 
   protected override val repository = new SelectedPreviousRegistrationRepository(
     mongoComponent = mongoComponent,
-    appConfig      = mockAppConfig
+    appConfig      = mockAppConfig,
+    clock          = stubClock
   )
 
   ".set" - {
