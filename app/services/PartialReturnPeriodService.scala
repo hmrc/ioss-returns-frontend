@@ -22,7 +22,7 @@ import models.core.MatchType
 import models.etmp.EtmpExclusion
 import models.etmp.EtmpExclusionReason.TransferringMSID
 import models.etmp.SchemeType.{IOSSWithIntermediary, IOSSWithoutIntermediary}
-import models.{PartialReturnPeriod, Period, PeriodWithStatus, RegistrationWrapper, SubmissionStatus}
+import models.{PartialReturnPeriod, Period, PeriodWithStatus, RegistrationWrapper, StandardPeriod, SubmissionStatus}
 import services.core.CoreRegistrationValidationService
 import uk.gov.hmrc.http.HeaderCarrier
 import utils.FutureSyntax.FutureOps
@@ -89,7 +89,7 @@ class PartialReturnPeriodService @Inject()(
                 returnStatusConnector.listStatuses(commencementDate).map {
                   case Right(returnsPeriod) if isFirstPeriod(returnsPeriod, commencementDate) =>
                     val firstReturnPeriod = returnsPeriod.head.period
-                    if (isWithinPeriod(firstReturnPeriod, transferringMsidEffectiveLocalDate)) {
+                    if (isWithinPeriod(firstReturnPeriod, commencementDate)) {
                       Some(PartialReturnPeriod(
                         transferringMsidEffectiveLocalDate,
                         firstReturnPeriod.lastDay,
@@ -112,13 +112,15 @@ class PartialReturnPeriodService @Inject()(
 
 
   private def isFirstPeriod(periods: Seq[PeriodWithStatus], checkDate: LocalDate): Boolean = {
-    val firstUnsubmittedPeriod = periods.filter(period =>
+    val firstUnsubmittedPeriod = periods.filter { period =>
       Seq(SubmissionStatus.Next, SubmissionStatus.Due, SubmissionStatus.Overdue).contains(period.status)
-    ).head
+    }.head
     isWithinPeriod(firstUnsubmittedPeriod.period, checkDate)
+
+
   }
 
-  private def isWithinPeriod(period: Period, checkDate: LocalDate): Boolean =
+  private def isWithinPeriod(period: StandardPeriod, checkDate: LocalDate): Boolean =
     !checkDate.isBefore(period.firstDay) &&
       !checkDate.isAfter(period.lastDay)
 
@@ -138,7 +140,8 @@ class PartialReturnPeriodService @Inject()(
         previousRegistrations.filter(
           details => details.schemeType == IOSSWithoutIntermediary || details.schemeType == IOSSWithIntermediary
         )
-      case _ => Seq.empty
+      case _ =>
+        Seq.empty
     }
   }
 
