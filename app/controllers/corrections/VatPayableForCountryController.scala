@@ -60,7 +60,18 @@ class VatPayableForCountryController @Inject()(
               case None => form
               case Some(value) => form.fill(value)
             }
-            Ok(view(preparedForm, waypoints, periodIndex, countryIndex, country, correctionReturnPeriod, calculatedCorrectionAmount)).toFuture
+            Ok(
+              view(
+                preparedForm,
+                waypoints,
+                request.userAnswers.period,
+                periodIndex,
+                countryIndex,
+                country,
+                correctionReturnPeriod,
+                calculatedCorrectionAmount
+              )
+            ).toFuture
           }
         }
       }
@@ -85,7 +96,18 @@ class VatPayableForCountryController @Inject()(
             val form = formProvider(country, calculatedCorrectionAmount)
             form.bindFromRequest().fold(
               formWithErrors =>
-                BadRequest(view(formWithErrors, waypoints, periodIndex, countryIndex, country, correctionReturnPeriod, calculatedCorrectionAmount)).toFuture,
+                BadRequest(
+                  view(
+                    formWithErrors,
+                    waypoints,
+                    request.userAnswers.period,
+                    periodIndex,
+                    countryIndex,
+                    country,
+                    correctionReturnPeriod,
+                    calculatedCorrectionAmount
+                  )
+                ).toFuture,
               value =>
 
                 for {

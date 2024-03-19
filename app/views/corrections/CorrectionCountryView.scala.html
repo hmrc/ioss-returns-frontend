@@ -17,6 +17,7 @@
 @import viewmodels.InputWidth.Fixed20
 @import viewmodels.LabelSize
 @import views.html.components.ButtonGroup
+@import pages.corrections.CorrectionCountryPage
 
 @this(
         layout: templates.Layout,
@@ -50,7 +51,7 @@
         )
 
         @button(
-            messages("site.continue")
+          "site.continue", CorrectionCountryPage(periodIndex, index).route(waypoints).url, period, waypoints
         )
     }
 }

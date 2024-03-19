@@ -47,7 +47,7 @@ class DeleteSoldToCountryController @Inject()(
 
           val form: Form[Boolean] = formProvider(salesToCountryWithOptionalVat.country)
 
-          Ok(view(form, waypoints, countryIndex, salesToCountryWithOptionalVat.country))
+          Ok(view(form, waypoints, request.userAnswers.period, countryIndex, salesToCountryWithOptionalVat.country))
       }
   }
 
@@ -60,7 +60,7 @@ class DeleteSoldToCountryController @Inject()(
 
           form.bindFromRequest().fold(
             formWithErrors =>
-              BadRequest(view(formWithErrors, waypoints, countryIndex, salesToCountryWithOptionalVat.country)).toFuture,
+              BadRequest(view(formWithErrors, waypoints, request.userAnswers.period, countryIndex, salesToCountryWithOptionalVat.country)).toFuture,
 
             value =>
               if (value) {

@@ -56,7 +56,7 @@
         )
 
         @button(
-            messages("site.continue")
+            "site.continue", routes.StartReturnController.onPageLoad(waypoints, period).url, period, waypoints
         )
     }
 }
