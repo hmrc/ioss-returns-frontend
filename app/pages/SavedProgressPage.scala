@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,22 +14,19 @@
  * limitations under the License.
  */
 
-package models
+package pages
 
-sealed trait ErrorResponse {
-  val body: String
+import controllers.routes
+import models.Period
+import play.api.libs.json.JsPath
+import play.api.mvc.Call
+
+case class SavedProgressPage(period: Period, continueUrl: String) extends QuestionPage[String] {
+
+  override def path: JsPath = JsPath \ toString
+
+  override def toString: String = "continueUrl"
+
+  override def route(waypoints: Waypoints): Call =
+    routes.SavedProgressController.onPageLoad(period, continueUrl)
 }
-
-case object InvalidJson extends ErrorResponse {
-  override val body = "Invalid JSON received"
-}
-
-case object NotFound extends ErrorResponse {
-  override val body = "Not found"
-}
-
-case object ConflictFound extends ErrorResponse {
-  override val body = "Conflict"
-}
-
-case class UnexpectedResponseStatus(status: Int, body: String) extends ErrorResponse

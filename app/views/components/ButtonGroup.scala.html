@@ -14,10 +14,15 @@
  * limitations under the License.
  *@
 
+@import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl
 @this(govukButton: GovukButton)
-@(continueMessage: String)(implicit messages: Messages)
+@(continueMessage: String, continueUrl: String, period: Period, waypoints: Waypoints)(implicit messages: Messages)
 <div class="govuk-button-group">
     @govukButton(
         ButtonViewModel(messages(continueMessage)).withAttribute(("id", "continue"))
     )
+
+    <a id="saveProgress" role="button" href="@routes.SavedProgressController.onPageLoad(period, continueUrl)" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+      @messages("saveProgress.button")
+    </a>
 </div>

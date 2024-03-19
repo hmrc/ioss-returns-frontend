@@ -130,3 +130,5 @@ GET         /excluded-cannot-use-service                                        
 
 GET         /start-return                                                             controllers.StartOutstandingReturnController.onPageLoad()
 GET         /no-returns-due                                                           controllers.NoReturnsDueController.onPageLoad()
+
+GET         /:period/progress-saved                                                   controllers.SavedProgressController.onPageLoad(period: Period, continueUrl: String)
