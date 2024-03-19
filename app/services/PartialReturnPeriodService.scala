@@ -19,7 +19,7 @@ package services
 
 import connectors.ReturnStatusConnector
 import models.core.MatchType
-import models.etmp.EtmpExclusion
+import models.etmp.{EtmpExclusion, EtmpExclusionReason}
 import models.etmp.EtmpExclusionReason.TransferringMSID
 import models.etmp.SchemeType.{IOSSWithIntermediary, IOSSWithoutIntermediary}
 import models.{PartialReturnPeriod, Period, PeriodWithStatus, RegistrationWrapper, StandardPeriod, SubmissionStatus}
@@ -28,7 +28,6 @@ import uk.gov.hmrc.http.HeaderCarrier
 import utils.FutureSyntax.FutureOps
 
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -115,9 +114,8 @@ class PartialReturnPeriodService @Inject()(
     val firstUnsubmittedPeriod = periods.filter { period =>
       Seq(SubmissionStatus.Next, SubmissionStatus.Due, SubmissionStatus.Overdue).contains(period.status)
     }.head
+
     isWithinPeriod(firstUnsubmittedPeriod.period, checkDate)
-
-
   }
 
   private def isWithinPeriod(period: StandardPeriod, checkDate: LocalDate): Boolean =
@@ -125,12 +123,13 @@ class PartialReturnPeriodService @Inject()(
       !checkDate.isAfter(period.lastDay)
 
   def isFinalReturn(maybeExclusion: Option[EtmpExclusion], period: Period): Boolean = {
-
-    val nextPeriodString = periodService.getNextPeriod(period).displayYearMonth
-    val nextPeriod: LocalDate = LocalDate.parse(nextPeriodString, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-
-    maybeExclusion.fold(false) { exclusions =>
-      nextPeriod.isAfter(exclusions.effectiveDate)
+    maybeExclusion match {
+      case Some(exclusion) if exclusion.exclusionReason == EtmpExclusionReason.TransferringMSID =>
+        isWithinPeriod(StandardPeriod.fromPeriod(period), exclusion.effectiveDate)
+      case Some(exclusion) if exclusion.exclusionReason != EtmpExclusionReason.Reversal =>
+        val nextPeriod = period.getNext.lastDay
+        nextPeriod.isAfter(exclusion.effectiveDate)
+      case _ => false
     }
   }
 

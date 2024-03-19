@@ -19,7 +19,7 @@ package controllers.actions
 import config.FrontendAppConfig
 import controllers.routes
 import models.Period
-import models.etmp.EtmpExclusionReason.{NoLongerSupplies, TransferringMSID, VoluntarilyLeaves}
+import models.etmp.EtmpExclusionReason.{CeasedTrade, FailsToComply, NoLongerMeetsConditions, NoLongerSupplies, TransferringMSID, VoluntarilyLeaves}
 import models.requests.OptionalDataRequest
 import play.api.mvc.Results.Redirect
 import play.api.mvc.{ActionFilter, Result}
@@ -36,7 +36,16 @@ class CheckExcludedTraderOptionalFilterImpl(
   override protected def filter[A](request: OptionalDataRequest[A]): Future[Option[Result]] = {
     if (frontendAppConfig.exclusionsEnabled) {
       request.registrationWrapper.registration.exclusions.lastOption match {
-        case Some(exclusion) if Seq(NoLongerSupplies, VoluntarilyLeaves, TransferringMSID).contains(exclusion.exclusionReason)
+        case Some(exclusion) if Seq(TransferringMSID).contains(exclusion.exclusionReason)
+          && startReturnPeriod.firstDay.isAfter(exclusion.effectiveDate) =>
+          Future.successful(Some(Redirect(routes.ExcludedNotPermittedController.onPageLoad())))
+        case Some(exclusion) if Seq(
+          NoLongerSupplies,
+          VoluntarilyLeaves,
+          CeasedTrade,
+          NoLongerMeetsConditions,
+          FailsToComply
+        ).contains(exclusion.exclusionReason)
           && startReturnPeriod.lastDay.isAfter(exclusion.effectiveDate) =>
           Future.successful(Some(Redirect(routes.ExcludedNotPermittedController.onPageLoad())))
         case _ =>
