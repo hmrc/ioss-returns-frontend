@@ -53,7 +53,7 @@ class PartialReturnPeriodService @Inject()(
             if (isFinalReturn(maybeExclusion, period)) {
               Some(PartialReturnPeriod(
                 period.firstDay,
-                excludedTrader.effectiveDate,
+                excludedTrader.effectiveDate.minusDays(1),
                 period.year,
                 period.month
               )).toFuture
