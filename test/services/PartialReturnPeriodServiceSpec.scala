@@ -127,7 +127,7 @@ class PartialReturnPeriodServiceSpec extends SpecBase with BeforeAndAfterEach {
 
       val result = service.getPartialReturnPeriod(registrationWrapperWithExclusions, period).futureValue
 
-      val expectedPartialReturnPeriod = Some(PartialReturnPeriod(period.firstDay, endDate, period.year, period.month))
+      val expectedPartialReturnPeriod = Some(PartialReturnPeriod(period.firstDay, endDate.minusDays(1), period.year, period.month))
 
       result mustBe expectedPartialReturnPeriod
     }

@@ -214,7 +214,7 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar with ScalaChe
           waypoints,
           period,
           Some(noLongerSuppliesExclusion),
-          isFinalReturn = true,
+          isFinalReturn = false,
           None
         )(request, messages(application)).toString
       }
