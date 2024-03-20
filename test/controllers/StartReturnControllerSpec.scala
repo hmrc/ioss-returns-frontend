@@ -183,10 +183,7 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar with ScalaChe
     "must return OK and the correct view for a GET when a trader is excluded and the period's last day is before their exclusion effective date" in {
       when(mockPartialReturnPeriodService.getPartialReturnPeriod(any(), any())(any())) thenReturn Future.successful(None)
 
-      val effectiveDate = Gen.choose(
-        period.lastDay,
-        period.lastDay.plusDays(extraNumberOfDays)
-      ).sample.value
+      val effectiveDate = period.lastDay.plusDays(extraNumberOfDays)
 
       val noLongerSuppliesExclusion = EtmpExclusion(
         NoLongerSupplies,
