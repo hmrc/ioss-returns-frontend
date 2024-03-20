@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,14 @@ package models
 
 import generators.Generators
 import org.scalacheck.Arbitrary.arbitrary
+import org.scalacheck.Gen
 import org.scalatest.EitherValues
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.mvc.{PathBindable, QueryStringBindable}
+
+import java.time.{LocalDate, Month}
 
 class PeriodSpec
   extends AnyFreeSpec
@@ -74,85 +77,50 @@ class PeriodSpec
 
   }
 
-/*  ".firstDay" - {
+  ".firstDay" - {
 
-    "must be the first of January when the quarter is Q1" in {
-
-      forAll(Gen.choose(2022, 2100)) {
-        year =>
-          val period = Period(year, Month.JANUARY)
-          period.firstDay mustEqual LocalDate.of(year, JANUARY, 1)
-      }
-    }
-
-    "must be the first of April when the quarter is Q2" in {
+    "must be the first of January when the Month is January" in {
 
       forAll(Gen.choose(2022, 2100)) {
         year =>
-          val period = Period(year, Q2)
-          period.firstDay mustEqual LocalDate.of(year, APRIL, 1)
+          val period = StandardPeriod(year, Month.JANUARY)
+          period.firstDay mustEqual LocalDate.of(year, Month.JANUARY, 1)
       }
     }
 
-    "must be the first of July when the quarter is Q3" in {
+    "must be the first of April when the Month is April" in {
 
-      forAll(Gen.choose(2021, 2100)) {
+      forAll(Gen.choose(2022, 2100)) {
         year =>
-          val period = Period(year, Q3)
-          period.firstDay mustEqual LocalDate.of(year, JULY, 1)
-      }
-    }
-
-    "must be the first of October when the quarter is Q4" in {
-
-      forAll(Gen.choose(2021, 2100)) {
-        year =>
-          val period = Period(year, Q4)
-          period.firstDay mustEqual LocalDate.of(year, OCTOBER, 1)
+          val period = StandardPeriod(year, Month.APRIL)
+          period.firstDay mustEqual LocalDate.of(year, Month.APRIL, 1)
       }
     }
   }
 
   ".lastDay" - {
 
-    "must be the 31st of March when the quarter is Q1" in {
+    "must be the 31st of March when the Month is March" in {
 
       forAll(Gen.choose(2022, 2100)) {
         year =>
-          val period = Period(year, Q1)
-          period.lastDay mustEqual LocalDate.of(year, MARCH, 31)
+          val period = StandardPeriod(year, Month.MARCH)
+          period.lastDay mustEqual LocalDate.of(year, Month.MARCH, 31)
       }
     }
 
-    "must be the 30th of June when the quarter is Q2" in {
+    "must be the 30th of June when the Month is June" in {
 
       forAll(Gen.choose(2022, 2100)) {
         year =>
-          val period = Period(year, Q2)
-          period.lastDay mustEqual LocalDate.of(year, JUNE, 30)
+          val period = StandardPeriod(year, Month.JUNE)
+          period.lastDay mustEqual LocalDate.of(year, Month.JUNE, 30)
       }
     }
 
-    "must be the 30th of September when the quarter is Q3" in {
-
-      forAll(Gen.choose(2021, 2100)) {
-        year =>
-          val period = Period(year, Q3)
-          period.lastDay mustEqual LocalDate.of(year, SEPTEMBER, 30)
-      }
-    }
-
-    "must be the 31st of December when the quarter is Q4" in {
-
-      forAll(Gen.choose(2021, 2100)) {
-        year =>
-          val period = Period(year, Q4)
-          period.lastDay mustEqual LocalDate.of(year, DECEMBER, 31)
-      }
-    }
   }
 
-  ".paymentDeadline" - {
+  /*".paymentDeadline" - {
 
     "must be the 30th of April when the quarter is Q1" in {
 

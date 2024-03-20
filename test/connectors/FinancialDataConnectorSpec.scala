@@ -20,7 +20,7 @@ import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock._
 import models.financialdata.{Charge, FinancialData, FinancialTransaction, Item}
 import models.payments.{Payment, PaymentStatus, PrepareData}
-import models.{InvalidJson, Period, UnexpectedResponseStatus}
+import models.{InvalidJson, StandardPeriod, UnexpectedResponseStatus}
 import play.api.Application
 import play.api.http.Status.{INTERNAL_SERVER_ERROR, OK}
 import play.api.libs.json.Json
@@ -182,7 +182,7 @@ trait FinancialDataConnectorFixture {
     Nil,
     List(
       Payment(
-        Period(2021, Month.SEPTEMBER),
+        StandardPeriod(2021, Month.SEPTEMBER),
         1000,
         LocalDate.of(2021, 10, 31),
         PaymentStatus.Partial

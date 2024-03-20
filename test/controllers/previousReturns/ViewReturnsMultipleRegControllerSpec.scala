@@ -17,7 +17,7 @@
 package controllers.previousReturns
 
 import base.SpecBase
-import models.Period
+import models.StandardPeriod
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.mockito.Mockito.when
@@ -93,8 +93,8 @@ class ViewReturnsMultipleRegControllerSpec extends SpecBase with BeforeAndAfterE
 
         val selectedPreviousRegistration = SelectedPreviousRegistration(userAnswersId, PreviousRegistration(
           "IM900111111111",
-          Period(YearMonth.of(2020, 1)),
-          Period(YearMonth.of(2022, 9))
+          StandardPeriod(YearMonth.of(2020, 1)),
+          StandardPeriod(YearMonth.of(2022, 9))
         ))
         when(mockSelectedPreviousRegistrationRepository.get(userAnswersId)) thenReturn Some(selectedPreviousRegistration).toFuture
 

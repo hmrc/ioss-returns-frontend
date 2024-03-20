@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package controllers.corrections
 
 import base.SpecBase
 import connectors.VatReturnConnector
-import models.{Country, Index, Period, UserAnswers}
+import models.{Country, Index, Period, StandardPeriod, UserAnswers}
 import models.etmp.{EtmpObligation, EtmpObligationDetails, EtmpObligations, EtmpObligationsFulfilmentStatus}
 import org.jsoup.Jsoup
 import org.mockito.ArgumentMatchers.any
@@ -29,6 +29,7 @@ import org.scalatestplus.mockito.MockitoSugar
 import pages.EmptyWaypoints
 import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, VatAmountCorrectionCountryPage}
 import play.api.inject.bind
+import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.ListItem
@@ -39,23 +40,23 @@ import scala.concurrent.Future
 
 class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
   private val year = 2021
-  private val periodJuly2021 = Period(year, Month.JULY)
+  private val periodJuly2021 = StandardPeriod(year, Month.JULY)
   override def commencementDate: LocalDate = periodJuly2021.lastDay.minusDays(1)
 
   private lazy val vatPeriodCorrectionsListRoute = controllers
     .corrections.routes.VatPeriodCorrectionsListController.onPageLoad(EmptyWaypoints, periodJuly2021).url
 
   private lazy val vatPeriodCorrectionsListRoutePost = controllers
-    .corrections.routes.VatPeriodCorrectionsListController.onSubmit(EmptyWaypoints, periodJuly2021, false).url
+    .corrections.routes.VatPeriodCorrectionsListController.onSubmit(EmptyWaypoints, periodJuly2021, incompletePromptShown = false).url
 
   private def addCorrectionPeriods(userAnswers: UserAnswers, periods: Seq[Period]): Option[UserAnswers] = //Some(userAnswers)
     periods.zipWithIndex
       .foldLeft(Option(userAnswers))((ua, indexedPeriod) =>
-        ua.flatMap(_.set(CorrectionReturnPeriodPage(Index(indexedPeriod._2)), (indexedPeriod._1)).toOption)
+        ua.flatMap(_.set(CorrectionReturnPeriodPage(Index(indexedPeriod._2)), indexedPeriod._1).toOption)
           .flatMap(_.set(CorrectionCountryPage(Index(indexedPeriod._2), Index(0)), Country.euCountries.head).toOption)
           .flatMap(_.set(VatAmountCorrectionCountryPage(Index(indexedPeriod._2), Index(0)), BigDecimal(200.0)).toOption))
 
-  private def getStatusResponse(periods: Seq[Period]): Future[EtmpObligations] = {
+  private def getStatusResponse(periods: Seq[StandardPeriod]): Future[EtmpObligations] = {
     Future.successful {
 
       val details = periods.map(period => EtmpObligationDetails(EtmpObligationsFulfilmentStatus.Fulfilled, period.toEtmpPeriodString))
@@ -80,8 +81,8 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
   "VatPeriodCorrectionsList Controller" - {
     val allPeriods = Seq(
       periodJuly2021,
-      Period(year, Month.OCTOBER),
-      Period(year + 1, Month.JANUARY)
+      StandardPeriod(year, Month.OCTOBER),
+      StandardPeriod(year + 1, Month.JANUARY)
     )
     val allPeriodsModel = Seq(
       ListItem(
@@ -112,7 +113,7 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
         .build()
 
       running(application) {
-        implicit val request = FakeRequest(GET, vatPeriodCorrectionsListRoute)
+        implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, vatPeriodCorrectionsListRoute)
 
         val result = route(application, request).value
 
@@ -230,7 +231,8 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
           .build()
 
         running(application) {
-          val request = FakeRequest(POST, controllers.corrections.routes.VatPeriodCorrectionsListController.onSubmit(waypoints, period, true).url)
+          val request = FakeRequest(
+            POST, controllers.corrections.routes.VatPeriodCorrectionsListController.onSubmit(waypoints, period, incompletePromptShown = true).url)
 
           val result = route(application, request).value
 
@@ -256,7 +258,8 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
           .build()
 
         running(application) {
-          val request = FakeRequest(POST, controllers.corrections.routes.VatPeriodCorrectionsListController.onSubmit(waypoints, period, false).url)
+          val request = FakeRequest(
+            POST, controllers.corrections.routes.VatPeriodCorrectionsListController.onSubmit(waypoints, period, incompletePromptShown = false).url)
 
           val result = route(application, request).value
 

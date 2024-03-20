@@ -21,7 +21,7 @@ import connectors.{FinancialDataConnector, VatReturnConnector}
 import models.etmp.{EtmpExclusion, EtmpExclusionReason, EtmpVatReturn, EtmpVatReturnCorrection}
 import models.financialdata.Charge
 import models.requests.OptionalDataRequest
-import models.{Period, RegistrationWrapper, UnexpectedResponseStatus}
+import models.{RegistrationWrapper, StandardPeriod, UnexpectedResponseStatus}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.mockito.Mockito.when
@@ -489,7 +489,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
 
             val date = LocalDate.ofInstant(stubClockAtArbitraryDate.instant(), stubClockAtArbitraryDate.getZone)
             val exceededDate = date.minusYears(3).minusMonths(2)
-            val exceededPeriod = Period(exceededDate.getYear, exceededDate.getMonth)
+            val exceededPeriod = StandardPeriod(exceededDate.getYear, exceededDate.getMonth)
             val vatReturnNoCorrections = vatReturn.copy(correctionPreviousVATReturn = Seq.empty, periodKey = exceededPeriod.toEtmpPeriodString)
 
             val etmpExclusion: EtmpExclusion = EtmpExclusion(
@@ -597,7 +597,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
 
             val date = LocalDate.ofInstant(stubClockAtArbitraryDate.instant(), stubClockAtArbitraryDate.getZone)
             val exceededDate = date.minusYears(3).minusMonths(2)
-            val exceededPeriod = Period(exceededDate.getYear, exceededDate.getMonth)
+            val exceededPeriod = StandardPeriod(exceededDate.getYear, exceededDate.getMonth)
             val vatReturnNoCorrections = vatReturn.copy(correctionPreviousVATReturn = Seq.empty, periodKey = exceededPeriod.toEtmpPeriodString)
 
             val etmpExclusion: EtmpExclusion = EtmpExclusion(
@@ -1155,7 +1155,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
 
             val date = LocalDate.ofInstant(stubClockAtArbitraryDate.instant(), stubClockAtArbitraryDate.getZone)
             val exceededDate = date.minusYears(3).minusMonths(2)
-            val exceededPeriod = Period(exceededDate.getYear, exceededDate.getMonth)
+            val exceededPeriod = StandardPeriod(exceededDate.getYear, exceededDate.getMonth)
             val vatReturnNoCorrections = vatReturn.copy(correctionPreviousVATReturn = Seq.empty, periodKey = exceededPeriod.toEtmpPeriodString)
 
             val etmpExclusion: EtmpExclusion = EtmpExclusion(
@@ -1265,7 +1265,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
 
             val date = LocalDate.ofInstant(stubClockAtArbitraryDate.instant(), stubClockAtArbitraryDate.getZone)
             val exceededDate = date.minusYears(3).minusMonths(2)
-            val exceededPeriod = Period(exceededDate.getYear, exceededDate.getMonth)
+            val exceededPeriod = StandardPeriod(exceededDate.getYear, exceededDate.getMonth)
             val vatReturnNoCorrections = vatReturn.copy(correctionPreviousVATReturn = Seq.empty, periodKey = exceededPeriod.toEtmpPeriodString)
 
             val etmpExclusion: EtmpExclusion = EtmpExclusion(

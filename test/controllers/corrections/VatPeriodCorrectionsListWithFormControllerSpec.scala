@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import base.SpecBase
 import connectors.VatReturnConnector
 import forms.corrections.VatPeriodCorrectionsListFormProvider
 import models.etmp.{EtmpObligation, EtmpObligationDetails, EtmpObligations, EtmpObligationsFulfilmentStatus}
-import models.{Country, Index, Period, UserAnswers}
+import models.{Country, Index, Period, StandardPeriod, UserAnswers}
 import org.jsoup.Jsoup
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
@@ -51,7 +51,7 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
           .flatMap(_.set(VatAmountCorrectionCountryPage(Index(indexedPeriod._2), Index(0)), BigDecimal(200.0)).toOption))
 
   private def getStatusResponse(
-                                 periods: Seq[Period],
+                                 periods: Seq[StandardPeriod],
                                  status: EtmpObligationsFulfilmentStatus = EtmpObligationsFulfilmentStatus.Fulfilled
                                ): Future[EtmpObligations] = {
     Future.successful {
@@ -72,16 +72,16 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
   }
 
   val year = 2021
-  val periodJuly2021: Period = Period(year, Month.JULY)
+  val periodJuly2021: StandardPeriod = StandardPeriod(year, Month.JULY)
 
   override def commencementDate: LocalDate = periodJuly2021.lastDay.minusDays(1)
 
   override def completeUserAnswers: UserAnswers = emptyUserAnswers.copy(period = periodJuly2021)
 
-  val allPeriods: Seq[Period] = Seq(
+  val allPeriods: Seq[StandardPeriod] = Seq(
     periodJuly2021,
-    Period(year, Month.OCTOBER),
-    Period(year + 1, Month.JANUARY)
+    StandardPeriod(year, Month.OCTOBER),
+    StandardPeriod(year + 1, Month.JANUARY)
   )
 
   "VatPeriodCorrectionsListWithFormController" - {

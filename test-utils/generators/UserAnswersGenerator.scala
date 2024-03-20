@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,7 +79,7 @@ trait UserAnswersGenerator extends TryValues {
         }
       } yield UserAnswers (
         id           = id,
-        period       = Period(2021, Month.JULY),
+        period       = StandardPeriod(2021, Month.JULY),
         data         = data.foldLeft(Json.obj()) {
           case (obj, (path, value)) =>
             obj.setObject(path.path, value).get

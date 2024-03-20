@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,20 +28,56 @@ import java.util.Locale
 import scala.util.Try
 import scala.util.matching.Regex
 
-final case class Period(year: Int, month: Month) extends Ordered[Period] {
-  val yearMonth: YearMonth = YearMonth.of(year, month)
+trait Period {
+  val year: Int
+  val month: Month
+  val firstDay: LocalDate
+  val lastDay: LocalDate
+  val isPartial: Boolean
 
-  val firstDay: LocalDate = yearMonth.atDay(1)
-  val lastDay: LocalDate = yearMonth.atEndOfMonth
-
+  private val lastDayFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy")
   private val lastMonthYearFormatter = DateTimeFormatter.ofPattern("MMMM yyyy")
-  private val lastYearMonthFormatter = DateTimeFormatter.ofPattern("yyyy-MM-d")
 
-  val paymentDeadline: LocalDate =
-    firstDay.plusMonths(2).minusDays(1)
+  val paymentDeadline: LocalDate = LocalDate.of(year, month, 1).plusMonths(2).minusDays(1)
 
   private val paymentDeadlineFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy")
+
   val paymentDeadlineDisplay: String = paymentDeadline.format(paymentDeadlineFormatter)
+
+  def displayText: String =
+    s"${month.getDisplayName(TextStyle.FULL, Locale.ENGLISH)} $year"
+
+  def displayMonth: String =
+    s"${month.getDisplayName(TextStyle.FULL, Locale.ENGLISH)}"
+
+  def getNext: Period = {
+    if (this.month == Month.DECEMBER) {
+      StandardPeriod(this.year + 1, Month.JANUARY)
+    } else {
+      StandardPeriod(this.year, this.month.plus(1))
+    }
+  }
+
+  def isBefore(other: Period): Boolean = {
+    val yearMonth: YearMonth = YearMonth.of(year, month)
+    val yearMonthOther: YearMonth = YearMonth.of(other.year, other.month)
+
+    yearMonth.isBefore(yearMonthOther)
+  }
+
+  def zeroPaddedMonth: String =
+    "%02d".format(month.getValue)
+
+  def displayShortText: String =
+    s"${lastDay.format(lastMonthYearFormatter)}"
+
+  def displayPartialPeriodLastDayText: String =
+    s"${lastDay.format(lastDayFormatter)}"
+
+  def displayPartialPeriodStartDayText: String =
+    s"${firstDay.format(lastDayFormatter)}"
+
+  override def toString: String = s"$year-M${month.getValue}"
 
   def toEtmpPeriodString: String = {
     val lastYearDigits = year.toString.substring(2)
@@ -66,48 +102,79 @@ final case class Period(year: Int, month: Month) extends Ordered[Period] {
     }
   }
 
-  def displayText: String =
-    s"${month.getDisplayName(TextStyle.FULL, Locale.ENGLISH)} $year"
+
+}
+
+final case class StandardPeriod(year: Int, month: Month) extends Period with Ordered[StandardPeriod] {
+
+  private val yearMonth: YearMonth = YearMonth.of(year, month)
+  override val firstDay: LocalDate = yearMonth.atDay(1)
+  override val lastDay: LocalDate = yearMonth.atEndOfMonth
+  override val isPartial: Boolean = false
+
+  private val lastYearMonthFormatter = DateTimeFormatter.ofPattern("yyyy-MM-d")
 
   def displayYearMonth: String =
     s"${lastDay.format(lastYearMonthFormatter)}"
 
-  def displayShortText: String =
-    s"${lastDay.format(lastMonthYearFormatter)}"
+  def compare(other: StandardPeriod): Int = yearMonth.compareTo(other.yearMonth)
 
-  def zeroPaddedMonth: String =
-    "%02d".format(month.getValue)
+}
 
-  def displayMonth: String =
-    s"${month.getDisplayName(TextStyle.FULL, Locale.ENGLISH)}"
+object StandardPeriod {
 
-  override def toString: String = s"$year-M${month.getValue}"
-
-  def getNext: Period = {
-    if (this.month == Month.DECEMBER)
-      Period(this.year + 1, Month.JANUARY)
-    else
-      Period(this.year, this.month.plus(1))
+  val reads: Reads[StandardPeriod] = {
+    (
+      (__ \ "year").read[Int] and
+        (__ \ "month").read[String].map(m => Month.of(m.substring(1).toInt))
+      )((year, month) => StandardPeriod(year, month))
   }
 
-  def compare(other: Period): Int = yearMonth.compareTo(other.yearMonth)
+  val writes: OWrites[StandardPeriod] = {
+    (
+      (__ \ "year").write[Int] and
+        (__ \ "month").write[String].contramap[Month](m => s"M${m.getValue}")
+      )(unlift(StandardPeriod.unapply))
+  }
+
+  implicit val format: Format[StandardPeriod] = Format(reads, writes)
+
+  def apply(yearMonth: YearMonth): Period = StandardPeriod(yearMonth.getYear, yearMonth.getMonth)
+
+
+  def apply(yearString: String, monthString: String): Try[StandardPeriod] =
+    for {
+      year <- Try(yearString.toInt)
+      month <- Try(Month.of(monthString.toInt))
+    } yield StandardPeriod(year, month)
+
+  def options(periods: Seq[StandardPeriod]): Seq[RadioItem] = periods.zipWithIndex.map {
+    case (value, index) =>
+      RadioItem(
+        content = Text(value.displayText),
+        value = Some(value.toString),
+        id = Some(s"value_$index")
+      )
+  }
+
+
+  def fromString(string: String): Option[StandardPeriod] = {
+    Period.fromString(string).map(fromPeriod)
+  }
+
+  def fromPeriod(period: Period): StandardPeriod = {
+    StandardPeriod(period.year, period.month)
+  }
+
 }
 
 object Period {
   private val pattern: Regex = """(\d{4})-M(1[0-2]|[1-9])""".r.anchored
 
-  def apply(yearMonth: YearMonth): Period = Period(yearMonth.getYear, yearMonth.getMonth)
-
-  def apply(yearString: String, monthString: String): Try[Period] =
-    for {
-      year <- Try(yearString.toInt)
-      month <- Try(Month.of(monthString.toInt))
-    } yield Period(year, month)
-
   def fromString(string: String): Option[Period] =
     string match {
       case pattern(yearString, monthString) =>
-        Period(yearString, monthString).toOption
+        StandardPeriod(yearString, monthString).toOption
       case _ =>
         None
     }
@@ -115,24 +182,20 @@ object Period {
   def fromKey(key: String): Period = {
     val yearLast2 = key.take(2)
     val month = key.drop(2)
-    Period(s"20$yearLast2".toInt, fromEtmpMonthString(month))
+    StandardPeriod(s"20$yearLast2".toInt, fromEtmpMonthString(month))
   }
 
   val reads: Reads[Period] = {
-    (
-      (__ \ "year").read[Int] and
-        (__ \ "month").read[String].map(m => Month.of(m.substring(1).toInt))
-      )((year, month) => Period(year, month))
+    PartialReturnPeriod.format.widen[Period] orElse
+      StandardPeriod.format.widen[Period]
   }
 
-  val writes: OWrites[Period] = {
-    (
-      (__ \ "year").write[Int] and
-        (__ \ "month").write[String].contramap[Month](m => s"M${m.getValue}")
-      )(unlift(Period.unapply))
+  val writes: Writes[Period] = {
+    case s: StandardPeriod => Json.toJson(s)(StandardPeriod.format)
+    case p: PartialReturnPeriod => Json.toJson(p)(PartialReturnPeriod.format)
   }
 
-  implicit val format: OFormat[Period] = OFormat(reads, writes)
+  implicit val format: Format[Period] = Format(reads, writes)
 
   implicit val pathBindable: PathBindable[Period] = new PathBindable[Period] {
 
@@ -162,17 +225,8 @@ object Period {
     }
   }
 
-  def options(periods: Seq[Period]): Seq[RadioItem] = periods.zipWithIndex.map {
-    case (value, index) =>
-      RadioItem(
-        content = Text(value.displayText),
-        value = Some(value.toString),
-        id = Some(s"value_$index")
-      )
-  }
-
   def monthOptions(periods: Seq[Period]): Seq[RadioItem] = periods.zipWithIndex.map {
-    case (value, index) =>
+    case (value, _) =>
       RadioItem(
         content = Text(value.displayMonth),
         value = Some(value.toString),

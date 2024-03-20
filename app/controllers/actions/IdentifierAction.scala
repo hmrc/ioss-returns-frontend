@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -87,7 +87,8 @@ class IdentifierAction @Inject()(
     } recoverWith {
       case _: NoActiveSession =>
         Left(Redirect(config.loginUrl, Map("continue" -> Seq(config.loginContinueUrl)))).toFuture
-      case _: AuthorisationException =>
+      case e: AuthorisationException =>
+        logger.info(s"Got authorisation exception ${e.getMessage}", e)
         Left(Redirect(routes.NotRegisteredController.onPageLoad())).toFuture
     }
   }

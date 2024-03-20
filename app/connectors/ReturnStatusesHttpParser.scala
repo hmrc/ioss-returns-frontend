@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package connectors
 
 import logging.Logging
 import models.{ErrorResponse, InvalidJson, PeriodWithStatus, UnexpectedResponseStatus}
-import play.api.http.Status.CREATED
+import play.api.http.Status.OK
 import play.api.libs.json.{JsError, JsSuccess}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 
@@ -30,7 +30,7 @@ object ReturnStatusesHttpParser extends Logging {
 
     override def read(method: String, url: String, response: HttpResponse): ReturnStatusesResponse = {
       response.status match {
-        case CREATED =>
+        case OK =>
           response.json.validate[Seq[PeriodWithStatus]] match {
             case JsSuccess(r, _) => Right(r)
             case JsError(errors) =>

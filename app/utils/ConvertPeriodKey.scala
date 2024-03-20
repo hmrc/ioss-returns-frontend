@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 package utils
 
-import models.Period
+import models.{Period, StandardPeriod}
 
 import java.time.Month
 import java.time.Month._
@@ -41,7 +41,7 @@ object ConvertPeriodKey {
     val year = periodKey.substring(0, 2)
     val month = periodKey.substring(2, 4)
 
-    Period(s"20$year".toInt, fromEtmpMonthString(month))
+    StandardPeriod(s"20$year".toInt, fromEtmpMonthString(month))
   }
 
   def fromEtmpMonthString(monthKey: String): Month = {

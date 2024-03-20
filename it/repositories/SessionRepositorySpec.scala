@@ -1,7 +1,7 @@
 package repositories
 
 import config.FrontendAppConfig
-import models.{Period, UserAnswers}
+import models.{Period, StandardPeriod, UserAnswers}
 import org.mockito.Mockito.when
 import org.mongodb.scala.model.Filters
 import org.scalatest.OptionValues
@@ -27,7 +27,7 @@ class SessionRepositorySpec
 
   private val instant = Instant.now.truncatedTo(ChronoUnit.MILLIS)
   private val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
-  private val period: Period = Period(2024, Month.MARCH)
+  private val period: Period = StandardPeriod(2024, Month.MARCH)
 
   private val userAnswers = UserAnswers("id", period, Json.obj("foo" -> "bar"), Instant.ofEpochSecond(1))
 
