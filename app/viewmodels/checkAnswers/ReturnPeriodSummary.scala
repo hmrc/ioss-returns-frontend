@@ -31,10 +31,6 @@ object ReturnPeriodSummary {
     Some(SummaryListRowViewModel(
       key = "checkYourAnswers.label.returnPeriod",
       value = ValueViewModel(HtmlFormat.escape(userAnswers.period.displayText).toString).withCssClass("govuk-table__cell--numeric govuk-!-padding-right-0"),
-      actions = Seq(
-        ActionItemViewModel("site.change", routes.StartReturnController.onPageLoad(waypoints, userAnswers.period).url)
-          .withVisuallyHiddenText(messages("startReturn.change.hidden"))
-          .withAttribute(("id", "change-return-period"))
-      )))
+      ))
   }
 }
