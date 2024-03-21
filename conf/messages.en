@@ -494,3 +494,9 @@ cannotStartReturn.title = You cannot start this return yet
 cannotStartReturn.heading =You cannot start this return yet
 cannotStartReturn.p1 = You must complete a previous return first.
 cannotStartReturn.backToYourAccount =<a class="govuk-link" id="back-to-your-account" href={0}>Back to your account</a>
+
+whichPreviousRegistrationToPay.title = Which previous registration do you want to pay?
+whichPreviousRegistrationToPay.heading = Which previous registration do you want to pay?
+whichPreviousRegistrationToPay.selection = You owe <strong>{0}</strong> for your registration with IOSS number <br/> {1}
+whichPreviousRegistrationToPay.error.required = Select which previous registration you want to pay
+whichPreviousRegistrationToPay.change.hidden = which previous registration you want to pay

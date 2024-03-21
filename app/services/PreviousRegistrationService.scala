@@ -16,8 +16,10 @@
 
 package services
 
-import connectors.RegistrationConnector
+import connectors.{FinancialDataConnector, RegistrationConnector}
+import logging.Logging
 import models.StandardPeriod
+import models.payments.PrepareData
 import uk.gov.hmrc.http.HeaderCarrier
 import viewmodels.previousReturns.PreviousRegistration
 
@@ -26,8 +28,9 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class PreviousRegistrationService @Inject()(
-                                             registrationConnector: RegistrationConnector
-                                           )(implicit ec: ExecutionContext) {
+                                             registrationConnector: RegistrationConnector,
+                                             financialDataConnector: FinancialDataConnector
+                                           )(implicit ec: ExecutionContext) extends Logging {
 
   def getPreviousRegistrations()(implicit hc: HeaderCarrier): Future[List[PreviousRegistration]] = {
     registrationConnector.getAccounts().map { accounts =>
@@ -44,6 +47,23 @@ class PreviousRegistrationService @Inject()(
           iossNumber = iossNumber
         )
       }.toList
+    }
+  }
+
+  // TODO - Test
+  def getPreviousRegistrationPrepareFinancialData()(implicit hc: HeaderCarrier): Future[List[PrepareData]] = {
+    getPreviousRegistrations().flatMap { previousRegistrations =>
+      Future.sequence(
+        previousRegistrations.map { previousRegistration =>
+          financialDataConnector.prepareFinancialDataWithIossNumber(previousRegistration.iossNumber).map {
+            case Right(previousRegistrationPrepareData) => previousRegistrationPrepareData
+            case Left(error) =>
+              val message = s"There was an issue retrieving prepared financial data ${error.body}"
+              logger.error(message)
+              throw new Exception(message)
+          }
+        }
+      )
     }
   }
 }

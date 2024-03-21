@@ -18,8 +18,8 @@ package controllers.actions
 
 import base.SpecBase
 import connectors.RegistrationConnector
-import models.requests.{IdentifierRequest, RegistrationRequest}
 import models.RegistrationWrapper
+import models.requests.{IdentifierRequest, RegistrationRequest}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalacheck.Arbitrary
@@ -55,12 +55,10 @@ class GetRegistrationActionSpec extends SpecBase with MockitoSugar with EitherVa
 
         val action = new Harness(connector)
 
-        val result = action.callRefine(IdentifierRequest(request, testCredentials, vrn, iossNumber)).futureValue
+        val result = action.callRefine(IdentifierRequest(request, testCredentials, vrn, iossNumber, enrolments)).futureValue
 
         result.isRight mustEqual true
       }
     }
-
-
   }
 }

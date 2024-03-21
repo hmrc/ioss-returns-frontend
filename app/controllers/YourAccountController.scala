@@ -33,7 +33,6 @@ import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import repositories.SessionRepository
 import services.PreviousRegistrationService
-import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import viewmodels.PaymentsViewModel
 import viewmodels.yourAccount.{CurrentReturns, ReturnsViewModel}
@@ -70,7 +69,7 @@ class YourAccountController @Inject()(
         val results = getCurrentReturns()
 
         if (request.enrolments.enrolments.size > 1) {
-          getPreviousRegistrationPrepareFinancialData().flatMap { prepareDataList =>
+          previousRegistrationService.getPreviousRegistrationPrepareFinancialData().flatMap { prepareDataList =>
             prepareView(results, prepareDataList)
           }
         } else {
@@ -182,23 +181,8 @@ class YourAccountController @Inject()(
         } else {
           currentReturn
         })),
-      previousRegistrationPrepareData
+      previousRegistrationPrepareData = previousRegistrationPrepareData,
+      redirectLink = "TEST-LINK"
     ))
-  }
-
-  private def getPreviousRegistrationPrepareFinancialData()(implicit hc: HeaderCarrier): Future[List[PrepareData]] = {
-    previousRegistrationService.getPreviousRegistrations().flatMap { previousRegistrations =>
-      Future.sequence(
-        previousRegistrations.map { previousRegistration =>
-          financialDataConnector.prepareFinancialDataWithIossNumber(previousRegistration.iossNumber).map {
-            case Right(previousRegistrationPrepareData) => previousRegistrationPrepareData
-            case Left(error) =>
-              val message = s"There was an issue getting prepared financial data ${error.body}"
-              logger.error(message)
-              throw new Exception(message)
-          }
-        }
-      )
-    }
   }
 }
