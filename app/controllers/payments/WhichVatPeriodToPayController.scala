@@ -51,7 +51,7 @@ class WhichVatPeriodToPayController @Inject()(
     implicit request => {
       val prepareFinancialData: Future[PrepareData] = paymentsService.prepareFinancialData()
       prepareFinancialData.flatMap { pfd =>
-        val payments = pfd.duePayments ++ pfd.overduePayments
+        val payments = (pfd.duePayments ++ pfd.overduePayments).sortBy(_.period).reverse
         val paymentError = payments.exists(_.paymentStatus == PaymentStatus.Unknown)
 
         payments match {

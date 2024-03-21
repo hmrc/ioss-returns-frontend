@@ -47,7 +47,7 @@ class CheckBouncedEmailFilterSpec extends SpecBase with MockitoSugar {
             registrationWrapper.registration.schemeDetails.copy(unusableStatus = true)))
 
         running(app) {
-          val request = RegistrationRequest(FakeRequest(), testCredentials, vrn, iossNumber, regWrapperWithUnusableEmail)
+          val request = RegistrationRequest(FakeRequest(), testCredentials, vrn, iossNumber, regWrapperWithUnusableEmail, enrolments)
           val controller = new Harness
 
           val result = controller.callFilter(request).futureValue
@@ -67,7 +67,7 @@ class CheckBouncedEmailFilterSpec extends SpecBase with MockitoSugar {
           .build()
 
         running(app) {
-          val request = RegistrationRequest(FakeRequest(), testCredentials, vrn, iossNumber, registrationWrapper)
+          val request = RegistrationRequest(FakeRequest(), testCredentials, vrn, iossNumber, registrationWrapper, enrolments)
           val controller = new Harness
 
           val result = controller.callFilter(request).futureValue

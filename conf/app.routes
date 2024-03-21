@@ -130,3 +130,6 @@ GET         /excluded-cannot-use-service                                        
 
 GET         /start-return                                                             controllers.StartOutstandingReturnController.onPageLoad()
 GET         /no-returns-due                                                           controllers.NoReturnsDueController.onPageLoad()
+
+GET         /whichPreviousRegistrationToPay                                           controllers.WhichPreviousRegistrationToPayController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
+POST        /whichPreviousRegistrationToPay                                           controllers.WhichPreviousRegistrationToPayController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints)

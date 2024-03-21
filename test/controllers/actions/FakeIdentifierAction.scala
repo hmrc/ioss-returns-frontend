@@ -21,7 +21,7 @@ import models.requests.IdentifierRequest
 import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.mvc._
 import services.AccountService
-import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.auth.core.{AuthConnector, Enrolment, Enrolments}
 import uk.gov.hmrc.auth.core.retrieve.Credentials
 import uk.gov.hmrc.domain.Vrn
 import utils.FutureSyntax.FutureOps
@@ -34,11 +34,15 @@ class FakeIdentifierAction extends IdentifierAction(
   mock[FrontendAppConfig]
 )(ExecutionContext.Implicits.global) {
 
+  private val iossEnrolmentKey = "HMRC-IOSS-ORG"
+  private val enrolments: Enrolments = Enrolments(Set(Enrolment(iossEnrolmentKey, Seq.empty, "test", None)))
+
   override def refine[A](request: Request[A]): Future[Either[Result, IdentifierRequest[A]]] =
     Right(IdentifierRequest(
       request,
       Credentials("12345-credId", "GGW"),
       Vrn("123456789"),
-      "IM9001234567"
+      "IM9001234567",
+      enrolments
     )).toFuture
 }

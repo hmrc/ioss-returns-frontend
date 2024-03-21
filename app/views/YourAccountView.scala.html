@@ -16,10 +16,10 @@
 
 @import controllers.previousReturns.{routes => prevRoutes}
 @import models.etmp.{EtmpExclusion, EtmpExclusionReason}
+@import models.payments.PrepareData
 @import pages.EmptyWaypoints
 @import viewmodels._
 @import viewmodels.yourAccount._
-@import models.payments.PrepareData
 
 @this(
         layout: templates.Layout,
@@ -38,7 +38,8 @@
         maybeExclusion: Option[EtmpExclusion],
         hasSubmittedFinalReturn: Boolean,
         returnsViewModel: ReturnsViewModel,
-        previousRegistrationPrepareData: List[PrepareData]
+        previousRegistrationPrepareData: List[PrepareData],
+        redirectLink: String
 )(implicit request: Request[_], messages: Messages)
 
 @layout(
@@ -57,23 +58,22 @@
         @if(previousRegistrationPrepareData.size > 1) {
             @govukWarningText(WarningText(
                 iconFallbackText = Option(messages("site.warning")),
-                content = HtmlContent(messages(
+                content =
+                    HtmlContent(Html(messages(
                     "yourAccount.previousRegistrations.plural",
                     currencyFormat(previousRegistrationPrepareData.map(_.overduePayments.map(_.amountOwed).sum).sum)
-                ))
+                ) + s"""<p class="govuk-body"><a class="govuk-link" href="${redirectLink}">${messages("yourAccount.previousRegistrations.payLink")}</a></p>"""))
             ))
         } else {
             @govukWarningText(WarningText(
                 iconFallbackText = Option(messages("site.warning")),
-                content = HtmlContent(messages(
+                content = HtmlContent(Html(messages(
                     "yourAccount.previousRegistrations.singular",
                     currencyFormat(previousRegistrationPrepareData.map(_.totalAmountOwed).sum),
                     previousRegistrationPrepareData.map(_.iossNumber).head
-                ))
-            ))
+                ) + s"""<p class="govuk-body"><a class="govuk-link" href="${redirectLink}">${messages("yourAccount.previousRegistrations.payLink")}</a></p>"""))
+           ))
         }
-        @*TODO -> Sort out margin, can be part of warning text component? needs url when new page created*@
-        <p class="govuk-body govuk-!-margin-bottom-6 govuk-!-margin-left-7"><a class="govuk-link" href="">@messages("yourAccount.previousRegistrations.payLink")</a></p>
     }
 
     @if(exclusionsEnabled) {
@@ -276,4 +276,4 @@
         </div>
     </div>
 
-}@import models.payments.PrepareData
+}
