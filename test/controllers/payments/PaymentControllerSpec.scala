@@ -17,7 +17,10 @@
 package controllers.payments
 
 import base.SpecBase
-import models.InvalidJson
+import connectors.{FinancialDataConnector, VatReturnConnector}
+import connectors.FinancialDataHttpParser.ChargeResponse
+import models.{InvalidJson, UnexpectedResponseStatus}
+import models.financialdata.Charge
 import models.payments.PaymentResponse
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
@@ -29,6 +32,7 @@ import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import services.{PaymentsService, PreviousRegistrationService}
+import testUtils.EtmpVatReturnData.etmpVatReturn
 import testUtils.PreviousRegistrationData.previousRegistrations
 import utils.FutureSyntax.FutureOps
 
@@ -36,13 +40,24 @@ class PaymentControllerSpec extends SpecBase with BeforeAndAfterEach {
 
   private val mockPaymentService: PaymentsService = mock[PaymentsService]
   private val mockPreviousRegistrationService: PreviousRegistrationService = mock[PreviousRegistrationService]
+  private val mockFinancialDataConnector: FinancialDataConnector = mock[FinancialDataConnector]
+  private val mockVatReturnConnector: VatReturnConnector = mock[VatReturnConnector]
 
   private val paymentResponse: PaymentResponse = PaymentResponse(journeyId = "journeyId", nextUrl = "nextUrl")
   private val amount = 20000000
+  private val chargeResponse: ChargeResponse = Right(Some(Charge(
+    period = period,
+    originalAmount = amount,
+    outstandingAmount = amount,
+    clearedAmount = BigDecimal(0)
+  )))
+  private val errorChargeResponse: ChargeResponse = Left(UnexpectedResponseStatus(status = 500, body = "error"))
 
   override def beforeEach(): Unit = {
     Mockito.reset(mockPaymentService)
     Mockito.reset(mockPreviousRegistrationService)
+    Mockito.reset(mockFinancialDataConnector)
+    Mockito.reset(mockVatReturnConnector)
   }
 
   "Payment Controller" - {
@@ -50,14 +65,38 @@ class PaymentControllerSpec extends SpecBase with BeforeAndAfterEach {
     "makePayment" - {
       "should make request to pay-api successfully" in {
 
+        when(mockFinancialDataConnector.getChargeForIossNumber(any(), any())(any())) thenReturn chargeResponse.toFuture
         when(mockPaymentService.makePayment(any(), any(), any())(any())) thenReturn Right(paymentResponse).toFuture
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+          .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
           .overrides(bind[PaymentsService].toInstance(mockPaymentService))
           .build()
 
         running(application) {
-          val request = FakeRequest(GET, routes.PaymentController.makePayment(waypoints, period, amount).url)
+          val request = FakeRequest(GET, routes.PaymentController.makePayment(waypoints, period).url)
+
+          val result = route(application, request).value
+
+          status(result) mustBe SEE_OTHER
+          redirectLocation(result).value must endWith(paymentResponse.nextUrl)
+        }
+      }
+
+      "should make request to pay-api successfully when financial data endpoint is down" in {
+
+        when(mockFinancialDataConnector.getChargeForIossNumber(any(), any())(any())) thenReturn errorChargeResponse.toFuture
+        when(mockPaymentService.makePayment(any(), any(), any())(any())) thenReturn Right(paymentResponse).toFuture
+        when(mockVatReturnConnector.getForIossNumber(any(), any())(any())) thenReturn Right(etmpVatReturn).toFuture
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+          .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
+          .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
+          .overrides(bind[PaymentsService].toInstance(mockPaymentService))
+          .build()
+
+        running(application) {
+          val request = FakeRequest(GET, routes.PaymentController.makePayment(waypoints, period).url)
 
           val result = route(application, request).value
 
@@ -68,14 +107,16 @@ class PaymentControllerSpec extends SpecBase with BeforeAndAfterEach {
 
       "should handle a failed request to pay-api" in {
 
+        when(mockFinancialDataConnector.getChargeForIossNumber(any(), any())(any())) thenReturn chargeResponse.toFuture
         when(mockPaymentService.makePayment(any(), any(), any())(any())) thenReturn Left(InvalidJson).toFuture
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+          .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
           .overrides(bind[PaymentsService].toInstance(mockPaymentService))
           .build()
 
         running(application) {
-          val request = FakeRequest(GET, routes.PaymentController.makePayment(waypoints, period, amount).url)
+          val request = FakeRequest(GET, routes.PaymentController.makePayment(waypoints, period).url)
 
           val result = route(application, request).value
 
@@ -88,16 +129,42 @@ class PaymentControllerSpec extends SpecBase with BeforeAndAfterEach {
     "makePaymentForIossNumber" - {
       "should make request to pay-api successfully" in {
 
+        when(mockFinancialDataConnector.getChargeForIossNumber(any(), any())(any())) thenReturn chargeResponse.toFuture
         when(mockPaymentService.makePayment(any(), any(), any())(any())) thenReturn Right(paymentResponse).toFuture
         when(mockPreviousRegistrationService.getPreviousRegistrations()(any())) thenReturn previousRegistrations.toFuture
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
           .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
+          .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
           .overrides(bind[PaymentsService].toInstance(mockPaymentService))
           .build()
 
         running(application) {
-          val request = FakeRequest(GET, routes.PaymentController.makePaymentForIossNumber(waypoints, period, amount, iossNumber).url)
+          val request = FakeRequest(GET, routes.PaymentController.makePaymentForIossNumber(waypoints, period, iossNumber).url)
+
+          val result = route(application, request).value
+
+          status(result) mustBe SEE_OTHER
+          redirectLocation(result).value must endWith(paymentResponse.nextUrl)
+        }
+      }
+
+      "should make request to pay-api successfully even when financial data is down" in {
+
+        when(mockFinancialDataConnector.getChargeForIossNumber(any(), any())(any())) thenReturn errorChargeResponse.toFuture
+        when(mockPaymentService.makePayment(any(), any(), any())(any())) thenReturn Right(paymentResponse).toFuture
+        when(mockVatReturnConnector.getForIossNumber(any(), any())(any())) thenReturn Right(etmpVatReturn).toFuture
+        when(mockPreviousRegistrationService.getPreviousRegistrations()(any())) thenReturn previousRegistrations.toFuture
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+          .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
+          .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
+          .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
+          .overrides(bind[PaymentsService].toInstance(mockPaymentService))
+          .build()
+
+        running(application) {
+          val request = FakeRequest(GET, routes.PaymentController.makePaymentForIossNumber(waypoints, period, iossNumber).url)
 
           val result = route(application, request).value
 
@@ -108,16 +175,18 @@ class PaymentControllerSpec extends SpecBase with BeforeAndAfterEach {
 
       "should handle a failed request to pay-api" in {
 
+        when(mockFinancialDataConnector.getChargeForIossNumber(any(), any())(any())) thenReturn chargeResponse.toFuture
         when(mockPaymentService.makePayment(any(), any(), any())(any())) thenReturn Left(InvalidJson).toFuture
         when(mockPreviousRegistrationService.getPreviousRegistrations()(any())) thenReturn previousRegistrations.toFuture
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
           .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
+          .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
           .overrides(bind[PaymentsService].toInstance(mockPaymentService))
           .build()
 
         running(application) {
-          val request = FakeRequest(GET, routes.PaymentController.makePaymentForIossNumber(waypoints, period, amount, iossNumber).url)
+          val request = FakeRequest(GET, routes.PaymentController.makePaymentForIossNumber(waypoints, period, iossNumber).url)
 
           val result = route(application, request).value
 
@@ -132,10 +201,11 @@ class PaymentControllerSpec extends SpecBase with BeforeAndAfterEach {
 
         val application = applicationBuilder()
           .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
+          .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
           .build()
 
         running(application) {
-          val request = FakeRequest(GET, routes.PaymentController.makePaymentForIossNumber(waypoints, period, amount, "IM9001111111").url)
+          val request = FakeRequest(GET, routes.PaymentController.makePaymentForIossNumber(waypoints, period, "IM9001111111").url)
 
           val result = route(application, request).value
 
