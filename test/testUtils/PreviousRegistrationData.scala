@@ -17,7 +17,7 @@
 package testUtils
 
 import base.SpecBase
-import models.Period
+import models.StandardPeriod
 import viewmodels.previousReturns.{PreviousRegistration, SelectedPreviousRegistration}
 
 import java.time.YearMonth
@@ -26,14 +26,14 @@ object PreviousRegistrationData extends SpecBase {
 
   val previousRegistrationIM900987654321: PreviousRegistration = PreviousRegistration(
     "IM900987654321",
-    Period(YearMonth.of(2020, 1)),
-    Period(YearMonth.of(2021, 2))
+    StandardPeriod(YearMonth.of(2020, 1)),
+    StandardPeriod(YearMonth.of(2021, 2))
   )
 
   val previousRegistrationIM900987654322: PreviousRegistration = PreviousRegistration(
     "IM900987654322",
-    Period(YearMonth.of(2021, 3)),
-    Period(YearMonth.of(2021, 10))
+    StandardPeriod(YearMonth.of(2021, 3)),
+    StandardPeriod(YearMonth.of(2021, 10))
   )
 
   val selectedPreviousRegistration: SelectedPreviousRegistration = SelectedPreviousRegistration(userAnswersId, previousRegistrationIM900987654322)

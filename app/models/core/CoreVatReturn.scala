@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 package models.core
 
-import play.api.libs.json.{Json, JsString, OFormat, Reads, Writes}
+import play.api.libs.json.{JsString, Json, OFormat, Reads, Writes}
 import utils.Formatters.etmpDateTimeFormatter
 
 import java.time.{Instant, LocalDate, LocalDateTime, ZoneId}
@@ -142,8 +142,11 @@ object CoreErrorResponse {
   val REGISTRATION_NOT_FOUND = "OSS_009"
 }
 
+
 case class EisErrorResponse(
-                             errorDetail: CoreErrorResponse
+                             timestamp: Instant,
+                             error: String,
+                             errorMessage: String
                            )
 
 object EisErrorResponse {

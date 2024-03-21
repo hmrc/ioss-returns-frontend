@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import base.SpecBase
 import config.FrontendAppConfig
 import connectors.{FinancialDataConnector, ReturnStatusConnector}
 import generators.Generators
-import models.{Period, RegistrationWrapper, SubmissionStatus}
+import models.{RegistrationWrapper, StandardPeriod, SubmissionStatus}
 import models.SubmissionStatus._
 import models.etmp.EtmpExclusion
 import models.etmp.EtmpExclusionReason.NoLongerSupplies
@@ -42,7 +42,7 @@ import scala.concurrent.Future
 
 class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generators with BeforeAndAfterEach {
 
-  val nextPeriod: Period = Period(LocalDate.now.minusYears(1).getYear, Month.APRIL)
+  val nextPeriod: StandardPeriod = StandardPeriod(LocalDate.now.minusYears(1).getYear, Month.APRIL)
 
   private val returnStatusConnector = mock[ReturnStatusConnector]
 
@@ -51,14 +51,15 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
     "should display your account view" - {
       "when registration wrapper is present" in {
         val now = LocalDate.now()
-        val periodOverdue1 = Period(now.minusYears(1).getYear, Month.JANUARY)
-        val periodOverdue2 = Period(now.minusYears(1).getYear, Month.FEBRUARY)
-        val periodDue1 = Period(now.getYear, now.getMonth.plus(1))
-        val periodDue2 = Period(now.getYear, now.getMonth.plus(2))
-        val paymentOverdue1 = Payment(periodOverdue1, 10, periodOverdue1.paymentDeadline, PaymentStatus.Unpaid)
-        val paymentOverdue2 = Payment(periodOverdue2, 10, periodOverdue2.paymentDeadline, PaymentStatus.Unpaid)
-        val paymentDue1 = Payment(periodDue1, 10, periodDue1.paymentDeadline, PaymentStatus.Unpaid)
-        val paymentDue2 = Payment(periodDue2, 10, periodDue2.paymentDeadline, PaymentStatus.Unpaid)
+        val periodOverdue1 = StandardPeriod(now.minusYears(1).getYear, Month.JANUARY)
+        val periodOverdue2 = StandardPeriod(now.minusYears(1).getYear, Month.FEBRUARY)
+        val periodDue1 = StandardPeriod(now.getYear, now.getMonth.plus(1))
+        val periodDue2 = StandardPeriod(now.getYear, now.getMonth.plus(2))
+        val amountOwed = 10
+        val paymentOverdue1 = Payment(periodOverdue1, amountOwed, periodOverdue1.paymentDeadline, PaymentStatus.Unpaid)
+        val paymentOverdue2 = Payment(periodOverdue2, amountOwed, periodOverdue2.paymentDeadline, PaymentStatus.Unpaid)
+        val paymentDue1 = Payment(periodDue1, amountOwed, periodDue1.paymentDeadline, PaymentStatus.Unpaid)
+        val paymentDue2 = Payment(periodDue2, amountOwed, periodDue2.paymentDeadline, PaymentStatus.Unpaid)
         val prepareData = PrepareData(List(paymentDue1, paymentDue2),
           List(paymentOverdue1, paymentOverdue2),
           List.empty,
@@ -517,8 +518,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
       "and 1 return overdue" in {
 
-        val firstPeriod = Period(LocalDate.now.minusYears(1).getYear, Month.JANUARY)
-        val secondPeriod = Period(LocalDate.now.minusYears(1).getYear, Month.FEBRUARY)
+        val firstPeriod = StandardPeriod(LocalDate.now.minusYears(1).getYear, Month.JANUARY)
+        val secondPeriod = StandardPeriod(LocalDate.now.minusYears(1).getYear, Month.FEBRUARY)
 
         val registrationWrapper: RegistrationWrapper = arbitrary[RegistrationWrapper].sample.value
 
@@ -582,7 +583,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
       "when there is 1 return overdue" in {
 
-        val period = Period(LocalDate.now.minusYears(1).getYear, Month.JANUARY)
+        val period = StandardPeriod(LocalDate.now.minusYears(1).getYear, Month.JANUARY)
 
         val registrationWrapper: RegistrationWrapper = arbitrary[RegistrationWrapper].sample.value
 
@@ -643,8 +644,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
       }
 
       "when there is 2 returns overdue" in {
-        val firstPeriod = Period(LocalDate.now.minusYears(1).getYear, Month.JANUARY)
-        val secondPeriod = Period(LocalDate.now.minusYears(1).getYear, Month.FEBRUARY)
+        val firstPeriod = StandardPeriod(LocalDate.now.minusYears(1).getYear, Month.JANUARY)
+        val secondPeriod = StandardPeriod(LocalDate.now.minusYears(1).getYear, Month.FEBRUARY)
 
         val registrationWrapper: RegistrationWrapper = arbitrary[RegistrationWrapper].sample.value
 
@@ -707,9 +708,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
       }
 
       "when there is multiple returns overdue and one due" in {
-        val firstPeriod = Period(LocalDate.now.minusYears(1).getYear, Month.JANUARY)
-        val secondPeriod = Period(LocalDate.now.minusYears(1).getYear, Month.FEBRUARY)
-        val thirdPeriod = Period(LocalDate.now.minusYears(1).getYear, Month.MARCH)
+        val firstPeriod = StandardPeriod(LocalDate.now.minusYears(1).getYear, Month.JANUARY)
+        val secondPeriod = StandardPeriod(LocalDate.now.minusYears(1).getYear, Month.FEBRUARY)
+        val thirdPeriod = StandardPeriod(LocalDate.now.minusYears(1).getYear, Month.MARCH)
 
         val registrationWrapper: RegistrationWrapper = arbitrary[RegistrationWrapper].sample.value
 

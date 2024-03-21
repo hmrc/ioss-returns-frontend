@@ -147,6 +147,9 @@ startReturn.checkYourAnswersLabel = startReturn
 startReturn.error.required = Select yes if you want to start your return
 startReturn.change.hidden = Start return
 startReturn.finalReturn = Do you want to start your final return?
+startReturn.partialFrom = Only include sales from {0}.
+startReturn.partialTo = Only include sales up to {0}.
+startReturn.shortTitle = Do you want to start your return?
 
 soldGoods.title = Did you make eligible sales into the EU or Northern Ireland in {0}?
 soldGoods.heading = Did you make eligible sales into the EU or Northern Ireland in {0}?

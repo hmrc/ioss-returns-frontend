@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,16 @@
 package forms.corrections
 
 import forms.behaviours.OptionFieldBehaviours
-import models.{Index, Period}
+import models.{Index, Period, StandardPeriod}
+
 import java.time.Month
 import play.api.data.FormError
 
 
 class CorrectionReturnPeriodFormProviderSpec extends OptionFieldBehaviours {
 
-  val testPeriods: Seq[Period] = Seq(Period(2023, Month.NOVEMBER), Period(2023, Month.DECEMBER))
+  val year = 2023
+  val testPeriods: Seq[Period] = Seq(StandardPeriod(year, Month.NOVEMBER), StandardPeriod(year, Month.DECEMBER))
   val index: Index = Index(0)
   val form = new CorrectionReturnPeriodFormProvider()(index, testPeriods, Seq.empty)
 

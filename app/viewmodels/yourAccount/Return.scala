@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,13 @@
 
 package viewmodels.yourAccount
 
-import models.{Period, SubmissionStatus}
+import models.{Period, StandardPeriod, SubmissionStatus}
 import play.api.libs.json.{Json, OFormat}
 
 import java.time.LocalDate
 
 case class Return (
-                    period: Period,
+                    period: StandardPeriod,
                     firstDay: LocalDate,
                     lastDay: LocalDate,
                     dueDate: LocalDate,
@@ -35,7 +35,7 @@ case object Return {
   implicit val format: OFormat[Return] = Json.format[Return]
 
   def fromPeriod(period: Period, submissionStatus: SubmissionStatus, inProgress: Boolean, isOldest: Boolean): Return = {
-    Return(period, period.firstDay, period.lastDay, period.paymentDeadline, submissionStatus, inProgress, isOldest)
+    Return(StandardPeriod.fromPeriod(period), period.firstDay, period.lastDay, period.paymentDeadline, submissionStatus, inProgress, isOldest)
 
   }
 

@@ -1,7 +1,7 @@
 package repositories
 
 import config.FrontendAppConfig
-import models.Period
+import models.{Period, StandardPeriod}
 import org.mongodb.scala.model.Filters
 import org.scalatest.OptionValues
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
@@ -29,8 +29,8 @@ class SelectedPreviousRegistrationRepositorySpec
 
   val previousRegistrationIM900987654322: PreviousRegistration = PreviousRegistration(
     "IM900987654322",
-    Period(YearMonth.of(2021, 3)),
-    Period(YearMonth.of(2021, 10))
+    StandardPeriod(YearMonth.of(2021, 3)),
+    StandardPeriod(YearMonth.of(2021, 10))
   )
 
   private val selectedPreviousRegistration: SelectedPreviousRegistration = SelectedPreviousRegistration("id", previousRegistrationIM900987654322, lastUpdated = Instant.now(stubClock))

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 package viewmodels.yourAccount
 
-import models.Period
+import models.StandardPeriod
 import models.SubmissionStatus.{Due, Next, Overdue}
 import pages.{EmptyWaypoints, Waypoints}
 import play.api.i18n.Messages
@@ -47,7 +47,7 @@ object ReturnsViewModel {
     )
   }
 
-  private def startDueReturnLink(waypoints: Waypoints, period: Period)(implicit messages: Messages) = {
+  private def startDueReturnLink(waypoints: Waypoints, period: StandardPeriod)(implicit messages: Messages) = {
     LinkModel(
       linkText = messages("yourAccount.yourReturns.dueReturn.startReturn"),
       id = "start-your-return",
@@ -55,14 +55,14 @@ object ReturnsViewModel {
     )
   }
 
-  private def startOverdueReturnLink(waypoints: Waypoints, period: Period)(implicit messages: Messages) =
+  private def startOverdueReturnLink(waypoints: Waypoints, period: StandardPeriod)(implicit messages: Messages) =
     LinkModel(
       linkText = messages("yourAccount.yourReturns.dueReturn.startReturn"),
       id = "start-your-return",
       url = controllers.routes.StartReturnController.onPageLoad(waypoints, period).url
     )
 
-  private def returnDueParagraph(period: Period)(implicit messages: Messages) =
+  private def returnDueParagraph(period: StandardPeriod)(implicit messages: Messages) =
     ParagraphSimple(messages("yourAccount.yourReturns.returnDue", period.displayShortText, period.paymentDeadlineDisplay))
 
   private def returnOverdueSingularParagraph()(implicit messages: Messages) =
@@ -75,7 +75,7 @@ object ReturnsViewModel {
     ParagraphSimple(messages("yourAccount.yourReturns.returnsOverdue.multiple", numberOfOverdueReturns))
   private def onlyReturnsOverdueParagraph(numberOfOverdueReturns: Int)(implicit messages: Messages) =
     ParagraphSimple(messages("yourAccount.yourReturns.onlyReturnsOverdue", numberOfOverdueReturns))
-  private def nextReturnParagraph(nextReturn: Period)(implicit messages: Messages) =
+  private def nextReturnParagraph(nextReturn: StandardPeriod)(implicit messages: Messages) =
     ParagraphWithId(messages("yourAccount.nextPeriod", nextReturn.displayShortText, nextReturn.lastDay.plusDays(1)
       .format(DateTimeFormatter.ofPattern("d MMMM yyyy"))),
       "next-period"

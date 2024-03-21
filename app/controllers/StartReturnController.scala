@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import pages.{StartReturnPage, Waypoints}
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import services.PeriodService
+import services.{PartialReturnPeriodService, PeriodService}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax.FutureOps
 import views.html.StartReturnView
@@ -39,6 +39,7 @@ class StartReturnController @Inject()(
                                        cc: AuthenticatedControllerComponents,
                                        formProvider: StartReturnFormProvider,
                                        periodService: PeriodService,
+                                       partialReturnPeriodService: PartialReturnPeriodService,
                                        view: StartReturnView,
                                        clock: Clock
                                      )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
@@ -48,21 +49,22 @@ class StartReturnController @Inject()(
   val form: Form[Boolean] = formProvider()
 
   def onPageLoad(waypoints: Waypoints, period: Period): Action[AnyContent] = (cc.authAndGetOptionalData andThen
-    cc.checkExcludedTraderOptional(period) andThen cc.checkCommencementDateOptional(period)) {
+    cc.checkExcludedTraderOptional(period) andThen cc.checkCommencementDateOptional(period)).async {
     implicit request =>
       // TODO check for starting correct period
 
       val maybeExclusion: Option[EtmpExclusion] = request.registrationWrapper.registration.exclusions.lastOption
 
-      val nextPeriodString = periodService.getNextPeriod(period).displayYearMonth
-
-      val nextPeriod: LocalDate = LocalDate.parse(nextPeriodString, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+      val nextPeriod= period.getNext.firstDay
 
       val isFinalReturn = maybeExclusion.fold(false) { exclusions =>
         nextPeriod.isAfter(exclusions.effectiveDate)
       }
 
-      Ok(view(form, waypoints, period, maybeExclusion, isFinalReturn))
+      partialReturnPeriodService.getPartialReturnPeriod(request.registrationWrapper, period).map { maybePartialReturnPeriod =>
+
+        Ok(view(form, waypoints, period, maybeExclusion, isFinalReturn, maybePartialReturnPeriod))
+      }
 
   }
 
@@ -72,9 +74,7 @@ class StartReturnController @Inject()(
 
       val maybeExclusion: Option[EtmpExclusion] = request.registrationWrapper.registration.exclusions.lastOption
 
-      val nextPeriodString = periodService.getNextPeriod(period).displayYearMonth
-
-      val nextPeriod: LocalDate = LocalDate.parse(nextPeriodString, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+      val nextPeriod= period.getNext.firstDay
 
       val isFinalReturn = maybeExclusion.fold(false) { exclusions =>
         nextPeriod.isAfter(exclusions.effectiveDate)
@@ -82,7 +82,11 @@ class StartReturnController @Inject()(
 
       form.bindFromRequest().fold(
         formWithErrors =>
-          BadRequest(view(formWithErrors, waypoints, period, maybeExclusion, isFinalReturn)).toFuture,
+
+          partialReturnPeriodService.getPartialReturnPeriod(request.registrationWrapper, period).map { maybePartialReturnPeriod =>
+            BadRequest(view(formWithErrors, waypoints, period, maybeExclusion, isFinalReturn, maybePartialReturnPeriod))
+
+          },
 
         value => {
 

@@ -16,40 +16,62 @@
 
 package services
 
-import models.Period
+import models.{Period, StandardPeriod}
 
 import java.time.Month
 import javax.inject.Inject
 
 class PeriodService @Inject() {
 
-  def getNextPeriod(currentPeriod: Period): Period = {
+  def getNextPeriod(currentPeriod: Period): StandardPeriod = {
     currentPeriod.month match {
       case Month.DECEMBER =>
-        Period(currentPeriod.year + 1, Month.JANUARY)
+        StandardPeriod(currentPeriod.year + 1, Month.JANUARY)
       case Month.NOVEMBER =>
-        Period(currentPeriod.year, Month.DECEMBER)
+        StandardPeriod(currentPeriod.year, Month.DECEMBER)
       case Month.OCTOBER =>
-        Period(currentPeriod.year, Month.NOVEMBER)
+        StandardPeriod(currentPeriod.year, Month.NOVEMBER)
       case Month.SEPTEMBER =>
-        Period(currentPeriod.year, Month.OCTOBER)
+        StandardPeriod(currentPeriod.year, Month.OCTOBER)
       case Month.AUGUST =>
-        Period(currentPeriod.year, Month.SEPTEMBER)
+        StandardPeriod(currentPeriod.year, Month.SEPTEMBER)
       case Month.JULY =>
-        Period(currentPeriod.year, Month.AUGUST)
+        StandardPeriod(currentPeriod.year, Month.AUGUST)
       case Month.JUNE =>
-        Period(currentPeriod.year, Month.JULY)
+        StandardPeriod(currentPeriod.year, Month.JULY)
       case Month.MAY =>
-        Period(currentPeriod.year, Month.JUNE)
+        StandardPeriod(currentPeriod.year, Month.JUNE)
       case Month.APRIL =>
-        Period(currentPeriod.year, Month.MAY)
+        StandardPeriod(currentPeriod.year, Month.MAY)
       case Month.MARCH =>
-        Period(currentPeriod.year, Month.APRIL)
+        StandardPeriod(currentPeriod.year, Month.APRIL)
       case Month.FEBRUARY =>
-        Period(currentPeriod.year, Month.MARCH)
+        StandardPeriod(currentPeriod.year, Month.MARCH)
       case Month.JANUARY =>
-        Period(currentPeriod.year, Month.FEBRUARY)
+        StandardPeriod(currentPeriod.year, Month.FEBRUARY)
     }
   }
 
+  def fromKey(key: String): Period = {
+    val yearLast2 = key.take(2)
+    val month = key.drop(2)
+    StandardPeriod(s"20$yearLast2".toInt, fromEtmpMonthString(month))
+  }
+
+  private def fromEtmpMonthString(keyMonth: String): Month = {
+    keyMonth match {
+      case "AA" => Month.JANUARY
+      case "AB" => Month.FEBRUARY
+      case "AC" => Month.MARCH
+      case "AD" => Month.APRIL
+      case "AE" => Month.MAY
+      case "AF" => Month.JUNE
+      case "AG" => Month.JULY
+      case "AH" => Month.AUGUST
+      case "AI" => Month.SEPTEMBER
+      case "AJ" => Month.OCTOBER
+      case "AK" => Month.NOVEMBER
+      case "AL" => Month.DECEMBER
+    }
+  }
 }

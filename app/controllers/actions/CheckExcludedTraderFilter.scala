@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package controllers.actions
 
 import config.FrontendAppConfig
 import controllers.routes
-import models.etmp.EtmpExclusionReason.{NoLongerSupplies, TransferringMSID, VoluntarilyLeaves}
+import models.etmp.EtmpExclusionReason.{CeasedTrade, FailsToComply, NoLongerMeetsConditions, NoLongerSupplies, TransferringMSID, VoluntarilyLeaves}
 import models.requests.DataRequest
 import play.api.mvc.Results.Redirect
 import play.api.mvc.{ActionFilter, Result}
@@ -32,7 +32,16 @@ class CheckExcludedTraderFilterImpl(frontendAppConfig: FrontendAppConfig)(implic
   override protected def filter[A](request: DataRequest[A]): Future[Option[Result]] = {
     if (frontendAppConfig.exclusionsEnabled) {
       request.registrationWrapper.registration.exclusions.lastOption match {
-        case Some(exclusion) if Seq(NoLongerSupplies, VoluntarilyLeaves, TransferringMSID).contains(exclusion.exclusionReason)
+        case Some(exclusion) if Seq(TransferringMSID).contains(exclusion.exclusionReason)
+          && request.userAnswers.period.firstDay.isAfter(exclusion.effectiveDate) =>
+          Future.successful(Some(Redirect(routes.ExcludedNotPermittedController.onPageLoad())))
+        case Some(exclusion) if Seq(
+          NoLongerSupplies,
+          VoluntarilyLeaves,
+          CeasedTrade,
+          NoLongerMeetsConditions,
+          FailsToComply
+        ).contains(exclusion.exclusionReason)
           && request.userAnswers.period.lastDay.isAfter(exclusion.effectiveDate) =>
           Future.successful(Some(Redirect(routes.ExcludedNotPermittedController.onPageLoad())))
         case _ =>

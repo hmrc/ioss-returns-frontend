@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -105,7 +105,7 @@ trait ModelGenerators {
       for {
         year <- Gen.choose(2022, 2099)
         quarter <- Gen.oneOf(Month.values)
-      } yield Period(year, quarter)
+      } yield StandardPeriod(year, quarter)
     }
 
   val arbitraryPeriodKey: Arbitrary[String] = {

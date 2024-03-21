@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,19 +20,18 @@ import com.google.inject.{Inject, Singleton}
 import play.api.Configuration
 import play.api.i18n.Lang
 import play.api.mvc.RequestHeader
-
-import uk.gov.hmrc.http.StringContextOps
 @Singleton
 class FrontendAppConfig @Inject() (configuration: Configuration) {
 
   val host: String    = configuration.get[String]("host")
   val appName: String = configuration.get[String]("appName")
+  val origin: String  = configuration.get[String]("origin")
 
   private val contactHost = configuration.get[String]("contact-frontend.host")
   private val contactFormServiceIdentifier = "ioss-returns-frontend"
 
-  def feedbackUrl(implicit request: RequestHeader): java.net.URL =
-    url"$contactHost/contact/beta-feedback?service=$contactFormServiceIdentifier&backUrl=${host + request.uri}"
+  def feedbackUrl(implicit request: RequestHeader): String =
+    s"$contactHost/contact/beta-feedback?service=$contactFormServiceIdentifier&backUrl=${host + request.uri}"
 
   val loginUrl: String         = configuration.get[String]("urls.login")
   val loginContinueUrl: String = configuration.get[String]("urls.loginContinue")
@@ -42,11 +41,14 @@ class FrontendAppConfig @Inject() (configuration: Configuration) {
   val leaveThisServiceUrl: String = configuration.get[String]("urls.leaveThisServiceUrl")
   val rejoinThisServiceUrl: String = configuration.get[String]("urls.rejoinThisServiceUrl")
 
-  private val exitSurveyBaseUrl: String = configuration.get[Service]("microservice.services.feedback-frontend").baseUrl
-  val exitSurveyUrl: String             = s"${exitSurveyBaseUrl}feedback/ioss-returns-frontend"
+  private val exitSurveyBaseUrl: String = configuration.get[String]("microservice.services.feedback-frontend.host") +
+    configuration.get[String]("microservice.services.feedback-frontend.basePath")
+  val exitSurveyUrl: String             = s"${exitSurveyBaseUrl}/${origin.toLowerCase}"
 
   val languageTranslationEnabled: Boolean = configuration.get[Boolean]("features.welsh-translation")
   val exclusionsEnabled: Boolean = configuration.get[Boolean]("features.exclusions.enabled")
+
+  val coreValidationService: Service = configuration.get[Service]("microservice.services.core-validation")
 
   def languageMap: Map[String, Lang] = Map(
     "en" -> Lang("en"),

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 package viewmodels
 
 import base.SpecBase
-import models.Period
+import models.StandardPeriod
 import models.payments.{Payment, PaymentStatus}
 
 import java.time.{LocalDate, Month}
@@ -25,9 +25,9 @@ import java.time.{LocalDate, Month}
 class PaymentsViewModelSpec extends SpecBase{
 
   private val paymentDue = Payment(period, BigDecimal(1000), LocalDate.now, PaymentStatus.Unpaid)
-  val period1 = Period(2021, Month.JULY)
-  val period2 = Period(2021, Month.OCTOBER)
-  val period3 = Period(2022, Month.JANUARY)
+  val period1: StandardPeriod = StandardPeriod(2021, Month.JULY)
+  val period2: StandardPeriod = StandardPeriod(2021, Month.OCTOBER)
+  val period3: StandardPeriod = StandardPeriod(2022, Month.JANUARY)
 
   "must return correct view model when" - {
     val app = applicationBuilder().build()

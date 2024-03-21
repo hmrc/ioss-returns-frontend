@@ -1,5 +1,5 @@
 @*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@
     button: ButtonGroup
 )
 
-@(form: Form[_], waypoints: Waypoints, period: Period, maybeExclusion: Option[EtmpExclusion], isFinalReturn: Boolean)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, period: Period, maybeExclusion: Option[EtmpExclusion], isFinalReturn: Boolean, maybePartialReturnPeriod: Option[PartialReturnPeriod])(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(
     form,
@@ -42,7 +42,8 @@
             @govukErrorSummary(ErrorSummaryViewModel(form))
         }
 
-        @govukRadios(
+        @{
+          val radioYesNo =
             RadiosViewModel.yesNo(
                 field = form("value"),
                 legend = LegendViewModel(
@@ -53,7 +54,25 @@
                     }
                 ).asPageHeading()
             )
-        )
+
+            maybePartialReturnPeriod match {
+                case Some(partialReturnPeriod) =>
+                    govukRadios(
+                        radioYesNo
+                        .withHint(HintViewModel(
+                            if(isFinalReturn) {
+                                messages("startReturn.partialTo", partialReturnPeriod.displayPartialPeriodLastDayText)
+                            } else {
+                                messages("startReturn.partialFrom", partialReturnPeriod.displayPartialPeriodStartDayText)
+                            }
+                        ))
+                    )
+                case _ =>
+                    govukRadios(
+                        radioYesNo
+                    )
+            }
+        }
 
         @button(
             "site.continue", routes.StartReturnController.onPageLoad(waypoints, period).url, period, waypoints

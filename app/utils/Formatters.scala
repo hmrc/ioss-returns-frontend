@@ -32,7 +32,7 @@ object Formatters {
       s"M${period.zeroPaddedMonth}.$yearValue"
     }
 
-    s"XI/${iossNumber}/$vatReturnPeriodString"
+    s"XI/$iossNumber/$vatReturnPeriodString"
   }
 
 }

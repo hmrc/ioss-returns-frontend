@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,16 +18,24 @@ package controllers
 
 import base.SpecBase
 import forms.StartReturnFormProvider
+import models.PartialReturnPeriod
 import models.etmp.EtmpExclusion
 import models.etmp.EtmpExclusionReason.NoLongerSupplies
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.when
 import org.scalacheck.Gen
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import pages.{NoOtherPeriodsAvailablePage, SoldGoodsPage}
 import play.api.data.Form
+import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import services.PartialReturnPeriodService
 import views.html.StartReturnView
+
+import java.time.Month
+import scala.concurrent.Future
 
 class StartReturnControllerSpec extends SpecBase with MockitoSugar with ScalaCheckPropertyChecks {
 
@@ -38,11 +46,15 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar with ScalaChe
 
   val extraNumberOfDays: Int = 5
 
+  private val mockPartialReturnPeriodService = mock[PartialReturnPeriodService]
+
   "StartReturn Controller" - {
 
     "must return OK and the correct view for a GET" in {
+      when(mockPartialReturnPeriodService.getPartialReturnPeriod(any(), any())(any())) thenReturn Future.successful(None)
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
         .build()
 
       running(application) {
@@ -53,7 +65,28 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar with ScalaChe
         val view = application.injector.instanceOf[StartReturnView]
 
         status(result) mustBe OK
-        contentAsString(result) mustBe view(form, waypoints, period, None, isFinalReturn = false)(request, messages(application)).toString
+        contentAsString(result) mustBe view(form, waypoints, period, None, isFinalReturn = false, None)(request, messages(application)).toString
+      }
+    }
+
+    "must return OK and the correct view for a GET when partial return" in {
+      val partialReturn = Some(PartialReturnPeriod(period.firstDay, period.lastDay, period.year, Month.DECEMBER))
+
+      when(mockPartialReturnPeriodService.getPartialReturnPeriod(any(), any())(any())) thenReturn Future.successful(partialReturn)
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
+        .build()
+
+      running(application) {
+        val request = FakeRequest(GET, startReturnRoute)
+
+        val result = route(application, request).value
+
+        val view = application.injector.instanceOf[StartReturnView]
+
+        status(result) mustBe OK
+        contentAsString(result) mustBe view(form, waypoints, period, None, isFinalReturn = false, partialReturn)(request, messages(application)).toString
       }
     }
 
@@ -95,7 +128,10 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar with ScalaChe
 
     "must return a Bad Request and errors when invalid data is submitted" in {
 
+      when(mockPartialReturnPeriodService.getPartialReturnPeriod(any(), any())(any())) thenReturn Future.successful(None)
+
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
         .build()
 
       running(application) {
@@ -111,7 +147,7 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar with ScalaChe
         val result = route(application, request).value
 
         status(result) mustBe BAD_REQUEST
-        contentAsString(result) mustBe view(boundForm, waypoints, period, None, isFinalReturn = false)(request, messages(application)).toString
+        contentAsString(result) mustBe view(boundForm, waypoints, period, None, isFinalReturn = false, None)(request, messages(application)).toString
       }
     }
 
@@ -126,7 +162,7 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar with ScalaChe
         NoLongerSupplies,
         effectiveDate,
         effectiveDate,
-        false
+        quarantine = false
       )
 
       val application = applicationBuilder(
@@ -145,23 +181,22 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar with ScalaChe
     }
 
     "must return OK and the correct view for a GET when a trader is excluded and the period's last day is before their exclusion effective date" in {
+      when(mockPartialReturnPeriodService.getPartialReturnPeriod(any(), any())(any())) thenReturn Future.successful(None)
 
-      val effectiveDate = Gen.choose(
-        period.lastDay,
-        period.lastDay.plusDays(extraNumberOfDays)
-      ).sample.value
+      val effectiveDate = period.lastDay.plusDays(extraNumberOfDays)
 
       val noLongerSuppliesExclusion = EtmpExclusion(
         NoLongerSupplies,
         effectiveDate,
         effectiveDate,
-        false
+        quarantine = false
       )
 
       val application = applicationBuilder(
         userAnswers = Some(emptyUserAnswers),
         registration = registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq(noLongerSuppliesExclusion)))
-      ).build()
+      ) .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
+        .build()
 
       running(application) {
         val request = FakeRequest(GET, startReturnRoute)
@@ -176,7 +211,8 @@ class StartReturnControllerSpec extends SpecBase with MockitoSugar with ScalaChe
           waypoints,
           period,
           Some(noLongerSuppliesExclusion),
-          isFinalReturn = true
+          isFinalReturn = false,
+          None
         )(request, messages(application)).toString
       }
     }

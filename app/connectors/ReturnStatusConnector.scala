@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,13 @@ package connectors
 
 import config.Service
 import connectors.CurrentReturnHttpParser._
+import connectors.ReturnStatusesHttpParser._
 import play.api.Configuration
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions}
 
+import java.time.{LocalDate, ZoneId}
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -28,7 +32,17 @@ class ReturnStatusConnector @Inject()(config: Configuration, httpClient: HttpCli
                                      (implicit ec: ExecutionContext) extends HttpErrorFunctions {
 
   private val baseUrl = config.get[Service]("microservice.services.ioss-returns")
+  private val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+    .withLocale(Locale.UK)
+    .withZone(ZoneId.systemDefault())
 
   def getCurrentReturns(iossNumber: String)(implicit hc: HeaderCarrier): Future[CurrentReturnsResponse] =
     httpClient.GET[CurrentReturnsResponse](url = s"$baseUrl/vat-returns/current-returns/$iossNumber")
+
+  def listStatuses(commencementDate: LocalDate)(implicit hc: HeaderCarrier): Future[ReturnStatusesResponse] = {
+
+    val url = s"$baseUrl/vat-returns/statuses/${dateTimeFormatter.format(commencementDate)}"
+
+    httpClient.GET[ReturnStatusesResponse](url)
+  }
 }

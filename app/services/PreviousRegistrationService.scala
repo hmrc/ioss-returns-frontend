@@ -17,7 +17,7 @@
 package services
 
 import connectors.RegistrationConnector
-import models.Period
+import models.StandardPeriod
 import uk.gov.hmrc.http.HeaderCarrier
 import viewmodels.previousReturns.PreviousRegistration
 
@@ -39,8 +39,8 @@ class PreviousRegistrationService @Inject()(
 
       accountDetails.zip(accountDetails.drop(1)).map { case ((activationDate, iossNumber), (nextActivationDate, _)) =>
         PreviousRegistration(
-          startPeriod = Period(activationDate),
-          endPeriod = Period(nextActivationDate.minusMonths(1)),
+          startPeriod = StandardPeriod(activationDate),
+          endPeriod = StandardPeriod(nextActivationDate.minusMonths(1)),
           iossNumber = iossNumber
         )
       }.toList

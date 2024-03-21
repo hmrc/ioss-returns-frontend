@@ -18,7 +18,7 @@ package controllers
 
 import base.SpecBase
 import controllers.CheckCorrectionsTimeLimit.isOlderThanThreeYears
-import models.Period
+import models.StandardPeriod
 
 import java.time.{Clock, Instant, LocalDate, ZoneId}
 
@@ -33,7 +33,7 @@ class CheckCorrectionsTimeLimitSpec extends SpecBase {
     "must return true if period payment deadline (due date) is older than 3 years" in {
 
       val dateThreeYearsAndTwoMonthsAgo = date.minusYears(3).minusMonths(2)
-      val dueDate: LocalDate = Period(dateThreeYearsAndTwoMonthsAgo.getYear, dateThreeYearsAndTwoMonthsAgo.getMonth).paymentDeadline
+      val dueDate: LocalDate = StandardPeriod(dateThreeYearsAndTwoMonthsAgo.getYear, dateThreeYearsAndTwoMonthsAgo.getMonth).paymentDeadline
 
       val result = isOlderThanThreeYears(dueDate, stubbedClock)
 
@@ -43,7 +43,7 @@ class CheckCorrectionsTimeLimitSpec extends SpecBase {
     "must return false if period payment deadline (due date) is not older than 3 years" in {
 
       val dateThreeYearsAndOneMonthAgo = date.minusYears(3).plusMonths(1)
-      val dueDate: LocalDate = Period(dateThreeYearsAndOneMonthAgo.getYear, dateThreeYearsAndOneMonthAgo.getMonth).paymentDeadline
+      val dueDate: LocalDate = StandardPeriod(dateThreeYearsAndOneMonthAgo.getYear, dateThreeYearsAndOneMonthAgo.getMonth).paymentDeadline
 
       val result = isOlderThanThreeYears(dueDate, stubbedClock)
 

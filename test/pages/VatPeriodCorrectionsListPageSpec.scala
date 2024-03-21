@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package pages
 
 import connectors.VatReturnConnector
 import controllers.actions.AuthenticatedControllerComponents
-import models.{Index, Period}
+import models.{Index, StandardPeriod}
 import org.scalatestplus.mockito.MockitoSugar.mock
 import pages.behaviours.PageBehaviours
 import pages.corrections.{CorrectionReturnPeriodPage, VatPeriodCorrectionsListPage}
@@ -41,7 +41,7 @@ class VatPeriodCorrectionsListPageSpec extends PageBehaviours {
             emptyUserAnswers
               .set(CorrectionReturnPeriodPage(index), period).success.value
 
-          VatPeriodCorrectionsListPage(period, true).navigate(waypoints, answers, answers).route
+          VatPeriodCorrectionsListPage(period, addAnother = true).navigate(waypoints, answers, answers).route
             .mustEqual(controllers.corrections.routes.CorrectionReturnYearController.onPageLoad(waypoints, Index(1)))
         }
 
@@ -50,7 +50,7 @@ class VatPeriodCorrectionsListPageSpec extends PageBehaviours {
           val answers =
             emptyUserAnswers
 
-          VatPeriodCorrectionsListPage(period, true).navigate(waypoints, answers, answers).route
+          VatPeriodCorrectionsListPage(period, addAnother = true).navigate(waypoints, answers, answers).route
             .mustEqual(controllers.corrections.routes.CorrectionReturnYearController.onPageLoad(waypoints, Index(0)))
         }
       }
@@ -61,7 +61,7 @@ class VatPeriodCorrectionsListPageSpec extends PageBehaviours {
           val answers =
             emptyUserAnswers
               .set(CorrectionReturnPeriodPage(index), period).success.value
-          VatPeriodCorrectionsListPage(period, false).navigate(waypoints, answers, answers).route
+          VatPeriodCorrectionsListPage(period, addAnother = false).navigate(waypoints, answers, answers).route
             .mustEqual(controllers.routes.CheckYourAnswersController.onPageLoad())
         }
       }
@@ -72,8 +72,8 @@ class VatPeriodCorrectionsListPageSpec extends PageBehaviours {
         val mockReturnStatusConnector = mock[VatReturnConnector]
 
         val answers = emptyUserAnswers
-          .set(CorrectionReturnPeriodPage(index), Period("2021", "7").get).success.value
-          .set(CorrectionReturnPeriodPage(Index(1)), Period("2022", "1").get).success.value
+          .set(CorrectionReturnPeriodPage(index), StandardPeriod("2021", "7").get).success.value
+          .set(CorrectionReturnPeriodPage(Index(1)), StandardPeriod("2022", "1").get).success.value
 
         val application = applicationBuilder(userAnswers = Some(answers))
           .configure("bootstrap.filters.csrf.enabled" -> false)
@@ -81,8 +81,8 @@ class VatPeriodCorrectionsListPageSpec extends PageBehaviours {
           .build()
         val cc = application.injector.instanceOf(classOf[AuthenticatedControllerComponents])
 
-        val result = VatPeriodCorrectionsListPage(period, false).cleanup(answers, cc)
-        result.futureValue mustEqual(Success(emptyUserAnswers))
+        val result = VatPeriodCorrectionsListPage(period, addAnother = false).cleanup(answers, cc)
+        result.futureValue mustEqual Success(emptyUserAnswers)
       }
     }
   }
