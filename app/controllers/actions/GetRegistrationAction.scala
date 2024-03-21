@@ -33,8 +33,7 @@ class GetRegistrationAction @Inject()(
   override protected def refine[A](request: IdentifierRequest[A]): Future[Either[Result, RegistrationRequest[A]]] = {
     val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request.request, request.request.session)
     registrationConnector.get()(hc).map { registration =>
-      Right(RegistrationRequest(request.request, request.credentials, request.vrn, request.iossNumber, registration))
+      Right(RegistrationRequest(request.request, request.credentials, request.vrn, request.iossNumber, registration, request.enrolments))
     }
   }
-
 }

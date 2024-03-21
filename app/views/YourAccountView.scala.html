@@ -15,13 +15,11 @@
  *@
 
 @import controllers.previousReturns.{routes => prevRoutes}
+@import models.etmp.{EtmpExclusion, EtmpExclusionReason}
 @import pages.EmptyWaypoints
 @import viewmodels._
 @import viewmodels.yourAccount._
-@import models.etmp.EtmpExclusion
-@import models.etmp.EtmpExclusionReason
-
-@import java.time.Month
+@import models.payments.PrepareData
 
 @this(
         layout: templates.Layout,
@@ -39,7 +37,8 @@
         exclusionsEnabled: Boolean,
         maybeExclusion: Option[EtmpExclusion],
         hasSubmittedFinalReturn: Boolean,
-        returnsViewModel: ReturnsViewModel
+        returnsViewModel: ReturnsViewModel,
+        previousRegistrationPrepareData: List[PrepareData]
 )(implicit request: Request[_], messages: Messages)
 
 @layout(
@@ -53,6 +52,29 @@
         <span class="govuk-caption-m">@businessName</span>
         <span class="govuk-caption-m">@messages("yourAccount.iossNumber", iossNumber)</span>
     </h1>
+
+    @if(previousRegistrationPrepareData.nonEmpty) {
+        @if(previousRegistrationPrepareData.size > 1) {
+            @govukWarningText(WarningText(
+                iconFallbackText = Option(messages("site.warning")),
+                content = HtmlContent(messages(
+                    "yourAccount.previousRegistrations.plural",
+                    currencyFormat(previousRegistrationPrepareData.map(_.overduePayments.map(_.amountOwed).sum).sum)
+                ))
+            ))
+        } else {
+            @govukWarningText(WarningText(
+                iconFallbackText = Option(messages("site.warning")),
+                content = HtmlContent(messages(
+                    "yourAccount.previousRegistrations.singular",
+                    currencyFormat(previousRegistrationPrepareData.map(_.totalAmountOwed).sum),
+                    previousRegistrationPrepareData.map(_.iossNumber).head
+                ))
+            ))
+        }
+        @*TODO -> Sort out margin, can be part of warning text component? needs url when new page created*@
+        <p class="govuk-body govuk-!-margin-bottom-6 govuk-!-margin-left-7"><a class="govuk-link" href="">@messages("yourAccount.previousRegistrations.payLink")</a></p>
+    }
 
     @if(exclusionsEnabled) {
         @if(hasSubmittedFinalReturn) {
@@ -147,7 +169,6 @@
         } else {
             <p class="govuk-body">@messages("yourAccount.paragraph")</p>
         }
-
     }
 
     <div class="flex-container govuk-grid-row">
@@ -161,22 +182,26 @@
                         @paragraph match {
                             case simple: ParagraphSimple => {
                                 <p class="govuk-body">
-                                    @Html(simple.content)
+                                @Html(simple.content)
                                 </p>
                             }
                             case pWithId: ParagraphWithId => {
                                 <p class="govuk-body" id="@pWithId.id">
-                                    @Html(pWithId.content)
+                                @Html(pWithId.content)
                                 </p>
                             }
                         }
                     }
                     @for(link <- returnsViewModel.linkToStart) {
-                    <p class="govuk-body">
-                        <a class="govuk-link" href="@{link.url}" id="@{link.id}">
+                        <p class="govuk-body">
+                            <a class="govuk-link" href="@{
+                                link.url
+                            }" id="@{
+                                link.id
+                            }">
                             @link.linkText
-                        </a>
-                    </p>
+                            </a>
+                        </p>
                     }
                 }
             </div>
@@ -224,7 +249,7 @@
                     </a>
                 </p>
 
-                @rejoinRegistrationUrl.map{ url =>
+                @rejoinRegistrationUrl.map { url =>
                     <p class="govuk-body">
                         <a class="govuk-link" href="@url" id="rejoin-scheme">
                         @messages("yourAccount.details.rejoinThisService")
@@ -251,4 +276,4 @@
         </div>
     </div>
 
-}
+}@import models.payments.PrepareData

@@ -17,7 +17,9 @@
 package controllers
 
 import config.FrontendAppConfig
-import connectors.{FinancialDataConnector, ReturnStatusConnector, SaveForLaterConnector}
+import connectors.CurrentReturnHttpParser.CurrentReturnsResponse
+import connectors.PrepareDataHttpParser.PrepareDataResponse
+import connectors._
 import controllers.CheckCorrectionsTimeLimit.isOlderThanThreeYears
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
@@ -30,6 +32,8 @@ import pages.Waypoints
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import repositories.SessionRepository
+import services.PreviousRegistrationService
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import viewmodels.PaymentsViewModel
 import viewmodels.yourAccount.{CurrentReturns, ReturnsViewModel}
@@ -38,9 +42,6 @@ import views.html.YourAccountView
 import java.time.{Clock, LocalDate}
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
-import scala.concurrent.ExecutionContext
-import CheckCorrectionsTimeLimit.isOlderThanThreeYears
-import services.PreviousRegistrationService
 
 class YourAccountController @Inject()(
                                        cc: AuthenticatedControllerComponents,
@@ -66,20 +67,33 @@ class YourAccountController @Inject()(
           financialDataConnector.prepareFinancialData(previousRegistration.iossNumber)
         }
 
-
         val results = getCurrentReturns()
-        results.map {
-          case (Right(availableReturns), Right(vatReturnsWithFinancialData), answers) =>
-            preparedViewWithFinancialData(availableReturns, vatReturnsWithFinancialData, answers.map(_.period))
-          case (Left(error), error2, _) =>
-            logger.error(s"there was an error with period with status $error and getting periods with outstanding amounts $error2")
-            throw new Exception(error.toString)
-          case (left, right, _) =>
-            val message = s"There was an error during period with status $left $right"
-            logger.error(message)
-            throw new Exception(message)
+
+        if (request.enrolments.enrolments.size > 1) {
+          getPreviousRegistrationPrepareFinancialData().flatMap { prepareDataList =>
+            prepareView(results, prepareDataList)
+          }
+        } else {
+          prepareView(results, List.empty)
         }
       }
+  }
+
+  private def prepareView(
+                           results: Future[(CurrentReturnsResponse, PrepareDataResponse)],
+                           previousRegistrationPrepareData: List[PrepareData]
+                         )(implicit request: RegistrationRequest[AnyContent]): Future[Result] = {
+    results.map {
+      case (Right(availableReturns), Right(vatReturnsWithFinancialData), answers) =>
+        preparedViewWithFinancialData(availableReturns, vatReturnsWithFinancialData, previousRegistrationPrepareData, answers.map(_.period))
+      case (Left(error), error2, _) =>
+        logger.error(s"there was an error with period with status $error and getting periods with outstanding amounts $error2")
+        throw new Exception(error.toString)
+      case (left, right, _) =>
+        val message = s"There was an error during period with status $left $right"
+        logger.error(message)
+        throw new Exception(message)
+    }
   }
 
   private def getCurrentReturns()(implicit request: RegistrationRequest[AnyContent]) = {
@@ -113,6 +127,7 @@ class YourAccountController @Inject()(
   private def preparedViewWithFinancialData(
                                              currentReturns: CurrentReturns,
                                              currentPayments: PrepareData,
+                                             previousRegistrationPrepareData: List[PrepareData],
                                              periodInProgress: Option[Period]
                                            )(implicit request: RegistrationRequest[AnyContent]): Result = {
 
@@ -166,8 +181,24 @@ class YourAccountController @Inject()(
           currentReturn.copy(inProgress = true)
         } else {
           currentReturn
-        }))
+        })),
+      previousRegistrationPrepareData
     ))
   }
 
+  private def getPreviousRegistrationPrepareFinancialData()(implicit hc: HeaderCarrier): Future[List[PrepareData]] = {
+    previousRegistrationService.getPreviousRegistrations().flatMap { previousRegistrations =>
+      Future.sequence(
+        previousRegistrations.map { previousRegistration =>
+          financialDataConnector.prepareFinancialDataWithIossNumber(previousRegistration.iossNumber).map {
+            case Right(previousRegistrationPrepareData) => previousRegistrationPrepareData
+            case Left(error) =>
+              val message = s"There was an issue getting prepared financial data ${error.body}"
+              logger.error(message)
+              throw new Exception(message)
+          }
+        }
+      )
+    }
+  }
 }
