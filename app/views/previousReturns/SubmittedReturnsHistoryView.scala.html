@@ -65,7 +65,7 @@
                                     </td>
                                     <td class="govuk-table__cell govuk-table__cell--numeric">
                                     @if(payment.paymentStatus == PaymentStatus.Unpaid || payment.paymentStatus == PaymentStatus.Unknown || payment.paymentStatus == PaymentStatus.Partial) {
-                                        <a class="govuk-link" id="pay-now" href="@paymentRoutes.PaymentController.makePayment(waypoints, period, (payment.amountOwed * 100).toLong)">
+                                        <a class="govuk-link" id="pay-now" href="@paymentRoutes.PaymentController.makePayment(waypoints, period)">
                                             @messages("submittedReturnsHistory.payNow")
                                             <span class="govuk-visually-hidden">
                                             @Html(messages("submittedReturnsHistory.payNow.hidden", period.displayMonth))

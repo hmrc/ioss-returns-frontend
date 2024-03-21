@@ -1,14 +1,14 @@
 package repositories
 
 import config.FrontendAppConfig
-import models.{Period, StandardPeriod}
+import models.StandardPeriod
 import org.mongodb.scala.model.Filters
 import org.scalatest.OptionValues
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.mockito.MockitoSugar
-import uk.gov.hmrc.mongo.test.{DefaultPlayMongoRepositorySupport, PlayMongoRepositorySupport}
+import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
 import viewmodels.previousReturns.{PreviousRegistration, SelectedPreviousRegistration}
 
 import java.time.{Clock, Instant, YearMonth, ZoneId}

@@ -18,8 +18,8 @@ package controllers
 
 import controllers.actions._
 import forms.StartReturnFormProvider
-import models.etmp.EtmpExclusion
 import models.{Period, UserAnswers}
+import models.etmp.EtmpExclusion
 import pages.{StartReturnPage, Waypoints}
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
@@ -29,8 +29,7 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax.FutureOps
 import views.html.StartReturnView
 
-import java.time.format.DateTimeFormatter
-import java.time.{Clock, Instant, LocalDate}
+import java.time.{Clock, Instant}
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
