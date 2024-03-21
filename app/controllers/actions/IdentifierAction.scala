@@ -63,7 +63,7 @@ class IdentifierAction @Inject()(
         findIossFromEnrolments(enrolments).map { maybeIossNumber =>
           (findVrnFromEnrolments(enrolments), maybeIossNumber) match {
             case (Some(vrn), Some(iossNumber)) =>
-              getSuccessfulResponse(request, credentials, vrn, iossNumber)
+              getSuccessfulResponse(request, credentials, vrn, iossNumber, enrolments)
             case _ => throw InsufficientEnrolments()
           }
         }
@@ -75,7 +75,7 @@ class IdentifierAction @Inject()(
         findIossFromEnrolments(enrolments).map { maybeIossNumber =>
           (findVrnFromEnrolments(enrolments), maybeIossNumber) match {
             case (Some(vrn), Some(iossNumber)) =>
-              checkConfidenceAndGetResponse(request, credentials, vrn, iossNumber, confidence)
+              checkConfidenceAndGetResponse(request, credentials, vrn, iossNumber, confidence, enrolments)
             case _ =>
               throw InsufficientEnrolments()
           }
@@ -97,9 +97,10 @@ class IdentifierAction @Inject()(
                                         request: Request[A],
                                         credentials: Credentials,
                                         vrn: Vrn,
-                                        iossNumber: String
+                                        iossNumber: String,
+                                        enrolments: Enrolments
                                       ): Either[Result, IdentifierRequest[A]] = {
-    val identifierRequest = IdentifierRequest(request, credentials, vrn, iossNumber)
+    val identifierRequest = IdentifierRequest(request, credentials, vrn, iossNumber, enrolments)
     Right(identifierRequest)
   }
 
@@ -108,10 +109,11 @@ class IdentifierAction @Inject()(
                                                 credentials: Credentials,
                                                 vrn: Vrn,
                                                 iossNumber: String,
-                                                confidence: ConfidenceLevel
+                                                confidence: ConfidenceLevel,
+                                                enrolments: Enrolments
                                               ): Either[Result, IdentifierRequest[A]] = {
     if (confidence >= ConfidenceLevel.L250) {
-      getSuccessfulResponse(request, credentials, vrn, iossNumber)
+      getSuccessfulResponse(request, credentials, vrn, iossNumber, enrolments)
     } else {
       throw InsufficientConfidenceLevel()
     }

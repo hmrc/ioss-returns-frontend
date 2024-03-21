@@ -17,7 +17,10 @@
 package controllers
 
 import config.FrontendAppConfig
-import connectors.{FinancialDataConnector, ReturnStatusConnector}
+import connectors.CurrentReturnHttpParser.CurrentReturnsResponse
+import connectors.PrepareDataHttpParser.PrepareDataResponse
+import connectors.{CurrentReturnHttpParser, FinancialDataConnector, PrepareDataHttpParser, ReturnStatusConnector}
+import controllers.CheckCorrectionsTimeLimit.isOlderThanThreeYears
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
 import models.SubmissionStatus
@@ -28,6 +31,8 @@ import models.requests.RegistrationRequest
 import pages.Waypoints
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
+import services.PreviousRegistrationService
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import viewmodels.PaymentsViewModel
 import viewmodels.yourAccount.{CurrentReturns, ReturnsViewModel}
@@ -35,9 +40,7 @@ import views.html.YourAccountView
 
 import java.time.{Clock, LocalDate}
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
-import CheckCorrectionsTimeLimit.isOlderThanThreeYears
-import services.PreviousRegistrationService
+import scala.concurrent.{ExecutionContext, Future}
 
 class YourAccountController @Inject()(
                                        cc: AuthenticatedControllerComponents,
@@ -56,28 +59,35 @@ class YourAccountController @Inject()(
   def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request =>
 
-      val prepareFinancialDataResponse = previousRegistrationService.getPreviousRegistrations().flatMap { previousRegistrations =>
-        previousRegistrations.map { previousRegistration =>
-          financialDataConnector.prepareFinancialData(previousRegistration.iossNumber)
-        }
+      val results = getCurrentReturns()
 
-
-        val results = getCurrentReturns()
-        results.map {
-          case (Right(availableReturns), Right(vatReturnsWithFinancialData)) =>
-            preparedViewWithFinancialData(availableReturns, vatReturnsWithFinancialData)
-          case (Left(error), error2) =>
-            logger.error(s"there was an error with period with status $error and getting periods with outstanding amounts $error2")
-            throw new Exception(error.toString)
-          case (left, right) =>
-            val message = s"There was an error during period with status $left $right"
-            logger.error(message)
-            throw new Exception(message)
+      if (request.enrolments.enrolments.size > 1) {
+        getPreviousRegistrationPrepareFinancialData().flatMap { prepareDataList =>
+            prepareView(results, prepareDataList)
         }
+      } else {
+        prepareView(results, List.empty)
       }
   }
 
-  private def getCurrentReturns()(implicit request: RegistrationRequest[AnyContent]) = {
+  private def prepareView(
+                           results: Future[(CurrentReturnsResponse, PrepareDataResponse)],
+                           previousRegistrationPrepareData: List[PrepareData]
+                         )(implicit request: RegistrationRequest[AnyContent]): Future[Result] = {
+    results.map {
+      case (Right(availableReturns), Right(vatReturnsWithFinancialData)) =>
+        preparedViewWithFinancialData(availableReturns, vatReturnsWithFinancialData, previousRegistrationPrepareData)
+      case (Left(error), error2) =>
+        logger.error(s"there was an error with period with status $error and getting periods with outstanding amounts $error2")
+        throw new Exception(error.toString)
+      case (left, right) =>
+        val message = s"There was an error during period with status $left $right"
+        logger.error(message)
+        throw new Exception(message)
+    }
+  }
+
+  private def getCurrentReturns()(implicit request: RegistrationRequest[AnyContent]): Future[(CurrentReturnHttpParser.CurrentReturnsResponse, PrepareDataHttpParser.PrepareDataResponse)] = {
     for {
       currentReturns <- returnStatusConnector.getCurrentReturns(request.iossNumber)
       currentPayments <- financialDataConnector.prepareFinancialData()
@@ -88,7 +98,8 @@ class YourAccountController @Inject()(
 
   private def preparedViewWithFinancialData(
                                              currentReturns: CurrentReturns,
-                                             currentPayments: PrepareData
+                                             currentPayments: PrepareData,
+                                             previousRegistrationPrepareData: List[PrepareData]
                                            )(implicit request: RegistrationRequest[AnyContent]): Result = {
 
     val maybeExclusion: Option[EtmpExclusion] = request.registrationWrapper.registration.exclusions.lastOption
@@ -108,7 +119,7 @@ class YourAccountController @Inject()(
     }
 
     val existsOutstandingReturn = {
-      if(currentReturns.finalReturnsCompleted) {
+      if (currentReturns.finalReturnsCompleted) {
         false
       } else {
         currentReturns.returns.exists { currentReturn =>
@@ -136,8 +147,24 @@ class YourAccountController @Inject()(
       exclusionsEnabled = appConfig.exclusionsEnabled,
       maybeExclusion = maybeExclusion,
       hasSubmittedFinalReturn = currentReturns.finalReturnsCompleted,
-      returnsViewModel = ReturnsViewModel(currentReturns.returns)
+      returnsViewModel = ReturnsViewModel(currentReturns.returns),
+      previousRegistrationPrepareData
     ))
   }
 
+  private def getPreviousRegistrationPrepareFinancialData()(implicit hc: HeaderCarrier): Future[List[PrepareData]] = {
+    previousRegistrationService.getPreviousRegistrations().flatMap { previousRegistrations =>
+      Future.sequence(
+        previousRegistrations.map { previousRegistration =>
+          financialDataConnector.prepareFinancialDataWithIossNumber(previousRegistration.iossNumber).map {
+            case Right(previousRegistrationPrepareData) => previousRegistrationPrepareData
+            case Left(error) =>
+              val message = s"There was an issue getting prepared financial data ${error.body}"
+              logger.error(message)
+              throw new Exception(message)
+          }
+        }
+      )
+    }
+  }
 }
