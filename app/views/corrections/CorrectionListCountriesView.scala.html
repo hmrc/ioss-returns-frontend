@@ -87,10 +87,7 @@
                 <input type="hidden" name="value" id="value" value="false"/>
             }
 
-            @govukButton(
-                ButtonViewModel(messages("site.continue"))
-                    .withAttribute("id", "continue")
-            )
+            @button("site.continue", controllers.corrections.routes.CorrectionListCountriesController.onPageLoad(waypoints, periodIndex).url, period, waypoints)
         } else {
             <h2 class="govuk-heading-m push--top">@messages("error.missing_answers_header")</h2>
             <p class="govuk-body">@messages("error.missing_answers_prompt", incompleteCountries.head)</p>
