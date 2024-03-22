@@ -74,8 +74,8 @@
             }
         }
 
-        @button(
-            "site.continue", routes.StartReturnController.onPageLoad(waypoints, period).url, period, waypoints
+        @govukButton(
+          ButtonViewModel(messages("site.continue")).withAttribute(("id", "continue"))
         )
     }
 }
