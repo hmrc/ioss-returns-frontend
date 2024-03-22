@@ -18,9 +18,8 @@ package controllers
 
 import controllers.actions._
 import forms.WhichPreviousRegistrationToPayFormProvider
-import models.Period
 import models.payments.PrepareData
-import pages.{JourneyRecoveryPage, Waypoints, WhichPreviousRegistrationToPayPage}
+import pages.{JourneyRecoveryPage, Waypoints}
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
@@ -57,39 +56,26 @@ class WhichPreviousRegistrationToPayController @Inject()(
     implicit request =>
 
       previousRegistrationService.getPreviousRegistrationPrepareFinancialData().flatMap { preparedDataList =>
-//        preparedDataList.map { prepareData =>
-//          val redirectLink = if (prepareData.overduePayments.size == 1) {
-//            controllers.payments.routes.WhichVatPeriodToPayController.onPageLoad(waypoints).url
-//          } else {
-//            controllers.payments.routes.WhichVatPeriodToPayController.onPageLoad(waypoints).url
-//          }
 
-          form.bindFromRequest().fold(
-            formWithErrors =>
-              BadRequest(view(formWithErrors, waypoints, preparedDataList)).toFuture,
+        form.bindFromRequest().fold(
+          formWithErrors =>
+            BadRequest(view(formWithErrors, waypoints, preparedDataList)).toFuture,
 
-            value =>
-
-              getSelectedItem(preparedDataList, value)
-                .map(_ => determineRedirect(waypoints, preparedDataList)).getOrElse(
-                  Redirect(JourneyRecoveryPage.route(waypoints).url)
-                )
-          )
-//        }
+          value =>
+            getSelectedItemAndDetermineRedirect(waypoints, preparedDataList, value)
+        )
       }
   }
 
-  private def getSelectedItem(preparedData: List[PrepareData], iossNumber: String): Option[PrepareData] = {
-    preparedData.find(_.iossNumber == iossNumber)
-  }
-
-  private def determineRedirect(waypoints: Waypoints, preparedDataList: List[PrepareData]): List[Result] = {
-    preparedDataList.map { prepareData =>
+  private def getSelectedItemAndDetermineRedirect(waypoints: Waypoints, preparedDataList: List[PrepareData], iossNumber: String): Future[Result] = {
+    preparedDataList.find(_.iossNumber == iossNumber).map { prepareData =>
       if (prepareData.overduePayments.size == 1) {
-        Redirect(controllers.payments.routes.PaymentController.makePaymentForIossNumber(waypoints, prepareData.overduePayments.head.period, prepareData.iossNumber).url)
+        Redirect(controllers.payments.routes.PaymentController
+          .makePaymentForIossNumber(waypoints, prepareData.overduePayments.head.period, prepareData.iossNumber).url
+        ).toFuture
       } else {
-        Redirect(controllers.payments.routes.WhichVatPeriodToPayController.onPageLoad(waypoints).url)
+        Redirect(controllers.payments.routes.WhichVatPeriodToPayController.onPageLoad(waypoints).url).toFuture
       }
-    }
+    }.getOrElse(Redirect(JourneyRecoveryPage.route(waypoints).url).toFuture)
   }
 }

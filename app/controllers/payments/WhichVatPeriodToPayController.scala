@@ -45,13 +45,13 @@ class WhichVatPeriodToPayController @Inject()(
   private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  val paymentsBaseUrl: Service = config.get[Service]("microservice.services.pay-api")
+  private val paymentsBaseUrl: Service = config.get[Service]("microservice.services.pay-api")
 
   def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetRegistration.async {
-    implicit request => {
+    implicit request =>
       val prepareFinancialData: Future[PrepareData] = paymentsService.prepareFinancialData()
       prepareFinancialData.flatMap { pfd =>
-        val payments = (pfd.duePayments ++ pfd.overduePayments).sortBy(_.period).reverse
+        val payments = (pfd.duePayments ++ pfd.overduePayments).sortBy(p => (p.period.year, p.period.month)).reverse
         val paymentError = payments.exists(_.paymentStatus == PaymentStatus.Unknown)
 
         payments match {
@@ -60,7 +60,6 @@ class WhichVatPeriodToPayController @Inject()(
           case _ => Future.successful(Ok(view(form, payments, paymentError = paymentError)))
         }
       }
-    }
   }
 
   private def makePayment(iossNumber: String, payment: Payment)(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[Result] = {
@@ -84,8 +83,8 @@ class WhichVatPeriodToPayController @Inject()(
             value =>
               getChosenPayment(payments, value)
                 .map(p => makePayment(request.iossNumber, p)).getOrElse(
-                Future.successful(Redirect(JourneyRecoveryPage.route(waypoints).url))
-              ))
+                  Future.successful(Redirect(JourneyRecoveryPage.route(waypoints).url))
+                ))
         }
       }
     }
