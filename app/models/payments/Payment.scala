@@ -18,7 +18,7 @@ package models.payments
 
 import models.Period
 import play.api.i18n.Messages
-import play.api.libs.json.{Format, Json}
+import play.api.libs.json.{Format, Json, OFormat}
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.radios.RadioItem
 
@@ -33,7 +33,7 @@ final case class Payment(
 
 object Payment {
 
-  implicit val formatPayment: Format[Payment] = Json.format[Payment]
+  implicit val formatPayment: OFormat[Payment] = Json.format[Payment]
 
   def options(payments: Seq[Payment])(implicit messages: Messages): Seq[RadioItem] = {
 

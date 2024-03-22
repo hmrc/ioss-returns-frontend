@@ -16,16 +16,17 @@
 
 package pages
 
-import controllers.routes
+import controllers.payments.routes
+import models.Period
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
-case object WhichPreviousRegistrationToPayPage extends QuestionPage[Boolean] {
+case object WhichVatPeriodToPayPage extends QuestionPage[Period] {
 
   override def path: JsPath = JsPath \ toString
 
-  override def toString: String = "whichPreviousRegistrationToPay"
+  override def toString: String = "whichVatPeriodToPay"
 
   override def route(waypoints: Waypoints): Call =
-    routes.WhichPreviousRegistrationToPayController.onPageLoad(waypoints)
+    routes.WhichVatPeriodToPayController.onPageLoad(waypoints)
 }

@@ -28,7 +28,7 @@ import models.etmp.EtmpExclusion
 import models.etmp.EtmpExclusionReason.{NoLongerSupplies, Reversal, TransferringMSID, VoluntarilyLeaves}
 import models.payments._
 import models.requests.RegistrationRequest
-import pages.Waypoints
+import pages.{JourneyRecoveryPage, Waypoints, WhichPreviousRegistrationToPayPage, WhichVatPeriodToPayPage}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import services.PreviousRegistrationService
@@ -62,20 +62,56 @@ class YourAccountController @Inject()(
 
       if (request.enrolments.enrolments.size > 1) {
         previousRegistrationService.getPreviousRegistrationPrepareFinancialData().flatMap { prepareDataList =>
-          prepareView(results, prepareDataList)
+          prepareView(results, prepareDataList, Some(determineRedirect(waypoints, prepareDataList)), waypoints)
         }
       } else {
-        prepareView(results, List.empty)
+        prepareView(results, List.empty, None, waypoints)
       }
+  }
+
+//  private def determineRedirect(waypoints: Waypoints, prepareDataList: List[PrepareData]): String = {
+//    if (prepareDataList.nonEmpty && prepareDataList.size > 1) {
+//      WhichPreviousRegistrationToPayPage.route(waypoints).url
+//    } else {
+//      val prepareData = prepareDataList.head
+//      val iossNumber = prepareData.iossNumber
+//
+//      if (prepareData.overduePayments.nonEmpty && prepareData.overduePayments.size > 1) {
+//        // TODO -> Currently doens't get data for prev reg ioss so maybe need to create new endpoint and new methods with iossNumber
+//        WhichVatPeriodToPayPage.route(waypoints).url
+//      } else {
+//        val period = prepareData.overduePayments.map(_.period).head
+//        controllers.payments.routes.PaymentController.makePaymentForIossNumber(waypoints, period, iossNumber).url
+//      }
+//    }
+//  }
+
+  private def determineRedirect(waypoints: Waypoints, prepareDataList: List[PrepareData]): String = {
+    prepareDataList match {
+      case Nil => JourneyRecoveryPage.route(waypoints).url // TODO -> Where to go when no prepare data
+      case prepareData :: Nil =>
+        val iossNumber = prepareData.iossNumber
+        prepareData.overduePayments match {
+          case overduePayment :: Nil =>
+            val period = overduePayment.period
+            controllers.payments.routes.PaymentController.makePaymentForIossNumber(waypoints, period, iossNumber).url
+          case Nil => JourneyRecoveryPage.route(waypoints).url // TODO -> Where to go when no payments due
+          case _ => WhichVatPeriodToPayPage.route(waypoints).url
+        }
+      case _ =>
+        WhichPreviousRegistrationToPayPage.route(waypoints).url
+    }
   }
 
   private def prepareView(
                            results: Future[(CurrentReturnsResponse, PrepareDataResponse)],
-                           previousRegistrationPrepareData: List[PrepareData]
+                           previousRegistrationPrepareData: List[PrepareData],
+                           redirectUrl: Option[String],
+                           waypoints: Waypoints
                          )(implicit request: RegistrationRequest[AnyContent]): Future[Result] = {
     results.map {
       case (Right(availableReturns), Right(vatReturnsWithFinancialData)) =>
-        preparedViewWithFinancialData(availableReturns, vatReturnsWithFinancialData, previousRegistrationPrepareData)
+        preparedViewWithFinancialData(availableReturns, vatReturnsWithFinancialData, previousRegistrationPrepareData, redirectUrl, waypoints)
       case (Left(error), error2) =>
         logger.error(s"there was an error with period with status $error and getting periods with outstanding amounts $error2")
         throw new Exception(error.toString)
@@ -86,7 +122,8 @@ class YourAccountController @Inject()(
     }
   }
 
-  private def getCurrentReturns()(implicit request: RegistrationRequest[AnyContent]): Future[(CurrentReturnHttpParser.CurrentReturnsResponse, PrepareDataHttpParser.PrepareDataResponse)] = {
+  private def getCurrentReturns()(implicit request: RegistrationRequest[AnyContent]):
+  Future[(CurrentReturnHttpParser.CurrentReturnsResponse, PrepareDataHttpParser.PrepareDataResponse)] = {
     for {
       currentReturns <- returnStatusConnector.getCurrentReturns(request.iossNumber)
       currentPayments <- financialDataConnector.prepareFinancialData()
@@ -98,18 +135,14 @@ class YourAccountController @Inject()(
   private def preparedViewWithFinancialData(
                                              currentReturns: CurrentReturns,
                                              currentPayments: PrepareData,
-                                             previousRegistrationPrepareData: List[PrepareData]
+                                             previousRegistrationPrepareData: List[PrepareData],
+                                             redirectUrl: Option[String],
+                                             waypoints: Waypoints
                                            )(implicit request: RegistrationRequest[AnyContent]): Result = {
 
     val maybeExclusion: Option[EtmpExclusion] = request.registrationWrapper.registration.exclusions.lastOption
 
     val now: LocalDate = LocalDate.now(clock)
-
-    val cancelYourRequestToLeaveUrl = maybeExclusion match {
-      case Some(exclusion) if Seq(NoLongerSupplies, VoluntarilyLeaves, TransferringMSID).contains(exclusion.exclusionReason) &&
-        LocalDate.now(clock).isBefore(exclusion.effectiveDate) => Some(appConfig.cancelYourRequestToLeaveUrl)
-      case _ => None
-    }
 
     val leaveThisServiceUrl = if (maybeExclusion.isEmpty || maybeExclusion.exists(_.exclusionReason == Reversal)) {
       Some(appConfig.leaveThisServiceUrl)
@@ -142,13 +175,21 @@ class YourAccountController @Inject()(
       changeYourRegistrationUrl = appConfig.amendRegistrationUrl,
       rejoinRegistrationUrl = rejoinUrl,
       leaveThisServiceUrl = leaveThisServiceUrl,
-      cancelYourRequestToLeaveUrl = cancelYourRequestToLeaveUrl,
+      cancelYourRequestToLeaveUrl = cancelYourRequestToLeaveUrl(maybeExclusion),
       exclusionsEnabled = appConfig.exclusionsEnabled,
       maybeExclusion = maybeExclusion,
       hasSubmittedFinalReturn = currentReturns.finalReturnsCompleted,
       returnsViewModel = ReturnsViewModel(currentReturns.returns),
       previousRegistrationPrepareData = previousRegistrationPrepareData,
-      redirectLink = "TEST-LINK"
+      redirectLink = redirectUrl.getOrElse(JourneyRecoveryPage.route(waypoints).url)
     ))
+  }
+
+  private def cancelYourRequestToLeaveUrl(maybeExclusion: Option[EtmpExclusion]): Option[String] = {
+    maybeExclusion match {
+      case Some(exclusion) if Seq(NoLongerSupplies, VoluntarilyLeaves, TransferringMSID).contains(exclusion.exclusionReason) &&
+        LocalDate.now(clock).isBefore(exclusion.effectiveDate) => Some(appConfig.cancelYourRequestToLeaveUrl)
+      case _ => None
+    }
   }
 }
