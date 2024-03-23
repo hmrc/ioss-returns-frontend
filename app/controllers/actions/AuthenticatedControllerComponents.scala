@@ -41,6 +41,8 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
 
   def checkBouncedEmail: CheckBouncedEmailFilterProvider
 
+  def withSavedAnswers: SavedAnswersRetrievalActionProvider
+
   def requirePreviousReturns: CheckSubmittedReturnsFilterProvider
 
   def checkExcludedTrader: CheckExcludedTraderFilter
@@ -94,6 +96,7 @@ case class DefaultAuthenticatedControllerComponents @Inject()(
                                                                requireData: DataRequiredAction,
                                                                checkBouncedEmail: CheckBouncedEmailFilterProvider,
                                                                requirePreviousReturns: CheckSubmittedReturnsFilterProvider,
+                                                               withSavedAnswers: SavedAnswersRetrievalActionProvider,
                                                                checkExcludedTrader: CheckExcludedTraderFilter,
                                                                checkExcludedTraderOptional: CheckExcludedTraderOptionalFilter,
                                                                checkCommencementDate: CheckCommencementDateFilter,
