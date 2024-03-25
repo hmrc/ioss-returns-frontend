@@ -15,7 +15,7 @@
  *@
 
 @import viewmodels.InputWidth._
-@import pages.VatOnSalesPage
+@import pages.SalesToCountryPage
 
 @this(
         layout: templates.Layout,
@@ -54,7 +54,7 @@
         )
 
         @button(
-            "site.continue", VatOnSalesPage(countryIndex, nextVatRateIndex).route(waypoints).url, period, waypoints
+            "site.continue", SalesToCountryPage(countryIndex, nextVatRateIndex).route(waypoints).url, period, waypoints
         )
     }
 }
