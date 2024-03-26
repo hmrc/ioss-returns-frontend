@@ -38,7 +38,6 @@ class ContinueReturnController @Inject()(
 
   def onPageLoad(period: Period): Action[AnyContent] = cc.authAndRequireData() {
     implicit request =>
-      println("HERE:"+request.userAnswers.period)
       request.userAnswers.get(SavedProgressPage).map(
         _ => Ok(view(form, request.userAnswers.period))
       ).getOrElse(
