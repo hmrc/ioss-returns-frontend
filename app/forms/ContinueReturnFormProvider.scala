@@ -14,16 +14,18 @@
  * limitations under the License.
  */
 
-package pages
+package forms
 
-import play.api.libs.json.JsPath
-import play.api.mvc.Call
+import forms.mappings.Mappings
+import models.ContinueReturn
+import play.api.data.Form
 
-case object SavedProgressPage extends QuestionPage[String] {
+import javax.inject.Inject
 
-  override def path: JsPath = JsPath \ toString
+class ContinueReturnFormProvider @Inject() extends Mappings {
 
-  override def toString: String = "continueUrl"
-
-  override def route(waypoints: Waypoints): Call = ???
+  def apply(): Form[ContinueReturn] =
+    Form(
+      "value" -> enumerable[ContinueReturn]("continueReturn.error.required")
+    )
 }

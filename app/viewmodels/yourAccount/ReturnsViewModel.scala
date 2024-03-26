@@ -25,8 +25,8 @@ import viewmodels.{LinkModel, Paragraph, ParagraphSimple, ParagraphWithId}
 import java.time.format.DateTimeFormatter
 
 case class ReturnsViewModel(
-                           contents: Seq[Paragraph],
-                           linkToStart: Option[LinkModel] = None
+                             contents: Seq[Paragraph],
+                             linkToStart: Option[LinkModel] = None
                            )
 
 object ReturnsViewModel {
@@ -57,13 +57,36 @@ object ReturnsViewModel {
 
   private def startOverdueReturnLink(waypoints: Waypoints, period: StandardPeriod)(implicit messages: Messages) =
     LinkModel(
-      linkText = messages("yourAccount.yourReturns.dueReturn.startReturn"),
+      linkText = messages("yourAccount.yourReturns.startReturn", period.displayShortText),
       id = "start-your-return",
       url = controllers.routes.StartReturnController.onPageLoad(waypoints, period).url
     )
 
+  private def continueDueReturnLink(period: StandardPeriod)(implicit messages: Messages) =
+    LinkModel(
+      linkText = messages("yourAccount.yourReturns.dueReturn.continueReturn"),
+      id = "continue-your-return",
+      url = controllers.routes.ContinueReturnController.onPageLoad(period).url
+    )
+
+  private def continueOverdueReturnLink(period: StandardPeriod)(implicit messages: Messages) =
+    LinkModel(
+      linkText = messages("yourAccount.yourReturns.continueReturn", period.displayShortText),
+      id = "continue-your-return",
+      url = controllers.routes.ContinueReturnController.onPageLoad(period).url
+    )
+
   private def returnDueParagraph(period: StandardPeriod)(implicit messages: Messages) =
     ParagraphSimple(messages("yourAccount.yourReturns.returnDue", period.displayShortText, period.paymentDeadlineDisplay))
+
+  private def returnOverdueInProgressParagraph()(implicit messages: Messages) =
+    ParagraphSimple(messages("yourAccount.yourReturns.returnOverdue.inProgress"))
+
+
+  private def returnDueInProgressParagraph(period: StandardPeriod)(implicit messages: Messages) =
+    ParagraphSimple(s"""${messages("yourAccount.yourReturns.inProgress", period.displayText)}
+       |<br>${messages("yourAccount.yourReturns.inProgress.due", period.paymentDeadlineDisplay)}
+       |<br>""".stripMargin)
 
   private def returnOverdueSingularParagraph()(implicit messages: Messages) =
     ParagraphSimple(messages("yourAccount.yourReturns.returnsOverdue.singular"))
@@ -71,10 +94,16 @@ object ReturnsViewModel {
   private def returnOverdueParagraph()(implicit messages: Messages) =
     ParagraphSimple(messages("yourAccount.yourReturns.returnsOverdue"))
 
+  private def returnOverdueInProgressAdditionalParagraph()(implicit messages: Messages) =
+    ParagraphSimple(messages("yourAccount.yourReturns.returnOverdue.additional.inProgress"))
+
+
   private def returnsOverdueParagraph(numberOfOverdueReturns: Int)(implicit messages: Messages) =
     ParagraphSimple(messages("yourAccount.yourReturns.returnsOverdue.multiple", numberOfOverdueReturns))
+
   private def onlyReturnsOverdueParagraph(numberOfOverdueReturns: Int)(implicit messages: Messages) =
     ParagraphSimple(messages("yourAccount.yourReturns.onlyReturnsOverdue", numberOfOverdueReturns))
+
   private def nextReturnParagraph(nextReturn: StandardPeriod)(implicit messages: Messages) =
     ParagraphWithId(messages("yourAccount.nextPeriod", nextReturn.displayShortText, nextReturn.lastDay.plusDays(1)
       .format(DateTimeFormatter.ofPattern("d MMMM yyyy"))),
@@ -97,6 +126,12 @@ object ReturnsViewModel {
           linkToStart = Some(startDueReturnLink(waypoints, dueReturn.period))
         )
 
+      case (0, Some(_), Some(dueReturn)) =>
+        ReturnsViewModel(
+          contents = Seq(returnDueInProgressParagraph(dueReturn.period)),
+          linkToStart = Some(continueDueReturnLink(dueReturn.period))
+        )
+
       case (1, None, _) =>
         val contents = dueReturn.map(dueReturn =>
           Seq(returnOverdueSingularParagraph(), returnDueParagraph(dueReturn.period))).getOrElse(Seq(returnOverdueParagraph()))
@@ -105,13 +140,31 @@ object ReturnsViewModel {
           linkToStart = Some(startOverdueReturnLink(waypoints, overdueReturns.head.period))
         )
 
+      case (1, Some(inProgress), _) =>
+        val contents = dueReturn.map(dueReturn =>
+          Seq(returnDueParagraph(dueReturn.period), returnOverdueInProgressAdditionalParagraph()))
+          .getOrElse(Seq(returnOverdueInProgressParagraph()))
+        ReturnsViewModel(
+          contents = contents,
+          linkToStart = Some(continueOverdueReturnLink(inProgress.period))
+        )
+
       case (x, None, _) =>
         val contents = dueReturn.map(dueReturn =>
-            Seq(returnsOverdueParagraph(x), returnDueParagraph(dueReturn.period)))
+          Seq(returnsOverdueParagraph(x), returnDueParagraph(dueReturn.period)))
           .getOrElse(Seq(onlyReturnsOverdueParagraph(x)))
         ReturnsViewModel(
           contents = contents,
           linkToStart = Some(startOverdueReturnLink(waypoints, overdueReturns.minBy(_.period.lastDay.toEpochDay).period))
+        )
+
+      case (x, Some(inProgress), _) =>
+        val contents = dueReturn.map(dueReturn =>
+          Seq(returnDueParagraph(dueReturn.period), returnsOverdueParagraph(x)))
+          .getOrElse(Seq(onlyReturnsOverdueParagraph(x)))
+        ReturnsViewModel(
+          contents = contents,
+          linkToStart = Some(continueOverdueReturnLink(inProgress.period))
         )
 
       case _ =>
