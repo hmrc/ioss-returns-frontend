@@ -108,7 +108,7 @@ class ReturnsViewModelSpec extends SpecBase{
       val resultModel = ReturnsViewModel(returns)(messages(app))
       assert(resultModel.contents.map(p => p.content).contains("Your January 2022 return is due by 28 February 2022."))
       assert(resultModel.contents.map(p => p.content).contains("You have 2 overdue returns."))
-      resultModel.linkToStart mustBe (defined)
+      resultModel.linkToStart mustBe defined
       resultModel.linkToStart.get.linkText mustBe s"Continue your $expectedFormattedDate return"
       resultModel.linkToStart.get.url mustBe controllers.routes.ContinueReturnController.onPageLoad(period1).url
     }
@@ -121,7 +121,7 @@ class ReturnsViewModelSpec extends SpecBase{
       val resultModel = ReturnsViewModel(returns)(messages(app))
       assert(resultModel.contents.map(p => p.content).contains("Your October 2021 return is due by 30 November 2021."))
       assert(resultModel.contents.map(p => p.content).contains("You also have an overdue return in progress."))
-      resultModel.linkToStart mustBe (defined)
+      resultModel.linkToStart mustBe defined
       resultModel.linkToStart.get.linkText mustBe s"Continue your $expectedFormattedDate return"
       resultModel.linkToStart.get.url mustBe controllers.routes.ContinueReturnController.onPageLoad(period1).url
     }

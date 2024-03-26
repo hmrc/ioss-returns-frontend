@@ -20,13 +20,13 @@ import connectors.SaveForLaterConnector
 import models.UserAnswers
 import models.requests.{OptionalDataRequest, RegistrationRequest}
 import org.scalatestplus.mockito.MockitoSugar.mock
-import repositories.UserAnswersRepository
+import repositories.SessionRepository
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class FakeSavedAnswersRetrievalAction(dataToReturn: Option[UserAnswers])
   extends SavedAnswersRetrievalAction(
-    mock[UserAnswersRepository],
+    mock[SessionRepository],
     mock[SaveForLaterConnector]
   )(ExecutionContext.Implicits.global) {
 
@@ -35,7 +35,7 @@ class FakeSavedAnswersRetrievalAction(dataToReturn: Option[UserAnswers])
 }
 
 class FakeSavedAnswersRetrievalActionProvider(dataToReturn: Option[UserAnswers])
-  extends SavedAnswersRetrievalActionProvider(mock[UserAnswersRepository], mock[SaveForLaterConnector])(ExecutionContext.Implicits.global) {
+  extends SavedAnswersRetrievalActionProvider(mock[SessionRepository], mock[SaveForLaterConnector])(ExecutionContext.Implicits.global) {
 
   override def apply(): SavedAnswersRetrievalAction =
     new FakeSavedAnswersRetrievalAction(dataToReturn)

@@ -20,14 +20,14 @@ import connectors.SaveForLaterConnector
 import models.UserAnswers
 import models.requests.{OptionalDataRequest, RegistrationRequest}
 import play.api.mvc.ActionTransformer
-import repositories.UserAnswersRepository
+import repositories.SessionRepository
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class SavedAnswersRetrievalAction (repository: UserAnswersRepository, saveForLaterConnector: SaveForLaterConnector)
+class SavedAnswersRetrievalAction (repository: SessionRepository, saveForLaterConnector: SaveForLaterConnector)
                           (implicit val executionContext: ExecutionContext)
   extends ActionTransformer[RegistrationRequest, OptionalDataRequest] {
 
@@ -37,8 +37,7 @@ class SavedAnswersRetrievalAction (repository: UserAnswersRepository, saveForLat
       answersInSession <- repository.get(request.userId)
       savedForLater <- saveForLaterConnector.get()(hc)
     } yield {
-      val latestInSession = answersInSession.sortBy(_.lastUpdated).headOption
-      val answers = if (latestInSession.isEmpty) {
+      val answers = if (answersInSession.isEmpty) {
         savedForLater match {
           case Right(Some(answers)) =>
             val newAnswers = UserAnswers(request.userId, answers.period, answers.data, answers.lastUpdated)
@@ -47,7 +46,7 @@ class SavedAnswersRetrievalAction (repository: UserAnswersRepository, saveForLat
           case _ => None
         }
       } else {
-        latestInSession
+        answersInSession
       }
       answers
     }
@@ -58,7 +57,7 @@ class SavedAnswersRetrievalAction (repository: UserAnswersRepository, saveForLat
   }
 }
 
-class SavedAnswersRetrievalActionProvider @Inject()(repository: UserAnswersRepository, saveForLaterConnector: SaveForLaterConnector)
+class SavedAnswersRetrievalActionProvider @Inject()(repository: SessionRepository, saveForLaterConnector: SaveForLaterConnector)
                                            (implicit ec: ExecutionContext) {
 
   def apply(): SavedAnswersRetrievalAction =

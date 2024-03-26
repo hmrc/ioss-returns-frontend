@@ -29,11 +29,11 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class DeleteReturnController @Inject()(
-                                       cc: AuthenticatedControllerComponents,
-                                       formProvider: DeleteReturnFormProvider,
-                                       view: DeleteReturnView,
-                                       saveForLaterConnector: SaveForLaterConnector
-                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                        cc: AuthenticatedControllerComponents,
+                                        formProvider: DeleteReturnFormProvider,
+                                        view: DeleteReturnView,
+                                        saveForLaterConnector: SaveForLaterConnector
+                                      )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
@@ -45,13 +45,12 @@ class DeleteReturnController @Inject()(
 
   def onSubmit(period: Period): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
-
       form.bindFromRequest().fold(
         formWithErrors =>
           Future.successful(BadRequest(view(formWithErrors, request.userAnswers.period))),
         value =>
-          if(value){
-            for{
+          if (value) {
+            for {
               _ <- cc.sessionRepository.clear(request.userId)
               _ <- saveForLaterConnector.delete(period)
             } yield Redirect(controllers.routes.YourAccountController.onPageLoad())

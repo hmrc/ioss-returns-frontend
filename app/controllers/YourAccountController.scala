@@ -18,16 +18,18 @@ package controllers
 
 import config.FrontendAppConfig
 import connectors.{FinancialDataConnector, ReturnStatusConnector, SaveForLaterConnector}
+import controllers.CheckCorrectionsTimeLimit.isOlderThanThreeYears
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
-import models.{Period, SubmissionStatus, UserAnswers}
 import models.etmp.EtmpExclusion
 import models.etmp.EtmpExclusionReason.{NoLongerSupplies, Reversal, TransferringMSID, VoluntarilyLeaves}
 import models.payments._
 import models.requests.RegistrationRequest
+import models.{Period, SubmissionStatus, UserAnswers}
 import pages.Waypoints
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
+import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import viewmodels.PaymentsViewModel
 import viewmodels.yourAccount.{CurrentReturns, ReturnsViewModel}
@@ -36,8 +38,6 @@ import views.html.YourAccountView
 import java.time.{Clock, LocalDate}
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
-import CheckCorrectionsTimeLimit.isOlderThanThreeYears
-import repositories.UserAnswersRepository
 
 class YourAccountController @Inject()(
                                        cc: AuthenticatedControllerComponents,
@@ -46,7 +46,7 @@ class YourAccountController @Inject()(
                                        view: YourAccountView,
                                        returnStatusConnector: ReturnStatusConnector,
                                        clock: Clock,
-                                       sessionRepository: UserAnswersRepository,
+                                       sessionRepository: SessionRepository,
                                        appConfig: FrontendAppConfig
                                      )(implicit ec: ExecutionContext)
 
@@ -86,14 +86,13 @@ class YourAccountController @Inject()(
       answersInSession <- sessionRepository.get(request.userId)
       savedForLater <- saveForLaterConnector.get()
     } yield {
-      val latestInSession = answersInSession.sortBy(_.lastUpdated).headOption
-      val answers = if (latestInSession.isEmpty) {
+      val answers = if (answersInSession.isEmpty) {
         savedForLater match {
           case Right(Some(answers)) => Some(UserAnswers(request.userId, answers.period, answers.data, answers.lastUpdated))
           case _ => None
         }
       } else {
-        latestInSession
+        answersInSession
       }
       answers
     }
