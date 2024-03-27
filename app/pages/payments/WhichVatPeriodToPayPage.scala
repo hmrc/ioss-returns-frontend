@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package pages
+package pages.payments
 
 import controllers.payments.routes
 import models.Period
+import pages.{QuestionPage, Waypoints}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
