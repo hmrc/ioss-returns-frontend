@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package pages
+package pages.payments
 
-import controllers.routes
+import controllers.payments.routes
+import pages.{QuestionPage, Waypoints}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 

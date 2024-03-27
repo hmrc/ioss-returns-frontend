@@ -18,7 +18,7 @@ package models.payments
 
 import models.Period
 import play.api.i18n.Messages
-import play.api.libs.json.{Format, Json, OFormat}
+import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.radios.RadioItem
 
@@ -55,5 +55,4 @@ object Payment {
         )
     }
   }
-
 }

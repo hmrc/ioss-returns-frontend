@@ -14,19 +14,23 @@
  * limitations under the License.
  */
 
-package controllers
+package controllers.payments
 
 import controllers.actions._
-import forms.WhichPreviousRegistrationToPayFormProvider
+import forms.payments.WhichPreviousRegistrationToPayFormProvider
 import models.payments.PrepareData
+import models.requests.RegistrationRequest
+import pages.payments.WhichVatPeriodToPayPage
 import pages.{JourneyRecoveryPage, Waypoints}
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
+import repositories.SelectedPrepareDataRepository
 import services.PreviousRegistrationService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax.FutureOps
-import views.html.WhichPreviousRegistrationToPayView
+import viewmodels.payments.SelectedPrepareData
+import views.html.payments.WhichPreviousRegistrationToPayView
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -34,6 +38,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class WhichPreviousRegistrationToPayController @Inject()(
                                                           override val messagesApi: MessagesApi,
                                                           cc: AuthenticatedControllerComponents,
+                                                          selectedPrepareDataRepository: SelectedPrepareDataRepository,
                                                           formProvider: WhichPreviousRegistrationToPayFormProvider,
                                                           previousRegistrationService: PreviousRegistrationService,
                                                           view: WhichPreviousRegistrationToPayView
@@ -48,7 +53,7 @@ class WhichPreviousRegistrationToPayController @Inject()(
 
       previousRegistrationService.getPreviousRegistrationPrepareFinancialData().flatMap { preparedDataList =>
 
-        Ok(view(form, waypoints, preparedDataList)).toFuture
+        determineRedirectOnLoad(waypoints, preparedDataList)
       }
   }
 
@@ -67,15 +72,46 @@ class WhichPreviousRegistrationToPayController @Inject()(
       }
   }
 
-  private def getSelectedItemAndDetermineRedirect(waypoints: Waypoints, preparedDataList: List[PrepareData], iossNumber: String): Future[Result] = {
+  private def determineRedirectOnLoad(
+                                       waypoints: Waypoints,
+                                       prepareDataList: List[PrepareData]
+                                     )(implicit request: RegistrationRequest[AnyContent]): Future[Result] = {
+    prepareDataList match {
+      case Nil => Redirect(JourneyRecoveryPage.route(waypoints)).toFuture // TODO -> Where to go when no prepare data
+      case prepareData :: Nil =>
+        val iossNumber = prepareData.iossNumber
+        prepareData.overduePayments match {
+          case overduePayment :: Nil =>
+            val period = overduePayment.period
+            Redirect(controllers.payments.routes.PaymentController.makePaymentForIossNumber(waypoints, period, iossNumber)).toFuture
+          case Nil => Redirect(JourneyRecoveryPage.route(waypoints)).toFuture // TODO -> Where to go when no payments due
+          case _ =>
+            // TODO -> Create new endpoint specifically for prev reg ioss.
+            //  Also make repo just for ioss String
+            selectedPrepareDataRepository.set(SelectedPrepareData(request.userId, prepareData)).map { _ =>
+              Redirect(WhichVatPeriodToPayPage.route(waypoints))
+            }
+        }
+      case _ =>
+        Ok(view(form, waypoints, prepareDataList)).toFuture
+    }
+  }
+
+  private def getSelectedItemAndDetermineRedirect(
+                                                   waypoints: Waypoints,
+                                                   preparedDataList: List[PrepareData],
+                                                   iossNumber: String
+                                                 )(implicit request: RegistrationRequest[AnyContent]): Future[Result] = {
     preparedDataList.find(_.iossNumber == iossNumber).map { prepareData =>
       if (prepareData.overduePayments.size == 1) {
         Redirect(controllers.payments.routes.PaymentController
-          .makePaymentForIossNumber(waypoints, prepareData.overduePayments.head.period, prepareData.iossNumber).url
+          .makePaymentForIossNumber(waypoints, prepareData.overduePayments.head.period, prepareData.iossNumber)
         ).toFuture
       } else {
-        Redirect(controllers.payments.routes.WhichVatPeriodToPayController.onPageLoad(waypoints).url).toFuture
+        selectedPrepareDataRepository.set(SelectedPrepareData(request.userId, prepareData)).map { _ =>
+          Redirect(WhichVatPeriodToPayPage.route(waypoints))
+        }
       }
-    }.getOrElse(Redirect(JourneyRecoveryPage.route(waypoints).url).toFuture)
+    }.getOrElse(Redirect(JourneyRecoveryPage.route(waypoints)).toFuture)
   }
 }

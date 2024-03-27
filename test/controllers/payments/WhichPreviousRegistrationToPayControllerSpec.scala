@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 
-package controllers
+package controllers.payments
 
 import base.SpecBase
-import forms.WhichPreviousRegistrationToPayFormProvider
+import controllers.routes
+import forms.payments.WhichPreviousRegistrationToPayFormProvider
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
-import pages.{JourneyRecoveryPage, WhichPreviousRegistrationToPayPage}
+import pages.JourneyRecoveryPage
+import pages.payments.WhichPreviousRegistrationToPayPage
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.test.FakeRequest
