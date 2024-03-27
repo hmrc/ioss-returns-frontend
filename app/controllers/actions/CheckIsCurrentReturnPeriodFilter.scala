@@ -39,10 +39,9 @@ class CheckIsCurrentReturnPeriodFilterImpl(startReturnPeriod: Period,
   override protected def filter[A](request: OptionalDataRequest[A]): Future[Option[Result]] = {
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
 
-    val iossNumber = request.iossNumber
-    returnStatusConnector.getCurrentReturns(iossNumber).map { errorOrReturns: CurrentReturnsResponse =>
+    returnStatusConnector.getCurrentReturns(request.iossNumber).map { errorOrReturns: CurrentReturnsResponse =>
       errorOrReturns match {
-        case Left(value: ErrorResponse) => throw new RuntimeException(s"${value}")
+        case Left(value: ErrorResponse) => throw new RuntimeException(s"failed getting current returns: $value")
         case Right(currentReturns: CurrentReturns) => processCurrentReturns(currentReturns)
       }
     }
