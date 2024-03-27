@@ -17,22 +17,24 @@
 package controllers
 
 import controllers.actions._
+import logging.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.NoReturnsDueView
+import views.html.CannotStartExcludedReturnView
 
 import javax.inject.Inject
+import scala.concurrent.{ExecutionContext, Future}
 
-class NoReturnsDueController @Inject()(
-                                        cc: AuthenticatedControllerComponents,
-                                        view: NoReturnsDueView
-                                      ) extends FrontendBaseController with I18nSupport {
+class CannotStartExcludedReturnController @Inject()(
+                                             cc: AuthenticatedControllerComponents,
+                                             view: CannotStartExcludedReturnView
+                                           )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad: Action[AnyContent] = cc.authAndGetRegistration {
+  def onPageLoad(): Action[AnyContent] = cc.auth.async {
     implicit request =>
-      Ok(view())
+      Future.successful(Ok(view()))
   }
 }

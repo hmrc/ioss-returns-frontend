@@ -25,6 +25,7 @@ import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.{PartialReturnPeriodService, PeriodService}
+import services.{ObligationsService, PeriodService}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax.FutureOps
 import views.html.StartReturnView
@@ -47,8 +48,12 @@ class StartReturnController @Inject()(
 
   val form: Form[Boolean] = formProvider()
 
-  def onPageLoad(waypoints: Waypoints, period: Period): Action[AnyContent] = (cc.authAndGetOptionalData andThen
-    cc.checkExcludedTraderOptional(period) andThen cc.checkCommencementDateOptional(period)).async {
+  def onPageLoad(waypoints: Waypoints, period: Period): Action[AnyContent] = (
+    cc.authAndGetOptionalData
+      andThen cc.checkExcludedTraderOptional(period)
+      andThen cc.checkCommencementDateOptional(period)
+      andThen cc.checkIsCurrentReturnPeriodFilter(period)).async {
+
     implicit request =>
       // TODO check for starting correct period
 
@@ -67,8 +72,12 @@ class StartReturnController @Inject()(
 
   }
 
-  def onSubmit(waypoints: Waypoints, period: Period): Action[AnyContent] = (cc.authAndGetOptionalData andThen
-    cc.checkExcludedTraderOptional(period) andThen cc.checkCommencementDateOptional(period)).async {
+  def onSubmit(waypoints: Waypoints, period: Period): Action[AnyContent] = (
+    cc.authAndGetOptionalData
+      andThen cc.checkExcludedTraderOptional(period)
+      andThen cc.checkCommencementDateOptional(period)
+      andThen cc.checkIsCurrentReturnPeriodFilter(period)).async {
+
     implicit request =>
 
       val maybeExclusion: Option[EtmpExclusion] = request.registrationWrapper.registration.exclusions.lastOption
