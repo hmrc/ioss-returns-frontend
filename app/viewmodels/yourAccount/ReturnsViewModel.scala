@@ -17,6 +17,7 @@
 package viewmodels.yourAccount
 
 import models.StandardPeriod
+import models.SubmissionStatus.{Due, Next, Overdue}
 import pages.{EmptyWaypoints, Waypoints}
 import play.api.i18n.Messages
 import viewmodels.{LinkModel, Paragraph, ParagraphSimple, ParagraphWithId}
@@ -31,66 +32,19 @@ case class ReturnsViewModel(
 object ReturnsViewModel {
 
   def apply(returns: Seq[Return])(implicit messages: Messages): ReturnsViewModel = {
-    val runtimeExceptionOrMaybeActionableReturn = NextReturnCalculation.calculateNonNextReturn(returns)
-    val waypoints = EmptyWaypoints
-    runtimeExceptionOrMaybeActionableReturn match {
-      case Left(runtimeException) => throw runtimeException
-      case Right(actionableReturn) =>
-        actionableReturn match {
-          case NextReturn(pendingReturn) =>
-            ReturnsViewModel(
-              contents = Seq(nextReturnNoLinkParagraph(pendingReturn.period))
-            )
+    val inProgress = returns.find(_.inProgress)
+    val returnDue = returns.find(_.submissionStatus == Due)
+    val overdueReturns = returns.filter(_.submissionStatus == Overdue)
+    val nextReturn = returns.find(_.submissionStatus == Next)
 
-          case otherReturn: OtherReturn =>
-            createModelFromDueReturn(waypoints, otherReturn)
-        }
-    }
-  }
-
-  private def nextReturnNoLinkParagraph(nextReturn: StandardPeriod)(implicit messages: Messages) =
-    ParagraphWithId(messages("yourAccount.nextPeriod", nextReturn.displayShortText, nextReturn.lastDay.plusDays(1)
-      .format(DateTimeFormatter.ofPattern("d MMMM yyyy"))),
-      "next-period"
+    nextReturn.map(
+      nextReturn =>
+        ReturnsViewModel(
+          contents = Seq(nextReturnParagraph(nextReturn.period))
+        )
+    ).getOrElse(
+      dueReturnsModel(overdueReturns, inProgress, returnDue)
     )
-
-  private def createModelFromDueReturn(waypoints: EmptyWaypoints.type, otherReturn: OtherReturn)
-                                      (implicit messages: Messages): ReturnsViewModel = {
-
-    otherReturn.overDueReturns.toList match {
-      case Nil =>
-        otherReturn.maybeDueReturn.map { dueReturn =>
-          ReturnsViewModel(
-            contents = Seq(returnDueParagraph(dueReturn.period)),
-            linkToStart = Some(startDueReturnLink(waypoints, dueReturn.period))
-          )
-        }.getOrElse {
-          ReturnsViewModel(
-            contents = Seq.empty,
-            linkToStart = None
-          )
-        }
-
-      case ::(onlyOverDueReturn, Nil) =>
-        val contents = otherReturn.maybeDueReturn.map { dueReturn =>
-          Seq(returnOverdueSingularParagraph(), returnDueParagraph(dueReturn.period))
-        }.getOrElse(Seq(returnOverdueParagraph()))
-
-        ReturnsViewModel(
-          contents = contents,
-          linkToStart = Some(startOverdueReturnLink(waypoints, onlyOverDueReturn.period))
-        )
-
-      case manyOverDueReturns =>
-        val contents: Seq[ParagraphSimple] = otherReturn.maybeDueReturn.map { dueReturn =>
-            Seq(returnsOverdueParagraph(otherReturn.overdueCount), returnDueParagraph(dueReturn.period))
-          }
-          .getOrElse(Seq(onlyReturnsOverdueParagraph(otherReturn.overdueCount)))
-        ReturnsViewModel(
-          contents = contents,
-          linkToStart = Some(startOverdueReturnLink(waypoints, manyOverDueReturns.minBy(_.period.lastDay.toEpochDay).period))
-        )
-    }
   }
 
   private def startDueReturnLink(waypoints: Waypoints, period: StandardPeriod)(implicit messages: Messages) = {

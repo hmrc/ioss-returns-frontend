@@ -51,7 +51,23 @@ class ReturnsViewModelSpec extends SpecBase {
       resultModel.linkToStart.get.url mustBe controllers.routes.StartReturnController.onPageLoad(waypoints, earliestPeriod).url
     }
 
-        "there is no returns due, multiple returns overdue and one in progress" in {
+    "there is no returns due, multiple returns overdue and none in progress2" in {
+
+      val returns = List(
+        Return.fromPeriod(StandardPeriod(2023, Month.DECEMBER), Overdue, false, false),
+        Return.fromPeriod(StandardPeriod(2024, Month.JANUARY), Overdue, false, false),
+        Return.fromPeriod(StandardPeriod(2024, Month.FEBRUARY), Due, false, false),
+      )
+
+      val resultModel = ReturnsViewModel(returns)(messages(app))
+
+      assert(resultModel.contents.exists(p => p.content == "You have 2 overdue returns."))
+      resultModel.linkToStart mustBe defined
+      resultModel.linkToStart.get.linkText mustBe "Start your December 2023 return"
+      resultModel.linkToStart.get.url mustBe controllers.routes.StartReturnController.onPageLoad(waypoints, StandardPeriod(2023, Month.DECEMBER)).url
+    }
+
+    "there is no returns due, multiple returns overdue and one in progress" in {
       val returns = Seq(
         Return.fromPeriod(earliestPeriod, Overdue, true, true),
         Return.fromPeriod(middlePeriod, Overdue, false, false)
@@ -73,6 +89,32 @@ class ReturnsViewModelSpec extends SpecBase {
       resultModel.linkToStart mustBe defined
       resultModel.linkToStart.get.linkText mustBe s"Start your $expectedFormattedDate return"
       resultModel.linkToStart.get.url mustBe controllers.routes.StartReturnController.onPageLoad(waypoints, earliestPeriod).url
+    }
+
+    "there is overdue, this is prioritised over due" in {
+      val returns = Seq(
+        Return.fromPeriod(earliestPeriod, Overdue, inProgress = false, isOldest = true),
+        Return.fromPeriod(middlePeriod, Overdue, inProgress = false, isOldest = false),
+        Return.fromPeriod(latestPeriod, Due, inProgress = false, isOldest = false)
+      )
+      val resultModel = ReturnsViewModel(returns)(messages(app))
+      assert(resultModel.contents.map(p => p.content).contains("You have 2 overdue returns."), "Your January 2022 is due by 28 February 2022.")
+      resultModel.linkToStart mustBe defined
+      resultModel.linkToStart.get.linkText mustBe "Start your July 2021 return"
+      resultModel.linkToStart.get.url mustBe controllers.routes.StartReturnController.onPageLoad(waypoints, earliestPeriod).url
+    }
+
+    "there is overdue, this is prioritised over due, even if date wise it is later than the due" in {
+      val returns = Seq(
+        Return.fromPeriod(latestPeriod, Overdue, inProgress = false, isOldest = true),
+        Return.fromPeriod(middlePeriod, Overdue, inProgress = false, isOldest = false),
+        Return.fromPeriod(earliestPeriod, Due, inProgress = false, isOldest = false)
+      )
+      val resultModel = ReturnsViewModel(returns)(messages(app))
+      assert(resultModel.contents.map(p => p.content).contains("You have 2 overdue returns."), "Your January 2022 is due by 28 February 2022.")
+      resultModel.linkToStart mustBe defined
+      resultModel.linkToStart.get.linkText mustBe "Start your October 2021 return"
+      resultModel.linkToStart.get.url mustBe controllers.routes.StartReturnController.onPageLoad(waypoints, middlePeriod).url
     }
 
     "there is no returns due, one return overdue and one in progress" in {
@@ -146,8 +188,8 @@ class ReturnsViewModelSpec extends SpecBase {
       assert(resultModel.contents.map(p => p.content)
         .contains(
           s"""Your return for $expectedFormattedDate is in progress.
-            |<br>This is due by 31 August 2021.
-            |<br>""".stripMargin))
+             |<br>This is due by 31 August 2021.
+             |<br>""".stripMargin))
       resultModel.linkToStart mustBe defined
       resultModel.linkToStart.get.linkText mustBe s"Continue your return"
       resultModel.linkToStart.get.url mustBe controllers.routes.ContinueReturnController.onPageLoad(earliestPeriod).url
