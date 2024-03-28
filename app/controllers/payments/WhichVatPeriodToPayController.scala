@@ -25,7 +25,6 @@ import pages.{JourneyRecoveryPage, Waypoints, YourAccountPage}
 import play.api.i18n.I18nSupport
 import play.api.mvc._
 import play.api.{Configuration, Logging}
-import repositories.SelectedPrepareDataRepository
 import services.PaymentsService
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -36,7 +35,6 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class WhichVatPeriodToPayController @Inject()(
                                                cc: AuthenticatedControllerComponents,
-                                               selectedPrepareDataRepository: SelectedPrepareDataRepository,
                                                config: Configuration,
                                                paymentsService: PaymentsService,
                                                formProvider: WhichVatPeriodToPayFormProvider,
@@ -51,21 +49,16 @@ class WhichVatPeriodToPayController @Inject()(
 
   def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request =>
-      // TODO -> Need prev reg ioss
-      selectedPrepareDataRepository.get(request.userId).flatMap { selectedPrepareData =>
 
-        val iossNumber = selectedPrepareData.map(_.prepareData.iossNumber).getOrElse(request.iossNumber)
+      val prepareFinancialData: Future[PrepareData] = paymentsService.prepareFinancialData()
+      prepareFinancialData.flatMap { pfd =>
+        val payments = (pfd.duePayments ++ pfd.overduePayments).sortBy(p => (p.period.year, p.period.month)).reverse
+        val paymentError = payments.exists(_.paymentStatus == PaymentStatus.Unknown)
 
-        val prepareFinancialData: Future[PrepareData] = paymentsService.prepareFinancialDataWithIossNumber(iossNumber)
-        prepareFinancialData.flatMap { pfd =>
-          val payments = (pfd.duePayments ++ pfd.overduePayments).sortBy(p => (p.period.year, p.period.month)).reverse
-          val paymentError = payments.exists(_.paymentStatus == PaymentStatus.Unknown)
-
-          payments match {
-            case payment :: Nil => makePayment(iossNumber, payment)
-            case Nil => Future.successful(Ok(viewNoPayment(YourAccountPage.route(waypoints).url)))
-            case _ => Future.successful(Ok(view(form, payments, paymentError = paymentError)))
-          }
+        payments match {
+          case payment :: Nil => makePayment(request.iossNumber, payment)
+          case Nil => Future.successful(Ok(viewNoPayment(YourAccountPage.route(waypoints).url)))
+          case _ => Future.successful(Ok(view(form, payments, paymentError = paymentError)))
         }
       }
   }
@@ -79,25 +72,21 @@ class WhichVatPeriodToPayController @Inject()(
 
   def onSubmit(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request => {
-      selectedPrepareDataRepository.get(request.userId).flatMap { selectedPrepareData =>
 
-        val iossNumber = selectedPrepareData.map(_.prepareData.iossNumber).getOrElse(request.iossNumber)
-
-        val prepareFinancialData: Future[PrepareData] = paymentsService.prepareFinancialDataWithIossNumber(iossNumber)
-        prepareFinancialData.flatMap { pfd =>
-          val payments = pfd.duePayments ++ pfd.overduePayments
-          val paymentError = payments.exists(_.paymentStatus == PaymentStatus.Unknown)
-          if (payments.size == 1) {
-            makePayment(request.iossNumber, payments.head)
-          } else {
-            form.bindFromRequest().fold(
-              formWithErrors => Future.successful(BadRequest(view(formWithErrors, payments, paymentError))),
-              value =>
-                getChosenPayment(payments, value)
-                  .map(p => makePayment(iossNumber, p)).getOrElse(
-                    Future.successful(Redirect(JourneyRecoveryPage.route(waypoints).url))
-                  ))
-          }
+      val prepareFinancialData: Future[PrepareData] = paymentsService.prepareFinancialData()
+      prepareFinancialData.flatMap { pfd =>
+        val payments = pfd.duePayments ++ pfd.overduePayments
+        val paymentError = payments.exists(_.paymentStatus == PaymentStatus.Unknown)
+        if (payments.size == 1) {
+          makePayment(request.iossNumber, payments.head)
+        } else {
+          form.bindFromRequest().fold(
+            formWithErrors => Future.successful(BadRequest(view(formWithErrors, payments, paymentError))),
+            value =>
+              getChosenPayment(payments, value)
+                .map(p => makePayment(request.iossNumber, p)).getOrElse(
+                  Future.successful(Redirect(JourneyRecoveryPage.route(waypoints).url))
+                ))
         }
       }
     }

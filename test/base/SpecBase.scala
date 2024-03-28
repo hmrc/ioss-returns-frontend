@@ -95,9 +95,16 @@ trait SpecBase
   protected def applicationBuilder(
                                     userAnswers: Option[UserAnswers] = None,
                                     clock: Option[Clock] = None,
-                                    registration: RegistrationWrapper = registrationWrapper
+                                    registration: RegistrationWrapper = registrationWrapper,
+                                    getRegistrationAction: Option[GetRegistrationAction] = None
                                   ): GuiceApplicationBuilder = {
     val clockToBind = clock.getOrElse(stubClockAtArbitraryDate)
+
+    val getRegistrationActionBind = if(getRegistrationAction.nonEmpty) {
+      bind[GetRegistrationAction].toInstance(getRegistrationAction.get)
+    } else {
+      bind[GetRegistrationAction].toInstance(new FakeGetRegistrationAction(registration))
+    }
 
     new GuiceApplicationBuilder()
       .overrides(
@@ -105,7 +112,7 @@ trait SpecBase
         bind[IdentifierAction].to[FakeIdentifierAction],
         bind[Clock].toInstance(clockToBind),
         bind[DataRetrievalActionProvider].toInstance(new FakeDataRetrievalActionProvider(userAnswers)),
-        bind[GetRegistrationAction].toInstance(new FakeGetRegistrationAction(registration)),
+        getRegistrationActionBind,
         bind[CheckBouncedEmailFilterProvider].toInstance(new FakeCheckBouncedEmailFilterProvider()),
         bind[CheckSubmittedReturnsFilterProvider].toInstance(new FakeCheckSubmittedReturnsFilterProvider())
       )

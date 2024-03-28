@@ -143,3 +143,6 @@ POST        /:period/return-continue                                            
 
 GET         /whichPreviousRegistrationToPay                                           controllers.payments.WhichPreviousRegistrationToPayController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
 POST        /whichPreviousRegistrationToPay                                           controllers.payments.WhichPreviousRegistrationToPayController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints)
+
+GET         /whichPreviousRegistrationVatPeriodToPay                                  controllers.payments.WhichPreviousRegistrationVatPeriodToPayController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
+POST        /whichPreviousRegistrationVatPeriodToPay                                  controllers.payments.WhichPreviousRegistrationVatPeriodToPayController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints)

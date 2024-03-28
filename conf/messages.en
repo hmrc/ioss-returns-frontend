@@ -500,3 +500,5 @@ whichPreviousRegistrationToPay.heading = Which previous registration do you want
 whichPreviousRegistrationToPay.selection = You owe <strong>{0}</strong> for your registration with IOSS number <br/> {1}
 whichPreviousRegistrationToPay.error.required = Select which previous registration you want to pay
 whichPreviousRegistrationToPay.change.hidden = which previous registration you want to pay
+
+whichPreviousRegistrationVatPeriodToPay.error.required = Select which month you would like to make a payment for

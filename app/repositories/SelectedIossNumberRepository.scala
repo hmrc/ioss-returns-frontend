@@ -21,7 +21,7 @@ import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.model._
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
-import viewmodels.payments.SelectedPrepareData
+import viewmodels.payments.SelectedIossNumber
 
 import java.time.{Clock, Instant}
 import java.util.concurrent.TimeUnit
@@ -29,15 +29,15 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class SelectedPrepareDataRepository @Inject()(
-                                               mongoComponent: MongoComponent,
-                                               appConfig: FrontendAppConfig,
-                                               clock: Clock
-                                             )(implicit ec: ExecutionContext)
-  extends PlayMongoRepository[SelectedPrepareData](
-    collectionName = "selected-prepare-data",
+class SelectedIossNumberRepository @Inject()(
+                                              mongoComponent: MongoComponent,
+                                              appConfig: FrontendAppConfig,
+                                              clock: Clock
+                                            )(implicit ec: ExecutionContext)
+  extends PlayMongoRepository[SelectedIossNumber](
+    collectionName = "selected-ioss-number",
     mongoComponent = mongoComponent,
-    domainFormat = SelectedPrepareData.format,
+    domainFormat = SelectedIossNumber.format,
     replaceIndexes = true,
     indexes = Seq(
       IndexModel(
@@ -58,20 +58,20 @@ class SelectedPrepareDataRepository @Inject()(
 
   private def byUserId(id: String): Bson = Filters.equal("userId", id)
 
-  def get(userId: String): Future[Option[SelectedPrepareData]] =
+  def get(userId: String): Future[Option[SelectedIossNumber]] =
     collection.find(byUserId(userId)).headOption()
 
-  def set(selectedPrepareData: SelectedPrepareData): Future[SelectedPrepareData] = {
-    val updatedPrepareData = selectedPrepareData.copy(lastUpdated = Instant.now(clock))
+  def set(selectedIossNumber: SelectedIossNumber): Future[SelectedIossNumber] = {
+    val updatedIossNumber = selectedIossNumber.copy(lastUpdated = Instant.now(clock))
 
     collection
       .replaceOne(
-        filter = byUserId(selectedPrepareData.userId),
-        replacement = updatedPrepareData,
+        filter = byUserId(selectedIossNumber.userId),
+        replacement = updatedIossNumber,
         options = ReplaceOptions().upsert(true)
       )
       .toFuture()
-      .map(_ => updatedPrepareData)
+      .map(_ => updatedIossNumber)
   }
 
   def clear(id: String): Future[Boolean] =
