@@ -26,6 +26,7 @@ import models.etmp.EtmpExclusion
 import models.etmp.EtmpExclusionReason.NoLongerSupplies
 import models.payments.{Payment, PaymentStatus, PrepareData}
 import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito
 import org.mockito.Mockito.when
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.BeforeAndAfterEach
@@ -46,6 +47,11 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
   private val returnStatusConnector = mock[ReturnStatusConnector]
   private val saveForLaterConnector = mock[SaveForLaterConnector]
+
+  override def beforeEach(): Unit = {
+    Mockito.reset(returnStatusConnector)
+    Mockito.reset(saveForLaterConnector)
+  }
 
   "Your Account Controller" - {
 
@@ -438,7 +444,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
-          bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
+            bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
           )
           .build()
 
@@ -488,7 +494,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
             Right(CurrentReturns(
-              Seq(Return.fromPeriod(period, Due, inProgress = false, isOldest = false
+              Seq(Return.fromPeriod(period, Due, inProgress = true, isOldest = false
               )), finalReturnsCompleted = false
             ))
           )
@@ -499,7 +505,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
-          bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
+            bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
           )
           .build()
 
@@ -531,7 +537,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             hasSubmittedFinalReturn = false,
             ReturnsViewModel(
               Seq(
-                Return.fromPeriod(period, Due, inProgress = false, isOldest = false)
+                Return.fromPeriod(period, Due, inProgress = true, isOldest = false)
               )
             )(messages(application))
           )(request, messages(application)).toString
@@ -566,7 +572,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
             bind[FinancialDataConnector].toInstance(financialDataConnector),
-          bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
+            bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
           )
           .build()
 
