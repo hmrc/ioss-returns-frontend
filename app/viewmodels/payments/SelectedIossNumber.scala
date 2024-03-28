@@ -16,38 +16,37 @@
 
 package viewmodels.payments
 
-import models.payments.PrepareData
 import play.api.libs.json.{OFormat, OWrites, Reads, __}
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 
 import java.time.Instant
 
-case class SelectedPrepareData(userId: String, prepareData: PrepareData, lastUpdated: Instant = Instant.now)
+case class SelectedIossNumber(userId: String, iossNumber: String, lastUpdated: Instant = Instant.now)
 
-object SelectedPrepareData {
+object SelectedIossNumber {
 
-  val reads: Reads[SelectedPrepareData] = {
+  val reads: Reads[SelectedIossNumber] = {
 
     import play.api.libs.functional.syntax._
 
     (
       (__ \ "userId").read[String] and
-        (__ \ "prepareData").read[PrepareData] and
+        (__ \ "iossNumber").read[String] and
         (__ \ "lastUpdated").read(MongoJavatimeFormats.instantFormat)
-      )(SelectedPrepareData.apply _)
+      )(SelectedIossNumber.apply _)
   }
 
-  val writes: OWrites[SelectedPrepareData] = {
+  val writes: OWrites[SelectedIossNumber] = {
 
     import play.api.libs.functional.syntax._
 
     (
       (__ \ "userId").write[String] and
-        (__ \ "prepareData").write[PrepareData] and
+        (__ \ "iossNumber").write[String] and
         (__ \ "lastUpdated").write(MongoJavatimeFormats.instantFormat)
-      )(unlift(SelectedPrepareData.unapply))
+      )(unlift(SelectedIossNumber.unapply))
   }
 
-  implicit val format: OFormat[SelectedPrepareData] = OFormat(reads, writes)
+  implicit val format: OFormat[SelectedIossNumber] = OFormat(reads, writes)
 }
 

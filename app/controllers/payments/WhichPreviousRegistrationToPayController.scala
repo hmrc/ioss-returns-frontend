@@ -16,20 +16,23 @@
 
 package controllers.payments
 
+import config.Service
 import controllers.actions._
 import forms.payments.WhichPreviousRegistrationToPayFormProvider
-import models.payments.PrepareData
+import models.payments.{Payment, PrepareData}
 import models.requests.RegistrationRequest
-import pages.payments.WhichVatPeriodToPayPage
+import pages.payments.WhichPreviousRegistrationVatPeriodToPayPage
 import pages.{JourneyRecoveryPage, Waypoints}
+import play.api.Configuration
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
-import repositories.SelectedPrepareDataRepository
-import services.PreviousRegistrationService
+import repositories.SelectedIossNumberRepository
+import services.{PaymentsService, PreviousRegistrationService}
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax.FutureOps
-import viewmodels.payments.SelectedPrepareData
+import viewmodels.payments.SelectedIossNumber
 import views.html.payments.WhichPreviousRegistrationToPayView
 
 import javax.inject.Inject
@@ -38,13 +41,16 @@ import scala.concurrent.{ExecutionContext, Future}
 class WhichPreviousRegistrationToPayController @Inject()(
                                                           override val messagesApi: MessagesApi,
                                                           cc: AuthenticatedControllerComponents,
-                                                          selectedPrepareDataRepository: SelectedPrepareDataRepository,
+                                                          selectedIossNumberRepository: SelectedIossNumberRepository,
+                                                          config: Configuration,
                                                           formProvider: WhichPreviousRegistrationToPayFormProvider,
                                                           previousRegistrationService: PreviousRegistrationService,
+                                                          paymentsService: PaymentsService,
                                                           view: WhichPreviousRegistrationToPayView
                                                         )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
+  private val paymentsBaseUrl: Service = config.get[Service]("microservice.services.pay-api")
 
   val form: Form[String] = formProvider()
 
@@ -52,7 +58,6 @@ class WhichPreviousRegistrationToPayController @Inject()(
     implicit request =>
 
       previousRegistrationService.getPreviousRegistrationPrepareFinancialData().flatMap { preparedDataList =>
-
         determineRedirectOnLoad(waypoints, preparedDataList)
       }
   }
@@ -80,16 +85,14 @@ class WhichPreviousRegistrationToPayController @Inject()(
       case Nil => Redirect(JourneyRecoveryPage.route(waypoints)).toFuture // TODO -> Where to go when no prepare data
       case prepareData :: Nil =>
         val iossNumber = prepareData.iossNumber
-        prepareData.overduePayments match {
-          case overduePayment :: Nil =>
-            val period = overduePayment.period
-            Redirect(controllers.payments.routes.PaymentController.makePaymentForIossNumber(waypoints, period, iossNumber)).toFuture
+        val payments = prepareData.overduePayments ++ prepareData.duePayments
+        payments match {
           case Nil => Redirect(JourneyRecoveryPage.route(waypoints)).toFuture // TODO -> Where to go when no payments due
+          case payment :: Nil =>
+            makePayment(iossNumber, payment)
           case _ =>
-            // TODO -> Create new endpoint specifically for prev reg ioss.
-            //  Also make repo just for ioss String
-            selectedPrepareDataRepository.set(SelectedPrepareData(request.userId, prepareData)).map { _ =>
-              Redirect(WhichVatPeriodToPayPage.route(waypoints))
+            selectedIossNumberRepository.set(SelectedIossNumber(request.userId, iossNumber)).map { _ =>
+              Redirect(WhichPreviousRegistrationVatPeriodToPayPage.route(waypoints))
             }
         }
       case _ =>
@@ -103,15 +106,22 @@ class WhichPreviousRegistrationToPayController @Inject()(
                                                    iossNumber: String
                                                  )(implicit request: RegistrationRequest[AnyContent]): Future[Result] = {
     preparedDataList.find(_.iossNumber == iossNumber).map { prepareData =>
-      if (prepareData.overduePayments.size == 1) {
-        Redirect(controllers.payments.routes.PaymentController
-          .makePaymentForIossNumber(waypoints, prepareData.overduePayments.head.period, prepareData.iossNumber)
-        ).toFuture
+      val payments = prepareData.overduePayments ++ prepareData.duePayments
+      if (payments.size == 1) {
+        makePayment(iossNumber, payments.head)
       } else {
-        selectedPrepareDataRepository.set(SelectedPrepareData(request.userId, prepareData)).map { _ =>
-          Redirect(WhichVatPeriodToPayPage.route(waypoints))
+        selectedIossNumberRepository.set(SelectedIossNumber(request.userId, iossNumber)).map { _ =>
+          Redirect(WhichPreviousRegistrationVatPeriodToPayPage.route(waypoints))
         }
       }
     }.getOrElse(Redirect(JourneyRecoveryPage.route(waypoints)).toFuture)
+  }
+
+  private def makePayment(iossNumber: String, payment: Payment)(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[Result] = {
+    paymentsService.makePayment(iossNumber, payment.period, payment.amountOwed).map {
+      case Right(value) =>
+        Redirect(value.nextUrl)
+      case _ => Redirect(s"$paymentsBaseUrl/pay/service-unavailable")
+    }
   }
 }
