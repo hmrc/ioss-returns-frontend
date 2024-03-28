@@ -32,9 +32,9 @@ object ContinueReturn extends Enumerable.Implicits {
   )
 
   def options(implicit messages: Messages): Seq[RadioItem] = values.zipWithIndex.map {
-    case (value, index) =>
+    case (value: ContinueReturn, index) =>
       RadioItem(
-        content = Text(messages(s"continueReturn.${value.toString}")),
+        content = Text(messages(s"continueReturn.$value")),
         value   = Some(value.toString),
         id      = Some(s"value_$index")
       )

@@ -49,7 +49,7 @@ class SavedProgressController @Inject()(
       val dateTimeFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy")
       val answersExpiry = request.userAnswers.lastUpdated.plus(appConfig.saveForLaterTtl, ChronoUnit.DAYS)
         .atZone(ZoneId.systemDefault()).toLocalDate.format(dateTimeFormatter)
-      //Future.fromTry(request.userAnswers.set(SavedProgressPage(period, continueUrl), continueUrl)).flatMap {
+
       Future.fromTry(request.userAnswers.set(SavedProgressPage, continueUrl)).flatMap {
         updatedAnswers =>
           val s4LRequest = SaveForLaterRequest(updatedAnswers, request.vrn, period)

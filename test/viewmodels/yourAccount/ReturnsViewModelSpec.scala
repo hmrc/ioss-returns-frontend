@@ -191,7 +191,7 @@ class ReturnsViewModelSpec extends SpecBase {
              |<br>This is due by 31 August 2021.
              |<br>""".stripMargin))
       resultModel.linkToStart mustBe defined
-      resultModel.linkToStart.get.linkText mustBe s"Continue your return"
+      resultModel.linkToStart.get.linkText mustBe "Continue your return"
       resultModel.linkToStart.get.url mustBe controllers.routes.ContinueReturnController.onPageLoad(earliestPeriod).url
     }
 
@@ -203,7 +203,7 @@ class ReturnsViewModelSpec extends SpecBase {
       assert(resultModel.contents.map(p => p.content)
         .contains(s"Your $expectedFormattedDate return is due by 31 August 2021."))
       resultModel.linkToStart mustBe defined
-      resultModel.linkToStart.get.linkText mustBe s"Start your return"
+      resultModel.linkToStart.get.linkText mustBe "Start your return"
       resultModel.linkToStart.get.url mustBe controllers.routes.StartReturnController.onPageLoad(waypoints, earliestPeriod).url
     }
 
