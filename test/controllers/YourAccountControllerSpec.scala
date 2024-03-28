@@ -18,7 +18,7 @@ package controllers
 
 import base.SpecBase
 import config.FrontendAppConfig
-import connectors.{FinancialDataConnector, ReturnStatusConnector}
+import connectors.{FinancialDataConnector, ReturnStatusConnector, SaveForLaterConnector}
 import generators.Generators
 import models.{RegistrationWrapper, StandardPeriod, SubmissionStatus}
 import models.SubmissionStatus._
@@ -45,6 +45,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
   val nextPeriod: StandardPeriod = StandardPeriod(LocalDate.now.minusYears(1).getYear, Month.APRIL)
 
   private val returnStatusConnector = mock[ReturnStatusConnector]
+  private val saveForLaterConnector = mock[SaveForLaterConnector]
 
   "Your Account Controller" - {
 
@@ -75,6 +76,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(financialDataConnector.prepareFinancialData()(any())) thenReturn
           Future.successful(Right(prepareData))
 
+        when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
+
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
             Right(CurrentReturns(
@@ -93,7 +96,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWrapper)
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
-            bind[FinancialDataConnector].to(financialDataConnector)
+            bind[FinancialDataConnector].to(financialDataConnector),
+            bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
           )
           .build()
 
@@ -112,6 +116,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
       val registrationWrapperEmptyExclusions: RegistrationWrapper =
         registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
+
+      when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
 
       when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
         Future.successful(
@@ -133,7 +139,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWrapperEmptyExclusions)
         .overrides(
           bind[ReturnStatusConnector].toInstance(returnStatusConnector),
-          bind[FinancialDataConnector].toInstance(financialDataConnector)
+          bind[FinancialDataConnector].toInstance(financialDataConnector),
+          bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
         )
         .build()
 
@@ -175,6 +182,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
     "must return OK with rejoinThisService link" in {
       val registrationWrapperWithExclusion: RegistrationWrapper = createRegistrationWrapperWithExclusion(LocalDate.now())
 
+      when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
+
       when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
         Future.successful(
           Right(CurrentReturns(
@@ -199,7 +208,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         clock = Some(Clock.systemUTC()))
         .overrides(
           bind[ReturnStatusConnector].toInstance(returnStatusConnector),
-          bind[FinancialDataConnector].toInstance(mockFinancialDataConnector)
+          bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
+          bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
         )
         .build()
 
@@ -241,6 +251,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
     "must return OK with no rejoinThisService link when there is an outstanding return, which is within 3 years from due date" in {
       val registrationWrapperWithExclusion: RegistrationWrapper = createRegistrationWrapperWithExclusion(LocalDate.now())
 
+      when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
+
       when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
         Future.successful(
           Right(CurrentReturns(
@@ -265,7 +277,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         clock = Some(Clock.systemUTC()))
         .overrides(
           bind[ReturnStatusConnector].toInstance(returnStatusConnector),
-          bind[FinancialDataConnector].toInstance(mockFinancialDataConnector)
+          bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
+          bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
         )
         .build()
 
@@ -335,6 +348,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
       val financialDataConnector = mock[FinancialDataConnector]
 
+      when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
+
       when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
         Future.successful(
           Right(CurrentReturns(
@@ -353,7 +368,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWrapperEmptyExclusions)
         .overrides(
           bind[ReturnStatusConnector].toInstance(returnStatusConnector),
-          bind[FinancialDataConnector].toInstance(financialDataConnector)
+          bind[FinancialDataConnector].toInstance(financialDataConnector),
+          bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
         )
         .build()
 
@@ -399,6 +415,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val registrationWrapperEmptyExclusions: RegistrationWrapper =
           registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
 
+        when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
+
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
             Right(CurrentReturns(
@@ -419,7 +437,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWrapperEmptyExclusions)
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
-            bind[FinancialDataConnector].toInstance(financialDataConnector)
+            bind[FinancialDataConnector].toInstance(financialDataConnector),
+          bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
           )
           .build()
 
@@ -464,6 +483,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val registrationWrapperEmptyExclusions: RegistrationWrapper =
           registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
 
+        when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
+
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
             Right(CurrentReturns(
@@ -477,7 +498,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWrapperEmptyExclusions)
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
-            bind[FinancialDataConnector].toInstance(financialDataConnector)
+            bind[FinancialDataConnector].toInstance(financialDataConnector),
+          bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
           )
           .build()
 
@@ -526,6 +548,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val registrationWrapperEmptyExclusions: RegistrationWrapper =
           registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
 
+        when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
+
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
             Right(CurrentReturns(
@@ -541,7 +565,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWrapperEmptyExclusions)
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
-            bind[FinancialDataConnector].toInstance(financialDataConnector)
+            bind[FinancialDataConnector].toInstance(financialDataConnector),
+          bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
           )
           .build()
 
@@ -590,6 +615,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val registrationWrapperEmptyExclusions: RegistrationWrapper =
           registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
 
+        when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
+
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
             Right(CurrentReturns(
@@ -604,7 +631,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWrapperEmptyExclusions)
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
-            bind[FinancialDataConnector].toInstance(financialDataConnector)
+            bind[FinancialDataConnector].toInstance(financialDataConnector),
+            bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
           )
           .build()
 
@@ -652,6 +680,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val registrationWrapperEmptyExclusions: RegistrationWrapper =
           registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
 
+        when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
+
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
             Right(CurrentReturns(
@@ -667,7 +697,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWrapperEmptyExclusions)
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
-            bind[FinancialDataConnector].toInstance(financialDataConnector)
+            bind[FinancialDataConnector].toInstance(financialDataConnector),
+            bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
           )
           .build()
 
@@ -717,6 +748,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val registrationWrapperEmptyExclusions: RegistrationWrapper =
           registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
 
+        when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
+
         when(returnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Future.successful(
             Right(CurrentReturns(
@@ -733,7 +766,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWrapperEmptyExclusions)
           .overrides(
             bind[ReturnStatusConnector].toInstance(returnStatusConnector),
-            bind[FinancialDataConnector].toInstance(financialDataConnector)
+            bind[FinancialDataConnector].toInstance(financialDataConnector),
+            bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
           )
           .build()
 

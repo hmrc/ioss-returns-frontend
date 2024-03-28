@@ -78,7 +78,7 @@ class DeleteReturnControllerSpec extends SpecBase with MockitoSugar {
       val save4LaterConnector = mock[SaveForLaterConnector]
 
       when(mockSessionRepository.clear(any())) thenReturn Future.successful(true)
-      when(save4LaterConnector.delete(any())(any())) thenReturn(Future.successful(Right(true)))
+      when(save4LaterConnector.delete(any())(any())) thenReturn Future.successful(Right(true))
       val application =
         applicationBuilder(userAnswers = Some(emptyUserAnswers))
           .overrides(
