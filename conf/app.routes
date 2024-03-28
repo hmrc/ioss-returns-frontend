@@ -44,6 +44,8 @@ GET         /vat-on-sales/:countryIndex/:nextVatRateIndex                       
 POST        /vat-on-sales/:countryIndex/:nextVatRateIndex                             controllers.VatOnSalesController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, countryIndex: Index, nextVatRateIndex: Index)
 
 GET         /no-other-periods-available                                               controllers.NoOtherPeriodsAvailableController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
+GET         /cannot-start-return                                                      controllers.CannotStartReturnController.onPageLoad()
+GET         /cannot-start-excluded-return                                             controllers.CannotStartExcludedReturnController.onPageLoad()
 
 GET         /add-sales-country-list                                                   controllers.SoldToCountryListController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
 POST        /add-sales-country-list                                                   controllers.SoldToCountryListController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints)
@@ -123,8 +125,8 @@ GET         /intercept-unusable-email                                           
 
 GET         /no-welsh-service                                                         controllers.external.NoMoreWelshController.onPageLoad(redirectUrl: Option[String] ?= None)
 
-GET         /make-payment/:period/:amountInPence                                      controllers.payments.PaymentController.makePayment(waypoints: Waypoints ?= EmptyWaypoints, period: Period, amountInPence: Long)
-GET         /make-payment/:period/:amountInPence/:iossNumber                          controllers.payments.PaymentController.makePaymentForIossNumber(waypoints: Waypoints ?= EmptyWaypoints, period: Period, amountInPence: Long, iossNumber: String)
+GET         /make-payment/:period                                                     controllers.payments.PaymentController.makePayment(waypoints: Waypoints ?= EmptyWaypoints, period: Period)
+GET         /make-payment/:period/:iossNumber                                         controllers.payments.PaymentController.makePaymentForIossNumber(waypoints: Waypoints ?= EmptyWaypoints, period: Period, iossNumber: String)
 
 GET         /excluded-cannot-use-service                                              controllers.ExcludedNotPermittedController.onPageLoad()
 

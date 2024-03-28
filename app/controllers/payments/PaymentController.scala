@@ -17,7 +17,9 @@
 package controllers.payments
 
 import config.Service
+import connectors.{FinancialDataConnector, VatReturnConnector}
 import controllers.actions._
+import logging.Logging
 import models.Period
 import pages.{JourneyRecoveryPage, Waypoints}
 import play.api.Configuration
@@ -34,24 +36,24 @@ class PaymentController @Inject()(
                                    cc: AuthenticatedControllerComponents,
                                    config: Configuration,
                                    paymentsService: PaymentsService,
+                                   financialDataConnector: FinancialDataConnector,
+                                   vatReturnConnector: VatReturnConnector,
                                    previousRegistrationService: PreviousRegistrationService
-                                 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
   private val paymentsBaseUrl: Service = config.get[Service]("microservice.services.pay-api")
 
-  def makePayment(waypoints: Waypoints, period: Period, amountInPence: Long): Action[AnyContent] = {
-    cc.authAndGetOptionalData().async { implicit request =>
-      makePayment(period, amountInPence, request.iossNumber)
-    }
+  def makePayment(waypoints: Waypoints, period: Period): Action[AnyContent] = cc.authAndGetOptionalData().async { implicit request =>
+    getAmountOwedAndRedirect(period, request.iossNumber)
   }
 
-  def makePaymentForIossNumber(waypoints: Waypoints, period: Period, amountInPence: Long, iossNumber: String): Action[AnyContent] = {
+  def makePaymentForIossNumber(waypoints: Waypoints, period: Period, iossNumber: String): Action[AnyContent] = {
     cc.authAndGetOptionalData().async { implicit request =>
       previousRegistrationService.getPreviousRegistrations().flatMap { previousRegistrations =>
         val validIossNumbers: Seq[String] = request.iossNumber :: previousRegistrations.map(_.iossNumber)
         if (validIossNumbers.contains(iossNumber)) {
-          makePayment(period, amountInPence, iossNumber)
+          getAmountOwedAndRedirect(period, iossNumber)
         } else {
           Future.successful(Redirect(JourneyRecoveryPage.route(waypoints)))
         }
@@ -59,7 +61,29 @@ class PaymentController @Inject()(
     }
   }
 
-  private def makePayment(period: Period, amountInPence: Long, iossNumber: String)(implicit hc: HeaderCarrier): Future[Result] = {
+  private def getAmountOwedAndRedirect(period: Period, iossNumber: String)(implicit hc: HeaderCarrier): Future[Result] = {
+    financialDataConnector.getChargeForIossNumber(period, iossNumber).flatMap {
+      case Right(Some(charge)) =>
+        makePaymentAndRedirect(period, (charge.outstandingAmount * 100).toLong, iossNumber)
+      case _ =>
+        getAmountFromReturn(period, iossNumber).flatMap { outstandingAmount =>
+          makePaymentAndRedirect(period, outstandingAmount, iossNumber)
+        }
+    }
+  }
+
+  private def getAmountFromReturn(period: Period, iossNumber: String)(implicit hc: HeaderCarrier): Future[Long] = {
+    vatReturnConnector.getForIossNumber(period, iossNumber).map {
+      case Right(vatReturn) => (vatReturn.totalVATAmountDueForAllMSGBP * 100).toLong
+      case Left(error) =>
+        val message = s"Failed to get payment and failed to get backup from view returns got ${error.body}"
+        logger.error(message)
+        throw new Exception(message)
+    }
+  }
+
+  private def makePaymentAndRedirect(period: Period, amountInPence: Long, iossNumber: String)(implicit hc: HeaderCarrier): Future[Result] = {
+
     val amountOwed = BigDecimal(amountInPence) / 100
 
     paymentsService.makePayment(iossNumber, period, amountOwed).map {

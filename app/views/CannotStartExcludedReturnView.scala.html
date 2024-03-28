@@ -1,4 +1,4 @@
-/*
+@*
  * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,20 +12,23 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ *@
 
-package viewmodels.yourAccount
+@import pages.EmptyWaypoints
+@import pages.YourAccountPage
 
-import play.api.libs.json.{Json, OFormat}
+@this(
+        layout: templates.Layout,
+        govukButton: GovukButton
+)
 
+@()(implicit request: Request[_], messages: Messages)
 
-case class CurrentReturns(
-                           returns: Seq[Return],
-                           excluded: Boolean = false,
-                           finalReturnsCompleted: Boolean,
-                           completeOrExcludedReturns: Seq[Return] = Seq.empty
-                         )
+@layout(pageTitle = titleNoForm(messages("cannotStartExcludedReturn.title"))) {
 
-case object CurrentReturns {
-  implicit val format: OFormat[CurrentReturns] = Json.format[CurrentReturns]
+    <h1 class="govuk-heading-l">@messages("cannotStartExcludedReturn.heading")</h1>
+
+    <p class="govuk-body">@messages("cannotStartExcludedReturn.p1")</p>
+
+    <p class="govuk-body">@Html(messages("cannotStartExcludedReturn.backToYourAccount", YourAccountPage.route(EmptyWaypoints).url))</p>
 }

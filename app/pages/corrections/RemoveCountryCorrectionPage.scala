@@ -17,7 +17,7 @@
 package pages.corrections
 
 import models.{Index, UserAnswers}
-import pages.{JourneyRecoveryPage, Page, QuestionPage, Waypoints}
+import pages.{Page, QuestionPage, Waypoints}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 import queries.{DeriveNumberOfCorrectionPeriods, DeriveNumberOfCorrections}
