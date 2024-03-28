@@ -63,7 +63,7 @@ class VatPayableForCountryControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[VatPayableForCountryView]
 
         status(result) mustBe OK
-        contentAsString(result) mustBe view(form, waypoints, index, Index(0), country, period, BigDecimal(1000))(request, messages(application)).toString
+        contentAsString(result) mustBe view(form, waypoints, period, index, Index(0), country, period, BigDecimal(1000))(request, messages(application)).toString
       }
     }
 
@@ -87,7 +87,7 @@ class VatPayableForCountryControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[VatPayableForCountryView]
 
         status(result) mustBe OK
-        contentAsString(result) mustBe view(form, waypoints, index, Index(0), country, period, BigDecimal(500))(request, messages(application)).toString
+        contentAsString(result) mustBe view(form, waypoints, period, index, Index(0), country, period, BigDecimal(500))(request, messages(application)).toString
       }
     }
 
@@ -111,6 +111,7 @@ class VatPayableForCountryControllerSpec extends SpecBase with MockitoSugar {
         contentAsString(result) mustBe view(
           form.fill(true),
           waypoints,
+          period,
           index,
           Index(0),
           country,
@@ -166,6 +167,7 @@ class VatPayableForCountryControllerSpec extends SpecBase with MockitoSugar {
         contentAsString(result) mustBe view(
           boundForm,
           waypoints,
+          period,
           index,
           Index(0),
           country,

@@ -26,7 +26,7 @@
     button: ButtonGroup,
 )
 
-@(form: Form[_], waypoints: Waypoints, periodIndex:Index, countryIndex: Index, selectedCountry: Country, correctionPeriod: Period, newAmount: BigDecimal)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, period: Period, periodIndex:Index, countryIndex: Index, selectedCountry: Country, correctionPeriod: Period, newAmount: BigDecimal)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, messages("vatPayableForCountry.title", selectedCountry.name, currencyFormat(newAmount)))) {
 
@@ -45,6 +45,6 @@
             ).withHint(HintViewModel(HtmlContent(Html(messages("vatPayableForCountry.hint")))))
         )
 
-        @button(messages("site.continue",  VatPayableForCountryPage(periodIndex, countryIndex).route(waypoints).url, waypoints))
+        @button("site.continue", VatPayableForCountryPage(periodIndex, countryIndex).route(waypoints).url, period, waypoints)
     }
 }

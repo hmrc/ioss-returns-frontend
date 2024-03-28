@@ -70,7 +70,7 @@
         }
 
         @button(
-            messages("site.continue")
+            "site.continue", routes.SoldToCountryListController.onPageLoad(waypoints).url, period, waypoints
         )
     }
 }

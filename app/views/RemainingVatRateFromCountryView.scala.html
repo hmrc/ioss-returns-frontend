@@ -43,6 +43,8 @@
                 )
             )
 
-            @button(messages("site.continue"))
+            @button(
+                "site.continue", routes.RemainingVatRateFromCountryController.onPageLoad(waypoints, countryIndex, nextVatRateIndex).url, period, waypoints
+            )
         }
     }

@@ -57,6 +57,6 @@
                 <input type="hidden" name="value" id="value" value="false"/>
             }
 
-            @button(messages("site.continue"))
+            @button(messages("site.continue"), routes.CheckSalesController.onPageLoad(waypoints, countryIndex).url, period, waypoints)
         }
     }

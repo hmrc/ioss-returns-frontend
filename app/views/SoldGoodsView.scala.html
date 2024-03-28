@@ -46,7 +46,7 @@
             )
 
         @button(
-            messages("site.continue")
+            "site.continue", routes.SoldGoodsController.onPageLoad(waypoints).url, period, waypoints
         )
     }
 }

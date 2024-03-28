@@ -50,7 +50,7 @@
         )
 
         @button(
-            messages("site.continue")
+            "site.continue", routes.SoldToCountryController.onPageLoad(waypoints, index).url, period, waypoints
         )
     }
 }

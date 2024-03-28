@@ -19,10 +19,10 @@
     formHelper: FormWithCSRF,
     govukErrorSummary: GovukErrorSummary,
     govukRadios: GovukRadios,
-    govukButton: GovukButton
+    button: ButtonGroup
 )
 
-@(form: Form[_], waypoints: Waypoints, countryIndex: Index, nextVatRateIndex: Index, vatRate: String, country: Country)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, period: Period, countryIndex: Index, nextVatRateIndex: Index, vatRate: String, country: Country)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, messages("deleteVatRateSalesForCountry.title", vatRate, country.name))) {
 
@@ -39,9 +39,6 @@
             )
         )
 
-        @govukButton(
-            ButtonViewModel(messages("site.continue"))
-                    .withAttribute("id", "continue")
-        )
+        @button("site.continue", controllers.routes.DeleteVatRateSalesForCountryController.onPageLoad(waypoints, countryIndex, nextVatRateIndex).url, period, waypoints)
     }
 }

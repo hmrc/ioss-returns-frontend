@@ -69,7 +69,7 @@ class DeleteVatRateSalesForCountryControllerSpec extends SpecBase with MockitoSu
         val view = application.injector.instanceOf[DeleteVatRateSalesForCountryView]
 
         status(result) mustBe OK
-        contentAsString(result) mustBe view(form, waypoints, index, index, vatRate, country)(request, messages(application)).toString
+        contentAsString(result) mustBe view(form, waypoints, period, index, index, vatRate, country)(request, messages(application)).toString
       }
     }
 
@@ -143,7 +143,7 @@ class DeleteVatRateSalesForCountryControllerSpec extends SpecBase with MockitoSu
         val result = route(application, request).value
 
         status(result) mustBe BAD_REQUEST
-        contentAsString(result) mustBe view(boundForm, waypoints, index, index, vatRate, country)(request, messages(application)).toString
+        contentAsString(result) mustBe view(boundForm, waypoints, period, index, index, vatRate, country)(request, messages(application)).toString
       }
     }
 
