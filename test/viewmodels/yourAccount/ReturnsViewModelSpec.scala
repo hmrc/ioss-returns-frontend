@@ -33,8 +33,6 @@ class ReturnsViewModelSpec extends SpecBase {
   val middlePeriod: StandardPeriod = StandardPeriod(2021, Month.OCTOBER)
   val latestPeriod: StandardPeriod = StandardPeriod(2022, Month.JANUARY)
 
-  val expectedFormattedDate: String = "July 2021"
-
   "must return correct view model when" - {
 
     "there is no returns due, multiple returns overdue and none in progress" in {
@@ -47,7 +45,7 @@ class ReturnsViewModelSpec extends SpecBase {
 
       assert(resultModel.contents.exists(p => p.content == "You have 2 overdue returns."))
       resultModel.linkToStart mustBe defined
-      resultModel.linkToStart.get.linkText mustBe s"Start your $expectedFormattedDate return"
+      resultModel.linkToStart.get.linkText mustBe "Start your July 2021 return"
       resultModel.linkToStart.get.url mustBe controllers.routes.StartReturnController.onPageLoad(waypoints, earliestPeriod).url
     }
 
@@ -75,7 +73,7 @@ class ReturnsViewModelSpec extends SpecBase {
       val resultModel = ReturnsViewModel(returns)(messages(app))
       assert(resultModel.contents.map(p => p.content).contains("You have 2 overdue returns."))
       resultModel.linkToStart mustBe defined
-      resultModel.linkToStart.get.linkText mustBe s"Continue your $expectedFormattedDate return"
+      resultModel.linkToStart.get.linkText mustBe "Continue your July 2021 return"
       resultModel.linkToStart.get.url mustBe controllers.routes.ContinueReturnController.onPageLoad(earliestPeriod).url
     }
 
@@ -87,7 +85,7 @@ class ReturnsViewModelSpec extends SpecBase {
 
       assert(resultModel.contents.map(p => p.content).contains("You have an overdue return."))
       resultModel.linkToStart mustBe defined
-      resultModel.linkToStart.get.linkText mustBe s"Start your $expectedFormattedDate return"
+      resultModel.linkToStart.get.linkText mustBe "Start your July 2021 return"
       resultModel.linkToStart.get.url mustBe controllers.routes.StartReturnController.onPageLoad(waypoints, earliestPeriod).url
     }
 
@@ -124,7 +122,7 @@ class ReturnsViewModelSpec extends SpecBase {
       val resultModel = ReturnsViewModel(returns)(messages(app))
       assert(resultModel.contents.map(p => p.content).contains("You have an overdue return in progress."))
       resultModel.linkToStart mustBe defined
-      resultModel.linkToStart.get.linkText mustBe s"Continue your $expectedFormattedDate return"
+      resultModel.linkToStart.get.linkText mustBe "Continue your July 2021 return"
       resultModel.linkToStart.get.url mustBe controllers.routes.ContinueReturnController.onPageLoad(earliestPeriod).url
     }
 
@@ -137,7 +135,7 @@ class ReturnsViewModelSpec extends SpecBase {
       val resultModel = ReturnsViewModel(returns)(messages(app))
       assert(resultModel.contents.map(p => p.content).contains("You have 2 overdue returns."), "Your January 2022 is due by 28 February 2022.")
       resultModel.linkToStart mustBe defined
-      resultModel.linkToStart.get.linkText mustBe s"Start your $expectedFormattedDate return"
+      resultModel.linkToStart.get.linkText mustBe "Start your July 2021 return"
       resultModel.linkToStart.get.url mustBe controllers.routes.StartReturnController.onPageLoad(waypoints, earliestPeriod).url
     }
 
@@ -151,7 +149,7 @@ class ReturnsViewModelSpec extends SpecBase {
       assert(resultModel.contents.map(p => p.content).contains("Your January 2022 return is due by 28 February 2022."))
       assert(resultModel.contents.map(p => p.content).contains("You have 2 overdue returns."))
       resultModel.linkToStart mustBe defined
-      resultModel.linkToStart.get.linkText mustBe s"Continue your $expectedFormattedDate return"
+      resultModel.linkToStart.get.linkText mustBe "Continue your July 2021 return"
       resultModel.linkToStart.get.url mustBe controllers.routes.ContinueReturnController.onPageLoad(earliestPeriod).url
     }
 
@@ -164,7 +162,7 @@ class ReturnsViewModelSpec extends SpecBase {
       assert(resultModel.contents.map(p => p.content).contains("Your October 2021 return is due by 30 November 2021."))
       assert(resultModel.contents.map(p => p.content).contains("You also have an overdue return in progress."))
       resultModel.linkToStart mustBe defined
-      resultModel.linkToStart.get.linkText mustBe s"Continue your $expectedFormattedDate return"
+      resultModel.linkToStart.get.linkText mustBe "Continue your July 2021 return"
       resultModel.linkToStart.get.url mustBe controllers.routes.ContinueReturnController.onPageLoad(earliestPeriod).url
     }
 
@@ -176,7 +174,7 @@ class ReturnsViewModelSpec extends SpecBase {
       val resultModel = ReturnsViewModel(returns)(messages(app))
       assert(resultModel.contents.map(p => p.content).contains("You have an overdue return."), "Your October 2021 return is due by 30 November 2021.")
       resultModel.linkToStart mustBe defined
-      resultModel.linkToStart.get.linkText mustBe s"Start your $expectedFormattedDate return"
+      resultModel.linkToStart.get.linkText mustBe "Start your July 2021 return"
       resultModel.linkToStart.get.url mustBe controllers.routes.StartReturnController.onPageLoad(waypoints, earliestPeriod).url
     }
 
@@ -187,7 +185,7 @@ class ReturnsViewModelSpec extends SpecBase {
       val resultModel = ReturnsViewModel(returns)(messages(app))
       assert(resultModel.contents.map(p => p.content)
         .contains(
-          s"""Your return for $expectedFormattedDate is in progress.
+          """Your return for July 2021 is in progress.
              |<br>This is due by 31 August 2021.
              |<br>""".stripMargin))
       resultModel.linkToStart mustBe defined
@@ -201,7 +199,7 @@ class ReturnsViewModelSpec extends SpecBase {
       )
       val resultModel = ReturnsViewModel(returns)(messages(app))
       assert(resultModel.contents.map(p => p.content)
-        .contains(s"Your $expectedFormattedDate return is due by 31 August 2021."))
+        .contains(s"Your July 2021 return is due by 31 August 2021."))
       resultModel.linkToStart mustBe defined
       resultModel.linkToStart.get.linkText mustBe "Start your return"
       resultModel.linkToStart.get.url mustBe controllers.routes.StartReturnController.onPageLoad(waypoints, earliestPeriod).url
