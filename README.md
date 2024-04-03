@@ -26,7 +26,7 @@ sm2 --stop IOSS_RETURNS_FRONTEND
 ```
 and
 ```
-sbt run
+sbt run -Dapplication.router=testOnlyDoNotUseInAppConf.Routes
 ```
 
 Unit and Integration Tests
