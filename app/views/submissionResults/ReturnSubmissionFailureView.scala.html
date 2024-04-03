@@ -32,12 +32,14 @@
         classes = "red-background"
     ))
 
+    <p class="govuk-body">@messages("returnSubmissionFailure.savedAnswers")</p>
+
     <p class="govuk-body">@Html(messages("returnSubmissionFailure.tryAgainLater"))</p>
 
     <p class="govuk-body">@Html(messages("returnSubmissionFailure.contactUs"))</p>
 
     <p class="govuk-body">
-        <a href="@routes.YourAccountController.onPageLoad(EmptyWaypoints).url" class="govuk-link govuk-link--no-visited-state">
+        <a id="back-to-your-account" href="@routes.YourAccountController.onPageLoad(EmptyWaypoints).url" class="govuk-link govuk-link--no-visited-state">
         @messages("returnSubmissionFailure.next.info.returnToAccount")
         </a>
     </p>
