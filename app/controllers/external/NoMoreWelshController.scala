@@ -17,8 +17,11 @@
 package controllers.external
 
 import controllers.actions._
+import logging.Logging
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl._
+import uk.gov.hmrc.play.bootstrap.binders.{OnlyRelative, RedirectUrl}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.NoMoreWelshView
 
@@ -28,12 +31,24 @@ class NoMoreWelshController @Inject()(
                                        override val messagesApi: MessagesApi,
                                        cc: AuthenticatedControllerComponents,
                                        view: NoMoreWelshView
-                                     ) extends FrontendBaseController with I18nSupport {
+                                     ) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(redirectUrl: Option[String] = None): Action[AnyContent] = cc.auth {
+  def onPageLoad(redirectUrl: Option[RedirectUrl] = None): Action[AnyContent] = cc.auth {
     implicit request =>
-      Ok(view(redirectUrl))
+
+      val safeUrl: Option[String] = redirectUrl.flatMap {
+        unsafeUrl =>
+          unsafeUrl.getEither(OnlyRelative) match {
+            case Right(safeUrl) =>
+              Some(safeUrl.url)
+            case Left(message) =>
+              logger.info(message)
+              None
+          }
+      }
+
+      Ok(view(safeUrl))
   }
 }
