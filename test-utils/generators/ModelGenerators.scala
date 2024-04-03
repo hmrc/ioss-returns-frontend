@@ -33,6 +33,11 @@ import scala.math.BigDecimal.RoundingMode
 trait ModelGenerators {
   self: Generators =>
 
+  implicit lazy val arbitraryContinueReturn: Arbitrary[ContinueReturn] =
+    Arbitrary {
+      Gen.oneOf(ContinueReturn.values)
+    }
+
   implicit val arbitraryBigDecimal: Arbitrary[BigDecimal] =
     Arbitrary {
       for {

@@ -45,7 +45,7 @@ class ReturnsViewModelSpec extends SpecBase {
 
       assert(resultModel.contents.exists(p => p.content == "You have 2 overdue returns."))
       resultModel.linkToStart mustBe defined
-      resultModel.linkToStart.get.linkText mustBe "Start your return"
+      resultModel.linkToStart.get.linkText mustBe "Start your July 2021 return"
       resultModel.linkToStart.get.url mustBe controllers.routes.StartReturnController.onPageLoad(waypoints, earliestPeriod).url
     }
 
@@ -61,10 +61,21 @@ class ReturnsViewModelSpec extends SpecBase {
 
       assert(resultModel.contents.exists(p => p.content == "You have 2 overdue returns."))
       resultModel.linkToStart mustBe defined
-      resultModel.linkToStart.get.linkText mustBe "Start your return"
+      resultModel.linkToStart.get.linkText mustBe "Start your December 2023 return"
       resultModel.linkToStart.get.url mustBe controllers.routes.StartReturnController.onPageLoad(waypoints, StandardPeriod(2023, Month.DECEMBER)).url
     }
 
+    "there is no returns due, multiple returns overdue and one in progress" in {
+      val returns = Seq(
+        Return.fromPeriod(earliestPeriod, Overdue, true, true),
+        Return.fromPeriod(middlePeriod, Overdue, false, false)
+      )
+      val resultModel = ReturnsViewModel(returns)(messages(app))
+      assert(resultModel.contents.map(p => p.content).contains("You have 2 overdue returns."))
+      resultModel.linkToStart mustBe defined
+      resultModel.linkToStart.get.linkText mustBe "Continue your July 2021 return"
+      resultModel.linkToStart.get.url mustBe controllers.routes.ContinueReturnController.onPageLoad(earliestPeriod).url
+    }
 
     "there is no returns due, one return overdue and none in progress" in {
       val returns = Seq(
@@ -74,7 +85,7 @@ class ReturnsViewModelSpec extends SpecBase {
 
       assert(resultModel.contents.map(p => p.content).contains("You have an overdue return."))
       resultModel.linkToStart mustBe defined
-      resultModel.linkToStart.get.linkText mustBe "Start your return"
+      resultModel.linkToStart.get.linkText mustBe "Start your July 2021 return"
       resultModel.linkToStart.get.url mustBe controllers.routes.StartReturnController.onPageLoad(waypoints, earliestPeriod).url
     }
 
@@ -87,7 +98,7 @@ class ReturnsViewModelSpec extends SpecBase {
       val resultModel = ReturnsViewModel(returns)(messages(app))
       assert(resultModel.contents.map(p => p.content).contains("You have 2 overdue returns."), "Your January 2022 is due by 28 February 2022.")
       resultModel.linkToStart mustBe defined
-      resultModel.linkToStart.get.linkText mustBe "Start your return"
+      resultModel.linkToStart.get.linkText mustBe "Start your July 2021 return"
       resultModel.linkToStart.get.url mustBe controllers.routes.StartReturnController.onPageLoad(waypoints, earliestPeriod).url
     }
 
@@ -100,8 +111,59 @@ class ReturnsViewModelSpec extends SpecBase {
       val resultModel = ReturnsViewModel(returns)(messages(app))
       assert(resultModel.contents.map(p => p.content).contains("You have 2 overdue returns."), "Your January 2022 is due by 28 February 2022.")
       resultModel.linkToStart mustBe defined
-      resultModel.linkToStart.get.linkText mustBe "Start your return"
+      resultModel.linkToStart.get.linkText mustBe "Start your October 2021 return"
       resultModel.linkToStart.get.url mustBe controllers.routes.StartReturnController.onPageLoad(waypoints, middlePeriod).url
+    }
+
+    "there is no returns due, one return overdue and one in progress" in {
+      val returns = Seq(
+        Return.fromPeriod(earliestPeriod, Overdue, true, true)
+      )
+      val resultModel = ReturnsViewModel(returns)(messages(app))
+      assert(resultModel.contents.map(p => p.content).contains("You have an overdue return in progress."))
+      resultModel.linkToStart mustBe defined
+      resultModel.linkToStart.get.linkText mustBe "Continue your July 2021 return"
+      resultModel.linkToStart.get.url mustBe controllers.routes.ContinueReturnController.onPageLoad(earliestPeriod).url
+    }
+
+    "there is one return due, multiple returns overdue and none in progress" in {
+      val returns = Seq(
+        Return.fromPeriod(earliestPeriod, Overdue, inProgress = false, isOldest = true),
+        Return.fromPeriod(middlePeriod, Overdue, inProgress = false, isOldest = false),
+        Return.fromPeriod(latestPeriod, Due, inProgress = false, isOldest = false)
+      )
+      val resultModel = ReturnsViewModel(returns)(messages(app))
+      assert(resultModel.contents.map(p => p.content).contains("You have 2 overdue returns."), "Your January 2022 is due by 28 February 2022.")
+      resultModel.linkToStart mustBe defined
+      resultModel.linkToStart.get.linkText mustBe "Start your July 2021 return"
+      resultModel.linkToStart.get.url mustBe controllers.routes.StartReturnController.onPageLoad(waypoints, earliestPeriod).url
+    }
+
+    "there is one returns due, multiple returns overdue and one in progress" in {
+      val returns = Seq(
+        Return.fromPeriod(earliestPeriod, Overdue, true, true),
+        Return.fromPeriod(middlePeriod, Overdue, false, false),
+        Return.fromPeriod(latestPeriod, Due, false, false)
+      )
+      val resultModel = ReturnsViewModel(returns)(messages(app))
+      assert(resultModel.contents.map(p => p.content).contains("Your January 2022 return is due by 28 February 2022."))
+      assert(resultModel.contents.map(p => p.content).contains("You have 2 overdue returns."))
+      resultModel.linkToStart mustBe defined
+      resultModel.linkToStart.get.linkText mustBe "Continue your July 2021 return"
+      resultModel.linkToStart.get.url mustBe controllers.routes.ContinueReturnController.onPageLoad(earliestPeriod).url
+    }
+
+    "there is one returns due, one return overdue and one in progress" in {
+      val returns = Seq(
+        Return.fromPeriod(earliestPeriod, Overdue, true, true),
+        Return.fromPeriod(middlePeriod, Due, false, false)
+      )
+      val resultModel = ReturnsViewModel(returns)(messages(app))
+      assert(resultModel.contents.map(p => p.content).contains("Your October 2021 return is due by 30 November 2021."))
+      assert(resultModel.contents.map(p => p.content).contains("You also have an overdue return in progress."))
+      resultModel.linkToStart mustBe defined
+      resultModel.linkToStart.get.linkText mustBe "Continue your July 2021 return"
+      resultModel.linkToStart.get.url mustBe controllers.routes.ContinueReturnController.onPageLoad(earliestPeriod).url
     }
 
     "there is one returns due, one return overdue and none in progress" in {
@@ -110,10 +172,25 @@ class ReturnsViewModelSpec extends SpecBase {
         Return.fromPeriod(middlePeriod, Due, inProgress = false, isOldest = false)
       )
       val resultModel = ReturnsViewModel(returns)(messages(app))
-      assert(resultModel.contents.map(p => p.content).contains("You have an overdue return."), "Your October 2021 is due by 30 November 2021.")
+      assert(resultModel.contents.map(p => p.content).contains("You have an overdue return."), "Your October 2021 return is due by 30 November 2021.")
       resultModel.linkToStart mustBe defined
-      resultModel.linkToStart.get.linkText mustBe "Start your return"
+      resultModel.linkToStart.get.linkText mustBe "Start your July 2021 return"
       resultModel.linkToStart.get.url mustBe controllers.routes.StartReturnController.onPageLoad(waypoints, earliestPeriod).url
+    }
+
+    "there is one returns due, no return overdue and one in progress" in {
+      val returns = Seq(
+        Return.fromPeriod(earliestPeriod, Due, true, true)
+      )
+      val resultModel = ReturnsViewModel(returns)(messages(app))
+      assert(resultModel.contents.map(p => p.content)
+        .contains(
+          """Your return for July 2021 is in progress.
+             |<br>This is due by 31 August 2021.
+             |<br>""".stripMargin))
+      resultModel.linkToStart mustBe defined
+      resultModel.linkToStart.get.linkText mustBe "Continue your return"
+      resultModel.linkToStart.get.url mustBe controllers.routes.ContinueReturnController.onPageLoad(earliestPeriod).url
     }
 
     "there is one returns due, no return overdue and none in progress" in {

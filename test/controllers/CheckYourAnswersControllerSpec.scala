@@ -17,6 +17,7 @@
 package controllers
 
 import base.SpecBase
+import connectors.{SaveForLaterConnector, SavedUserAnswers}
 import models.audit.{ReturnsAuditModel, SubmissionResult}
 import models.requests.DataRequest
 import models.{Country, TotalVatToCountry, UserAnswers}
@@ -50,11 +51,13 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
   private val mockSalesAtVatRateService = mock[SalesAtVatRateService]
   private val mockCoreVatReturnService = mock[CoreVatReturnService]
   private val mockAuditService = mock[AuditService]
+  private val mockSaveForLaterConnector = mock[SaveForLaterConnector]
 
   override def beforeEach(): Unit = {
     Mockito.reset(mockSalesAtVatRateService)
     Mockito.reset(mockCoreVatReturnService)
     Mockito.reset(mockAuditService)
+    Mockito.reset(mockSaveForLaterConnector)
     super.beforeEach()
   }
 
@@ -283,10 +286,14 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         when(mockCoreVatReturnService.submitCoreVatReturn(any())(any())) thenReturn
           Future.failed(new RuntimeException("Failed submission"))
 
+        when(mockSaveForLaterConnector.submit(any())(any())) thenReturn
+          Future.successful(Right(Some(mock[SavedUserAnswers])))
+
         val userAnswers = completeUserAnswers
         val application = applicationBuilder(userAnswers = Some(userAnswers))
           .overrides(bind[CoreVatReturnService].toInstance(mockCoreVatReturnService))
           .overrides(bind[AuditService].toInstance(mockAuditService))
+          .overrides(bind[SaveForLaterConnector].toInstance(mockSaveForLaterConnector))
           .build()
 
         running(application) {

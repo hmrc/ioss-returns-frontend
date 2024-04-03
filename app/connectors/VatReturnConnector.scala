@@ -17,6 +17,7 @@
 package connectors
 
 import config.Service
+import connectors.ExternalEntryUrlHttpParser._
 import connectors.VatReturnHttpParser.{EtmpVatReturnReads, EtmpVatReturnResponse}
 import models.Period
 import models.core.CoreVatReturn
@@ -48,5 +49,9 @@ class VatReturnConnector @Inject()(config: Configuration, httpClient: HttpClient
 
   def getForIossNumber(period: Period, iossNumber: String)(implicit hc: HeaderCarrier): Future[EtmpVatReturnResponse] = {
     httpClient.GET[EtmpVatReturnResponse](url = s"$baseUrl/return/$period/$iossNumber")
+  }
+
+  def getSavedExternalEntry()(implicit hc: HeaderCarrier): Future[ExternalEntryUrlResponse] = {
+    httpClient.GET[ExternalEntryUrlResponse](s"$baseUrl/external-entry")
   }
 }

@@ -17,14 +17,15 @@
 package controllers
 
 import com.google.inject.Inject
+import connectors.SaveForLaterConnector
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
-import models.ValidationError
 import models.audit.{ReturnsAuditModel, SubmissionResult}
 import models.etmp.EtmpExclusion
-import models.requests.DataRequest
+import models.requests.{DataRequest, SaveForLaterRequest}
+import models.{ConflictFound, ValidationError}
 import pages.corrections.CorrectPreviousReturnPage
-import pages.{CheckYourAnswersPage, Waypoints}
+import pages.{CheckYourAnswersPage, SavedProgressPage, Waypoints}
 import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc._
 import queries.{AllCorrectionPeriodsQuery, TotalAmountVatDueGBPQuery}
@@ -49,7 +50,8 @@ class CheckYourAnswersController @Inject()(
                                             coreVatReturnService: CoreVatReturnService,
                                             auditService: AuditService,
                                             periodService: PeriodService,
-                                            view: CheckYourAnswersView
+                                            view: CheckYourAnswersView,
+                                            saveForLaterConnector: SaveForLaterConnector
                                           )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
@@ -111,11 +113,11 @@ class CheckYourAnswersController @Inject()(
               Redirect(controllers.submissionResults.routes.SuccessfullySubmittedController.onPageLoad().url)
             )
         }
-      }.recover {
+      }.recoverWith {
         case e: Exception =>
           logger.error(s"Error while submitting VAT return ${e.getMessage}", e)
           auditService.audit(ReturnsAuditModel.build(userAnswers, SubmissionResult.Failure))
-          Redirect(controllers.submissionResults.routes.ReturnSubmissionFailureController.onPageLoad().url)
+          saveUserAnswersOnCoreError(controllers.submissionResults.routes.ReturnSubmissionFailureController.onPageLoad)
       }
   }
 
@@ -173,4 +175,28 @@ class CheckYourAnswersController @Inject()(
       ).flatten
     ).withCssClass("govuk-summary-card govuk-summary-card__content govuk-!-display-block width-auto")
   }
+
+  private def saveUserAnswersOnCoreError(redirectLocation: Call)(implicit request: DataRequest[AnyContent]): Future[Result] =
+    Future.fromTry(request.userAnswers.set(SavedProgressPage, routes.CheckYourAnswersController.onPageLoad().url)).flatMap {
+      updatedAnswers =>
+        val saveForLateRequest = SaveForLaterRequest(updatedAnswers, request.vrn, request.userAnswers.period)
+
+        saveForLaterConnector.submit(saveForLateRequest).flatMap {
+          case Right(Some(_)) =>
+            for {
+              _ <- cc.sessionRepository.set(updatedAnswers)
+            } yield {
+              Redirect(redirectLocation)
+            }
+          case Right(None) =>
+            logger.error("Unexpected result on submit")
+            Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
+          case Left(ConflictFound) =>
+            Future.successful(Redirect(routes.YourAccountController.onPageLoad()))
+          case Left(e) =>
+            logger.error(s"Unexpected result on submit: $e")
+            Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
+
+        }
+    }
 }

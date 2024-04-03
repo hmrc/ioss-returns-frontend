@@ -132,3 +132,11 @@ GET         /excluded-cannot-use-service                                        
 
 GET         /start-return                                                             controllers.StartOutstandingReturnController.onPageLoad()
 GET         /no-returns-due                                                           controllers.NoReturnsDueController.onPageLoad()
+
+GET         /:period/return-delete-confirm                                            controllers.DeleteReturnController.onPageLoad(period: Period)
+POST        /:period/return-delete-confirm                                            controllers.DeleteReturnController.onSubmit(period: Period)
+
+GET         /:period/progress-saved                                                   controllers.SavedProgressController.onPageLoad(period: Period, continueUrl: String)
+
+GET         /:period/return-continue                                                  controllers.ContinueReturnController.onPageLoad(period: Period)
+POST        /:period/return-continue                                                  controllers.ContinueReturnController.onSubmit(period: Period)

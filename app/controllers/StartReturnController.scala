@@ -18,14 +18,13 @@ package controllers
 
 import controllers.actions._
 import forms.StartReturnFormProvider
-import models.{Period, UserAnswers}
 import models.etmp.EtmpExclusion
+import models.{Period, UserAnswers}
 import pages.{StartReturnPage, Waypoints}
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.{PartialReturnPeriodService, PeriodService}
-import services.{ObligationsService, PeriodService}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax.FutureOps
 import views.html.StartReturnView

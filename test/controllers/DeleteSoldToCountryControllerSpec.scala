@@ -64,7 +64,7 @@ class DeleteSoldToCountryControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[DeleteSoldToCountryView]
 
         status(result) mustBe OK
-        contentAsString(result) mustBe view(form, waypoints, index, country)(request, messages(application)).toString
+        contentAsString(result) mustBe view(form, waypoints, period, index, country)(request, messages(application)).toString
       }
     }
     
@@ -137,7 +137,7 @@ class DeleteSoldToCountryControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustBe BAD_REQUEST
-        contentAsString(result) mustBe view(boundForm, waypoints, index, country)(request, messages(application)).toString
+        contentAsString(result) mustBe view(boundForm, waypoints, period, index, country)(request, messages(application)).toString
       }
     }
 

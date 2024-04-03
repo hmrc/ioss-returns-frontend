@@ -17,17 +17,19 @@
 package controllers
 
 import config.FrontendAppConfig
-import connectors.{FinancialDataConnector, ReturnStatusConnector}
+import connectors.{FinancialDataConnector, ReturnStatusConnector, SaveForLaterConnector}
+import controllers.CheckCorrectionsTimeLimit.isOlderThanThreeYears
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
-import models.SubmissionStatus
 import models.etmp.EtmpExclusion
 import models.etmp.EtmpExclusionReason.{NoLongerSupplies, Reversal, TransferringMSID, VoluntarilyLeaves}
 import models.payments._
 import models.requests.RegistrationRequest
+import models.{Period, SubmissionStatus, UserAnswers}
 import pages.Waypoints
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
+import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import viewmodels.PaymentsViewModel
 import viewmodels.yourAccount.{CurrentReturns, ReturnsViewModel}
@@ -35,15 +37,16 @@ import views.html.YourAccountView
 
 import java.time.{Clock, LocalDate}
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
-import CheckCorrectionsTimeLimit.isOlderThanThreeYears
+import scala.concurrent.{ExecutionContext, Future}
 
 class YourAccountController @Inject()(
                                        cc: AuthenticatedControllerComponents,
                                        financialDataConnector: FinancialDataConnector,
+                                       saveForLaterConnector: SaveForLaterConnector,
                                        view: YourAccountView,
                                        returnStatusConnector: ReturnStatusConnector,
                                        clock: Clock,
+                                       sessionRepository: SessionRepository,
                                        appConfig: FrontendAppConfig
                                      )(implicit ec: ExecutionContext)
 
@@ -55,12 +58,12 @@ class YourAccountController @Inject()(
     implicit request =>
       val results = getCurrentReturns()
       results.map {
-        case (Right(availableReturns), Right(vatReturnsWithFinancialData)) =>
-          preparedViewWithFinancialData(availableReturns, vatReturnsWithFinancialData)
-        case (Left(error), error2) =>
+        case (Right(availableReturns), Right(vatReturnsWithFinancialData), answers) =>
+          preparedViewWithFinancialData(availableReturns, vatReturnsWithFinancialData, answers.map(_.period))
+        case (Left(error), error2, _) =>
           logger.error(s"there was an error with period with status $error and getting periods with outstanding amounts $error2")
           throw new Exception(error.toString)
-        case (left, right) =>
+        case (left, right, _) =>
           val message = s"There was an error during period with status $left $right"
           logger.error(message)
           throw new Exception(message)
@@ -71,14 +74,34 @@ class YourAccountController @Inject()(
     for {
       currentReturns <- returnStatusConnector.getCurrentReturns(request.iossNumber)
       currentPayments <- financialDataConnector.prepareFinancialData()
+      userAnswers <- getSavedAnswers()
     } yield {
-      (currentReturns, currentPayments)
+      userAnswers.map(answers => sessionRepository.set(answers))
+      (currentReturns, currentPayments, userAnswers)
+    }
+  }
+
+  private def getSavedAnswers()(implicit request: RegistrationRequest[AnyContent]): Future[Option[UserAnswers]] = {
+    for {
+      answersInSession <- sessionRepository.get(request.userId)
+      savedForLater <- saveForLaterConnector.get()
+    } yield {
+      val answers = if (answersInSession.isEmpty) {
+        savedForLater match {
+          case Right(Some(answers)) => Some(UserAnswers(request.userId, answers.period, answers.data, answers.lastUpdated))
+          case _ => None
+        }
+      } else {
+        answersInSession
+      }
+      answers
     }
   }
 
   private def preparedViewWithFinancialData(
                                              currentReturns: CurrentReturns,
-                                             currentPayments: PrepareData
+                                             currentPayments: PrepareData,
+                                             periodInProgress: Option[Period]
                                            )(implicit request: RegistrationRequest[AnyContent]): Result = {
 
     val maybeExclusion: Option[EtmpExclusion] = request.registrationWrapper.registration.exclusions.lastOption
@@ -98,7 +121,7 @@ class YourAccountController @Inject()(
     }
 
     val existsOutstandingReturn = {
-      if(currentReturns.finalReturnsCompleted) {
+      if (currentReturns.finalReturnsCompleted) {
         false
       } else {
         currentReturns.returns.exists { currentReturn =>
@@ -126,7 +149,12 @@ class YourAccountController @Inject()(
       exclusionsEnabled = appConfig.exclusionsEnabled,
       maybeExclusion = maybeExclusion,
       hasSubmittedFinalReturn = currentReturns.finalReturnsCompleted,
-      returnsViewModel = ReturnsViewModel(currentReturns.returns)
+      returnsViewModel = ReturnsViewModel(
+        currentReturns.returns.map(currentReturn => if (periodInProgress.contains(currentReturn.period)) {
+          currentReturn.copy(inProgress = true)
+        } else {
+          currentReturn
+        }))
     ))
   }
 

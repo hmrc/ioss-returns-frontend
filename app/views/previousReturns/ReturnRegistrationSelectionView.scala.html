@@ -58,6 +58,8 @@
        )
     )
 
-    @button("site.continue")
+    @govukButton(
+      ButtonViewModel(messages("site.continue")).withAttribute(("id", "continue"))
+    )
   }
 }

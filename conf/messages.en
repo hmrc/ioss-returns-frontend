@@ -41,10 +41,17 @@ yourAccount.title = Your Import One Stop Shop Account
 yourAccount.heading = Your Import One Stop Shop Account
 yourAccount.iossNumber = IOSS number: {0}
 yourAccount.paragraph = You can correct a previous return when you submit your next one.
+yourAccount.yourReturns.inProgress = Your return for {0} is in progress.
+yourAccount.yourReturns.inProgress.due = This is due by {0}.
+yourAccount.yourReturns.returnDue = Your {0} return is due by {1}.
+yourAccount.yourReturns.returnOverdue = You have an overdue return.
+yourAccount.yourReturns.returnOverdue.inProgress = You have an overdue return in progress.
+yourAccount.yourReturns.returnOverdue.additional.inProgress = You also have an overdue return in progress.
 yourAccount.yourReturns.heading = Your returns
 yourAccount.yourReturns.startReturn = Start your {0} return
+yourAccount.yourReturns.continueReturn = Continue your {0} return
 yourAccount.yourReturns.dueReturn.startReturn = Start your return
-yourAccount.yourReturns.returnDue = Your {0} return is due by {1}.
+yourAccount.yourReturns.dueReturn.continueReturn = Continue your return
 yourAccount.yourReturns.returnsOverdue.singular = You have an overdue return.
 yourAccount.yourReturns.returnsOverdue = You have an overdue return.
 yourAccount.yourReturns.returnsOverdue.multiple =  You have {0} overdue returns.
@@ -115,6 +122,29 @@ journeyRecovery.continue.guidance = [Add content to explain how to proceed.]
 journeyRecovery.startAgain.title = Sorry, there is a problem with the service
 journeyRecovery.startAgain.heading = Sorry, there is a problem with the service
 journeyRecovery.startAgain.guidance = [Add content to explain why the user needs to start again.]
+
+savedProgress.title = We have saved your progress
+savedProgress.subtitle = We''ll keep your information until <br>{0}
+savedProgress.return.due = This return is due by {0}.
+savedProgress.nextSteps = What happens next
+savedProgress.listStart = You can:
+savedProgress.continue.return = continue to complete your return
+savedProgress.your.account = return to your account
+savedProgress.sign.out = sign out and come back later
+savedProgress.heading = savedProgress
+savedProgress.sign.in = If you sign out, you must sign back into your <a href="{0}">Government Gateway</a> to continue.
+saveProgress.button = Save and come back later
+
+continueReturn.title = What would you like to do?
+continueReturn.heading = What would you like to do?
+continueReturn.continue = Continue my return
+continueReturn.delete = Delete my return and start again
+continueReturn.error.required = Select to continue or delete your current return
+
+deleteReturn.title = Are you sure you want to delete this return?
+deleteReturn.heading = Are you sure you want to delete this return?
+deleteReturn.error.required = Select yes if you want to delete this return
+deleteReturn.button = Delete return
 
 signedOut.title = For your security, we signed you out
 signedOut.heading = For your security, we signed you out
@@ -358,7 +388,8 @@ successfullySubmitted.next.info.returnToAccount = Back to your account
 
 returnSubmissionFailure.title = We have a problem with our service right now
 returnSubmissionFailure.heading = We have not received your return
-returnSubmissionFailure.tryAgainLater = Please try again later.
+returnSubmissionFailure.savedAnswers = We have saved your answers and you can submit it from your account later.
+returnSubmissionFailure.knownIssues = Check our <a class="govuk-link" href="https://www.gov.uk/government/publications/vat-import-one-stop-shop-scheme-service-availability-and-issues/vat-import-one-stop-shop-scheme-service-availability-and-issues">service page</a> for any known system issues.
 returnSubmissionFailure.contactUs = If the problem continues, you can email us at <a class="govuk-link" href="mailto:vatoss.contact@hmrc.gov.uk">vatoss.contact@hmrc.gov.uk</a>
 returnSubmissionFailure.next.info.returnToAccount = Back to your account
 

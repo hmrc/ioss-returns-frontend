@@ -70,7 +70,7 @@ else {
                         ).withSize(LegendSize.Medium)
                     )
                 )
-                @button(messages("site.continue", period, controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onPageLoad(waypoints, period).url))
+                @button("site.continue", controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onPageLoad(waypoints, period).url, period, waypoints)
             }
         } else {
             @formHelper(action = controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onSubmit(waypoints, period, true), 'autoComplete -> "off") {
