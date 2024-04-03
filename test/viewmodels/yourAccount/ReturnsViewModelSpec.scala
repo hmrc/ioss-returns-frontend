@@ -199,7 +199,7 @@ class ReturnsViewModelSpec extends SpecBase {
       )
       val resultModel = ReturnsViewModel(returns)(messages(app))
       assert(resultModel.contents.map(p => p.content)
-        .contains(s"Your July 2021 return is due by 31 August 2021."))
+        .contains("Your July 2021 return is due by 31 August 2021."))
       resultModel.linkToStart mustBe defined
       resultModel.linkToStart.get.linkText mustBe "Start your return"
       resultModel.linkToStart.get.url mustBe controllers.routes.StartReturnController.onPageLoad(waypoints, earliestPeriod).url
