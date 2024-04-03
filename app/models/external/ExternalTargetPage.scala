@@ -55,11 +55,6 @@ case object ContinueReturn extends ExternalTargetPage with UrlWithPeriod {
   override def url(period: Period): String = controllers.routes.YourAccountController.onPageLoad().url // TODO - implement when save and come back exists
 }
 
-case object NoMoreWelsh extends ExternalTargetPage {
-  override val name: String = "no-more-welsh"
-  def url(targetUrl: String): String = controllers.external.routes.NoMoreWelshController.onPageLoad(Some(targetUrl)).url
-}
-
 case object Payment extends ExternalTargetPage with ParameterlessUrl {
   override val name: String = "make-payment"
   override val url: String = controllers.payments.routes.WhichVatPeriodToPayController.onPageLoad().url

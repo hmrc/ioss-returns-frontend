@@ -20,11 +20,13 @@ import config.FrontendAppConfig
 import connectors.{SaveForLaterConnector, SavedUserAnswers, VatReturnConnector}
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
-import models.{ConflictFound, Period}
 import models.requests.SaveForLaterRequest
+import models.{ConflictFound, Period}
 import pages.SavedProgressPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl._
+import uk.gov.hmrc.play.bootstrap.binders.{OnlyRelative, RedirectUrl}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.SavedProgressView
 
@@ -44,13 +46,14 @@ class SavedProgressController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(period: Period, continueUrl: String): Action[AnyContent] = cc.authAndRequireData.async {
+  def onPageLoad(period: Period, continueUrl: RedirectUrl): Action[AnyContent] = cc.authAndRequireData.async {
     implicit request =>
       val dateTimeFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy")
       val answersExpiry = request.userAnswers.lastUpdated.plus(appConfig.saveForLaterTtl, ChronoUnit.DAYS)
         .atZone(ZoneId.systemDefault()).toLocalDate.format(dateTimeFormatter)
+      val safeContinueUrl = continueUrl.get(OnlyRelative).url
 
-      Future.fromTry(request.userAnswers.set(SavedProgressPage, continueUrl)).flatMap {
+      Future.fromTry(request.userAnswers.set(SavedProgressPage, safeContinueUrl)).flatMap {
         updatedAnswers =>
           val s4LRequest = SaveForLaterRequest(updatedAnswers, request.vrn, period)
           (for{
@@ -64,7 +67,7 @@ class SavedProgressController @Inject()(
               for {
                 _ <- cc.sessionRepository.set(updatedAnswers)
               } yield {
-                Ok(view(period, answersExpiry, continueUrl, externalUrl))
+                Ok(view(period, answersExpiry, safeContinueUrl, externalUrl))
               }
             case (Left(ConflictFound), externalUrl)=>
               Future.successful(Redirect(externalUrl.getOrElse(routes.YourAccountController.onPageLoad().url)))

@@ -123,7 +123,7 @@ POST        /outstanding-payments                                               
 
 GET         /intercept-unusable-email                                                 controllers.InterceptUnusableEmailController.onPageLoad()
 
-GET         /no-welsh-service                                                         controllers.external.NoMoreWelshController.onPageLoad(redirectUrl: Option[String] ?= None)
+GET         /no-welsh-service                                                         controllers.external.NoMoreWelshController.onPageLoad(redirectUrl: Option[RedirectUrl] ?= None)
 
 GET         /make-payment/:period                                                     controllers.payments.PaymentController.makePayment(waypoints: Waypoints ?= EmptyWaypoints, period: Period)
 GET         /make-payment/:period/:iossNumber                                         controllers.payments.PaymentController.makePaymentForIossNumber(waypoints: Waypoints ?= EmptyWaypoints, period: Period, iossNumber: String)
@@ -136,7 +136,7 @@ GET         /no-returns-due                                                     
 GET         /:period/return-delete-confirm                                            controllers.DeleteReturnController.onPageLoad(period: Period)
 POST        /:period/return-delete-confirm                                            controllers.DeleteReturnController.onSubmit(period: Period)
 
-GET         /:period/progress-saved                                                   controllers.SavedProgressController.onPageLoad(period: Period, continueUrl: String)
+GET         /:period/progress-saved                                                   controllers.SavedProgressController.onPageLoad(period: Period, continueUrl: RedirectUrl)
 
 GET         /:period/return-continue                                                  controllers.ContinueReturnController.onPageLoad(period: Period)
 POST        /:period/return-continue                                                  controllers.ContinueReturnController.onSubmit(period: Period)
