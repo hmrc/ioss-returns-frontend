@@ -29,8 +29,6 @@ import models.payments._
 import models.requests.RegistrationRequest
 import models.{Period, SubmissionStatus, UserAnswers}
 import pages.Waypoints
-import pages.{JourneyRecoveryPage, Waypoints, WhichPreviousRegistrationToPayPage, WhichVatPeriodToPayPage}
-import pages.Waypoints
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import repositories.SessionRepository
@@ -54,34 +52,26 @@ class YourAccountController @Inject()(
                                        clock: Clock,
                                        sessionRepository: SessionRepository,
                                        appConfig: FrontendAppConfig
-                                     )(implicit ec: ExecutionContext)
-
-  extends FrontendBaseController with I18nSupport with Logging {
+                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
   def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request =>
 
-      val prepareFinancialDataResponse = previousRegistrationService.getPreviousRegistrations().flatMap { previousRegistrations =>
-        previousRegistrations.map { previousRegistration =>
-          financialDataConnector.prepareFinancialData(previousRegistration.iossNumber)
-        }
+      val results: Future[(CurrentReturnsResponse, PrepareDataResponse, Option[UserAnswers])] = getCurrentReturns()
 
-        val results = getCurrentReturns()
-
-        if (request.enrolments.enrolments.size > 1) {
-          previousRegistrationService.getPreviousRegistrationPrepareFinancialData().flatMap { prepareDataList =>
-            prepareView(results, prepareDataList, waypoints)
-          }
-        } else {
-          prepareView(results, List.empty, waypoints)
+      if (request.enrolments.enrolments.size > 1) {
+        previousRegistrationService.getPreviousRegistrationPrepareFinancialData().flatMap { prepareDataList =>
+          prepareView(results, prepareDataList, waypoints)
         }
+      } else {
+        prepareView(results, List.empty, waypoints)
       }
   }
 
   private def prepareView(
-                           results: Future[(CurrentReturnsResponse, PrepareDataResponse)],
+                           results: Future[(CurrentReturnsResponse, PrepareDataResponse, Option[UserAnswers])],
                            previousRegistrationPrepareData: List[PrepareData],
                            waypoints: Waypoints
                          )(implicit request: RegistrationRequest[AnyContent]): Future[Result] = {
@@ -99,7 +89,7 @@ class YourAccountController @Inject()(
   }
 
   private def getCurrentReturns()(implicit request: RegistrationRequest[AnyContent]):
-  Future[(CurrentReturnHttpParser.CurrentReturnsResponse, PrepareDataHttpParser.PrepareDataResponse)] = {
+  Future[(CurrentReturnsResponse, PrepareDataResponse, Option[UserAnswers])] = {
     for {
       currentReturns <- returnStatusConnector.getCurrentReturns(request.iossNumber)
       currentPayments <- financialDataConnector.prepareFinancialData()
@@ -131,7 +121,6 @@ class YourAccountController @Inject()(
                                              currentReturns: CurrentReturns,
                                              currentPayments: PrepareData,
                                              previousRegistrationPrepareData: List[PrepareData],
-                                             redirectUrl: Option[String],
                                              waypoints: Waypoints,
                                              periodInProgress: Option[Period]
                                            )(implicit request: RegistrationRequest[AnyContent]): Result = {
@@ -146,18 +135,7 @@ class YourAccountController @Inject()(
       None
     }
 
-    val existsOutstandingReturn = {
-      if (currentReturns.finalReturnsCompleted) {
-        false
-      } else {
-        currentReturns.returns.exists { currentReturn =>
-          Seq(SubmissionStatus.Due, SubmissionStatus.Overdue, SubmissionStatus.Next).contains(currentReturn.submissionStatus) &&
-            !isOlderThanThreeYears(currentReturn.dueDate, clock)
-        }
-      }
-    }
-
-    val rejoinUrl = if (request.registrationWrapper.registration.canRejoinRegistration(now) && !existsOutstandingReturn) {
+    val rejoinUrl = if (request.registrationWrapper.registration.canRejoinRegistration(now) && !getExistsOutstandingReturns(currentReturns)) {
       Some(appConfig.rejoinThisServiceUrl)
     } else {
       None
@@ -184,6 +162,20 @@ class YourAccountController @Inject()(
         })),
       previousRegistrationPrepareData = previousRegistrationPrepareData
     ))
+  }
+
+  private def getExistsOutstandingReturns(currentReturns: CurrentReturns): Boolean = {
+    val existsOutstandingReturn = {
+      if (currentReturns.finalReturnsCompleted) {
+        false
+      } else {
+        currentReturns.returns.exists { currentReturn =>
+          Seq(SubmissionStatus.Due, SubmissionStatus.Overdue, SubmissionStatus.Next).contains(currentReturn.submissionStatus) &&
+            !isOlderThanThreeYears(currentReturn.dueDate, clock)
+        }
+      }
+    }
+    existsOutstandingReturn
   }
 
   private def cancelYourRequestToLeaveUrl(maybeExclusion: Option[EtmpExclusion]): Option[String] = {

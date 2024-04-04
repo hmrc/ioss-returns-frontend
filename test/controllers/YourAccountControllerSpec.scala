@@ -18,9 +18,8 @@ package controllers
 
 import base.SpecBase
 import config.FrontendAppConfig
-import connectors.{FinancialDataConnector, RegistrationConnector, ReturnStatusConnector}
+import connectors.{FinancialDataConnector, RegistrationConnector, ReturnStatusConnector, SaveForLaterConnector}
 import controllers.actions.GetRegistrationAction
-import connectors.{FinancialDataConnector, ReturnStatusConnector, SaveForLaterConnector}
 import generators.Generators
 import models.SubmissionStatus._
 import models.etmp.EtmpExclusion

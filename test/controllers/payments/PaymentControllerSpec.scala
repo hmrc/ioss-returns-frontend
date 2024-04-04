@@ -17,14 +17,14 @@
 package controllers.payments
 
 import base.SpecBase
-import connectors.{FinancialDataConnector, VatReturnConnector}
 import connectors.FinancialDataHttpParser.ChargeResponse
-import models.{InvalidJson, UnexpectedResponseStatus}
+import connectors.{FinancialDataConnector, VatReturnConnector}
 import models.financialdata.Charge
 import models.payments.PaymentResponse
+import models.{InvalidJson, UnexpectedResponseStatus}
 import org.mockito.ArgumentMatchers.any
-import org.mockito.{ArgumentMatchers, Mockito}
-import org.mockito.Mockito.{verify, when}
+import org.mockito.Mockito
+import org.mockito.Mockito.when
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar.mock
 import pages.JourneyRecoveryPage
