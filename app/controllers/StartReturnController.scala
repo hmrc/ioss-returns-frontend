@@ -24,7 +24,7 @@ import pages.{StartReturnPage, Waypoints}
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import services.{PartialReturnPeriodService, PeriodService}
+import services.PartialReturnPeriodService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax.FutureOps
 import views.html.StartReturnView
@@ -37,7 +37,6 @@ class StartReturnController @Inject()(
                                        override val messagesApi: MessagesApi,
                                        cc: AuthenticatedControllerComponents,
                                        formProvider: StartReturnFormProvider,
-                                       periodService: PeriodService,
                                        partialReturnPeriodService: PartialReturnPeriodService,
                                        view: StartReturnView,
                                        clock: Clock

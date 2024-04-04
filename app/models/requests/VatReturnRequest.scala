@@ -14,17 +14,25 @@
  * limitations under the License.
  */
 
-package pages
+package models.requests
 
-object PageConstants {
+import models.Period
+import play.api.libs.json.{Json, OFormat}
+import queries.SalesToCountry
+import uk.gov.hmrc.domain.Vrn
 
-  val sales: String = "sales"
-  val successful: String = "successful"
-  val vatRates: String = "vatRatesFromCountry"
-  val salesAtVatRate: String = "salesAtVatRate"
-  val netValueOfSales: String = "netValueOfSales"
-  val vatOnSales: String = "vatOnSales"
-  val corrections: String = "corrections"
-  val correctionsToCountry: String = "correctionsToCountry"
-  val previouslyDeclaredCorrectionsForCountry: String = "previouslyDeclaredCorrectionAmountForCountry"
+import java.time.LocalDate
+
+case class VatReturnRequest(
+                           vrn: Vrn,
+                           period: Period,
+                           startDate: Option[LocalDate],
+                           endDate: Option[LocalDate],
+                           sales: List[SalesToCountry]
+                           )
+
+
+object VatReturnRequest {
+
+  implicit val format: OFormat[VatReturnRequest] = Json.format[VatReturnRequest]
 }

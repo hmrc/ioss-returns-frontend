@@ -18,6 +18,7 @@ package controllers.corrections
 
 import controllers.actions._
 import forms.corrections.CorrectionListCountriesFormProvider
+import models.corrections.CorrectionToCountry
 import models.{Country, Index}
 import pages.Waypoints
 import pages.corrections.CorrectionListCountriesPage
@@ -25,18 +26,20 @@ import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.CompletionChecks
+import utils.FutureSyntax.FutureOps
 import viewmodels.checkAnswers.corrections.CorrectionListCountriesSummary
 import views.html.corrections.CorrectionListCountriesView
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
-
 class CorrectionListCountriesController @Inject()(
                                          override val messagesApi: MessagesApi,
                                          cc: AuthenticatedControllerComponents,
                                          formProvider: CorrectionListCountriesFormProvider,
                                          view: CorrectionListCountriesView
-                                 )(implicit ec: ExecutionContext) extends FrontendBaseController with CorrectionBaseController with I18nSupport {
+                                 )(implicit ec: ExecutionContext)
+  extends FrontendBaseController with CorrectionBaseController with CompletionChecks with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
@@ -53,34 +56,67 @@ class CorrectionListCountriesController @Inject()(
             val canAddCountries = number < Country.euCountriesWithNI.size
             val list = CorrectionListCountriesSummary
               .addToListRows(request.userAnswers, waypoints, periodIndex, CorrectionListCountriesPage(periodIndex))
-
-           Ok(view(form, waypoints, list, period, correctionPeriod, periodIndex, canAddCountries, Seq.empty))
+            withCompleteData[CorrectionToCountry](
+              periodIndex,
+              data = getIncompleteCorrections _,
+              onFailure = (incompleteCorrections: Seq[CorrectionToCountry]) => {
+                Ok(view(
+                  form,
+                  waypoints,
+                  list,
+                  period,
+                  correctionPeriod,
+                  periodIndex,
+                  canAddCountries,
+                  incompleteCorrections.map(_.correctionCountry.name)
+                ))
+              }) {
+              Ok(view(form, waypoints, list, period, correctionPeriod, periodIndex, canAddCountries, Seq.empty))
+            }
         }
 
   }
 
-  def onSubmit(waypoints: Waypoints, periodIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible().async {
+  def onSubmit(waypoints: Waypoints, periodIndex: Index, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible().async {
     implicit request =>
 
       val period = request.userAnswers.period
 
-      getNumberOfCorrectionsAsync(periodIndex) {
-        (number, correctionPeriod) =>
-          val canAddCountries = number < Country.euCountriesWithNI.size
-          val list = CorrectionListCountriesSummary
-            .addToListRows(request.userAnswers, waypoints, periodIndex, CorrectionListCountriesPage(periodIndex))
+      withCompleteDataAsync[CorrectionToCountry](
+        periodIndex,
+        data = getIncompleteCorrections _,
+        onFailure = (incompleteCorrections: Seq[CorrectionToCountry]) => {
+          if (incompletePromptShown) {
+            firstIndexedIncompleteCorrection(periodIndex, incompleteCorrections) match {
+              case Some(incompleteCorrections) =>
+                Redirect(routes.VatAmountCorrectionCountryController.onPageLoad(waypoints, periodIndex, Index(incompleteCorrections._2))).toFuture
+              case None =>
+                Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()).toFuture
+            }
+          } else {
+            Redirect(routes.CorrectionListCountriesController.onPageLoad(waypoints, periodIndex)).toFuture
+          }
+        })(
+        onSuccess = {
+          getNumberOfCorrectionsAsync(periodIndex) { (number, correctionPeriod) =>
+            val canAddCountries = number < Country.euCountriesWithNI.size
+            val list = CorrectionListCountriesSummary
+              .addToListRows(request.userAnswers, waypoints, periodIndex, CorrectionListCountriesPage(periodIndex))
 
-          form.bindFromRequest().fold(
-            formWithErrors =>
-              Future.successful(BadRequest(view(formWithErrors, waypoints, list, period, correctionPeriod, periodIndex, canAddCountries, Seq.empty))),
+            form.bindFromRequest().fold(
+              formWithErrors =>
+                Future.successful(BadRequest(view(formWithErrors, waypoints, list, period, correctionPeriod, periodIndex, canAddCountries, Seq.empty))),
 
-            value =>
-              for {
-                updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionListCountriesPage(periodIndex), value))
-                _ <- cc.sessionRepository.set(updatedAnswers)
-              } yield Redirect(CorrectionListCountriesPage(periodIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route))
+              value =>
+                for {
+                  updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionListCountriesPage(periodIndex), value))
+                  _ <- cc.sessionRepository.set(updatedAnswers)
+                } yield Redirect(CorrectionListCountriesPage(periodIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route)
+            )
+          }
+        }
 
-      }
+      )
   }
 
 

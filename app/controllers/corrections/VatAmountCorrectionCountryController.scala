@@ -61,7 +61,17 @@ class VatAmountCorrectionCountryController @Inject()(
               case None => form
               case Some(value) => form.fill(value)
             }
-            Ok(view(preparedForm, waypoints, period, periodIndex, correctionReturnPeriod, countryIndex, country, isCountryPreviouslyDeclared, previouslyDeclaredAmount)).toFuture
+            Ok(view(
+              preparedForm,
+              waypoints,
+              period,
+              periodIndex,
+              correctionReturnPeriod,
+              countryIndex,
+              country,
+              isCountryPreviouslyDeclared,
+              previouslyDeclaredAmount
+            )).toFuture
           }
         }
       }
@@ -84,7 +94,17 @@ class VatAmountCorrectionCountryController @Inject()(
 
             form.bindFromRequest().fold(
               formWithErrors =>
-                BadRequest(view(formWithErrors, waypoints, period, periodIndex, correctionReturnPeriod, countryIndex, country, isCountryPreviouslyDeclared, previouslyDeclaredAmount)).toFuture,
+                BadRequest(view(
+                  formWithErrors,
+                  waypoints,
+                  period,
+                  periodIndex,
+                  correctionReturnPeriod,
+                  countryIndex,
+                  country,
+                  isCountryPreviouslyDeclared,
+                  previouslyDeclaredAmount
+                )).toFuture,
               value =>
 
                 for {

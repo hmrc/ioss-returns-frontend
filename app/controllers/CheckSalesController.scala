@@ -23,9 +23,10 @@ import pages.{CheckSalesPage, Waypoints}
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import queries.RemainingVatRatesFromCountryQuery
+import queries.{RemainingVatRatesFromCountryQuery, VatRateWithOptionalSalesFromCountry}
 import services.VatRateService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.CompletionChecks
 import utils.FutureSyntax.FutureOps
 import viewmodels.checkAnswers.CheckSalesSummary
 import views.html.CheckSalesView
@@ -39,7 +40,8 @@ class CheckSalesController @Inject()(
                                       formProvider: CheckSalesFormProvider,
                                       vatRateService: VatRateService,
                                       view: CheckSalesView
-                                    )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with GetCountry with GetVatRates {
+                                    )(implicit ec: ExecutionContext)
+  extends FrontendBaseController with CompletionChecks with I18nSupport with GetCountry with GetVatRates {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
@@ -61,35 +63,62 @@ class CheckSalesController @Inject()(
             case Some(value) => form.fill(value)
           }
 
-          Ok(view(preparedForm, waypoints, period, checkSalesSummary, countryIndex, country, canAddAnotherVatRate)).toFuture
+          withCompleteDataAsync[VatRateWithOptionalSalesFromCountry](
+            countryIndex,
+            data = getIncompleteVatRateAndSales _,
+            onFailure = (incomplete: Seq[VatRateWithOptionalSalesFromCountry]) => {
+              Ok(view(
+                preparedForm,
+                waypoints,
+                period,
+                checkSalesSummary,
+                countryIndex,
+                country,
+                canAddAnotherVatRate,
+                incomplete)).toFuture
+            }) {
+            Ok(view(preparedForm, waypoints, period, checkSalesSummary, countryIndex, country, canAddAnotherVatRate)).toFuture
+          }
         }
       }
   }
 
-  def onSubmit(waypoints: Waypoints, countryIndex: Index): Action[AnyContent] = cc.authAndRequireData().async {
+  def onSubmit(waypoints: Waypoints, countryIndex: Index, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
-      getCountry(waypoints, countryIndex) { country =>
-        getAllVatRatesFromCountry(waypoints, countryIndex) { vatRates =>
+      withCompleteDataAsync[VatRateWithOptionalSalesFromCountry](
+        countryIndex,
+        data = getIncompleteVatRateAndSales _,
+        onFailure = (_: Seq[VatRateWithOptionalSalesFromCountry]) => {
+          if(incompletePromptShown) {
+            Redirect(routes.SalesToCountryController.onPageLoad(waypoints, countryIndex, Index(0))).toFuture
+          } else {
+            Redirect(routes.CheckSalesController.onPageLoad(waypoints, countryIndex)).toFuture
+          }
+        }) {
 
-          val period = request.userAnswers.period
+        getCountry(waypoints, countryIndex) { country =>
+          getAllVatRatesFromCountry(waypoints, countryIndex) { vatRates =>
 
-          val remainingVatRates = vatRateService.getRemainingVatRatesForCountry(period, country, vatRates)
+            val period = request.userAnswers.period
 
-          val canAddAnotherVatRate = remainingVatRates.nonEmpty
+            val remainingVatRates = vatRateService.getRemainingVatRatesForCountry(period, country, vatRates)
 
-          val checkSalesSummary = CheckSalesSummary.rows(request.userAnswers, waypoints, countryIndex)
+            val canAddAnotherVatRate = remainingVatRates.nonEmpty
 
-          form.bindFromRequest().fold(
-            formWithErrors =>
-              BadRequest(view(formWithErrors, waypoints, period, checkSalesSummary, countryIndex, country, canAddAnotherVatRate)).toFuture,
+            val checkSalesSummary = CheckSalesSummary.rows(request.userAnswers, waypoints, countryIndex)
 
-            value =>
-              for {
-                updatedAnswers <- Future.fromTry(request.userAnswers.set(CheckSalesPage(countryIndex), value))
-                updatedAnswersWithRemainingVatRates <- Future.fromTry(updatedAnswers.set(RemainingVatRatesFromCountryQuery(countryIndex), remainingVatRates))
-                _ <- cc.sessionRepository.set(updatedAnswersWithRemainingVatRates)
-              } yield Redirect(CheckSalesPage(countryIndex).navigate(waypoints, request.userAnswers, updatedAnswersWithRemainingVatRates).route)
-          )
+            form.bindFromRequest().fold(
+              formWithErrors =>
+                BadRequest(view(formWithErrors, waypoints, period, checkSalesSummary, countryIndex, country, canAddAnotherVatRate, Seq.empty)).toFuture,
+
+              value =>
+                for {
+                  updatedAnswers <- Future.fromTry(request.userAnswers.set(CheckSalesPage(countryIndex), value))
+                  updatedAnswersWithRemainingVatRates <- Future.fromTry(updatedAnswers.set(RemainingVatRatesFromCountryQuery(countryIndex), remainingVatRates))
+                  _ <- cc.sessionRepository.set(updatedAnswersWithRemainingVatRates)
+                } yield Redirect(CheckSalesPage(countryIndex).navigate(waypoints, request.userAnswers, updatedAnswersWithRemainingVatRates).route)
+            )
+          }
         }
       }
   }

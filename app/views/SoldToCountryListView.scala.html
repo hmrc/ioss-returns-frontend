@@ -23,11 +23,20 @@
         formHelper: FormWithCSRF,
         govukErrorSummary: GovukErrorSummary,
         govukRadios: GovukRadios,
+        govukButton: GovukButton,
         addToList: components.addToList,
-        button: ButtonGroup
+        button: ButtonGroup,
+        govukWarningText: GovukWarningText
 )
 
-@(form: Form[_], waypoints: Waypoints, period: Period, salesList: Seq[ListItem], canAddSales: Boolean)(implicit request: Request[_], messages: Messages)
+@(
+    form: Form[_],
+    waypoints: Waypoints,
+    period: Period,
+    salesList: Seq[ListItem],
+    canAddSales: Boolean,
+    incompleteCountries: Seq[Country] = List.empty
+)(implicit request: Request[_], messages: Messages)
 
 @titleText = @{
     salesList.size match {
@@ -45,32 +54,51 @@
 
 @layout(pageTitle = title(form, titleText)) {
 
-    @formHelper(action = routes.SoldToCountryListController.onSubmit(waypoints), Symbol("autoComplete") -> "off") {
 
-        @if(form.errors.nonEmpty) {
-            @govukErrorSummary(ErrorSummaryViewModel(form))
-        }
+    @if(form.errors.nonEmpty) {
+        @govukErrorSummary(ErrorSummaryViewModel(form))
+    }
 
-        <h1 class="govuk-heading-l">@headingText</h1>
+    @if(incompleteCountries.nonEmpty) {
+        @govukWarningText(WarningText(
+            iconFallbackText = Option(messages("site.warning")),
+            content = Text(messages("error.missing_answers"))
+        ))
+    }
 
-        @addToList(salesList, itemSize = Long, "soldToCountryList.change.hidden", "soldToCountryList.remove.hidden")
+    <h1 class="govuk-heading-l">@headingText</h1>
 
-        @if(canAddSales) {
-            @govukRadios(
-                RadiosViewModel.yesNo(
-                    field = form("value"),
-                    legend = LegendViewModel(
-                        HtmlContent(Html("""<h2 class="govuk-fieldset__heading">""" + messages("soldToCountryList.addAnother") + "</h2>"))
-                    ).withSize(LegendSize.Medium)
-                ).withHint(HintViewModel(messages("soldToCountryList.addAnother.hint")))
+    @addToList(salesList, itemSize = Long, "soldToCountryList.change.hidden", "soldToCountryList.remove.hidden")
+    @if(incompleteCountries.isEmpty) {
+        @formHelper(action = routes.SoldToCountryListController.onSubmit(waypoints, false), Symbol("autoComplete") -> "off") {
+
+            @if(canAddSales) {
+                @govukRadios(
+                    RadiosViewModel.yesNo(
+                        field = form("value"),
+                        legend = LegendViewModel(
+                            HtmlContent(Html("""<h2 class="govuk-fieldset__heading">""" + messages("soldToCountryList.addAnother") + "</h2>"))
+                        ).withSize(LegendSize.Medium)
+                    ).withHint(HintViewModel(messages("soldToCountryList.addAnother.hint")))
+                )
+            } else {
+                <p class="govuk-body">@messages("soldToCountryList.maximumReached")</p>
+                <input type="hidden" name="value" id="value" value="false"/>
+            }
+
+            @button(
+                "site.continue", routes.SoldToCountryListController.onPageLoad(waypoints).url, period, waypoints
             )
-        } else {
-            <p class="govuk-body">@messages("soldToCountryList.maximumReached")</p>
-            <input type="hidden" name="value" id="value" value="false"/>
         }
+    } else {
+        @formHelper(action = routes.SoldToCountryListController.onSubmit(waypoints, true)) {
 
-        @button(
-            "site.continue", routes.SoldToCountryListController.onPageLoad(waypoints).url, period, waypoints
-        )
+            <h2 class="govuk-heading-m push--top">@messages("error.missing_answers_header")</h2>
+            <p class="govuk-body">@messages("error.missing_answers_prompt", incompleteCountries.head.name)</p>
+
+            @govukButton(
+                ButtonViewModel(messages("error.resolve_missing_answers"))
+            )
+        }
     }
 }

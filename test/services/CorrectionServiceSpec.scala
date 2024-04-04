@@ -38,6 +38,7 @@ class CorrectionServiceSpec extends SpecBase with PrivateMethodTester with Befor
 
   private implicit lazy val hc: HeaderCarrier = HeaderCarrier()
   private val mockVatReturnConnector: VatReturnConnector = mock[VatReturnConnector]
+  private val mockPeriodService: PeriodService = mock[PeriodService]
 
   private val period1: StandardPeriod = period
   private val period2: Period = period1.getNext
@@ -133,7 +134,7 @@ class CorrectionServiceSpec extends SpecBase with PrivateMethodTester with Befor
         when(mockVatReturnConnector.get(eqTo(period2))(any())) thenReturn Right(vatReturn2WithCorrection).toFuture
         when(mockVatReturnConnector.get(eqTo(period3))(any())) thenReturn Right(vatReturn3WithCorrection).toFuture
 
-        val service = new CorrectionService(mockVatReturnConnector)
+        val service = new CorrectionService(mockVatReturnConnector, mockPeriodService)
 
         val result = service.getAccumulativeVatForCountryTotalAmount(periodFrom, periodTo, country1).futureValue
 
@@ -152,7 +153,7 @@ class CorrectionServiceSpec extends SpecBase with PrivateMethodTester with Befor
 
         when(mockVatReturnConnector.get(any())(any())) thenReturn Left(UnexpectedResponseStatus(NOT_FOUND, "error")).toFuture
 
-        val service = new CorrectionService(mockVatReturnConnector)
+        val service = new CorrectionService(mockVatReturnConnector, mockPeriodService)
 
         val result = service.getAccumulativeVatForCountryTotalAmount(periodFrom, periodTo, country)
 
@@ -172,7 +173,7 @@ class CorrectionServiceSpec extends SpecBase with PrivateMethodTester with Befor
 
         when(mockVatReturnConnector.get(any())(any())) thenReturn Right(vatReturn).toFuture
 
-        val service = new CorrectionService(mockVatReturnConnector)
+        val service = new CorrectionService(mockVatReturnConnector, mockPeriodService)
 
         val getAllReturnsInPeriodRange = PrivateMethod[Future[Seq[EtmpVatReturn]]](Symbol("getAllReturnsInPeriodRange"))
 
@@ -192,7 +193,7 @@ class CorrectionServiceSpec extends SpecBase with PrivateMethodTester with Befor
 
         when(mockVatReturnConnector.get(any())(any())) thenReturn Left(UnexpectedResponseStatus(NOT_FOUND, errorMessage)).toFuture
 
-        val service = new CorrectionService(mockVatReturnConnector)
+        val service = new CorrectionService(mockVatReturnConnector, mockPeriodService)
 
         val getAllReturnsInPeriodRange = PrivateMethod[Future[Seq[EtmpVatReturn]]](Symbol("getAllReturnsInPeriodRange"))
 
@@ -213,7 +214,7 @@ class CorrectionServiceSpec extends SpecBase with PrivateMethodTester with Befor
         val periodFrom: Period = period1
         val periodTo: Period = period1
 
-        val service = new CorrectionService(mockVatReturnConnector)
+        val service = new CorrectionService(mockVatReturnConnector, mockPeriodService)
 
         val getAllPeriods = PrivateMethod[Seq[Period]](Symbol("getAllPeriods"))
 
@@ -227,7 +228,7 @@ class CorrectionServiceSpec extends SpecBase with PrivateMethodTester with Befor
         val periodFrom: Period = period1
         val periodTo: Period = period4
 
-        val service = new CorrectionService(mockVatReturnConnector)
+        val service = new CorrectionService(mockVatReturnConnector, mockPeriodService)
 
         val getAllPeriods = PrivateMethod[Seq[Period]](Symbol("getAllPeriods"))
 
@@ -242,7 +243,7 @@ class CorrectionServiceSpec extends SpecBase with PrivateMethodTester with Befor
         val periodFrom: Period = period1
         val periodTo: Period = period2
 
-        val service = new CorrectionService(mockVatReturnConnector)
+        val service = new CorrectionService(mockVatReturnConnector, mockPeriodService)
 
         val getAllPeriods = PrivateMethod[Seq[Period]](Symbol("getAllPeriods"))
 

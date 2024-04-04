@@ -46,6 +46,8 @@ class CorrectionListCountriesControllerSpec extends SpecBase with SummaryListFlu
   val form: Form[Boolean] = formProvider()
 
   lazy val correctionListCountriesRoute: String = controllers.corrections.routes.CorrectionListCountriesController.onPageLoad(waypoints, index).url
+  lazy val correctionListCountriesRoutePost: String =
+    controllers.corrections.routes.CorrectionListCountriesController.onSubmit(waypoints, index, incompletePromptShown = false).url
 
   private val country = arbitrary[Country].sample.value
   private val obligationService: ObligationsService = mock[ObligationsService]
@@ -61,6 +63,12 @@ class CorrectionListCountriesControllerSpec extends SpecBase with SummaryListFlu
     .set(CorrectionReturnYearPage(index), 2023).success.value
     .set(CorrectionReturnPeriodPage(index), period).success.value
     .set(VatAmountCorrectionCountryPage(index, index), BigDecimal(100.0)).success.value
+
+  private val answersWithNoCorrectionValue =
+    emptyUserAnswers
+      .set(CorrectionCountryPage(index, index), country).success.value
+      .set(CorrectionReturnYearPage(index), 2023).success.value
+      .set(CorrectionReturnPeriodPage(index), period).success.value
 
   "CorrectionListCountries Controller" - {
 
@@ -126,6 +134,37 @@ class CorrectionListCountriesControllerSpec extends SpecBase with SummaryListFlu
       }
     }
 
+    "must return OK and the correct view with missing data warning for a GET" in {
+
+      when(obligationService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
+
+      val application = applicationBuilder(userAnswers = Some(answersWithNoCorrectionValue))
+        .overrides(bind[ObligationsService].toInstance(obligationService))
+        .build()
+
+      running(application) {
+        implicit val msgs: Messages = messages(application)
+        val request = FakeRequest(GET, correctionListCountriesRoute)
+
+        val result = route(application, request).value
+
+        val view = application.injector.instanceOf[CorrectionListCountriesView]
+        val list = CorrectionListCountriesSummary.addToListRows(answersWithNoCorrectionValue, waypoints, index, CorrectionListCountriesPage(index))
+
+        status(result) mustEqual OK
+        contentAsString(result) mustEqual view(
+          form,
+          waypoints,
+          list,
+          period,
+          period,
+          index,
+          canAddCountries = true,
+          incompleteCountries = List(country.name)
+        )(request, messages(application)).toString
+      }
+    }
+
     "must redirect to the next page when valid data is submitted" in {
 
       val mockSessionRepository = mock[SessionRepository]
@@ -141,7 +180,7 @@ class CorrectionListCountriesControllerSpec extends SpecBase with SummaryListFlu
           .build()
 
       running(application) {
-        val request = FakeRequest(POST, correctionListCountriesRoute).withFormUrlEncodedBody(("value", "true"))
+        val request = FakeRequest(POST, correctionListCountriesRoutePost).withFormUrlEncodedBody(("value", "true"))
 
         val result = route(application, request).value
         val expectedAnswers = emptyUserAnswers.set(CorrectionListCountriesPage(index), true).success.value
@@ -162,7 +201,7 @@ class CorrectionListCountriesControllerSpec extends SpecBase with SummaryListFlu
       running(application) {
         implicit val msgs: Messages = messages(application)
         val request =
-        FakeRequest(POST, correctionListCountriesRoute)
+        FakeRequest(POST, correctionListCountriesRoutePost)
           .withFormUrlEncodedBody(("value", ""))
 
         val boundForm = form.bind(Map("value" -> ""))
@@ -208,14 +247,49 @@ class CorrectionListCountriesControllerSpec extends SpecBase with SummaryListFlu
 
       running(application) {
         val request =
-          FakeRequest(POST, correctionListCountriesRoute)
+          FakeRequest(POST, correctionListCountriesRoutePost)
             .withFormUrlEncodedBody(("value", "true"))
 
         val result = route(application, request).value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+      }
+    }
+
+    "must refresh if there is incomplete data and the prompt has not been shown before" in {
+
+      val application = applicationBuilder(Some(answersWithNoCorrectionValue)).build()
+
+      running(application) {
+        val request =
+          FakeRequest(POST, correctionListCountriesRoutePost)
+            .withFormUrlEncodedBody(("value", "true"))
+
+        val result = route(application, request).value
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual controllers.corrections.routes.CorrectionListCountriesController.onPageLoad(waypoints, index).url
+      }
+    }
+
+    "must redirect to VatAmountCorrectionCountry if there is incomplete data and the prompt has been shown before" in {
+
+      val application = applicationBuilder(userAnswers = Some(answersWithNoCorrectionValue)).build()
+
+      running(application) {
+        val routePost = controllers.corrections.routes.CorrectionListCountriesController.onSubmit(waypoints, index, incompletePromptShown = true).url
+        val request =
+          FakeRequest(POST, routePost)
+            .withFormUrlEncodedBody(("value", "true"))
+
+        val result = route(application, request).value
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual controllers.corrections.routes.VatAmountCorrectionCountryController.onPageLoad(waypoints, index, index).url
       }
     }
   }
+
+
 }

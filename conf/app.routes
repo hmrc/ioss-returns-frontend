@@ -48,13 +48,13 @@ GET         /cannot-start-return                                                
 GET         /cannot-start-excluded-return                                             controllers.CannotStartExcludedReturnController.onPageLoad()
 
 GET         /add-sales-country-list                                                   controllers.SoldToCountryListController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
-POST        /add-sales-country-list                                                   controllers.SoldToCountryListController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints)
+POST        /add-sales-country-list                                                   controllers.SoldToCountryListController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, incompletePromptShown: Boolean)
 
 GET         /remove-sales-country/:index                                              controllers.DeleteSoldToCountryController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, index: Index)
 POST        /remove-sales-country/:index                                              controllers.DeleteSoldToCountryController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, index: Index)
 
 GET         /check-sales/:index                                                       controllers.CheckSalesController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, index: Index)
-POST        /check-sales/:index                                                       controllers.CheckSalesController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, index: Index)
+POST        /check-sales/:index                                                       controllers.CheckSalesController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, index: Index, incompletePromptShown: Boolean)
 
 GET         /remove-vat-rate-sales-for-country/:countryIndex/:nextVatRateIndex        controllers.DeleteVatRateSalesForCountryController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, countryIndex: Index, nextVatRateIndex: Index)
 POST        /remove-vat-rate-sales-for-country/:countryIndex/:nextVatRateIndex        controllers.DeleteVatRateSalesForCountryController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, countryIndex: Index, nextVatRateIndex: Index)
@@ -93,7 +93,7 @@ GET         /vat-payable-confirm/:periodIndex/:countryIndex                     
 POST        /vat-payable-confirm/:periodIndex/:countryIndex                           controllers.corrections.VatPayableForCountryController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, periodIndex: Index, countryIndex: Index)
 
 GET         /correction-list-countries/:periodIndex                                   controllers.corrections.CorrectionListCountriesController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, periodIndex: Index)
-POST        /correction-list-countries/:periodIndex                                   controllers.corrections.CorrectionListCountriesController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, periodIndex: Index)
+POST        /correction-list-countries/:periodIndex                                   controllers.corrections.CorrectionListCountriesController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, periodIndex: Index, incompletePromptShown: Boolean)
 
 GET         /:period/vat-correction-periods                                           controllers.corrections.VatPeriodCorrectionsListController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, period: Period)
 POST        /:period/vat-correction-periods                                           controllers.corrections.VatPeriodCorrectionsListController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, period: Period, incompletePromptShown: Boolean)
