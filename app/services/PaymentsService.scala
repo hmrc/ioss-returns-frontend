@@ -40,7 +40,6 @@ class PaymentsService @Inject()(
     }
   }
 
-  // TODO -> Test
   def prepareFinancialDataWithIossNumber(iossNumber: String)(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[PrepareData] = {
     financialDataConnector.prepareFinancialDataWithIossNumber(iossNumber).map {
       case Right(preparedData) => preparedData

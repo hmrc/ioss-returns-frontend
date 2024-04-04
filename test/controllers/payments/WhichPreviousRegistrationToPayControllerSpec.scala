@@ -18,20 +18,19 @@ package controllers.payments
 
 import base.SpecBase
 import connectors.RegistrationConnector
-import controllers.FakeMultipleEnrolmentsGetRegistrationAction
 import controllers.actions.GetRegistrationAction
 import forms.payments.WhichPreviousRegistrationToPayFormProvider
-import models.RegistrationWrapper
-import models.payments.{Payment, PaymentStatus, PrepareData}
+import models.payments.{Payment, PaymentResponse, PaymentStatus, PrepareData}
 import models.requests.{IdentifierRequest, RegistrationRequest}
+import models.{RegistrationWrapper, StandardPeriod}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
-import org.mockito.Mockito.{times, verify, when}
+import org.mockito.Mockito.when
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.mockito.MockitoSugar.mock
-import pages.JourneyRecoveryPage
-import pages.payments.{WhichPreviousRegistrationToPayPage, WhichPreviousRegistrationVatPeriodToPayPage}
+import pages.payments.WhichPreviousRegistrationVatPeriodToPayPage
+import pages.{JourneyRecoveryPage, YourAccountPage}
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.mvc.Result
@@ -40,10 +39,9 @@ import play.api.test.Helpers._
 import repositories.SelectedIossNumberRepository
 import services.{PaymentsService, PreviousRegistrationService}
 import uk.gov.hmrc.auth.core.{Enrolment, EnrolmentIdentifier, Enrolments}
-import uk.gov.hmrc.http.HeaderCarrier
 import utils.FutureSyntax.FutureOps
 import viewmodels.payments.SelectedIossNumber
-import views.html.payments.WhichPreviousRegistrationToPayView
+import views.html.payments.{NoPaymentsView, WhichPreviousRegistrationToPayView}
 
 import java.time.{Instant, LocalDate}
 import scala.concurrent.{ExecutionContext, Future}
@@ -66,6 +64,13 @@ class WhichPreviousRegistrationToPayControllerSpec extends SpecBase with Mockito
     paymentStatus = PaymentStatus.Partial
   )
 
+  private val payment2: Payment = Payment(
+    period = StandardPeriod(period.year, period.month.minus(1)),
+    amountOwed = BigDecimal(250),
+    dateDue = payment.dateDue.minusMonths(1),
+    paymentStatus = PaymentStatus.Unpaid
+  )
+
   private val prepareData: PrepareData = PrepareData(
     duePayments = List(payment),
     overduePayments = List.empty,
@@ -75,14 +80,19 @@ class WhichPreviousRegistrationToPayControllerSpec extends SpecBase with Mockito
     iossNumber = otherIossNumber
   )
 
+  private val paymentResponse: PaymentResponse = PaymentResponse(journeyId = "journeyId", nextUrl = "nextUrl")
+
   private lazy val whichPreviousRegistrationToPayRoute: String = routes.WhichPreviousRegistrationToPayController.onPageLoad(waypoints).url
 
   private val mockPreviousRegistrationService: PreviousRegistrationService = mock[PreviousRegistrationService]
   private val mockPaymentsService: PaymentsService = mock[PaymentsService]
 
+  private val mockSelectedIossNumberRepository: SelectedIossNumberRepository = mock[SelectedIossNumberRepository]
+
   override def beforeEach(): Unit = {
     Mockito.reset(mockPaymentsService)
     Mockito.reset(mockPreviousRegistrationService)
+    Mockito.reset(mockSelectedIossNumberRepository)
   }
 
   "WhichPreviousRegistrationToPay Controller" - {
@@ -115,12 +125,19 @@ class WhichPreviousRegistrationToPayControllerSpec extends SpecBase with Mockito
       }
     }
 
-    // TODO
-    "must redirect to makePayment for a GET when there is only one prepare data object with a single payment returned" in {
+    "must return OK and the no payments view for a GET when there are no payments due or overdue" in {
 
-      when(mockPreviousRegistrationService.getPreviousRegistrationPrepareFinancialData()(any())) thenReturn List(prepareData).toFuture
+      val nothingDuePrepareData = PrepareData(
+        duePayments = List.empty,
+        overduePayments = List.empty,
+        excludedPayments = List.empty,
+        totalAmountOwed = BigDecimal(0),
+        totalAmountOverdue = BigDecimal(0),
+        iossNumber = otherIossNumber
+      )
 
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+      when(mockPreviousRegistrationService.getPreviousRegistrationPrepareFinancialData()(any())) thenReturn List(nothingDuePrepareData).toFuture
+
       val enrolments: Enrolments = Enrolments(Set(enrolment1, enrolment2, enrolment3))
       val fakeMultipleEnrolmentsGetRegistrationAction = new FakeMultipleEnrolmentsGetRegistrationAction(enrolments, registrationWrapper)
 
@@ -136,8 +153,37 @@ class WhichPreviousRegistrationToPayControllerSpec extends SpecBase with Mockito
 
         val result = route(application, request).value
 
-        val redirect = mockPaymentsService
-          .makePayment(prepareData.iossNumber, period, prepareData.totalAmountOwed)(hc).futureValue.fold(_, pr => pr.nextUrl)
+        val view = application.injector.instanceOf[NoPaymentsView]
+
+        val redirectUrl: String = YourAccountPage.route(waypoints).url
+
+        status(result) mustBe OK
+        contentAsString(result) mustBe view(redirectUrl)(request, messages(application)).toString
+      }
+    }
+
+    "must redirect to makePayment for a GET when there is only one prepare data object with a single payment returned" in {
+
+      when(mockPreviousRegistrationService.getPreviousRegistrationPrepareFinancialData()(any())) thenReturn List(prepareData).toFuture
+      when(mockPaymentsService.makePayment(any(), any(), any())(any())) thenReturn Right(paymentResponse).toFuture
+
+      val enrolments: Enrolments = Enrolments(Set(enrolment1, enrolment2, enrolment3))
+      val fakeMultipleEnrolmentsGetRegistrationAction = new FakeMultipleEnrolmentsGetRegistrationAction(enrolments, registrationWrapper)
+
+      val application = applicationBuilder(
+        userAnswers = Some(emptyUserAnswers),
+        getRegistrationAction = Some(fakeMultipleEnrolmentsGetRegistrationAction)
+      )
+        .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
+        .overrides(bind[PaymentsService].toInstance(mockPaymentsService))
+        .build()
+
+      running(application) {
+        val request = FakeRequest(GET, whichPreviousRegistrationToPayRoute)
+
+        val result = route(application, request).value
+
+        val redirect = paymentResponse.nextUrl
 
         status(result) mustBe SEE_OTHER
         redirectLocation(result).value mustBe redirect
@@ -145,15 +191,18 @@ class WhichPreviousRegistrationToPayControllerSpec extends SpecBase with Mockito
     }
 
     "must save the iossNumber and redirect to WhichPreviousRegistrationVatPeriodToPayPage for a GET" +
-      "when there is only one prepare data object with multiple payment returned" in {
+      " when there is only one prepare data object with multiple payments returned" in {
 
-      val selectedIossNumber: SelectedIossNumber = SelectedIossNumber(userAnswersId, iossNumber, lastUpdated = Instant.now(stubClockAtArbitraryDate))
-      val mockSelectedIossNumberRepository = mock[SelectedIossNumberRepository]
+      val selectedIossNumber: SelectedIossNumber = SelectedIossNumber(userAnswersId, additioanlIossNumber, lastUpdated = Instant.now(stubClockAtArbitraryDate))
 
       val prepareDataList = List(
-        prepareData,
         prepareData
-          .copy(duePayments = List(payment.copy(paymentStatus = PaymentStatus.Unpaid)), iossNumber = additioanlIossNumber)
+          .copy(
+            overduePayments = List(payment2),
+            totalAmountOwed = prepareData.totalAmountOwed + payment2.amountOwed,
+            totalAmountOverdue = payment2.amountOwed,
+            iossNumber = additioanlIossNumber
+          )
       )
 
       when(mockSelectedIossNumberRepository.set(any())) thenReturn selectedIossNumber.toFuture
@@ -166,8 +215,8 @@ class WhichPreviousRegistrationToPayControllerSpec extends SpecBase with Mockito
         userAnswers = Some(emptyUserAnswers),
         getRegistrationAction = Some(fakeMultipleEnrolmentsGetRegistrationAction)
       )
-        .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
         .overrides(bind[SelectedIossNumberRepository].toInstance(mockSelectedIossNumberRepository))
+        .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
         .build()
 
       running(application) {
@@ -177,57 +226,130 @@ class WhichPreviousRegistrationToPayControllerSpec extends SpecBase with Mockito
 
         status(result) mustBe SEE_OTHER
         redirectLocation(result).value mustBe WhichPreviousRegistrationVatPeriodToPayPage.route(waypoints).url
-        verify(mockSelectedIossNumberRepository, times(1)).set(selectedIossNumber)
       }
     }
 
-    "must populate the view correctly on a GET when the question has previously been answered" in {
+    "must redirect to Journey Recovery page for a GET when there is no prepare financial data retrieved" in {
 
-      val userAnswers = emptyUserAnswers.set(WhichPreviousRegistrationToPayPage, true).success.value
+      when(mockPreviousRegistrationService.getPreviousRegistrationPrepareFinancialData()(any())) thenReturn List.empty.toFuture
 
-      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+      val enrolments: Enrolments = Enrolments(Set(enrolment1, enrolment2, enrolment3))
+      val fakeMultipleEnrolmentsGetRegistrationAction = new FakeMultipleEnrolmentsGetRegistrationAction(enrolments, registrationWrapper)
+
+      val application = applicationBuilder(
+        userAnswers = Some(emptyUserAnswers),
+        getRegistrationAction = Some(fakeMultipleEnrolmentsGetRegistrationAction)
+      )
+        .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
+        .build()
 
       running(application) {
         val request = FakeRequest(GET, whichPreviousRegistrationToPayRoute)
 
-        val view = application.injector.instanceOf[WhichPreviousRegistrationToPayView]
-
         val result = route(application, request).value
 
-        status(result) mustBe OK
-        contentAsString(result) mustBe view(form.fill(iossNumber), waypoints, List(prepareData))(request, messages(application)).toString
+        status(result) mustBe SEE_OTHER
+        redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
       }
     }
 
-    "must redirect to the next page when valid data is submitted" in {
+    "must redirect to the make payment page when valid data is submitted and there is a single payment present" in {
 
-      val selectedIossNumber: SelectedIossNumber = SelectedIossNumber(userAnswersId, iossNumber, lastUpdated = Instant.now(stubClockAtArbitraryDate))
-      val mockSelectedIossNumberRepository = mock[SelectedIossNumberRepository]
+      val selectedIossNumber: SelectedIossNumber = SelectedIossNumber(userAnswersId, otherIossNumber, lastUpdated = Instant.now(stubClockAtArbitraryDate))
 
-      when(mockSelectedIossNumberRepository.set(any())) thenReturn selectedIossNumber.toFuture
+      when(mockPreviousRegistrationService.getPreviousRegistrationPrepareFinancialData()(any())) thenReturn List(prepareData).toFuture
+      when(mockPaymentsService.makePayment(any(), any(), any())(any())) thenReturn Right(paymentResponse).toFuture
 
       val application =
         applicationBuilder(userAnswers = Some(emptyUserAnswers))
-          .overrides(
-            bind[SelectedIossNumberRepository].toInstance(mockSelectedIossNumberRepository)
-          )
+          .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
+          .overrides(bind[PaymentsService].toInstance(mockPaymentsService))
           .build()
 
       running(application) {
         val request =
           FakeRequest(POST, whichPreviousRegistrationToPayRoute)
-            .withFormUrlEncodedBody(("value", selectedIossNumber.toString))
+            .withFormUrlEncodedBody(("value", selectedIossNumber.iossNumber))
+
+        val result = route(application, request).value
+
+        val redirect = paymentResponse.nextUrl
+
+        status(result) mustBe SEE_OTHER
+        redirectLocation(result).value mustBe redirect
+      }
+    }
+
+    "must save the answer and redirect to the next page when valid data is submitted and there are multiple payments present" in {
+
+      val selectedIossNumber: SelectedIossNumber = SelectedIossNumber(userAnswersId, additioanlIossNumber, lastUpdated = Instant.now(stubClockAtArbitraryDate))
+
+      val prepareDataList = List(
+        prepareData
+          .copy(
+            overduePayments = List(payment2),
+            totalAmountOwed = prepareData.totalAmountOwed + payment2.amountOwed,
+            totalAmountOverdue = payment2.amountOwed,
+            iossNumber = additioanlIossNumber
+          )
+      )
+
+      when(mockSelectedIossNumberRepository.set(any())) thenReturn selectedIossNumber.toFuture
+      when(mockPreviousRegistrationService.getPreviousRegistrationPrepareFinancialData()(any())) thenReturn prepareDataList.toFuture
+
+      val application =
+        applicationBuilder(userAnswers = Some(emptyUserAnswers))
+          .overrides(bind[SelectedIossNumberRepository].toInstance(mockSelectedIossNumberRepository))
+          .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
+          .build()
+
+      running(application) {
+        val request =
+          FakeRequest(POST, whichPreviousRegistrationToPayRoute)
+            .withFormUrlEncodedBody(("value", selectedIossNumber.iossNumber))
 
         val result = route(application, request).value
 
         status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe WhichPreviousRegistrationToPayPage.navigate(waypoints, emptyUserAnswers, emptyUserAnswers).url
+        redirectLocation(result).value mustBe WhichPreviousRegistrationVatPeriodToPayPage.route(waypoints).url
+      }
+    }
+
+    "must redirect to Journey Recovery page on a POST when the selected OSS number IOSS number has no matching prepared financial data" in {
+
+      val iossNumber = "IM9007654321"
+      val selectedIossNumber: SelectedIossNumber = SelectedIossNumber(userAnswersId, iossNumber, lastUpdated = Instant.now(stubClockAtArbitraryDate))
+
+      val prepareDataList = List(prepareData)
+
+      when(mockSelectedIossNumberRepository.set(any())) thenReturn selectedIossNumber.toFuture
+      when(mockPreviousRegistrationService.getPreviousRegistrationPrepareFinancialData()(any())) thenReturn prepareDataList.toFuture
+
+      val application =
+        applicationBuilder(userAnswers = Some(emptyUserAnswers))
+          .overrides(bind[SelectedIossNumberRepository].toInstance(mockSelectedIossNumberRepository))
+          .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
+          .build()
+
+      running(application) {
+        val request =
+          FakeRequest(POST, whichPreviousRegistrationToPayRoute)
+            .withFormUrlEncodedBody(("value", selectedIossNumber.iossNumber))
+
+        val result = route(application, request).value
+
+        status(result) mustBe SEE_OTHER
+        redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
       }
     }
 
     "must return a Bad Request and errors when invalid data is submitted" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      when(mockPreviousRegistrationService.getPreviousRegistrationPrepareFinancialData()(any())) thenReturn List(prepareData).toFuture
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
+        .build()
 
       running(application) {
         val request =
@@ -242,36 +364,6 @@ class WhichPreviousRegistrationToPayControllerSpec extends SpecBase with Mockito
 
         status(result) mustBe BAD_REQUEST
         contentAsString(result) mustBe view(boundForm, waypoints, List(prepareData))(request, messages(application)).toString
-      }
-    }
-
-    "must redirect to Journey Recovery for a GET if no existing data is found" in {
-
-      val application = applicationBuilder(userAnswers = None).build()
-
-      running(application) {
-        val request = FakeRequest(GET, whichPreviousRegistrationToPayRoute)
-
-        val result = route(application, request).value
-
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
-      }
-    }
-
-    "must redirect to Journey Recovery for a POST if no existing data is found" in {
-
-      val application = applicationBuilder(userAnswers = None).build()
-
-      running(application) {
-        val request =
-          FakeRequest(POST, whichPreviousRegistrationToPayRoute)
-            .withFormUrlEncodedBody(("value", "true"))
-
-        val result = route(application, request).value
-
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
       }
     }
   }

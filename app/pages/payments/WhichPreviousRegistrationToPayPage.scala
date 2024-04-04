@@ -21,7 +21,7 @@ import pages.{QuestionPage, Waypoints}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
-case object WhichPreviousRegistrationToPayPage extends QuestionPage[Boolean] {
+case object WhichPreviousRegistrationToPayPage extends QuestionPage[String] {
 
   override def path: JsPath = JsPath \ toString
 

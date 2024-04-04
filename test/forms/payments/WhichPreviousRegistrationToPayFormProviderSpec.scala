@@ -16,24 +16,24 @@
 
 package forms.payments
 
-import forms.behaviours.BooleanFieldBehaviours
+import forms.behaviours.StringFieldBehaviours
+import org.scalacheck.Arbitrary.arbitrary
 import play.api.data.FormError
 
-class WhichPreviousRegistrationToPayFormProviderSpec extends BooleanFieldBehaviours {
+class WhichPreviousRegistrationToPayFormProviderSpec extends StringFieldBehaviours {
 
-  val requiredKey = "whichPreviousRegistrationToPay.error.required"
-  val invalidKey = "error.boolean"
+  private val requiredKey = "whichPreviousRegistrationToPay.error.required"
 
-  val form = new WhichPreviousRegistrationToPayFormProvider()()
+  private val form = new WhichPreviousRegistrationToPayFormProvider()()
 
   ".value" - {
 
     val fieldName = "value"
 
-    behave like booleanField(
+    behave like fieldThatBindsValidData(
       form,
       fieldName,
-      invalidError = FormError(fieldName, invalidKey)
+      arbitrary[String].sample.value
     )
 
     behave like mandatoryField(

@@ -22,7 +22,7 @@ import forms.payments.WhichPreviousRegistrationToPayFormProvider
 import models.payments.{Payment, PrepareData}
 import models.requests.RegistrationRequest
 import pages.payments.WhichPreviousRegistrationVatPeriodToPayPage
-import pages.{JourneyRecoveryPage, Waypoints}
+import pages.{JourneyRecoveryPage, Waypoints, YourAccountPage}
 import play.api.Configuration
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
@@ -33,7 +33,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax.FutureOps
 import viewmodels.payments.SelectedIossNumber
-import views.html.payments.WhichPreviousRegistrationToPayView
+import views.html.payments.{NoPaymentsView, WhichPreviousRegistrationToPayView}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -46,7 +46,8 @@ class WhichPreviousRegistrationToPayController @Inject()(
                                                           formProvider: WhichPreviousRegistrationToPayFormProvider,
                                                           previousRegistrationService: PreviousRegistrationService,
                                                           paymentsService: PaymentsService,
-                                                          view: WhichPreviousRegistrationToPayView
+                                                          view: WhichPreviousRegistrationToPayView,
+                                                          viewNoPayment: NoPaymentsView
                                                         )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
@@ -87,7 +88,7 @@ class WhichPreviousRegistrationToPayController @Inject()(
         val iossNumber = prepareData.iossNumber
         val payments = prepareData.overduePayments ++ prepareData.duePayments
         payments match {
-          case Nil => Redirect(JourneyRecoveryPage.route(waypoints)).toFuture // TODO -> Where to go when no payments due
+          case Nil => Ok(viewNoPayment(YourAccountPage.route(waypoints).url)).toFuture
           case payment :: Nil =>
             makePayment(iossNumber, payment)
           case _ =>

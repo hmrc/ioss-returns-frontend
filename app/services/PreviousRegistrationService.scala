@@ -50,7 +50,6 @@ class PreviousRegistrationService @Inject()(
     }
   }
 
-  // TODO - Test
   def getPreviousRegistrationPrepareFinancialData()(implicit hc: HeaderCarrier): Future[List[PrepareData]] = {
     getPreviousRegistrations().flatMap { previousRegistrations =>
       Future.sequence(

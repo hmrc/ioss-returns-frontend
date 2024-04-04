@@ -141,8 +141,8 @@ GET         /:period/progress-saved                                             
 GET         /:period/return-continue                                                  controllers.ContinueReturnController.onPageLoad(period: Period)
 POST        /:period/return-continue                                                  controllers.ContinueReturnController.onSubmit(period: Period)
 
-GET         /whichPreviousRegistrationToPay                                           controllers.payments.WhichPreviousRegistrationToPayController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
-POST        /whichPreviousRegistrationToPay                                           controllers.payments.WhichPreviousRegistrationToPayController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints)
+GET         /which-previous-registration-to-pay                                       controllers.payments.WhichPreviousRegistrationToPayController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
+POST        /which-previous-registration-to-pay                                       controllers.payments.WhichPreviousRegistrationToPayController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints)
 
-GET         /whichPreviousRegistrationVatPeriodToPay                                  controllers.payments.WhichPreviousRegistrationVatPeriodToPayController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
-POST        /whichPreviousRegistrationVatPeriodToPay                                  controllers.payments.WhichPreviousRegistrationVatPeriodToPayController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints)
+GET         /which-previous-registration-vat-period-to-pay                            controllers.payments.WhichPreviousRegistrationVatPeriodToPayController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
+POST        /which-previous-registration-vat-period-to-pay                            controllers.payments.WhichPreviousRegistrationVatPeriodToPayController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints)

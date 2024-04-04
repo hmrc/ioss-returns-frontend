@@ -16,25 +16,18 @@
 
 package forms.payments
 
-import forms.behaviours.BooleanFieldBehaviours
+import forms.behaviours.OptionFieldBehaviours
 import play.api.data.FormError
 
-class WhichPreviousRegistrationVatPeriodToPayFormProviderSpec extends BooleanFieldBehaviours {
+class WhichPreviousRegistrationVatPeriodToPayFormProviderSpec extends OptionFieldBehaviours {
 
-  val requiredKey = "whichPreviousRegistrationVatPeriodToPay.error.required"
-  val invalidKey = "error.boolean"
+  private val requiredKey = "whichPreviousRegistrationVatPeriodToPay.error.required"
 
-  val form = new WhichPreviousRegistrationVatPeriodToPayFormProvider()()
+  private val form = new WhichPreviousRegistrationVatPeriodToPayFormProvider()()
 
   ".value" - {
 
     val fieldName = "value"
-
-    behave like booleanField(
-      form,
-      fieldName,
-      invalidError = FormError(fieldName, invalidKey)
-    )
 
     behave like mandatoryField(
       form,

@@ -35,7 +35,6 @@ object PrepareData {
 
   implicit val format: OFormat[PrepareData] = Json.format[PrepareData]
 
-  // TODO -> TEST
   def options(preparedData: Seq[PrepareData])(implicit messages: Messages): Seq[RadioItem] = {
     preparedData.zipWithIndex.map {
       case (prepareData, index) =>
