@@ -18,7 +18,7 @@ package services
 
 import cats.implicits.{catsSyntaxValidatedIdBinCompat0, toTraverseOps}
 import models.requests.VatReturnRequest
-import models.{DataMissingError, Index, Period, RegistrationWrapper, StandardPeriod, UserAnswers, ValidationResult, VatRateFromCountry, VatRateType}
+import models.{DataMissingError, Index, Period, StandardPeriod, UserAnswers, ValidationResult, VatRateFromCountry, VatRateType}
 import models.domain.{VatRate => DomainVatRate, VatRateType => DomainVatRateType}
 import pages.{SoldGoodsPage, VatRatesFromCountryPage}
 import queries.{AllSalesQuery, OptionalSalesAtVatRate, SalesAtVatRateQuery, SalesDetails, SalesToCountry, VatOnSalesFromQuery}

@@ -23,8 +23,8 @@ import models.{InvalidJson, UnexpectedResponseStatus}
 import models.financialdata.Charge
 import models.payments.PaymentResponse
 import org.mockito.ArgumentMatchers.any
-import org.mockito.{ArgumentMatchers, Mockito}
-import org.mockito.Mockito.{verify, when}
+import org.mockito.Mockito
+import org.mockito.Mockito.when
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar.mock
 import pages.JourneyRecoveryPage

@@ -20,7 +20,6 @@ import com.google.inject.Inject
 import connectors.SaveForLaterConnector
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
-import models.ValidationError
 import models.audit.{ReturnsAuditModel, SubmissionResult}
 import models.etmp.EtmpExclusion
 import models.requests.{DataRequest, SaveForLaterRequest}
