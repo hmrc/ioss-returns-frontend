@@ -16,13 +16,12 @@
 
 package controllers.payments
 
-import config.Service
+import config.FrontendAppConfig
 import controllers.actions._
 import forms.payments.WhichPreviousRegistrationVatPeriodToPayFormProvider
 import models.Period
 import models.payments.{Payment, PaymentStatus, PrepareData}
 import pages.{JourneyRecoveryPage, Waypoints, YourAccountPage}
-import play.api.Configuration
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
@@ -40,7 +39,7 @@ class WhichPreviousRegistrationVatPeriodToPayController @Inject()(
                                                                    override val messagesApi: MessagesApi,
                                                                    cc: AuthenticatedControllerComponents,
                                                                    selectedIossNumberRepository: SelectedIossNumberRepository,
-                                                                   config: Configuration,
+                                                                   frontendAppConfig: FrontendAppConfig,
                                                                    paymentsService: PaymentsService,
                                                                    formProvider: WhichPreviousRegistrationVatPeriodToPayFormProvider,
                                                                    view: WhichPreviousRegistrationVatPeriodToPayView,
@@ -49,8 +48,6 @@ class WhichPreviousRegistrationVatPeriodToPayController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
   val form: Form[Period] = formProvider()
-
-  private val paymentsBaseUrl: Service = config.get[Service]("microservice.services.pay-api")
 
   def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request =>
@@ -107,7 +104,7 @@ class WhichPreviousRegistrationVatPeriodToPayController @Inject()(
     paymentsService.makePayment(iossNumber, payment.period, payment.amountOwed).map {
       case Right(value) =>
         Redirect(value.nextUrl)
-      case _ => Redirect(s"$paymentsBaseUrl/pay/service-unavailable")
+      case _ => Redirect(s"${frontendAppConfig.paymentsBaseUrl}/pay/service-unavailable")
     }
   }
 

@@ -17,6 +17,7 @@
 package controllers.payments
 
 import base.SpecBase
+import config.FrontendAppConfig
 import forms.payments.WhichPreviousRegistrationVatPeriodToPayFormProvider
 import models.payments.{Payment, PaymentResponse, PaymentStatus, PrepareData}
 import models.{Period, UnexpectedResponseStatus}
@@ -260,9 +261,11 @@ class WhichPreviousRegistrationVatPeriodToPayControllerSpec extends SpecBase wit
           FakeRequest(POST, whichPreviousRegistrationVatPeriodToPayRoute)
             .withFormUrlEncodedBody(("value", chosenPaymentPeriod.toString))
 
+        val frontendAppConfig = application.injector.instanceOf[FrontendAppConfig]
+
         val result = route(application, request).value
 
-        val redirectUrl: String = "http://localhost:9057/pay-api/pay/service-unavailable"
+        val redirectUrl: String = s"${frontendAppConfig.paymentsBaseUrl}/pay/service-unavailable"
 
         status(result) mustBe SEE_OTHER
         redirectLocation(result).value mustBe redirectUrl
