@@ -19,6 +19,7 @@ package controllers.payments
 import config.Service
 import controllers.actions._
 import forms.payments.WhichPreviousRegistrationToPayFormProvider
+import logging.Logging
 import models.payments.{Payment, PrepareData}
 import models.requests.RegistrationRequest
 import pages.payments.WhichPreviousRegistrationVatPeriodToPayPage
@@ -48,7 +49,7 @@ class WhichPreviousRegistrationToPayController @Inject()(
                                                           paymentsService: PaymentsService,
                                                           view: WhichPreviousRegistrationToPayView,
                                                           viewNoPayment: NoPaymentsView
-                                                        )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                                        )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
   private val paymentsBaseUrl: Service = config.get[Service]("microservice.services.pay-api")
@@ -83,7 +84,10 @@ class WhichPreviousRegistrationToPayController @Inject()(
                                        prepareDataList: List[PrepareData]
                                      )(implicit request: RegistrationRequest[AnyContent]): Future[Result] = {
     prepareDataList match {
-      case Nil => Redirect(JourneyRecoveryPage.route(waypoints)).toFuture // TODO -> Where to go when no prepare data
+      case Nil =>
+        val message = s"There was an issue retrieving prepared financial data"
+        logger.error(message)
+        throw new Exception(message)
       case prepareData :: Nil =>
         val iossNumber = prepareData.iossNumber
         val payments = prepareData.overduePayments ++ prepareData.duePayments

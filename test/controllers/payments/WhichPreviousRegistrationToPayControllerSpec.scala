@@ -229,7 +229,7 @@ class WhichPreviousRegistrationToPayControllerSpec extends SpecBase with Mockito
       }
     }
 
-    "must redirect to Journey Recovery page for a GET when there is no prepare financial data retrieved" in {
+    "must throw an Exception for a GET when there is no prepare financial data retrieved" in {
 
       when(mockPreviousRegistrationService.getPreviousRegistrationPrepareFinancialData()(any())) thenReturn List.empty.toFuture
 
@@ -248,8 +248,13 @@ class WhichPreviousRegistrationToPayControllerSpec extends SpecBase with Mockito
 
         val result = route(application, request).value
 
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
+        val exceptionMessage = "There was an issue retrieving prepared financial data"
+
+        whenReady(result.failed) { exp =>
+
+          exp mustBe a[Exception]
+          exp.getMessage mustEqual exceptionMessage
+        }
       }
     }
 
