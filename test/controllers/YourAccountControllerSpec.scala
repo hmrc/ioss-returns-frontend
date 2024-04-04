@@ -444,6 +444,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         totalAmountOverdue = BigDecimal(1500),
         iossNumber = otherIossNumber
       )
+
+      when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
+
       when(mockPreviousRegistrationService.getPreviousRegistrationPrepareFinancialData()(any())) thenReturn List(previousRegistrationPrepareData).toFuture
       when(mockFinancialDataConnector.prepareFinancialData()(any())) thenReturn
         Right(PrepareData(List.empty, List.empty, List.empty, 0, 0, iossNumber)).toFuture
@@ -471,6 +474,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector),
           bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
           bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService),
+          bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
         ).build()
 
       val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty)(messages(application))
@@ -542,6 +546,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         totalAmountOverdue = BigDecimal(1500),
         iossNumber = otherIossNumber
       )
+
+      when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
+
       when(mockPreviousRegistrationService.getPreviousRegistrationPrepareFinancialData()(any())) thenReturn List(previousRegistrationPrepareData).toFuture
       when(mockFinancialDataConnector.prepareFinancialData()(any())) thenReturn
         Right(PrepareData(List.empty, List.empty, List.empty, 0, 0, iossNumber)).toFuture
@@ -569,6 +576,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector),
           bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
           bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService),
+          bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
         ).build()
 
       val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty)(messages(application))
@@ -689,7 +697,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         when(mockReturnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Right(CurrentReturns(
-            Seq(Return.fromPeriod(period, Due, inProgress = false, isOldest = false
+            Seq(Return.fromPeriod(period, Due, inProgress = true, isOldest = false
             )),
             finalReturnsCompleted = false
           )).toFuture
