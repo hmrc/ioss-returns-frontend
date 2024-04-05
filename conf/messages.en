@@ -76,6 +76,10 @@ yourAccount.payment.overdueAmountOwed = You owe <span class="govuk-body govuk-!-
 yourAccount.payment.overdueAmountMaybeOwed = You may still owe VAT for {0}, which was due by {1}.
 yourAccount.nextPeriod = You can complete your next return from <span class="govuk-body govuk-!-font-weight-bold">{1}</span>.
 
+yourAccount.previousRegistrations.singular = This account owes {0} on a previous registration with IOSS number {1}.
+yourAccount.previousRegistrations.plural = This account owes a total of {0} on previous registrations.
+yourAccount.previousRegistrations.payLink = Pay for a previous registration
+
 yourAccount.requestLeaveService = You have requested to leave this service.
 yourAccount.requestLeaveService.outstanding = You have requested to leave this service. You must complete and pay any outstanding returns.
 yourAccount.requestLeaveService.p1 = You can correct a previous return when you submit your final one.
@@ -93,7 +97,6 @@ yourAccount.previousReturn.correct = You can no longer use this service to corre
 yourAccount.finalReturn.complete = You''ve completed your final return.
 
 yourAccount.paragraph = You can correct a previous return when you submit your next one.
-
 
 checkYourAnswers.title = Check Your Answers
 checkYourAnswers.heading = Check Your Answers
@@ -491,3 +494,11 @@ cannotStartReturn.title = You cannot start this return yet
 cannotStartReturn.heading =You cannot start this return yet
 cannotStartReturn.p1 = You must complete a previous return first.
 cannotStartReturn.backToYourAccount =<a class="govuk-link" id="back-to-your-account" href={0}>Back to your account</a>
+
+whichPreviousRegistrationToPay.title = Which previous registration do you want to pay?
+whichPreviousRegistrationToPay.heading = Which previous registration do you want to pay?
+whichPreviousRegistrationToPay.selection = You owe <strong>{0}</strong> for your registration with IOSS number <br/> {1}
+whichPreviousRegistrationToPay.error.required = Select which previous registration you want to pay
+whichPreviousRegistrationToPay.change.hidden = which previous registration you want to pay
+
+whichPreviousRegistrationVatPeriodToPay.error.required = Select which month you would like to make a payment for

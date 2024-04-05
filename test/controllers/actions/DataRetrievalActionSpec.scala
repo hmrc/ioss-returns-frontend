@@ -17,8 +17,8 @@
 package controllers.actions
 
 import base.SpecBase
-import models.requests.{OptionalDataRequest, RegistrationRequest}
 import models.RegistrationWrapper
+import models.requests.{OptionalDataRequest, RegistrationRequest}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalacheck.Arbitrary.arbitrary
@@ -46,7 +46,7 @@ class DataRetrievalActionSpec extends SpecBase with MockitoSugar {
       "must set userAnswers to `None` in the request" in {
 
         val repository = mock[SessionRepository]
-        val request    = RegistrationRequest(FakeRequest(), testCredentials, vrn, iossNumber, registrationWrapper)
+        val request    = RegistrationRequest(FakeRequest(), testCredentials, vrn, iossNumber, registrationWrapper, enrolments)
 
         when(repository.get(any())) thenReturn Future.successful(None)
 
@@ -63,7 +63,7 @@ class DataRetrievalActionSpec extends SpecBase with MockitoSugar {
       "must add the userAnswers to the request" in {
 
         val repository = mock[SessionRepository]
-        val request    = RegistrationRequest(FakeRequest(), testCredentials, vrn, iossNumber, registrationWrapper)
+        val request    = RegistrationRequest(FakeRequest(), testCredentials, vrn, iossNumber, registrationWrapper, enrolments)
 
         when(repository.get(any())) thenReturn Future.successful(Some(emptyUserAnswers))
 

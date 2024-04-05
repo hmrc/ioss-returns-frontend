@@ -16,7 +16,11 @@
 
 package models.payments
 
+import play.api.i18n.Messages
 import play.api.libs.json.{Json, OFormat}
+import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
+import uk.gov.hmrc.govukfrontend.views.viewmodels.radios.RadioItem
+import viewmodels.govuk.all.currencyFormat
 
 final case class PrepareData(
                               duePayments: List[Payment],
@@ -30,4 +34,16 @@ final case class PrepareData(
 object PrepareData {
 
   implicit val format: OFormat[PrepareData] = Json.format[PrepareData]
+
+  def options(preparedData: Seq[PrepareData])(implicit messages: Messages): Seq[RadioItem] = {
+    preparedData.zipWithIndex.map {
+      case (prepareData, index) =>
+
+        RadioItem(
+          content = HtmlContent(messages("whichPreviousRegistrationToPay.selection", currencyFormat(prepareData.totalAmountOverdue), prepareData.iossNumber)),
+          id = Some(s"value_$index"),
+          value = Some(prepareData.iossNumber)
+        )
+    }
+  }
 }

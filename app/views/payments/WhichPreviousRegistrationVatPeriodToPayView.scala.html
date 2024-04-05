@@ -14,19 +14,19 @@
  * limitations under the License.
  *@
 
+@import controllers.payments.routes
 @import models.payments.Payment
 @import views.ViewUtils._
+
 @this(
-    layout: templates.Layout,
-    formHelper: FormWithCSRF,
-    govukErrorSummary: GovukErrorSummary,
-    govukRadios: GovukRadios,
-    govukButton: GovukButton
+        layout: templates.Layout,
+        formHelper: FormWithCSRF,
+        govukErrorSummary: GovukErrorSummary,
+        govukRadios: GovukRadios,
+        govukButton: GovukButton
 )
 
-@(  form: Form[_],
-    payments: List[Payment],
-    paymentError: Boolean )( implicit request: Request[_], messages: Messages )
+@(form: Form[_], waypoints: Waypoints, payments: List[Payment], paymentError: Boolean)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, messages("whichVatPeriodToPay.title"))) {
 
@@ -34,28 +34,28 @@
         <div class="govuk-notification-banner" role="region" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
             <div class="govuk-notification-banner__header">
                 <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
-                    @messages("notificationBanner.title")
+                @messages("notificationBanner.title")
                 </h2>
             </div>
             <div class="govuk-notification-banner__content">
                 <p class="govuk-notification-banner__heading">
-                    @messages("notificationBanner.text")
+                @messages("notificationBanner.text")
                 </p>
             </div>
         </div>
     }
 
-    @formHelper(action = controllers.payments.routes.WhichVatPeriodToPayController.onSubmit(), Symbol("autoComplete") -> "off") {
+    @formHelper(action = routes.WhichPreviousRegistrationVatPeriodToPayController.onSubmit(waypoints), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
-            @govukErrorSummary(ErrorSummaryViewModel(form,  errorLinkOverrides = Map("value" -> "value_0")))
+            @govukErrorSummary(ErrorSummaryViewModel(form, errorLinkOverrides = Map("value" -> "value_0")))
         }
 
         @govukRadios(
             RadiosViewModel(
-                field  = form("value"),
+                field = form("value"),
                 legend = LegendViewModel(messages("whichVatPeriodToPay.heading")).asPageHeading(),
-                items  = options(payments)
+                items = options(payments)
             )
         )
 

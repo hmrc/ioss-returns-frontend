@@ -40,6 +40,16 @@ class PaymentsService @Inject()(
     }
   }
 
+  def prepareFinancialDataWithIossNumber(iossNumber: String)(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[PrepareData] = {
+    financialDataConnector.prepareFinancialDataWithIossNumber(iossNumber).map {
+      case Right(preparedData) => preparedData
+      case Left(error) =>
+        val message = s"There was a problem getting prepared financial data for IOSS number: ${iossNumber} with error: ${error.body}"
+        logger.error(message)
+        throw new Exception(message)
+    }
+  }
+
   def makePayment(iossNumber: String, period: Period, amountOwed: BigDecimal)(implicit hc: HeaderCarrier): Future[ReturnPaymentResponse] = {
     val paymentRequest =
       PaymentRequest(

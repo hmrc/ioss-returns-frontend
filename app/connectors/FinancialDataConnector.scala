@@ -48,6 +48,11 @@ class FinancialDataConnector @Inject()(
     http.GET[PrepareDataResponse](url)
   }
 
+  def prepareFinancialDataWithIossNumber(iossNumber: String)(implicit hc: HeaderCarrier): Future[PrepareDataResponse] = {
+    val url = s"$baseUrl/financial-data/prepare/$iossNumber"
+    http.GET[PrepareDataResponse](url)
+  }
+
   def getCharge(period: Period)(implicit hc: HeaderCarrier): Future[ChargeResponse] = {
     val url = s"$baseUrl/financial-data/charge/$period"
     http.GET[ChargeResponse](url)

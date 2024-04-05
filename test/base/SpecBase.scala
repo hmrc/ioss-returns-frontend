@@ -33,6 +33,7 @@ import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import uk.gov.hmrc.auth.core.retrieve.Credentials
+import uk.gov.hmrc.auth.core.{Enrolment, Enrolments}
 import uk.gov.hmrc.domain.Vrn
 
 import java.time._
@@ -49,6 +50,8 @@ trait SpecBase
 
   val userAnswersId: String = "12345-credId"
 
+  val iossEnrolmentKey = "HMRC-IOSS-ORG"
+  val enrolments: Enrolments = Enrolments(Set(Enrolment(iossEnrolmentKey, Seq.empty, "test", None)))
   val testCredentials: Credentials = Credentials(userAnswersId, "GGW")
   val vrn: Vrn = Vrn("123456789")
   val iossNumber: String = "IM9001234567"
@@ -92,9 +95,16 @@ trait SpecBase
   protected def applicationBuilder(
                                     userAnswers: Option[UserAnswers] = None,
                                     clock: Option[Clock] = None,
-                                    registration: RegistrationWrapper = registrationWrapper
+                                    registration: RegistrationWrapper = registrationWrapper,
+                                    getRegistrationAction: Option[GetRegistrationAction] = None
                                   ): GuiceApplicationBuilder = {
     val clockToBind = clock.getOrElse(stubClockAtArbitraryDate)
+
+    val getRegistrationActionBind = if(getRegistrationAction.nonEmpty) {
+      bind[GetRegistrationAction].toInstance(getRegistrationAction.get)
+    } else {
+      bind[GetRegistrationAction].toInstance(new FakeGetRegistrationAction(registration))
+    }
 
     new GuiceApplicationBuilder()
       .overrides(
@@ -102,7 +112,7 @@ trait SpecBase
         bind[IdentifierAction].to[FakeIdentifierAction],
         bind[Clock].toInstance(clockToBind),
         bind[DataRetrievalActionProvider].toInstance(new FakeDataRetrievalActionProvider(userAnswers)),
-        bind[GetRegistrationAction].toInstance(new FakeGetRegistrationAction(registration)),
+        getRegistrationActionBind,
         bind[CheckBouncedEmailFilterProvider].toInstance(new FakeCheckBouncedEmailFilterProvider()),
         bind[CheckSubmittedReturnsFilterProvider].toInstance(new FakeCheckSubmittedReturnsFilterProvider())
       )

@@ -21,13 +21,14 @@ import models._
 import models.enrolments.{EACDEnrolment, EACDEnrolments, EACDIdentifiers}
 import models.etmp._
 import models.financialdata.Charge
-import models.payments.{Payment, PaymentStatus}
+import models.payments.{Payment, PaymentStatus, PrepareData}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Arbitrary, Gen}
 import queries.{OptionalSalesAtVatRate, SalesToCountryWithOptionalSales, VatRateWithOptionalSalesFromCountry}
+import viewmodels.previousReturns.PreviousRegistration
 
-import java.time.{LocalDate, LocalDateTime, Month}
 import java.time.temporal.ChronoUnit
+import java.time.{LocalDate, LocalDateTime, Month}
 import scala.math.BigDecimal.RoundingMode
 
 trait ModelGenerators {
@@ -493,10 +494,9 @@ trait ModelGenerators {
   implicit val arbitraryEACDIdentifiers: Arbitrary[EACDIdentifiers] = {
     Arbitrary {
       for {
-        key <- Gen.alphaStr
         value <- Gen.alphaStr
       } yield EACDIdentifiers(
-        key = key,
+        key = "IOSSNumber",
         value = value
       )
     }
@@ -527,4 +527,37 @@ trait ModelGenerators {
     }
   }
 
+  implicit val arbitraryPrepareData: Arbitrary[PrepareData] = {
+    Arbitrary {
+      for {
+        duePayments <- Gen.listOfN(2, arbitraryPayment.arbitrary)
+        overduePayments <- Gen.listOfN(3, arbitraryPayment.arbitrary)
+        excludedPayments <- Gen.listOfN(1, arbitraryPayment.arbitrary)
+        totalAmountOwed <- arbitraryBigDecimal.arbitrary
+        totalAmountOverdue <- arbitraryBigDecimal.arbitrary
+        iossNumber <- arbitrary[String]
+      } yield PrepareData(
+        duePayments = duePayments,
+        overduePayments = overduePayments,
+        excludedPayments = excludedPayments,
+        totalAmountOwed = totalAmountOwed,
+        totalAmountOverdue = totalAmountOverdue,
+        iossNumber = iossNumber
+      )
+    }
+  }
+
+  implicit val arbitraryPreviousRegistration: Arbitrary[PreviousRegistration] = {
+    Arbitrary {
+      for {
+        iossNumber <- arbitrary[String]
+        startPeriod <- arbitraryPeriod.arbitrary
+        endPeriod <- arbitraryPeriod.arbitrary
+      } yield PreviousRegistration(
+        iossNumber = iossNumber,
+        startPeriod = startPeriod,
+        endPeriod = endPeriod
+      )
+    }
+  }
 }

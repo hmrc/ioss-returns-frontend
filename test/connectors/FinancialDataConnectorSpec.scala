@@ -79,7 +79,29 @@ class FinancialDataConnectorSpec extends SpecBase with WireMockHelper with Finan
           val connector = app.injector.instanceOf[FinancialDataConnector]
           val result = connector.prepareFinancialData().futureValue
 
-          result mustEqual Right(expectedPrepareFinancialData)
+          result mustBe Right(expectedPrepareFinancialData)
+        }
+      }
+    }
+  }
+
+  "prepareFinancialDataWithIossNumber" - {
+
+    "when the server returns OK and a recognised payload" - {
+      "must return a FinancialDataResponse" in {
+
+        val app = application
+
+        server.stubFor(
+          get(urlEqualTo(s"/ioss-returns/financial-data/prepare/$iossNumber"))
+            .willReturn(ok(responseJsonPrepareFinancialData))
+        )
+
+        running(app) {
+          val connector = app.injector.instanceOf[FinancialDataConnector]
+          val result = connector.prepareFinancialDataWithIossNumber(iossNumber).futureValue
+
+          result mustBe Right(expectedPrepareFinancialData)
         }
       }
     }
