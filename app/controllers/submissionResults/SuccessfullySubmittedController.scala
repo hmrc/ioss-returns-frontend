@@ -16,6 +16,7 @@
 
 package controllers.submissionResults
 
+import connectors.VatReturnConnector
 import controllers.actions._
 import pages.SoldGoodsPage
 import pages.corrections.CorrectPreviousReturnPage
@@ -27,16 +28,18 @@ import utils.Formatters.generateVatReturnReference
 import views.html.submissionResults.SuccessfullySubmittedView
 
 import javax.inject.Inject
+import scala.concurrent.ExecutionContext
 
 class SuccessfullySubmittedController @Inject()(
                                                  override val messagesApi: MessagesApi,
                                                  cc: AuthenticatedControllerComponents,
+                                                 vatReturnConnector: VatReturnConnector,
                                                  view: SuccessfullySubmittedView
-                                               ) extends FrontendBaseController with I18nSupport {
+                                               )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad: Action[AnyContent] = cc.authAndRequireData() {
+  def onPageLoad: Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
       val returnReference = generateVatReturnReference(request.iossNumber, request.userAnswers.period)
       val hasSoldGoodsPage = request.userAnswers.get(SoldGoodsPage)
@@ -51,11 +54,19 @@ class SuccessfullySubmittedController @Inject()(
       val totalOwed = request.userAnswers.get(TotalAmountVatDueGBPQuery)
         .getOrElse(throw new RuntimeException("TotalAmountVatDueGBPQuery has not been set in answers"))
 
-      Ok(view(
-        returnReference,
-        nilReturn = nilReturn,
-        period = request.userAnswers.period,
-        owedAmount = totalOwed
-      ))
+      vatReturnConnector.getSavedExternalEntry().map { errorOrExternalUrl =>
+        val maybeExternalUrl = errorOrExternalUrl.fold(
+          _ => None,
+          _.url
+        )
+
+        Ok(view(
+          returnReference,
+          nilReturn = nilReturn,
+          period = request.userAnswers.period,
+          owedAmount = totalOwed,
+          externalUrl = maybeExternalUrl
+        ))
+      }
   }
 }
