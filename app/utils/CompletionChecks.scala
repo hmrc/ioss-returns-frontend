@@ -70,7 +70,6 @@ trait CompletionChecks {
     }
   }
 
-  //corrections
   def getIncompleteCorrections(periodIndex: Index)(implicit request: DataRequest[AnyContent]): List[CorrectionToCountry] = {
     request.userAnswers
       .get(AllCorrectionCountriesQuery(periodIndex))
@@ -84,7 +83,6 @@ trait CompletionChecks {
       .find(indexedCorrection => incompleteCorrections.contains(indexedCorrection._1))
   }
 
-  //check-sales
   def getIncompleteVatRateAndSales(countryIndex: Index)(implicit request: DataRequest[AnyContent]): Seq[VatRateWithOptionalSalesFromCountry] = {
       val noSales = request.userAnswers
         .get(AllSalesWithOptionalVatQuery(countryIndex))
@@ -101,7 +99,6 @@ trait CompletionChecks {
     noSales ++ noVat
   }
 
-  //sold to country list controller
   def getCountriesWithIncompleteSales()(implicit request: DataRequest[AnyContent]): Seq[Country] = {
     request.userAnswers
       .get(AllSalesWithTotalAndVatQuery)

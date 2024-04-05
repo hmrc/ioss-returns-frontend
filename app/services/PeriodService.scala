@@ -18,26 +18,10 @@ package services
 
 import models.{Period, StandardPeriod}
 
-import java.time.{Clock, LocalDate, Month}
+import java.time.Month
 import javax.inject.Inject
 
-class PeriodService @Inject()(clock: Clock) {
-
-  def getReturnPeriods(commencementDate: LocalDate): Seq[StandardPeriod] =
-    getAllPeriods.filterNot(_.lastDay.isBefore(commencementDate))
-
-  def getAllPeriods: Seq[StandardPeriod] = {
-    val firstPeriod = StandardPeriod(2021, Month.JANUARY)
-    getPeriodsUntilDate(firstPeriod, LocalDate.now(clock))
-  }
-
-  private def getPeriodsUntilDate(currentPeriod: StandardPeriod, endDate: LocalDate): Seq[StandardPeriod] = {
-    if(currentPeriod.lastDay.isBefore(endDate)) {
-      Seq(currentPeriod) ++ getPeriodsUntilDate(getNextPeriod(currentPeriod), endDate)
-    } else {
-      Seq.empty
-    }
-  }
+class PeriodService @Inject() {
 
   def getNextPeriod(currentPeriod: Period): StandardPeriod = {
     currentPeriod.month match {

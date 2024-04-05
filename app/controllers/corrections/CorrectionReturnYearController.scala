@@ -62,15 +62,20 @@ class CorrectionReturnYearController @Inject()(
       }
 
       filteredFulfilledObligations.map { obligations =>
-        val periodKeys = obligations.map(obligation => ConvertPeriodKey.yearFromEtmpPeriodKey(obligation.periodKey)).distinct
 
-        val form: Form[Int] = formProvider(index, periodKeys)
-        val preparedForm = request.userAnswers.get(CorrectionReturnYearPage(index)) match {
-          case None => form
-          case Some(value) => form.fill(value)
+        if (obligations.size < 2) {
+          Redirect(controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(waypoints, index))
+        } else {
+          val periodKeys = obligations.map(obligation => ConvertPeriodKey.yearFromEtmpPeriodKey(obligation.periodKey)).distinct
+
+          val form: Form[Int] = formProvider(index, periodKeys)
+          val preparedForm = request.userAnswers.get(CorrectionReturnYearPage(index)) match {
+            case None => form
+            case Some(value) => form.fill(value)
+          }
+
+          Ok(view(preparedForm, waypoints, period, utils.ItemsHelper.radioButtonItems(periodKeys), index))
         }
-
-        Ok(view(preparedForm, waypoints, period, utils.ItemsHelper.radioButtonItems(periodKeys), index))
       }
   }
 
@@ -92,8 +97,11 @@ class CorrectionReturnYearController @Inject()(
 
         form.bindFromRequest().fold(
           formWithErrors =>
-
-            BadRequest(view(formWithErrors, waypoints, period, utils.ItemsHelper.radioButtonItems(periodKeys), index)).toFuture,
+            if (obligations.size < 2) {
+              Redirect(controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(waypoints, index)).toFuture
+            } else {
+              BadRequest(view(formWithErrors, waypoints, period, utils.ItemsHelper.radioButtonItems(periodKeys), index)).toFuture
+            },
 
           value =>
             for {

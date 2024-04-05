@@ -27,7 +27,7 @@ import pages.corrections.CorrectPreviousReturnPage
 import pages.{VatRatesFromCountryPage, Waypoints}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{AnyContent, Call, MessagesControllerComponents}
-import queries.{AllCorrectionCountriesQuery, AllCorrectionPeriodsQuery, AllSalesQuery, CorrectionToCountryQuery, SalesAtVatRateQuery, VatOnSalesFromQuery}
+import queries._
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import javax.inject.Inject
@@ -43,12 +43,10 @@ class RedirectService @Inject()(
 
   def validate(period: Period)(implicit request: DataRequest[AnyContent]): List[ValidationError] = {
 
-    val commencementDate = request.registrationWrapper.registration.schemeDetails.commencementDate
-
     val validateVatReturnRequest = vatReturnService.fromUserAnswers(request.userAnswers, request.vrn, period)
 
     val validateCorrectionRequest = request.userAnswers.get(CorrectPreviousReturnPage(0)).map(_ =>
-      correctionService.fromUserAnswers(request.userAnswers, request.vrn, period, commencementDate))
+      correctionService.fromUserAnswers(request.userAnswers, request.vrn, period))
 
     (validateVatReturnRequest, validateCorrectionRequest) match {
       case (Invalid(vatReturnErrors), Some(Invalid(correctionErrors))) =>
@@ -63,27 +61,22 @@ class RedirectService @Inject()(
 
   def getRedirect(waypoints: Waypoints, errors: List[ValidationError]): List[Call] = {
     errors.flatMap {
-          //sales
       case DataMissingError(AllSalesQuery) =>
         logger.error(s"Data missing - no data provided for sales")
         Some(routes.SoldToCountryController.onPageLoad(waypoints, Index(0)))
-
       case DataMissingError(VatRatesFromCountryPage(countryIndex, vatRateIndex)) =>
         logger.error(s"Data missing - vat rates with index ${vatRateIndex.position}")
         Some(routes.VatRatesFromCountryController.onPageLoad(waypoints, countryIndex))
-
       case DataMissingError(SalesAtVatRateQuery(countryIndex, vatRateIndex)) =>
         logger.error(s"Data missing - vat rates with index ${vatRateIndex.position} for country ${countryIndex.position}")
         Some(routes.SalesToCountryController.onPageLoad(waypoints, countryIndex, vatRateIndex))
-
       case DataMissingError(VatOnSalesFromQuery(countryIndex, vatRateIndex)) =>
         logger.error(s"Data missing - vat charged on sales at vat rate ${vatRateIndex.position} for country ${countryIndex.position}")
         Some(routes.VatOnSalesController.onPageLoad(waypoints, countryIndex, vatRateIndex))
 
-        //corrections
       case DataMissingError(AllCorrectionPeriodsQuery) =>
         logger.error(s"Data missing - no data provided for corrections")
-        Some(correctionsRoutes.CorrectionReturnPeriodController.onPageLoad(waypoints, Index(0)))
+        Some(correctionsRoutes.CorrectionReturnYearController.onPageLoad(waypoints, Index(0)))
       case DataMissingError(AllCorrectionCountriesQuery(periodIndex)) =>
         logger.error(s"Data missing - no countries found for corrections to period ${periodIndex.position}")
         Some(correctionsRoutes.CorrectionCountryController.onPageLoad(waypoints, periodIndex, Index(0)))

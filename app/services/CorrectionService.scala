@@ -28,14 +28,12 @@ import queries.{AllCorrectionCountriesQuery, AllCorrectionPeriodsQuery, Correcti
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.HeaderCarrier
 
-import java.time.LocalDate
 import javax.inject.Inject
 import scala.annotation.tailrec
 import scala.concurrent.{ExecutionContext, Future}
 
 class CorrectionService @Inject()(
-                                   vatReturnConnector: VatReturnConnector,
-                                   periodService: PeriodService
+                                   vatReturnConnector: VatReturnConnector
                                  )(implicit ec: ExecutionContext) extends Logging {
 
   def getAccumulativeVatForCountryTotalAmount(
@@ -97,20 +95,9 @@ class CorrectionService @Inject()(
     getAllPeriodsInRange(Seq.empty, periodFrom, periodTo)
   }
 
-  def fromUserAnswers(answers: UserAnswers, vrn: Vrn, period: Period, commencementDate: LocalDate): ValidationResult[CorrectionRequest] = {
-    if (firstPeriod(period, commencementDate)) {
-      CorrectionRequest(vrn, StandardPeriod.fromPeriod(period), List.empty).validNec
-    } else {
-      getCorrections(answers).map { corrections =>
-        CorrectionRequest(vrn, StandardPeriod.fromPeriod(period), corrections)
-      }
-    }
-  }
-
-  private def firstPeriod(period: Period, commencementDate: LocalDate): Boolean = {
-    periodService.getReturnPeriods(commencementDate).headOption match {
-      case Some(firstAvailableReturnPeriod) => firstAvailableReturnPeriod == period
-      case _ => false
+  def fromUserAnswers(answers: UserAnswers, vrn: Vrn, period: Period): ValidationResult[CorrectionRequest] = {
+    getCorrections(answers).map { corrections =>
+      CorrectionRequest(vrn, StandardPeriod.fromPeriod(period), corrections)
     }
   }
 
@@ -138,6 +125,7 @@ class CorrectionService @Inject()(
         DataMissingError(AllCorrectionPeriodsQuery).invalidNec
     }
   }
+
 
   private def processCorrectionsToCountry(answers: UserAnswers, periodIndex: Index): ValidationResult[List[CorrectionToCountry]] = {
     answers.get(AllCorrectionCountriesQuery(periodIndex)) match {
