@@ -179,7 +179,7 @@ class CheckYourAnswersController @Inject()(
   private def saveUserAnswersOnCoreError(redirectLocation: Call)(implicit request: DataRequest[AnyContent]): Future[Result] =
     Future.fromTry(request.userAnswers.set(SavedProgressPage, routes.CheckYourAnswersController.onPageLoad().url)).flatMap {
       updatedAnswers =>
-        val saveForLateRequest = SaveForLaterRequest(updatedAnswers, request.vrn, request.userAnswers.period)
+        val saveForLateRequest = SaveForLaterRequest(updatedAnswers, request.iossNumber, request.userAnswers.period)
 
         saveForLaterConnector.submit(saveForLateRequest).flatMap {
           case Right(Some(_)) =>

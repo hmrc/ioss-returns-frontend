@@ -21,7 +21,7 @@ import play.api.libs.json.{JsValue, Json, OFormat}
 import uk.gov.hmrc.domain.Vrn
 
 case class SaveForLaterRequest(
-                                vrn: Vrn,
+                                iossNumber: String,
                                 period: Period,
                                 data: JsValue
                            )
@@ -30,5 +30,5 @@ object SaveForLaterRequest {
 
   implicit val format: OFormat[SaveForLaterRequest] = Json.format[SaveForLaterRequest]
 
-  def apply(answers: UserAnswers, vrn: Vrn, period: Period): SaveForLaterRequest = SaveForLaterRequest(vrn, period, answers.data)
+  def apply(answers: UserAnswers, iossNumber: String, period: Period): SaveForLaterRequest = SaveForLaterRequest(iossNumber, period, answers.data)
 }

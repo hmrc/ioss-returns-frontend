@@ -55,7 +55,7 @@ class SavedProgressController @Inject()(
 
       Future.fromTry(request.userAnswers.set(SavedProgressPage, safeContinueUrl)).flatMap {
         updatedAnswers =>
-          val s4LRequest = SaveForLaterRequest(updatedAnswers, request.vrn, period)
+          val s4LRequest = SaveForLaterRequest(updatedAnswers, request.iossNumber, period)
           (for{
             maybeSavedExternalUrl <- vatReturnConnector.getSavedExternalEntry()
             s4laterResult <- connector.submit(s4LRequest)
