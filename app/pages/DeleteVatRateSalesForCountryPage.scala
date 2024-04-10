@@ -33,4 +33,12 @@ case class DeleteVatRateSalesForCountryPage(countryIndex: Index, vatRateIndex: I
       case _ =>
         VatRatesFromCountryPage(countryIndex, vatRateIndex)
     }
+
+  override protected def nextPageCheckMode(waypoints: NonEmptyWaypoints, answers: UserAnswers): Page =
+    answers.get(DeriveNumberOfVatRatesFromCountry(countryIndex)) match {
+      case Some(n) if n > 0 =>
+        CheckSalesPage(countryIndex)
+      case _ =>
+        VatRatesFromCountryPage(countryIndex, vatRateIndex)
+    }
 }
