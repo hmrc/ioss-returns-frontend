@@ -508,3 +508,9 @@ whichPreviousRegistrationToPay.error.required = Select which previous registrati
 whichPreviousRegistrationToPay.change.hidden = which previous registration you want to pay
 
 whichPreviousRegistrationVatPeriodToPay.error.required = Select which month you would like to make a payment for
+
+checkVatPayableAmount.title = Check your answers
+checkVatPayableAmount.heading = Check your answers
+checkVatPayableAmount.caption = Correction month: {0}
+checkVatPayableAmount.previousVatTotal.checkYourAnswersLabel = Previous VAT total declared
+checkVatPayableAmount.newVatTotal.checkYourAnswersLabel = New VAT total

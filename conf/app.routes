@@ -146,3 +146,6 @@ POST        /which-previous-registration-to-pay                                 
 
 GET         /which-previous-registration-vat-period-to-pay                            controllers.payments.WhichPreviousRegistrationVatPeriodToPayController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
 POST        /which-previous-registration-vat-period-to-pay                            controllers.payments.WhichPreviousRegistrationVatPeriodToPayController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints)
+
+GET        /vat-payable-check/:periodIndex/:countryIndex                              controllers.corrections.CheckVatPayableAmountController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, periodIndex: Index, countryIndex: Index)
+POST       /vat-payable-check/:periodIndex/:countryIndex                              controllers.corrections.CheckVatPayableAmountController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, periodIndex: Index, countryIndex: Index, incompletePromptShown: Boolean)

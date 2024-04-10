@@ -70,6 +70,12 @@ trait CompletionChecks {
     }
   }
 
+  def getIncompleteCorrectionsToCountry(periodIndex: Index, countryIndex: Index)(implicit request: DataRequest[AnyContent]): Option[CorrectionToCountry] = {
+    request.userAnswers
+      .get(CorrectionToCountryQuery(periodIndex, countryIndex))
+      .find(_.countryVatCorrection.isEmpty)
+  }
+
   def getIncompleteCorrections(periodIndex: Index)(implicit request: DataRequest[AnyContent]): List[CorrectionToCountry] = {
     request.userAnswers
       .get(AllCorrectionCountriesQuery(periodIndex))

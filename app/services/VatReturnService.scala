@@ -34,7 +34,6 @@ class VatReturnService @Inject() {
     )
   }
 
-
   private def getSales(answers: UserAnswers): ValidationResult[List[SalesToCountry]] =
     answers.get(SoldGoodsPage) match {
       case Some(true) =>
