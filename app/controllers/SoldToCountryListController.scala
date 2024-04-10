@@ -18,13 +18,14 @@ package controllers
 
 import controllers.actions._
 import forms.SoldToCountryListFormProvider
-import models.Country
+import models.{Country, Index}
 import pages.{SoldToCountryListPage, Waypoints}
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import queries.DeriveNumberOfSales
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.CompletionChecks
 import utils.FutureSyntax.FutureOps
 import utils.ItemsHelper.getDerivedItems
 import viewmodels.checkAnswers.SoldToCountryListSummary
@@ -38,7 +39,7 @@ class SoldToCountryListController @Inject()(
                                              cc: AuthenticatedControllerComponents,
                                              formProvider: SoldToCountryListFormProvider,
                                              view: SoldToCountryListView
-                                           )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                           )(implicit ec: ExecutionContext) extends FrontendBaseController with CompletionChecks with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
@@ -56,16 +57,40 @@ class SoldToCountryListController @Inject()(
           val salesSummary = SoldToCountryListSummary
             .addToListRows(request.userAnswers, waypoints, SoldToCountryListPage())
 
-          Ok(view(form, waypoints, period, salesSummary, canAddSales)).toFuture
+          withCompleteDataAsync[Country](
+            data = getCountriesWithIncompleteSales _,
+            onFailure = (incomplete: Seq[Country]) => {
+              Ok(view(form, waypoints, period, salesSummary, canAddSales, incomplete)).toFuture
+            }) {
+            Ok(view(form, waypoints, period, salesSummary, canAddSales)).toFuture
+          }
+
       }
   }
 
-  def onSubmit(waypoints: Waypoints): Action[AnyContent] = cc.authAndRequireData().async {
+  def onSubmit(waypoints: Waypoints, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
 
       val period = request.userAnswers.period
 
-      getDerivedItems(waypoints, DeriveNumberOfSales) {
+      withCompleteDataAsync[Country](
+        data = getCountriesWithIncompleteSales _,
+        onFailure = (incompleteCountries: Seq[Country]) => {
+          if (incompletePromptShown) {
+            firstIndexedIncompleteCountrySales(incompleteCountries) match {
+              case Some(incompleteCountry) =>
+                if (incompleteCountry._1.vatRatesFromCountry.isEmpty) {
+                  Redirect(routes.VatRatesFromCountryController.onPageLoad(waypoints, Index(incompleteCountry._2))).toFuture
+                } else {
+                  Redirect(routes.CheckSalesController.onPageLoad(waypoints, Index(incompleteCountry._2))).toFuture
+                }
+              case None =>
+                Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
+            }
+          } else {
+            Redirect(routes.SoldToCountryListController.onPageLoad(waypoints)).toFuture
+          }
+        })(getDerivedItems(waypoints, DeriveNumberOfSales) {
         number =>
 
           val canAddSales = number < Country.euCountriesWithNI.size
@@ -82,6 +107,6 @@ class SoldToCountryListController @Inject()(
                 _ <- cc.sessionRepository.set(updatedAnswers)
               } yield Redirect(SoldToCountryListPage().navigate(waypoints, request.userAnswers, updatedAnswers).route)
           )
-      }
+      })
   }
 }

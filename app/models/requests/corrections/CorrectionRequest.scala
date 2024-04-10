@@ -14,17 +14,21 @@
  * limitations under the License.
  */
 
-package pages
+package models.requests.corrections
 
-object PageConstants {
+import models.StandardPeriod
+import models.corrections.PeriodWithCorrections
+import play.api.libs.json.{Json, OFormat}
+import uk.gov.hmrc.domain.Vrn
 
-  val sales: String = "sales"
-  val successful: String = "successful"
-  val vatRates: String = "vatRatesFromCountry"
-  val salesAtVatRate: String = "salesAtVatRate"
-  val netValueOfSales: String = "netValueOfSales"
-  val vatOnSales: String = "vatOnSales"
-  val corrections: String = "corrections"
-  val correctionsToCountry: String = "correctionsToCountry"
-  val previouslyDeclaredCorrectionsForCountry: String = "previouslyDeclaredCorrectionAmountForCountry"
+case class CorrectionRequest(
+                       vrn: Vrn,
+                       period: StandardPeriod,
+                       corrections: List[PeriodWithCorrections]
+                       )
+
+object CorrectionRequest {
+
+  implicit val format: OFormat[CorrectionRequest] = Json.format[CorrectionRequest]
+
 }

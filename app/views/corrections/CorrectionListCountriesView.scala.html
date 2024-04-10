@@ -51,8 +51,6 @@
     Some(messages("correctionListCountries.section", correctionPeriod.displayText))
 )) {
 
-    @formHelper(action = controllers.corrections.routes.CorrectionListCountriesController.onSubmit(waypoints, periodIndex), Symbol("autoComplete") -> "off") {
-
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))
         }
@@ -73,28 +71,32 @@
             @govukSummaryList(list)
         }
         @if(incompleteCountries.isEmpty) {
-            @if(canAddCountries) {
-                @govukRadios(
-                    RadiosViewModel.yesNo(
-                        field = form("value"),
-                        legend = LegendViewModel(
-                            HtmlContent(Html(messages("correctionListCountries.addAnother")))
-                        ).withSize(LegendSize.Medium)
+            @formHelper(action = controllers.corrections.routes.CorrectionListCountriesController.onSubmit(waypoints, periodIndex, false), Symbol("autoComplete") -> "off") {
+                @if(canAddCountries) {
+                    @govukRadios(
+                        RadiosViewModel.yesNo(
+                            field = form("value"),
+                            legend = LegendViewModel(
+                                HtmlContent(Html(messages("correctionListCountries.addAnother")))
+                            ).withSize(LegendSize.Medium)
+                        )
                     )
+                } else {
+                    <p class="govuk-body">@messages("correctionListCountries.maximumReached")</p>
+                    <input type="hidden" name="value" id="value" value="false"/>
+                }
+
+                @button("site.continue", controllers.corrections.routes.CorrectionListCountriesController.onPageLoad(waypoints, periodIndex).url, period, waypoints
                 )
-            } else {
-                <p class="govuk-body">@messages("correctionListCountries.maximumReached")</p>
-                <input type="hidden" name="value" id="value" value="false"/>
             }
-
-            @button("site.continue", controllers.corrections.routes.CorrectionListCountriesController.onPageLoad(waypoints, periodIndex).url, period, waypoints)
         } else {
-            <h2 class="govuk-heading-m push--top">@messages("error.missing_answers_header")</h2>
-            <p class="govuk-body">@messages("error.missing_answers_prompt", incompleteCountries.head)</p>
+            @formHelper(action = controllers.corrections.routes.CorrectionListCountriesController.onSubmit(waypoints, periodIndex, true), Symbol("autoComplete") -> "off") {
+                <h2 class="govuk-heading-m push--top">@messages("error.missing_answers_header")</h2>
+                <p class="govuk-body">@messages("error.missing_answers_prompt", incompleteCountries.head)</p>
 
-            @govukButton(
-                ButtonViewModel(messages("error.resolve_missing_answers"))
-            )
+                @govukButton(
+                    ButtonViewModel(messages("error.resolve_missing_answers"))
+                )
+            }
         }
-    }
 }

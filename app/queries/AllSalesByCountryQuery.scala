@@ -16,6 +16,7 @@
 
 package queries
 
+import models.domain.VatRate
 import models.{Country, Index, VatOnSales, VatRateFromCountry, VatRateType}
 import pages.PageConstants
 import play.api.libs.functional.syntax._
@@ -39,7 +40,14 @@ case class VatRateWithOptionalSalesFromCountry(
                                                 validFrom: LocalDate,
                                                 validUntil: Option[LocalDate] = None,
                                                 salesAtVatRate: Option[OptionalSalesAtVatRate]
-                                              )
+                                              ) {
+
+  lazy val rateForDisplay: String = if(rate.isWhole) {
+    rate.toString.split('.').headOption.getOrElse(rate.toString) + "%"
+  } else {
+    rate.toString + "%"
+  }
+}
 
 object VatRateWithOptionalSalesFromCountry {
 
@@ -110,4 +118,24 @@ object SalesToCountryWithOptionalSales {
 case class AllSalesByCountryQuery(countryIndex: Index) extends Gettable[SalesToCountryWithOptionalSales] with Settable[SalesToCountryWithOptionalSales] {
 
   override def path: JsPath = JsPath \ PageConstants.sales \ countryIndex.position
+}
+
+case class SalesToCountry(
+                           country: Country,
+                           amounts: List[SalesDetails]
+                         )
+
+object SalesToCountry {
+
+  implicit val format: OFormat[SalesToCountry] = Json.format[SalesToCountry]
+}
+
+case class SalesDetails(
+                       vatRate: VatRate,
+                       netValueOfSales: Option[BigDecimal],
+                       vatOnSales: VatOnSales
+                       )
+
+object SalesDetails {
+  implicit val format: OFormat[SalesDetails] = Json.format[SalesDetails]
 }

@@ -15,48 +15,82 @@
  *@
 
 @import viewmodels.LegendSize
+@import queries.VatRateWithOptionalSalesFromCountry
 
 @this(
         layout: templates.Layout,
         formHelper: FormWithCSRF,
         govukErrorSummary: GovukErrorSummary,
         govukRadios: GovukRadios,
+        govukButton: GovukButton,
         govukSummaryList: GovukSummaryList,
-        button: ButtonGroup
+        button: ButtonGroup,
+        govukWarningText: GovukWarningText
 )
 
-@(form: Form[_], waypoints: Waypoints, period: Period, checkSalesSummaryLists: Seq[SummaryList], countryIndex: Index, country: Country, canAddAnotherVatRate: Boolean)(implicit request: Request[_], messages: Messages)
+@(
+    form: Form[_],
+    waypoints: Waypoints,
+    period: Period,
+    checkSalesSummaryLists: Seq[SummaryList],
+    countryIndex: Index,
+    country: Country,
+    canAddAnotherVatRate: Boolean,
+    incompleteSales: Seq[VatRateWithOptionalSalesFromCountry] = List.empty
+)(implicit request: Request[_], messages: Messages)
 
     @layout(pageTitle = title(form, messages("checkSales.title"), Some(messages("checkSales.caption", period.displayText, country.name)))) {
 
-        @formHelper(action = routes.CheckSalesController.onSubmit(waypoints, countryIndex), Symbol("autoComplete") -> "off") {
 
-            @if(form.errors.nonEmpty) {
-                @govukErrorSummary(ErrorSummaryViewModel(form))
-            }
+        @if(form.errors.nonEmpty) {
+            @govukErrorSummary(ErrorSummaryViewModel(form))
+        }
 
-            <header class="hmrc-page-heading">
-                <p class="govuk-caption-l hmrc-caption-l">@messages("checkSales.caption", period.displayText, country.name)</p>
-                <h1 class="govuk-heading-l">@messages("checkSales.heading")</h1>
-            </header>
+        <header class="hmrc-page-heading">
+            <p class="govuk-caption-l hmrc-caption-l">@messages("checkSales.caption", period.displayText, country.name)</p>
+            <h1 class="govuk-heading-l">@messages("checkSales.heading")</h1>
+        </header>
 
-            @for(checkSalesSummaryList <- checkSalesSummaryLists) {
-                @govukSummaryList(checkSalesSummaryList)
-            }
+        @if(!incompleteSales.isEmpty) {
+            @govukWarningText(WarningText(
+                iconFallbackText = Option(messages("site.warning")),
+                content = Text(messages("error.missing_answers"))
+            ))
+        }
 
-            @if(canAddAnotherVatRate) {
-                @govukRadios(
-                    RadiosViewModel.yesNo(
-                        field = form("value"),
-                        legend = LegendViewModel(
-                            HtmlContent(Html("""<h2 class="govuk-fieldset__heading">""" + messages("checkSales.addAnother") + "</h2>"))
-                        ).withSize(LegendSize.Medium)
+        @for(checkSalesSummaryList <- checkSalesSummaryLists) {
+            @govukSummaryList(checkSalesSummaryList)
+        }
+
+        @if(incompleteSales.isEmpty) {
+            @formHelper(action = routes.CheckSalesController.onSubmit(waypoints, countryIndex, false), Symbol("autoComplete") -> "off") {
+                @if(canAddAnotherVatRate) {
+                    @govukRadios(
+                        RadiosViewModel.yesNo(
+                            field = form("value"),
+                            legend = LegendViewModel(
+                                HtmlContent(Html("""<h2 class="govuk-fieldset__heading">""" + messages("checkSales.addAnother") + "</h2>"))
+                            ).withSize(LegendSize.Medium)
+                        )
                     )
-                )
-            } else {
-                <input type="hidden" name="value" id="value" value="false"/>
-            }
+                } else {
+                    <input type="hidden" name="value" id="value" value="false"/>
+                }
 
-            @button(messages("site.continue"), routes.CheckSalesController.onPageLoad(waypoints, countryIndex).url, period, waypoints)
+                @button(messages("site.continue"), routes.CheckSalesController.onPageLoad(waypoints, countryIndex).url, period, waypoints)
+            }
+        } else {
+            <h2 class="govuk-heading-m push--top">@messages("error.missing_answers_header")</h2>
+            <p class="govuk-body">@messages("error.missing_answers_prompt",  if(incompleteSales.size > 1) {
+                incompleteSales.map(_.rateForDisplay).reverse.tail.mkString(", ") + " and " + incompleteSales.last.rateForDisplay + " VAT rates"
+            } else {
+             incompleteSales.head.rateForDisplay + " VAT rate"
+            })</p>
+
+            @formHelper(action = routes.CheckSalesController.onSubmit(waypoints, countryIndex, true)) {
+                @govukButton(
+                    ButtonViewModel(messages("error.resolve_missing_answers"))
+                )
+            }
         }
     }

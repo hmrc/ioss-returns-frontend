@@ -14,17 +14,16 @@
  * limitations under the License.
  */
 
-package pages
+package queries
 
-object PageConstants {
+import models.Index
+import pages.PageConstants
+import play.api.libs.json.JsPath
 
-  val sales: String = "sales"
-  val successful: String = "successful"
-  val vatRates: String = "vatRatesFromCountry"
-  val salesAtVatRate: String = "salesAtVatRate"
-  val netValueOfSales: String = "netValueOfSales"
-  val vatOnSales: String = "vatOnSales"
-  val corrections: String = "corrections"
-  val correctionsToCountry: String = "correctionsToCountry"
-  val previouslyDeclaredCorrectionsForCountry: String = "previouslyDeclaredCorrectionAmountForCountry"
+case class AllSalesWithOptionalVatQuery(countryIndex: Index)
+  extends Gettable[Seq[VatRateWithOptionalSalesFromCountry]] with Settable[Seq[VatRateWithOptionalSalesFromCountry]] {
+
+  override def path: JsPath =
+    JsPath \ PageConstants.sales \ countryIndex.position \ PageConstants.vatRates
+
 }

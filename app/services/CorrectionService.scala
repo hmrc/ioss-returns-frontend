@@ -16,10 +16,16 @@
 
 package services
 
+import cats.implicits.{catsSyntaxValidatedIdBinCompat0, toTraverseOps}
 import connectors.VatReturnConnector
 import logging.Logging
+import models.corrections.{CorrectionToCountry, PeriodWithCorrections}
 import models.etmp.EtmpVatReturn
-import models.{Country, Period}
+import models.requests.corrections.CorrectionRequest
+import models.{Country, DataMissingError, Index, Period, StandardPeriod, UserAnswers, ValidationResult}
+import pages.corrections.CorrectPreviousReturnPage
+import queries.{AllCorrectionCountriesQuery, AllCorrectionPeriodsQuery, CorrectionToCountryQuery}
+import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.HeaderCarrier
 
 import javax.inject.Inject
@@ -87,5 +93,62 @@ class CorrectionService @Inject()(
     }
 
     getAllPeriodsInRange(Seq.empty, periodFrom, periodTo)
+  }
+
+  def fromUserAnswers(answers: UserAnswers, vrn: Vrn, period: Period): ValidationResult[CorrectionRequest] = {
+    getCorrections(answers).map { corrections =>
+      CorrectionRequest(vrn, StandardPeriod.fromPeriod(period), corrections)
+    }
+  }
+
+  private def getCorrections(answers: UserAnswers): ValidationResult[List[PeriodWithCorrections]] = {
+    answers.get(CorrectPreviousReturnPage(0)) match {
+      case Some(false) =>
+        List.empty[PeriodWithCorrections].validNec
+      case Some(true) =>
+        processCorrections(answers)
+      case None =>
+        DataMissingError(CorrectPreviousReturnPage(0)).invalidNec
+    }
+  }
+
+  private def processCorrections(answers: UserAnswers): ValidationResult[List[PeriodWithCorrections]] = {
+    answers.get(AllCorrectionPeriodsQuery) match {
+      case Some(periodWithCorrections) if periodWithCorrections.nonEmpty =>
+        periodWithCorrections.zipWithIndex.map {
+          case (_, index) =>
+            processCorrectionsToCountry(answers, Index(index))
+        }.sequence.map { _ =>
+          periodWithCorrections
+        }
+      case _ =>
+        DataMissingError(AllCorrectionPeriodsQuery).invalidNec
+    }
+  }
+
+
+  private def processCorrectionsToCountry(answers: UserAnswers, periodIndex: Index): ValidationResult[List[CorrectionToCountry]] = {
+    answers.get(AllCorrectionCountriesQuery(periodIndex)) match {
+      case Some(value) if value.nonEmpty =>
+        value.zipWithIndex.map {
+          case (_, index) =>
+            processCorrectionToCountry(answers, periodIndex, Index(index))
+        }.sequence
+      case _ =>
+        DataMissingError(AllCorrectionCountriesQuery(periodIndex)).invalidNec
+    }
+  }
+
+  private def processCorrectionToCountry(answers: UserAnswers, periodIndex: Index, countryIndex: Index): ValidationResult[CorrectionToCountry] = {
+    answers.get(CorrectionToCountryQuery(periodIndex, countryIndex)) match {
+      case Some(value) =>
+        value match {
+          case CorrectionToCountry(_, Some(_)) =>      value.validNec
+          case CorrectionToCountry(_, None) =>         DataMissingError(CorrectionToCountryQuery(periodIndex, countryIndex)).invalidNec
+
+        }
+      case _ =>
+        DataMissingError(CorrectionToCountryQuery(periodIndex, countryIndex)).invalidNec
+    }
   }
 }

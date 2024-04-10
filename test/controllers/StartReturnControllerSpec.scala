@@ -20,10 +20,9 @@ import base.SpecBase
 import connectors.ReturnStatusConnector
 import forms.StartReturnFormProvider
 import models.SubmissionStatus.{Complete, Due, Excluded, Next, Overdue}
-import models.{PartialReturnPeriod, Period, StandardPeriod, SubmissionStatus, WithName}
-import models.etmp.{EtmpExclusion, EtmpObligationDetails}
+import models.{PartialReturnPeriod, StandardPeriod, SubmissionStatus}
+import models.etmp.EtmpExclusion
 import models.etmp.EtmpExclusionReason.NoLongerSupplies
-import models.etmp.EtmpObligationsFulfilmentStatus.Open
 import org.mockito.ArgumentMatchers.any
 import org.mockito.{ArgumentMatchers, IdiomaticMockito, Mockito}
 import org.mockito.Mockito.when
@@ -36,7 +35,7 @@ import play.api.data.Form
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import services.{ObligationsService, PartialReturnPeriodService}
+import services.PartialReturnPeriodService
 import viewmodels.yourAccount.{CurrentReturns, Return}
 import views.html.StartReturnView
 
@@ -64,7 +63,6 @@ class StartReturnControllerSpec
 
   private val emptyCurrentReturns = CurrentReturns(
     returns = List.empty,
-    excluded = false,
     finalReturnsCompleted = false,
     completeOrExcludedReturns = List.empty
   )
@@ -166,7 +164,14 @@ class StartReturnControllerSpec
             val view = application.injector.instanceOf[StartReturnView]
 
             status(result) mustBe OK
-            contentAsString(result) mustBe view(form, waypoints, period, None, isFinalReturn = false, maybePartialReturn)(request, messages(application)).toString
+            contentAsString(result) mustBe view(
+              form,
+              waypoints,
+              period,
+              None,
+              isFinalReturn = false,
+              maybePartialReturn
+            )(request, messages(application)).toString
           }
         }
       }
@@ -476,7 +481,7 @@ class StartReturnControllerSpec
             NoLongerSupplies,
             effectiveDate,
             effectiveDate,
-            false
+            quarantine = false
           )
 
           val application = applicationBuilder(

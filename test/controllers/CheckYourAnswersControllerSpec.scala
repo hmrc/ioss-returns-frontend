@@ -17,18 +17,20 @@
 package controllers
 
 import base.SpecBase
+import config.Constants.{maxCurrencyAmount, minCurrencyAmount}
 import connectors.{SaveForLaterConnector, SavedUserAnswers}
 import models.audit.{ReturnsAuditModel, SubmissionResult}
 import models.requests.DataRequest
-import models.{Country, TotalVatToCountry, UserAnswers}
+import models.{Country, TotalVatToCountry, UserAnswers, VatRateFromCountry}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito
 import org.mockito.Mockito.{times, verify, when}
+import org.scalacheck.Gen
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import pages.corrections._
-import pages.{CheckYourAnswersPage, SoldGoodsPage}
+import pages.{CheckYourAnswersPage, SalesToCountryPage, SoldGoodsPage, SoldToCountryPage, VatRatesFromCountryPage}
 import play.api.i18n.Messages
 import play.api.inject.bind
 import play.api.test.FakeRequest
@@ -52,6 +54,8 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
   private val mockCoreVatReturnService = mock[CoreVatReturnService]
   private val mockAuditService = mock[AuditService]
   private val mockSaveForLaterConnector = mock[SaveForLaterConnector]
+  private val vatRateFromCountry: VatRateFromCountry = arbitraryVatRateFromCountry.arbitrary.sample.value
+  private val salesValue: BigDecimal = Gen.chooseNum(minCurrencyAmount, maxCurrencyAmount).sample.value
 
   override def beforeEach(): Unit = {
     Mockito.reset(mockSalesAtVatRateService)
@@ -313,5 +317,148 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
       }
     }
 
+    "when the user has not answered" - {
+
+      "a question but the missing data prompt has not been shown, must refresh page" in {
+
+        val answers = emptyUserAnswers
+          .set(SoldGoodsPage, true).success.value
+
+        val app = applicationBuilder(Some(answers)).build()
+
+        running(app) {
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, incompletePromptShown = false).url)
+          val result = route(app, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.CheckYourAnswersController.onPageLoad(waypoints).url
+        }
+      }
+
+      "country of consumption must redirect to SoldToCountryController" in {
+
+        val answers = emptyUserAnswers
+          .set(SoldGoodsPage, true).success.value
+
+        val app = applicationBuilder(Some(answers)).build()
+
+        running(app) {
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, incompletePromptShown = true).url)
+          val result = route(app, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.SoldToCountryController.onPageLoad(waypoints, index).url
+        }
+      }
+
+      "vat rates, must redirect to VatRatesFromCountryController" in {
+
+        val answers = emptyUserAnswers
+          .set(SoldGoodsPage, true).success.value
+          .set(SoldToCountryPage(index), Country.euCountries.head).success.value
+
+        val app = applicationBuilder(Some(answers)).build()
+
+        running(app) {
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, incompletePromptShown = true).url)
+          val result = route(app, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.VatRatesFromCountryController.onPageLoad(waypoints, index).url
+        }
+      }
+
+      "net value of sales must redirect to SalesToCountryController" in {
+
+        val answers = emptyUserAnswers
+          .set(SoldGoodsPage, true).success.value
+          .set(SoldToCountryPage(index), Country.euCountries.head).success.value
+          .set(VatRatesFromCountryPage(index, index), List[VatRateFromCountry](vatRateFromCountry)).success.value
+
+        val app = applicationBuilder(Some(answers)).build()
+
+        running(app) {
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, incompletePromptShown = true).url)
+          val result = route(app, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.SalesToCountryController.onPageLoad(waypoints, index, index).url
+        }
+      }
+
+      "vat on sales must redirect to VatOnSalesController" in {
+
+        val answers = emptyUserAnswers
+          .set(SoldGoodsPage, true).success.value
+          .set(SoldToCountryPage(index), Country.euCountries.head).success.value
+          .set(VatRatesFromCountryPage(index, index), List[VatRateFromCountry](vatRateFromCountry)).success.value
+          .set(SalesToCountryPage(index, index), salesValue).success.value
+
+        val app = applicationBuilder(Some(answers)).build()
+
+        running(app) {
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, incompletePromptShown = true).url)
+          val result = route(app, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.VatOnSalesController.onPageLoad(waypoints, index, index).url
+        }
+      }
+
+      "year of correct must redirect to CorrectionReturnYearController" in {
+
+        val answers = emptyUserAnswers
+          .set(SoldGoodsPage, false).success.value
+          .set(CorrectPreviousReturnPage(0), true).success.value
+
+        val app = applicationBuilder(Some(answers)).build()
+
+        running(app) {
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, incompletePromptShown = true).url)
+          val result = route(app, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual controllers.corrections.routes.CorrectionReturnYearController.onPageLoad(waypoints, index).url
+        }
+      }
+
+      "country of correction must redirect to CorrectionCountryController" in {
+
+        val answers = emptyUserAnswers
+          .set(SoldGoodsPage, false).success.value
+          .set(CorrectPreviousReturnPage(0), true).success.value
+          .set(CorrectionReturnYearPage(index), period.year).success.value
+          .set(CorrectionReturnPeriodPage(index), period).success.value
+
+        val app = applicationBuilder(Some(answers)).build()
+
+        running(app) {
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, incompletePromptShown = true).url)
+          val result = route(app, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual controllers.corrections.routes.CorrectionCountryController.onPageLoad(waypoints, index, index).url
+        }
+      }
+
+      "amount of correction must redirect to VatAmountCorrectionCountryController" in {
+
+        val answers = emptyUserAnswers
+          .set(SoldGoodsPage, false).success.value
+          .set(CorrectPreviousReturnPage(0), true).success.value
+          .set(CorrectionReturnPeriodPage(index), period).success.value
+          .set(CorrectionCountryPage(index, index), Country.euCountries.head).success.value
+
+        val app = applicationBuilder(Some(answers)).build()
+
+        running(app) {
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, incompletePromptShown = true).url)
+          val result = route(app, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual controllers.corrections.routes.VatAmountCorrectionCountryController.onPageLoad(waypoints, index, index).url
+        }
+      }
+    }
   }
 }

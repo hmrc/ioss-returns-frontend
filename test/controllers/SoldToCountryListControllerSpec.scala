@@ -17,10 +17,12 @@
 package controllers
 
 import base.SpecBase
+import config.Constants.{maxCurrencyAmount, minCurrencyAmount}
 import forms.SoldToCountryListFormProvider
 import models.{Country, Index, UserAnswers, VatRateFromCountry}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{times, verify, when}
+import org.scalacheck.Gen
 import org.scalatestplus.mockito.MockitoSugar
 import pages.{JourneyRecoveryPage, SalesToCountryPage, SoldGoodsPage, SoldToCountryListPage, SoldToCountryPage, VatOnSalesPage, VatRatesFromCountryPage}
 import play.api.data.Form
@@ -39,7 +41,7 @@ class SoldToCountryListControllerSpec extends SpecBase with MockitoSugar {
 
   private val country: Country = arbitraryCountry.arbitrary.sample.value
   private val vatRateFromCountry: VatRateFromCountry = arbitraryVatRateFromCountry.arbitrary.sample.value
-  private val salesValue: BigDecimal = BigDecimal(1234)
+  private val salesValue: BigDecimal = Gen.chooseNum(minCurrencyAmount, maxCurrencyAmount).sample.value
 
   private val baseAnswers: UserAnswers = emptyUserAnswers
     .set(SoldGoodsPage, true).success.value
@@ -49,6 +51,7 @@ class SoldToCountryListControllerSpec extends SpecBase with MockitoSugar {
     .set(VatOnSalesPage(index, vatRateIndex), arbitraryVatOnSales.arbitrary.sample.value).success.value
 
   private lazy val soldToCountryListRoute: String = routes.SoldToCountryListController.onPageLoad(waypoints).url
+  private lazy val soldToCountryPostRoute: String = routes.SoldToCountryListController.onSubmit(waypoints, incompletePromptShown = false).url
 
   "SoldToCountryList Controller" - {
 
@@ -95,7 +98,11 @@ class SoldToCountryListControllerSpec extends SpecBase with MockitoSugar {
     "must return OK and populate the view correctly on a GET when the maximum number of sold to countries have already been added" in {
 
       val userAnswers = (0 to Country.euCountriesWithNI.size).foldLeft(baseAnswers) { (userAnswers: UserAnswers, index: Int) =>
-        userAnswers.set(SoldToCountryPage(Index(index)), country).success.value
+        userAnswers
+          .set(SoldToCountryPage(Index(index)), country).success.value
+          .set(VatRatesFromCountryPage(Index(index), Index(index)), List[VatRateFromCountry](vatRateFromCountry)).success.value
+          .set(SalesToCountryPage(Index(index), vatRateIndex), salesValue).success.value
+          .set(VatOnSalesPage(Index(index), vatRateIndex), arbitraryVatOnSales.arbitrary.sample.value).success.value
       }
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
@@ -118,7 +125,11 @@ class SoldToCountryListControllerSpec extends SpecBase with MockitoSugar {
     "must return OK and populate the view correctly on a GET when just below the maximum number of sold to countries have been added" in {
 
       val userAnswers = (0 until (Country.euCountriesWithNI.size -1)).foldLeft(baseAnswers) { (userAnswers: UserAnswers, index: Int) =>
-        userAnswers.set(SoldToCountryPage(Index(index)), country).success.value
+        userAnswers
+          .set(SoldToCountryPage(Index(index)), country).success.value
+          .set(VatRatesFromCountryPage(Index(index), Index(index)), List[VatRateFromCountry](vatRateFromCountry)).success.value
+          .set(SalesToCountryPage(Index(index), vatRateIndex), salesValue).success.value
+          .set(VatOnSalesPage(Index(index), vatRateIndex), arbitraryVatOnSales.arbitrary.sample.value).success.value
       }
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
@@ -153,7 +164,7 @@ class SoldToCountryListControllerSpec extends SpecBase with MockitoSugar {
 
       running(application) {
         val request =
-          FakeRequest(POST, soldToCountryListRoute)
+          FakeRequest(POST, soldToCountryPostRoute)
             .withFormUrlEncodedBody(("value", "true"))
 
         val result = route(application, request).value
@@ -172,7 +183,7 @@ class SoldToCountryListControllerSpec extends SpecBase with MockitoSugar {
       running(application) {
 
         val request =
-          FakeRequest(POST, soldToCountryListRoute)
+          FakeRequest(POST, soldToCountryPostRoute)
             .withFormUrlEncodedBody(("value", ""))
 
         val boundForm = form.bind(Map("value" -> ""))
@@ -222,7 +233,7 @@ class SoldToCountryListControllerSpec extends SpecBase with MockitoSugar {
 
       running(application) {
         val request =
-          FakeRequest(POST, soldToCountryListRoute)
+          FakeRequest(POST, soldToCountryPostRoute)
             .withFormUrlEncodedBody(("value", "true"))
 
         val result = route(application, request).value
