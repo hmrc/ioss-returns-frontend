@@ -18,7 +18,7 @@ package controllers.corrections
 
 import controllers.actions._
 import logging.Logging
-import models.Period
+import models.StandardPeriod
 import pages.Waypoints
 import pages.corrections.CorrectPreviousReturnPage
 import play.api.i18n.{I18nSupport, MessagesApi}
@@ -47,13 +47,13 @@ class NoOtherCorrectionPeriodsAvailableController @Inject()(
   def onSubmit(waypoints: Waypoints): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
 
-      val completedCorrectionPeriods: List[Period] = request.userAnswers.get(DeriveCompletedCorrectionPeriods).getOrElse(List.empty)
+      val completedCorrectionPeriods: List[StandardPeriod] = request.userAnswers.get(DeriveCompletedCorrectionPeriods).getOrElse(List.empty)
 
       if(completedCorrectionPeriods.isEmpty) {
         val cleanup = for {
           updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectPreviousReturnPage(0), false))
           _              <- cc.sessionRepository.set(updatedAnswers)
-        } yield Redirect(controllers.routes.CheckYourAnswersController.onPageLoad())
+        } yield Redirect(controllers.routes.CheckYourAnswersController.onPageLoad(waypoints))
 
         cleanup.onComplete {
           case Failure(exception) => logger.error(s"Could not perform cleanup: ${exception.getLocalizedMessage} ")
@@ -61,7 +61,7 @@ class NoOtherCorrectionPeriodsAvailableController @Inject()(
         }
         cleanup
       } else {
-        Future.successful(Redirect(controllers.routes.CheckYourAnswersController.onPageLoad()))
+        Future.successful(Redirect(controllers.routes.CheckYourAnswersController.onPageLoad(waypoints)))
       }
 
   }
