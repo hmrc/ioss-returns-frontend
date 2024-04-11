@@ -67,7 +67,12 @@ class VatRatesFromCountryController @Inject()(
             case 0 =>
               Redirect(CheckSalesPage(countryIndex).route(waypoints)).toFuture
             case 1 =>
-              Redirect(RemainingVatRateFromCountryPage(countryIndex, nextVatRateIndex).route(waypoints)).toFuture
+              answers match {
+                case Some(_) =>
+                  Redirect(RemainingVatRateFromCountryPage(countryIndex, nextVatRateIndex).route(waypoints)).toFuture
+                case _ =>
+                  addVatRateAndRedirect(currentVatRatesAnswers, remainingVatRates.toList, countryIndex, nextVatRateIndex, waypoints)
+              }
             case _ =>
               Ok(view(preparedForm, waypoints, period, countryIndex, country, utils.ItemsHelper.checkboxItems(remainingVatRates))).toFuture
           }
