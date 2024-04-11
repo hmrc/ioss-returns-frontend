@@ -31,7 +31,7 @@ case class VatPayableForCountryPage(periodIndex: Index, countryIndex: Index) ext
     nextPageNormalMode(waypoints, answers)
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
     answers.get(VatPayableForCountryPage(periodIndex, countryIndex)) match {
-      case Some(true) => CorrectionListCountriesPage(periodIndex)
+      case Some(true) => CheckVatPayableAmountPage(periodIndex, countryIndex)
       case Some(false) => VatAmountCorrectionCountryPage(periodIndex, countryIndex)
 
       case _ => JourneyRecoveryPage

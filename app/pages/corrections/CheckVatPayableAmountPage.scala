@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
-package config
+package pages.corrections
 
-object Constants {
+import models.Index
+import pages.{Page, Waypoints}
+import play.api.mvc.Call
 
-    val maxCurrencyAmount: BigDecimal = 1000000000
-    val minCurrencyAmount: BigDecimal = -1000000000
-    val correctionsPeriodsLimit: Int = 3
-    val periodYear: Int = 2023
+case class CheckVatPayableAmountPage(periodIndex: Index, countryIndex: Index) extends Page {
+
+  override def route(waypoints: Waypoints): Call =
+    controllers.corrections.routes.CheckVatPayableAmountController.onPageLoad(waypoints, periodIndex, countryIndex)
 
 }
