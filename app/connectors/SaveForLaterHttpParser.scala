@@ -20,7 +20,6 @@ import logging.Logging
 import models._
 import play.api.http.Status._
 import play.api.libs.json._
-import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 
 import java.time.Instant
@@ -79,7 +78,7 @@ object SaveForLaterHttpParser extends Logging {
 }
 
 case class SavedUserAnswers(
-                             vrn: Vrn,
+                             iossNumber: String,
                              period: Period,
                              data: JsObject,
                              lastUpdated: Instant
