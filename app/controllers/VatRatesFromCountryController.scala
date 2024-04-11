@@ -20,7 +20,7 @@ import controllers.actions._
 import forms.VatRatesFromCountryFormProvider
 import models.requests.DataRequest
 import models.{Index, VatRateFromCountry}
-import pages.{CheckSalesPage, VatRatesFromCountryPage, Waypoints}
+import pages.{CheckSalesPage, RemainingVatRateFromCountryPage, VatRatesFromCountryPage, Waypoints}
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
@@ -67,7 +67,7 @@ class VatRatesFromCountryController @Inject()(
             case 0 =>
               Redirect(CheckSalesPage(countryIndex).route(waypoints)).toFuture
             case 1 =>
-              addVatRateAndRedirect(currentVatRatesAnswers, remainingVatRates.toList, countryIndex, nextVatRateIndex, waypoints)
+              Redirect(RemainingVatRateFromCountryPage(countryIndex, nextVatRateIndex).route(waypoints)).toFuture
             case _ =>
               Ok(view(preparedForm, waypoints, period, countryIndex, country, utils.ItemsHelper.checkboxItems(remainingVatRates))).toFuture
           }

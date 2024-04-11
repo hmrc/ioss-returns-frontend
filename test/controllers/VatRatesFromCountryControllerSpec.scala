@@ -81,11 +81,7 @@ class VatRatesFromCountryControllerSpec extends SpecBase with MockitoSugar with 
 
         status(result) mustBe SEE_OTHER
 
-        val expectedAnswers = userAnswersWithCountry
-          .set(VatRatesFromCountryPage(index, index. +(2)), vatRatesFromCountry ++ remainingVatRateForCountry).success.value
-
-        redirectLocation(result).value mustBe VatRatesFromCountryPage(index, index. +(2)).navigate(waypoints, userAnswersWithCountry, expectedAnswers).url
-        verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
+        redirectLocation(result).value mustBe routes.RemainingVatRateFromCountryController.onPageLoad(waypoints, index, index. +(2)).url
       }
     }
 
