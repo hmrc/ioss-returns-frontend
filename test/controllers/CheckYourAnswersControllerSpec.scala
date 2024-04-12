@@ -187,7 +187,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
               rows = Seq(
                 BusinessNameSummary.row(registrationWrapper),
                 BusinessVRNSummary.row(vrn),
-                ReturnPeriodSummary.row(userAnswersWithCorrections, waypoints)
+                ReturnPeriodSummary.row(userAnswersWithCorrections, waypoints, Some(period))
               ).flatten
             ).withCssClass("govuk-summary-card govuk-summary-card__content govuk-!-display-block width-auto")
 

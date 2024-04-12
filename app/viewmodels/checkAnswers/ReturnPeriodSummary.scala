@@ -16,7 +16,7 @@
 
 package viewmodels.checkAnswers
 
-import models.UserAnswers
+import models.{Period, UserAnswers}
 import pages.Waypoints
 import play.api.i18n.Messages
 import play.twirl.api.HtmlFormat
@@ -26,10 +26,19 @@ import viewmodels.implicits._
 
 object ReturnPeriodSummary {
 
-  def row(userAnswers: UserAnswers, waypoints: Waypoints)(implicit messages: Messages): Option[SummaryListRow] = {
-    Some(SummaryListRowViewModel(
-      key = "checkYourAnswers.label.returnPeriod",
-      value = ValueViewModel(HtmlFormat.escape(userAnswers.period.displayText).toString).withCssClass("govuk-table__cell--numeric govuk-!-padding-right-0"),
-      ))
+  def row(userAnswers: UserAnswers, waypoints: Waypoints, maybePartialPeriod: Option[Period])(implicit messages: Messages): Option[SummaryListRow] = {
+    maybePartialPeriod.map {
+      period =>
+        val value = if (period.isPartial) {
+          period.displayToAndFromText
+        } else {
+          period.displayText
+        }
+        SummaryListRowViewModel(
+          key = "checkYourAnswers.label.returnPeriod",
+          value = ValueViewModel(HtmlFormat.escape(value).toString).withCssClass("govuk-table__cell--numeric govuk-!-padding-right-0"),
+        )
+    }
+
   }
 }

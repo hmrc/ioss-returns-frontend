@@ -33,6 +33,7 @@ import services._
 import uk.gov.hmrc.govukfrontend.views.Aliases.Card
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{CardTitle, SummaryList}
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax.FutureOps
 import viewmodels.checkAnswers._
@@ -53,52 +54,57 @@ class CheckYourAnswersController @Inject()(
                                             periodService: PeriodService,
                                             view: CheckYourAnswersView,
                                             saveForLaterConnector: SaveForLaterConnector,
+                                            partialReturnPeriodService: PartialReturnPeriodService,
                                             redirectService: RedirectService
                                           )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndRequireData() {
+  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
 
       val period = request.userAnswers.period
 
       val errors: List[ValidationError] = redirectService.validate(period)
 
-      val businessSummaryList = getBusinessSummaryList(request, waypoints)
+      val businessSummaryListFuture = getBusinessSummaryList(request, waypoints)
 
-      val salesFromEuSummaryList = getSalesFromEuSummaryList(request, waypoints)
+      val salesFromEuSummaryListFuture = getSalesFromEuSummaryList(request, waypoints)
 
-      val containsCorrections = request.userAnswers.get(AllCorrectionPeriodsQuery).isDefined
+      for {
+        businessSummaryList <- businessSummaryListFuture
+        summaryLists = getAllSummaryLists(request, businessSummaryList, salesFromEuSummaryListFuture, waypoints)
+      } yield {
 
-      val (noPaymentDueCountries, totalVatToCountries) = salesAtVatRateService.getVatOwedToCountries(request.userAnswers).partition(vat => vat.totalVat <= 0)
+        val containsCorrections = request.userAnswers.get(AllCorrectionPeriodsQuery).isDefined
 
-      val totalVatOnSales = salesAtVatRateService.getTotalVatOwedAfterCorrections(request.userAnswers)
+        val (noPaymentDueCountries, totalVatToCountries) = salesAtVatRateService.getVatOwedToCountries(request.userAnswers).partition(vat => vat.totalVat <= 0)
 
-      val summaryLists = getAllSummaryLists(request, businessSummaryList, salesFromEuSummaryList, waypoints)
+        val totalVatOnSales = salesAtVatRateService.getTotalVatOwedAfterCorrections(request.userAnswers)
 
-      val maybeExclusion: Option[EtmpExclusion] = request.registrationWrapper.registration.exclusions.lastOption
+        val maybeExclusion: Option[EtmpExclusion] = request.registrationWrapper.registration.exclusions.lastOption
 
-      val nextPeriodString = periodService.getNextPeriod(period).displayYearMonth
+        val nextPeriodString = periodService.getNextPeriod(period).displayYearMonth
 
-      val nextPeriod: LocalDate = LocalDate.parse(nextPeriodString, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+        val nextPeriod: LocalDate = LocalDate.parse(nextPeriodString, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
 
-      val isFinalReturn = maybeExclusion.fold(false) { exclusions =>
-        nextPeriod.isAfter(exclusions.effectiveDate)
+        val isFinalReturn = maybeExclusion.fold(false) { exclusions =>
+          nextPeriod.isAfter(exclusions.effectiveDate)
+        }
+
+        Ok(view(
+          waypoints,
+          summaryLists,
+          request.userAnswers.period,
+          totalVatToCountries,
+          totalVatOnSales,
+          noPaymentDueSummaryList = CorrectionNoPaymentDueSummary.row(noPaymentDueCountries),
+          containsCorrections,
+          errors.map(_.errorMessage),
+          maybeExclusion,
+          isFinalReturn
+        ))
       }
-
-      Ok(view(
-        waypoints,
-        summaryLists,
-        request.userAnswers.period,
-        totalVatToCountries,
-        totalVatOnSales,
-        noPaymentDueSummaryList = CorrectionNoPaymentDueSummary.row(noPaymentDueCountries),
-        containsCorrections,
-        errors.map(_.errorMessage),
-        maybeExclusion,
-        isFinalReturn
-      ))
   }
 
   def onSubmit(waypoints: Waypoints, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndRequireData().async {
@@ -128,7 +134,7 @@ class CheckYourAnswersController @Inject()(
             case e: Exception =>
               logger.error(s"Error while submitting VAT return ${e.getMessage}", e)
               auditService.audit(ReturnsAuditModel.build(userAnswers, SubmissionResult.Failure))
-              saveUserAnswersOnCoreError(controllers.submissionResults.routes.ReturnSubmissionFailureController.onPageLoad)
+              saveUserAnswersOnCoreError(controllers.submissionResults.routes.ReturnSubmissionFailureController.onPageLoad())
           }
       }
   }
@@ -178,14 +184,23 @@ class CheckYourAnswersController @Inject()(
     )
   }
 
-  private def getBusinessSummaryList(request: DataRequest[AnyContent], waypoints: Waypoints)(implicit messages: Messages) = {
-    SummaryListViewModel(
-      rows = Seq(
+  private def getBusinessSummaryList(request: DataRequest[AnyContent], waypoints: Waypoints)(implicit hc: HeaderCarrier, messages: Messages) = {
+
+    val maybePartialReturnPeriod = partialReturnPeriodService.getPartialReturnPeriod(
+      request.registrationWrapper,
+      request.userAnswers.period
+    )
+
+    val summaryListFuture = maybePartialReturnPeriod.map { maybePartialReturnPeriod =>
+      val period = maybePartialReturnPeriod.getOrElse(request.userAnswers.period)
+      val rows = Seq(
         BusinessNameSummary.row(request.registrationWrapper),
         BusinessVRNSummary.row(request.vrn),
-        ReturnPeriodSummary.row(request.userAnswers, waypoints)
+        ReturnPeriodSummary.row(request.userAnswers, waypoints, Some(period))
       ).flatten
-    ).withCssClass("govuk-summary-card govuk-summary-card__content govuk-!-display-block width-auto")
+      SummaryListViewModel(rows).withCssClass("govuk-summary-card govuk-summary-card__content govuk-!-display-block width-auto")
+    }
+    summaryListFuture
   }
 
   private def saveUserAnswersOnCoreError(redirectLocation: Call)(implicit request: DataRequest[AnyContent]): Future[Result] =

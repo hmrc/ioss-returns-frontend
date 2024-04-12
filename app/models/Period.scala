@@ -35,6 +35,7 @@ trait Period {
   val lastDay: LocalDate
   val isPartial: Boolean
 
+  private val firstDayFormatter = DateTimeFormatter.ofPattern("d")
   private val lastDayFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy")
   private val lastMonthYearFormatter = DateTimeFormatter.ofPattern("MMMM yyyy")
 
@@ -76,6 +77,9 @@ trait Period {
 
   def displayPartialPeriodStartDayText: String =
     s"${firstDay.format(lastDayFormatter)}"
+
+  def displayToAndFromText: String =
+    s"${firstDay.format(firstDayFormatter)} to ${lastDay.format(lastDayFormatter)}"
 
   override def toString: String = s"$year-M${month.getValue}"
 
