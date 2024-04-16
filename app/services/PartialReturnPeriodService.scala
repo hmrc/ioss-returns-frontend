@@ -112,7 +112,7 @@ class PartialReturnPeriodService @Inject()(
 
   private def isFirstPeriod(periods: Seq[PeriodWithStatus], checkDate: LocalDate): Boolean = {
     val firstUnsubmittedPeriod = periods.filter { period =>
-      Seq(SubmissionStatus.Next, SubmissionStatus.Due, SubmissionStatus.Overdue).contains(period.status)
+      Seq(SubmissionStatus.Next, SubmissionStatus.Due, SubmissionStatus.Overdue, SubmissionStatus.Complete).contains(period.status)
     }.head
 
     isWithinPeriod(firstUnsubmittedPeriod.period, checkDate)

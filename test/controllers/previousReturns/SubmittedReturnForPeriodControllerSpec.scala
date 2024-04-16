@@ -23,7 +23,7 @@ import models.financialdata.Charge
 import models.requests.OptionalDataRequest
 import models.{RegistrationWrapper, StandardPeriod, UnexpectedResponseStatus}
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito
+import org.mockito.{ArgumentMatchers, Mockito}
 import org.mockito.Mockito.when
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.{BeforeAndAfterEach, PrivateMethodTester}
@@ -33,7 +33,7 @@ import play.api.i18n.Messages
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import services.PreviousRegistrationService
+import services.{PartialReturnPeriodService, PreviousRegistrationService}
 import testUtils.EtmpVatReturnData.etmpVatReturn
 import testUtils.PreviousRegistrationData.previousRegistrations
 import testUtils.RegistrationData.etmpDisplayRegistration
@@ -45,6 +45,7 @@ import viewmodels.previousReturns._
 import views.html.previousReturns.SubmittedReturnForPeriodView
 
 import java.time.{LocalDate, LocalDateTime}
+import scala.concurrent.Future
 
 class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfterEach with PrivateMethodTester {
 
@@ -54,11 +55,13 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
   private val mockVatReturnConnector: VatReturnConnector = mock[VatReturnConnector]
   private val mockFinancialDataConnector: FinancialDataConnector = mock[FinancialDataConnector]
   private val mockPreviousRegistrationService: PreviousRegistrationService = mock[PreviousRegistrationService]
+  private val mockPartialReturnPeriodService: PartialReturnPeriodService = mock[PartialReturnPeriodService]
 
   override def beforeEach(): Unit = {
     Mockito.reset(mockVatReturnConnector)
     Mockito.reset(mockFinancialDataConnector)
     Mockito.reset(mockPreviousRegistrationService)
+    Mockito.reset(mockPartialReturnPeriodService)
   }
 
   "SubmittedReturnForPeriod Controller" - {
@@ -71,11 +74,17 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
             .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
             .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
+            .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
             .build()
 
           running(application) {
             when(mockVatReturnConnector.get(any())(any())) thenReturn Right(vatReturn).toFuture
             when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Right(Some(charge)).toFuture
+            when(mockPartialReturnPeriodService.getPartialReturnPeriod(
+              ArgumentMatchers.eq(registrationWrapper),
+              ArgumentMatchers.eq(period)
+            )(any()))
+              .thenReturn(Future.successful(None))
 
             implicit val msgs: Messages = messages(application)
 
@@ -137,7 +146,8 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 outstandingAmount,
                 vatDeclared,
                 displayPayNow = vatDeclared > 0 && outstandingAmount > 0,
-                returnIsExcludedAndOutstandingAmount = false
+                returnIsExcludedAndOutstandingAmount = false,
+                maybePartialReturnPeriod = None
               )(request, messages(application)).toString
           }
         }
@@ -149,11 +159,17 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
             .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
             .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
+            .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
             .build()
 
           running(application) {
             when(mockVatReturnConnector.get(any())(any())) thenReturn Right(vatReturnNoCorrections).toFuture
             when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Right(Some(charge)).toFuture
+            when(mockPartialReturnPeriodService.getPartialReturnPeriod(
+              ArgumentMatchers.eq(registrationWrapper),
+              ArgumentMatchers.eq(period)
+            )(any()))
+              .thenReturn(Future.successful(None))
 
             implicit val msgs: Messages = messages(application)
 
@@ -215,7 +231,8 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 outstandingAmount,
                 vatDeclared,
                 displayPayNow = vatDeclared > 0 && outstandingAmount > 0,
-                returnIsExcludedAndOutstandingAmount = false
+                returnIsExcludedAndOutstandingAmount = false,
+                maybePartialReturnPeriod = None
               )(request, messages(application)).toString
           }
         }
@@ -236,11 +253,17 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
             .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
             .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
+            .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
             .build()
 
           running(application) {
             when(mockVatReturnConnector.get(any())(any())) thenReturn Right(vatReturnPositiveCorrections).toFuture
             when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Right(Some(charge)).toFuture
+            when(mockPartialReturnPeriodService.getPartialReturnPeriod(
+              ArgumentMatchers.eq(registrationWrapper),
+              ArgumentMatchers.eq(period)
+            )(any()))
+              .thenReturn(Future.successful(None))
 
             implicit val msgs: Messages = messages(application)
 
@@ -302,7 +325,8 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 outstandingAmount,
                 vatDeclared,
                 displayPayNow = vatDeclared > 0 && outstandingAmount > 0,
-                returnIsExcludedAndOutstandingAmount = false
+                returnIsExcludedAndOutstandingAmount = false,
+                maybePartialReturnPeriod = None
               )(request, messages(application)).toString
           }
         }
@@ -330,11 +354,17 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
             .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
             .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
+            .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
             .build()
 
           running(application) {
             when(mockVatReturnConnector.get(any())(any())) thenReturn Right(nilEtmpVatReturn).toFuture
             when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Right(None).toFuture
+            when(mockPartialReturnPeriodService.getPartialReturnPeriod(
+              ArgumentMatchers.eq(registrationWrapper),
+              ArgumentMatchers.eq(period)
+            )(any()))
+              .thenReturn(Future.successful(None))
 
             implicit val msgs: Messages = messages(application)
 
@@ -396,7 +426,8 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 outstandingAmount,
                 vatDeclared,
                 displayPayNow = vatDeclared > 0 && outstandingAmount > 0,
-                returnIsExcludedAndOutstandingAmount = false
+                returnIsExcludedAndOutstandingAmount = false,
+                maybePartialReturnPeriod = None
               )(request, messages(application)).toString
           }
         }
@@ -406,11 +437,17 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
             .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
             .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
+            .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
             .build()
 
           running(application) {
             when(mockVatReturnConnector.get(any())(any())) thenReturn Right(vatReturn).toFuture
             when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "")).toFuture
+            when(mockPartialReturnPeriodService.getPartialReturnPeriod(
+              ArgumentMatchers.eq(registrationWrapper),
+              ArgumentMatchers.eq(period)
+            )(any()))
+              .thenReturn(Future.successful(None))
 
             implicit val msgs: Messages = messages(application)
 
@@ -472,7 +509,8 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 outstandingAmount,
                 vatDeclared,
                 displayPayNow = vatDeclared > 0 && outstandingAmount > 0,
-                returnIsExcludedAndOutstandingAmount = false
+                returnIsExcludedAndOutstandingAmount = false,
+                maybePartialReturnPeriod = None
               )(request, messages(application)).toString
           }
         }
@@ -581,7 +619,8 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                   outstandingAmount,
                   vatDeclared,
                   displayPayNow = false,
-                  returnIsExcludedAndOutstandingAmount = false
+                  returnIsExcludedAndOutstandingAmount = false,
+                  maybePartialReturnPeriod = None
                 )(request, messages(application)).toString
             }
           }
@@ -689,7 +728,8 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                   outstandingAmount,
                   vatDeclared,
                   displayPayNow = false,
-                  returnIsExcludedAndOutstandingAmount = true
+                  returnIsExcludedAndOutstandingAmount = true,
+                  maybePartialReturnPeriod = None
                 )(request, messages(application)).toString
             }
           }
@@ -701,11 +741,17 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
           .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
           .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
+          .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
           .build()
 
         running(application) {
           when(mockVatReturnConnector.get(any())(any())) thenReturn Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "")).toFuture
           when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Right(Some(charge)).toFuture
+          when(mockPartialReturnPeriodService.getPartialReturnPeriod(
+            ArgumentMatchers.eq(registrationWrapper),
+            ArgumentMatchers.eq(period)
+          )(any()))
+            .thenReturn(Future.successful(None))
 
           val request = FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoad(waypoints, period).url)
 
@@ -727,12 +773,18 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
             .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
             .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
+            .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
             .build()
 
           running(application) {
             when(mockVatReturnConnector.getForIossNumber(any(), any())(any())) thenReturn Right(vatReturn).toFuture
             when(mockFinancialDataConnector.getChargeForIossNumber(any(), any())(any())) thenReturn Right(Some(charge)).toFuture
             when(mockPreviousRegistrationService.getPreviousRegistrations()(any())) thenReturn previousRegistrations.toFuture
+            when(mockPartialReturnPeriodService.getPartialReturnPeriod(
+              ArgumentMatchers.eq(registrationWrapper),
+              ArgumentMatchers.eq(period)
+            )(any()))
+              .thenReturn(Future.successful(None))
 
             implicit val msgs: Messages = messages(application)
 
@@ -794,7 +846,8 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 outstandingAmount,
                 vatDeclared,
                 displayPayNow = vatDeclared > 0 && outstandingAmount > 0,
-                returnIsExcludedAndOutstandingAmount = false
+                returnIsExcludedAndOutstandingAmount = false,
+                maybePartialReturnPeriod = None
               )(request, messages(application)).toString
           }
         }
@@ -807,12 +860,18 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
             .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
             .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
+            .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
             .build()
 
           running(application) {
             when(mockVatReturnConnector.getForIossNumber(any(), any())(any())) thenReturn Right(vatReturnNoCorrections).toFuture
             when(mockFinancialDataConnector.getChargeForIossNumber(any(), any())(any())) thenReturn Right(Some(charge)).toFuture
             when(mockPreviousRegistrationService.getPreviousRegistrations()(any())) thenReturn previousRegistrations.toFuture
+            when(mockPartialReturnPeriodService.getPartialReturnPeriod(
+              ArgumentMatchers.eq(registrationWrapper),
+              ArgumentMatchers.eq(period)
+            )(any()))
+              .thenReturn(Future.successful(None))
 
             implicit val msgs: Messages = messages(application)
 
@@ -874,7 +933,8 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 outstandingAmount,
                 vatDeclared,
                 displayPayNow = vatDeclared > 0 && outstandingAmount > 0,
-                returnIsExcludedAndOutstandingAmount = false
+                returnIsExcludedAndOutstandingAmount = false,
+                maybePartialReturnPeriod = None
               )(request, messages(application)).toString
           }
         }
@@ -896,12 +956,18 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
             .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
             .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
+            .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
             .build()
 
           running(application) {
             when(mockVatReturnConnector.getForIossNumber(any(), any())(any())) thenReturn Right(vatReturnPositiveCorrections).toFuture
             when(mockFinancialDataConnector.getChargeForIossNumber(any(), any())(any())) thenReturn Right(Some(charge)).toFuture
             when(mockPreviousRegistrationService.getPreviousRegistrations()(any())) thenReturn previousRegistrations.toFuture
+            when(mockPartialReturnPeriodService.getPartialReturnPeriod(
+              ArgumentMatchers.eq(registrationWrapper),
+              ArgumentMatchers.eq(period)
+            )(any()))
+              .thenReturn(Future.successful(None))
 
             implicit val msgs: Messages = messages(application)
 
@@ -963,7 +1029,8 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 outstandingAmount,
                 vatDeclared,
                 displayPayNow = vatDeclared > 0 && outstandingAmount > 0,
-                returnIsExcludedAndOutstandingAmount = false
+                returnIsExcludedAndOutstandingAmount = false,
+                maybePartialReturnPeriod = None
               )(request, messages(application)).toString
           }
         }
@@ -992,12 +1059,18 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
             .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
             .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
+            .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
             .build()
 
           running(application) {
             when(mockVatReturnConnector.getForIossNumber(any(), any())(any())) thenReturn Right(nilEtmpVatReturn).toFuture
             when(mockFinancialDataConnector.getChargeForIossNumber(any(), any())(any())) thenReturn Right(None).toFuture
             when(mockPreviousRegistrationService.getPreviousRegistrations()(any())) thenReturn previousRegistrations.toFuture
+            when(mockPartialReturnPeriodService.getPartialReturnPeriod(
+              ArgumentMatchers.eq(registrationWrapper),
+              ArgumentMatchers.eq(period)
+            )(any()))
+              .thenReturn(Future.successful(None))
 
             implicit val msgs: Messages = messages(application)
 
@@ -1059,7 +1132,8 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 outstandingAmount,
                 vatDeclared,
                 displayPayNow = vatDeclared > 0 && outstandingAmount > 0,
-                returnIsExcludedAndOutstandingAmount = false
+                returnIsExcludedAndOutstandingAmount = false,
+                maybePartialReturnPeriod = None
               )(request, messages(application)).toString
           }
         }
@@ -1070,6 +1144,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
             .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
             .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
+            .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
             .build()
 
           running(application) {
@@ -1077,6 +1152,11 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             when(mockFinancialDataConnector.getChargeForIossNumber(any(), any())(any())) thenReturn
               Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "")).toFuture
             when(mockPreviousRegistrationService.getPreviousRegistrations()(any())) thenReturn previousRegistrations.toFuture
+            when(mockPartialReturnPeriodService.getPartialReturnPeriod(
+              ArgumentMatchers.eq(registrationWrapper),
+              ArgumentMatchers.eq(period)
+            )(any()))
+              .thenReturn(Future.successful(None))
 
             implicit val msgs: Messages = messages(application)
 
@@ -1138,7 +1218,8 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 outstandingAmount,
                 vatDeclared,
                 displayPayNow = vatDeclared > 0 && outstandingAmount > 0,
-                returnIsExcludedAndOutstandingAmount = false
+                returnIsExcludedAndOutstandingAmount = false,
+                maybePartialReturnPeriod = None
               )(request, messages(application)).toString
           }
         }
@@ -1249,7 +1330,8 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                   outstandingAmount,
                   vatDeclared,
                   displayPayNow = false,
-                  returnIsExcludedAndOutstandingAmount = false
+                  returnIsExcludedAndOutstandingAmount = false,
+                  maybePartialReturnPeriod = None
                 )(request, messages(application)).toString
             }
           }
@@ -1359,7 +1441,8 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                   outstandingAmount,
                   vatDeclared,
                   displayPayNow = false,
-                  returnIsExcludedAndOutstandingAmount = true
+                  returnIsExcludedAndOutstandingAmount = true,
+                  maybePartialReturnPeriod = None
                 )(request, messages(application)).toString
             }
           }
