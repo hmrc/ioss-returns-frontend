@@ -27,7 +27,7 @@ import models.requests.OptionalDataRequest
 import pages.{JourneyRecoveryPage, Waypoints}
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
-import services.{PartialReturnPeriodService, PreviousRegistrationService}
+import services.{CompletedPartialReturnPeriodService, PreviousRegistrationService}
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{Card, CardTitle, SummaryList, SummaryListRow}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -47,7 +47,7 @@ class SubmittedReturnForPeriodController @Inject()(
                                                     vatReturnConnector: VatReturnConnector,
                                                     financialDataConnector: FinancialDataConnector,
                                                     previousRegistrationService: PreviousRegistrationService,
-                                                    partialReturnPeriodService: PartialReturnPeriodService,
+                                                    partialReturnPeriodService: CompletedPartialReturnPeriodService,
                                                     view: SubmittedReturnForPeriodView
                                                   )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
@@ -55,7 +55,7 @@ class SubmittedReturnForPeriodController @Inject()(
 
   def onPageLoad(waypoints: Waypoints, period: Period): Action[AnyContent] = cc.authAndGetOptionalData().async { implicit request =>
     (for {
-      maybePartialReturnPeriod <- partialReturnPeriodService.getPartialReturnPeriod(request.registrationWrapper, period)
+      maybePartialReturnPeriod <- partialReturnPeriodService.getCompletedPartialReturnPeriod(request.registrationWrapper, period)
       settingPeriod = maybePartialReturnPeriod.getOrElse(period)
       etmpVatReturnResponse <- vatReturnConnector.get(settingPeriod)
       chargeResponse <- financialDataConnector.getCharge(settingPeriod)
@@ -96,7 +96,7 @@ class SubmittedReturnForPeriodController @Inject()(
 
         val returnIsExcludedAndOutstandingAmount = currentReturnExcluded && (etmpVatReturn.totalVATAmountDueForAllMSGBP > 0 && outstanding > 0)
 
-        partialReturnPeriodService.getPartialReturnPeriod(request.registrationWrapper, period).map { maybePartialReturnPeriod =>
+        partialReturnPeriodService.getCompletedPartialReturnPeriod(request.registrationWrapper, period).map { maybePartialReturnPeriod =>
           Ok(view(
             waypoints = waypoints,
             period = period,

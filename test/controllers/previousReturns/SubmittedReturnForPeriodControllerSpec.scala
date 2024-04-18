@@ -33,7 +33,7 @@ import play.api.i18n.Messages
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import services.{PartialReturnPeriodService, PreviousRegistrationService}
+import services.{CompletedPartialReturnPeriodService, PreviousRegistrationService}
 import testUtils.EtmpVatReturnData.etmpVatReturn
 import testUtils.PreviousRegistrationData.previousRegistrations
 import testUtils.RegistrationData.etmpDisplayRegistration
@@ -55,7 +55,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
   private val mockVatReturnConnector: VatReturnConnector = mock[VatReturnConnector]
   private val mockFinancialDataConnector: FinancialDataConnector = mock[FinancialDataConnector]
   private val mockPreviousRegistrationService: PreviousRegistrationService = mock[PreviousRegistrationService]
-  private val mockPartialReturnPeriodService: PartialReturnPeriodService = mock[PartialReturnPeriodService]
+  private val mockPartialReturnPeriodService: CompletedPartialReturnPeriodService = mock[CompletedPartialReturnPeriodService]
 
   override def beforeEach(): Unit = {
     Mockito.reset(mockVatReturnConnector)
@@ -74,13 +74,13 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
             .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
             .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
-            .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
+            .overrides(bind[CompletedPartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
             .build()
 
           running(application) {
             when(mockVatReturnConnector.get(any())(any())) thenReturn Right(vatReturn).toFuture
             when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Right(Some(charge)).toFuture
-            when(mockPartialReturnPeriodService.getPartialReturnPeriod(
+            when(mockPartialReturnPeriodService.getCompletedPartialReturnPeriod(
               ArgumentMatchers.eq(registrationWrapper),
               ArgumentMatchers.eq(period)
             )(any()))
@@ -159,13 +159,13 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
             .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
             .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
-            .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
+            .overrides(bind[CompletedPartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
             .build()
 
           running(application) {
             when(mockVatReturnConnector.get(any())(any())) thenReturn Right(vatReturnNoCorrections).toFuture
             when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Right(Some(charge)).toFuture
-            when(mockPartialReturnPeriodService.getPartialReturnPeriod(
+            when(mockPartialReturnPeriodService.getCompletedPartialReturnPeriod(
               ArgumentMatchers.eq(registrationWrapper),
               ArgumentMatchers.eq(period)
             )(any()))
@@ -253,13 +253,13 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
             .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
             .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
-            .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
+            .overrides(bind[CompletedPartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
             .build()
 
           running(application) {
             when(mockVatReturnConnector.get(any())(any())) thenReturn Right(vatReturnPositiveCorrections).toFuture
             when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Right(Some(charge)).toFuture
-            when(mockPartialReturnPeriodService.getPartialReturnPeriod(
+            when(mockPartialReturnPeriodService.getCompletedPartialReturnPeriod(
               ArgumentMatchers.eq(registrationWrapper),
               ArgumentMatchers.eq(period)
             )(any()))
@@ -354,13 +354,13 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
             .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
             .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
-            .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
+            .overrides(bind[CompletedPartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
             .build()
 
           running(application) {
             when(mockVatReturnConnector.get(any())(any())) thenReturn Right(nilEtmpVatReturn).toFuture
             when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Right(None).toFuture
-            when(mockPartialReturnPeriodService.getPartialReturnPeriod(
+            when(mockPartialReturnPeriodService.getCompletedPartialReturnPeriod(
               ArgumentMatchers.eq(registrationWrapper),
               ArgumentMatchers.eq(period)
             )(any()))
@@ -437,13 +437,13 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
             .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
             .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
-            .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
+            .overrides(bind[CompletedPartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
             .build()
 
           running(application) {
             when(mockVatReturnConnector.get(any())(any())) thenReturn Right(vatReturn).toFuture
             when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "")).toFuture
-            when(mockPartialReturnPeriodService.getPartialReturnPeriod(
+            when(mockPartialReturnPeriodService.getCompletedPartialReturnPeriod(
               ArgumentMatchers.eq(registrationWrapper),
               ArgumentMatchers.eq(period)
             )(any()))
@@ -741,13 +741,13 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
           .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
           .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
-          .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
+          .overrides(bind[CompletedPartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
           .build()
 
         running(application) {
           when(mockVatReturnConnector.get(any())(any())) thenReturn Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "")).toFuture
           when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Right(Some(charge)).toFuture
-          when(mockPartialReturnPeriodService.getPartialReturnPeriod(
+          when(mockPartialReturnPeriodService.getCompletedPartialReturnPeriod(
             ArgumentMatchers.eq(registrationWrapper),
             ArgumentMatchers.eq(period)
           )(any()))
@@ -773,14 +773,14 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
             .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
             .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
-            .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
+            .overrides(bind[CompletedPartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
             .build()
 
           running(application) {
             when(mockVatReturnConnector.getForIossNumber(any(), any())(any())) thenReturn Right(vatReturn).toFuture
             when(mockFinancialDataConnector.getChargeForIossNumber(any(), any())(any())) thenReturn Right(Some(charge)).toFuture
             when(mockPreviousRegistrationService.getPreviousRegistrations()(any())) thenReturn previousRegistrations.toFuture
-            when(mockPartialReturnPeriodService.getPartialReturnPeriod(
+            when(mockPartialReturnPeriodService.getCompletedPartialReturnPeriod(
               ArgumentMatchers.eq(registrationWrapper),
               ArgumentMatchers.eq(period)
             )(any()))
@@ -860,14 +860,14 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
             .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
             .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
-            .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
+            .overrides(bind[CompletedPartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
             .build()
 
           running(application) {
             when(mockVatReturnConnector.getForIossNumber(any(), any())(any())) thenReturn Right(vatReturnNoCorrections).toFuture
             when(mockFinancialDataConnector.getChargeForIossNumber(any(), any())(any())) thenReturn Right(Some(charge)).toFuture
             when(mockPreviousRegistrationService.getPreviousRegistrations()(any())) thenReturn previousRegistrations.toFuture
-            when(mockPartialReturnPeriodService.getPartialReturnPeriod(
+            when(mockPartialReturnPeriodService.getCompletedPartialReturnPeriod(
               ArgumentMatchers.eq(registrationWrapper),
               ArgumentMatchers.eq(period)
             )(any()))
@@ -956,14 +956,14 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
             .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
             .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
-            .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
+            .overrides(bind[CompletedPartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
             .build()
 
           running(application) {
             when(mockVatReturnConnector.getForIossNumber(any(), any())(any())) thenReturn Right(vatReturnPositiveCorrections).toFuture
             when(mockFinancialDataConnector.getChargeForIossNumber(any(), any())(any())) thenReturn Right(Some(charge)).toFuture
             when(mockPreviousRegistrationService.getPreviousRegistrations()(any())) thenReturn previousRegistrations.toFuture
-            when(mockPartialReturnPeriodService.getPartialReturnPeriod(
+            when(mockPartialReturnPeriodService.getCompletedPartialReturnPeriod(
               ArgumentMatchers.eq(registrationWrapper),
               ArgumentMatchers.eq(period)
             )(any()))
@@ -1059,14 +1059,14 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
             .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
             .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
-            .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
+            .overrides(bind[CompletedPartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
             .build()
 
           running(application) {
             when(mockVatReturnConnector.getForIossNumber(any(), any())(any())) thenReturn Right(nilEtmpVatReturn).toFuture
             when(mockFinancialDataConnector.getChargeForIossNumber(any(), any())(any())) thenReturn Right(None).toFuture
             when(mockPreviousRegistrationService.getPreviousRegistrations()(any())) thenReturn previousRegistrations.toFuture
-            when(mockPartialReturnPeriodService.getPartialReturnPeriod(
+            when(mockPartialReturnPeriodService.getCompletedPartialReturnPeriod(
               ArgumentMatchers.eq(registrationWrapper),
               ArgumentMatchers.eq(period)
             )(any()))
@@ -1144,7 +1144,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
             .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
             .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
-            .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
+            .overrides(bind[CompletedPartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
             .build()
 
           running(application) {
@@ -1152,7 +1152,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             when(mockFinancialDataConnector.getChargeForIossNumber(any(), any())(any())) thenReturn
               Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "")).toFuture
             when(mockPreviousRegistrationService.getPreviousRegistrations()(any())) thenReturn previousRegistrations.toFuture
-            when(mockPartialReturnPeriodService.getPartialReturnPeriod(
+            when(mockPartialReturnPeriodService.getCompletedPartialReturnPeriod(
               ArgumentMatchers.eq(registrationWrapper),
               ArgumentMatchers.eq(period)
             )(any()))

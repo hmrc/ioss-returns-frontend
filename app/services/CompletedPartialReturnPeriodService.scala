@@ -16,12 +16,11 @@
 
 package services
 
-
 import connectors.ReturnStatusConnector
 import models.core.MatchType
-import models.etmp.{EtmpExclusion, EtmpExclusionReason, EtmpPreviousEuRegistrationDetails}
 import models.etmp.EtmpExclusionReason.TransferringMSID
 import models.etmp.SchemeType.{IOSSWithIntermediary, IOSSWithoutIntermediary}
+import models.etmp.{EtmpExclusion, EtmpExclusionReason, EtmpPreviousEuRegistrationDetails}
 import models.{PartialReturnPeriod, Period, PeriodWithStatus, RegistrationWrapper, StandardPeriod, SubmissionStatus}
 import services.core.CoreRegistrationValidationService
 import uk.gov.hmrc.http.HeaderCarrier
@@ -31,13 +30,12 @@ import java.time.LocalDate
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class PartialReturnPeriodService @Inject()(
+class CompletedPartialReturnPeriodService @Inject()(
                                             returnStatusConnector: ReturnStatusConnector,
                                             coreValidationService: CoreRegistrationValidationService,
-
                                           )(implicit ec: ExecutionContext) {
 
-  def getPartialReturnPeriod(
+  def getCompletedPartialReturnPeriod(
                               registrationWrapper: RegistrationWrapper,
                               period: Period
                             )(implicit hc: HeaderCarrier): Future[Option[PartialReturnPeriod]] = {
@@ -46,7 +44,7 @@ class PartialReturnPeriodService @Inject()(
 
     maybeExclusion match {
       case None =>
-        getMaybeFirstPartialReturnPeriod(registrationWrapper)
+        getMaybeCompletedFirstPartialReturnPeriod(registrationWrapper)
       case Some(excludedTrader) =>
         excludedTrader.exclusionReason match {
           case TransferringMSID =>
@@ -65,9 +63,9 @@ class PartialReturnPeriodService @Inject()(
     }
   }
 
-  private def getMaybeFirstPartialReturnPeriod(
-                                        registrationWrapper: RegistrationWrapper
-                                      )(implicit hc: HeaderCarrier): Future[Option[PartialReturnPeriod]] = {
+  private def getMaybeCompletedFirstPartialReturnPeriod(
+                                                registrationWrapper: RegistrationWrapper
+                                              )(implicit hc: HeaderCarrier): Future[Option[PartialReturnPeriod]] = {
 
     val commencementDateString = registrationWrapper.registration.schemeDetails.commencementDate
     val commencementDate = LocalDate.parse(commencementDateString.toString)
@@ -86,14 +84,14 @@ class PartialReturnPeriodService @Inject()(
               case Some(transferringMsidEffectiveFromDate) =>
                 val transferringMsidEffectiveLocalDate = LocalDate.parse(transferringMsidEffectiveFromDate)
                 returnStatusConnector.listStatuses(commencementDate).map {
-                  case Right(returnsPeriod) if isFirstPeriod(returnsPeriod, commencementDate) =>
+                  case Right(returnsPeriod) if isFirstSubmittedPeriod(returnsPeriod, commencementDate) =>
                     val firstReturnPeriod = returnsPeriod.head.period
                     if (isWithinPeriod(firstReturnPeriod, commencementDate)) {
                       Some(PartialReturnPeriod(
                         transferringMsidEffectiveLocalDate,
-                        firstReturnPeriod.lastDay,
-                        firstReturnPeriod.year,
-                        firstReturnPeriod.month
+                        returnsPeriod.head.period.lastDay,
+                        returnsPeriod.head.period.year,
+                        returnsPeriod.head.period.month
                       ))
                     } else {
                       None
@@ -109,18 +107,18 @@ class PartialReturnPeriodService @Inject()(
     ).map(_.flatten.maxByOption(_.paymentDeadline))
   }
 
-
-  private def isFirstPeriod(periods: Seq[PeriodWithStatus], checkDate: LocalDate): Boolean = {
-    val firstUnsubmittedPeriod = periods.filter { period =>
-      Seq(SubmissionStatus.Next, SubmissionStatus.Due, SubmissionStatus.Overdue).contains(period.status)
+  private def isFirstSubmittedPeriod(periods: Seq[PeriodWithStatus], checkDate: LocalDate): Boolean = {
+    val firstSubmittedPeriod = periods.filter { period =>
+      Seq(SubmissionStatus.Complete).contains(period.status)
     }.head
 
-    isWithinPeriod(firstUnsubmittedPeriod.period, checkDate)
+    isWithinPeriod(firstSubmittedPeriod.period, checkDate)
   }
 
   private def isWithinPeriod(period: StandardPeriod, checkDate: LocalDate): Boolean =
     !checkDate.isBefore(period.firstDay) &&
       !checkDate.isAfter(period.lastDay)
+
 
   private def isFinalReturn(maybeExclusion: Option[EtmpExclusion], period: Period): Boolean = {
     maybeExclusion match {
@@ -143,5 +141,4 @@ class PartialReturnPeriodService @Inject()(
         Seq.empty
     }
   }
-
 }
