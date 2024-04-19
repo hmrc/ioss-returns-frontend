@@ -67,7 +67,7 @@ class ViewReturnsMultipleRegControllerSpec extends SpecBase with BeforeAndAfterE
         when(mockPreviousRegistrationService.getPreviousRegistrations()(any())) thenReturn previousRegistrations.toFuture
         when(mockSelectedPreviousRegistrationRepository.get(userAnswersId)) thenReturn Some(selectedPreviousRegistration).toFuture
         when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn obligationDetails.toFuture
-        when(mockPaymentsService.prepareFinancialData()(any(), any())) thenReturn prepareData.toFuture
+        when(mockPaymentsService.prepareFinancialDataWithIossNumber(any())(any(), any())) thenReturn prepareData.toFuture
 
         val request = FakeRequest(GET, routes.ViewReturnsMultipleRegController.onPageLoad(waypoints).url)
 
@@ -138,7 +138,7 @@ class ViewReturnsMultipleRegControllerSpec extends SpecBase with BeforeAndAfterE
       running(application) {
         when(mockPreviousRegistrationService.getPreviousRegistrations()(any())) thenReturn previousRegistrations.take(1).toFuture
         when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn obligationDetails.toFuture
-        when(mockPaymentsService.prepareFinancialData()(any(), any())) thenReturn prepareData.toFuture
+        when(mockPaymentsService.prepareFinancialDataWithIossNumber(any())(any(), any())) thenReturn prepareData.toFuture
 
         val request = FakeRequest(GET, routes.ViewReturnsMultipleRegController.onPageLoad(waypoints).url)
 

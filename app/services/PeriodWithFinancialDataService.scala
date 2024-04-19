@@ -34,7 +34,7 @@ class PeriodWithFinancialDataService @Inject()(
   def getPeriodWithFinancialData(iossNumber: String)(implicit hc: HeaderCarrier): Future[Map[Int, Seq[(Period, Payment)]]] = {
     for {
       obligations <- obligationsService.getFulfilledObligations(iossNumber)
-      preparedFinancialData <- paymentsService.prepareFinancialData()
+      preparedFinancialData <- paymentsService.prepareFinancialDataWithIossNumber(iossNumber)
       periods = obligations.map(_.periodKey).map(Period.fromKey)
       allUnpaidPayments = preparedFinancialData.duePayments ++ preparedFinancialData.overduePayments ++ preparedFinancialData.excludedPayments
       allPaymentsForPeriod <- getAllPaymentsForPeriods(periods, allUnpaidPayments)
