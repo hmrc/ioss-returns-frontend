@@ -22,7 +22,7 @@ import forms.StartReturnFormProvider
 import models.SubmissionStatus.{Complete, Due, Excluded, Next, Overdue}
 import models.{PartialReturnPeriod, StandardPeriod, SubmissionStatus}
 import models.etmp.EtmpExclusion
-import models.etmp.EtmpExclusionReason.NoLongerSupplies
+import models.etmp.EtmpExclusionReason.{NoLongerSupplies, Reversal}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.{ArgumentMatchers, IdiomaticMockito, Mockito}
 import org.mockito.Mockito.when
@@ -59,7 +59,7 @@ class StartReturnControllerSpec
 
   private val maybePartialReturn = Some(PartialReturnPeriod(period.firstDay, period.lastDay, period.year, Month.DECEMBER))
 
-  val extraNumberOfDays: Int = 5
+  val numberOfDays: Int = 5
 
   private val emptyCurrentReturns = CurrentReturns(
     returns = List.empty,
@@ -71,7 +71,7 @@ class StartReturnControllerSpec
     resetMocks()
   }
 
-  private def resetMocks() : Unit = {
+  private def resetMocks(): Unit = {
     Mockito.reset(mockReturnStatusConnector)
     Mockito.reset(mockPartialReturnPeriodService)
   }
@@ -228,7 +228,7 @@ class StartReturnControllerSpec
       }
 
       "must return OK and the correct view for a GET when a trader is excluded and the period's last day is before their exclusion effective date" in {
-        val effectiveDate = period.lastDay.plusDays(extraNumberOfDays)
+        val effectiveDate = period.lastDay.plusDays(numberOfDays)
 
         val noLongerSuppliesExclusion = EtmpExclusion(
           exclusionReason = NoLongerSupplies,
@@ -271,6 +271,56 @@ class StartReturnControllerSpec
             waypoints,
             period,
             Some(noLongerSuppliesExclusion),
+            isFinalReturn = false,
+            None
+          )(request, messages(application)).toString
+        }
+      }
+
+      "must return OK and the correct view for a GET when a trader has reversed an exclusion and the period's last day is before their exclusion effective date" in {
+        val effectiveDate = period.lastDay.minusDays(numberOfDays)
+
+        val reversalExclusion = EtmpExclusion(
+          exclusionReason = Reversal,
+          effectiveDate = effectiveDate,
+          decisionDate = effectiveDate,
+          quarantine = false
+        )
+
+        val registrationWrapperWithExclusion =
+          registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq(reversalExclusion)))
+
+        when(mockReturnStatusConnector.getCurrentReturns(ArgumentMatchers.eq(iossNumber))(any()))
+          .thenReturn(Future.successful(
+            Right(emptyCurrentReturns.copy(returns = List(createReturn(Due, period))))
+          ))
+
+        when(mockPartialReturnPeriodService.getPartialReturnPeriod(
+          ArgumentMatchers.eq(registrationWrapperWithExclusion),
+          ArgumentMatchers.eq(period)
+        )(any()))
+          .thenReturn(Future.successful(None))
+
+        val application = applicationBuilder(
+          userAnswers = Some(emptyUserAnswers),
+          registration = registrationWrapperWithExclusion
+        ).overrides(bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector))
+          .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
+          .build()
+
+        running(application) {
+          val request = FakeRequest(GET, startReturnRoute)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[StartReturnView]
+
+          status(result) mustBe OK
+          contentAsString(result) mustBe view(
+            form,
+            waypoints,
+            period,
+            Some(reversalExclusion),
             isFinalReturn = false,
             None
           )(request, messages(application)).toString
@@ -473,7 +523,7 @@ class StartReturnControllerSpec
             ))
 
           val effectiveDate = Gen.choose(
-            period.lastDay.minusDays(1 + extraNumberOfDays),
+            period.lastDay.minusDays(1 + numberOfDays),
             period.lastDay.minusDays(1)
           ).sample.value
 
