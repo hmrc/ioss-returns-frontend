@@ -57,7 +57,7 @@ class StartReturnController @Inject()(
 
       val maybeExclusion: Option[EtmpExclusion] = request.registrationWrapper.registration.exclusions.lastOption
 
-      val nextPeriod= period.getNext.firstDay
+      val nextPeriod = period.getNext.firstDay
 
       val isFinalReturn = maybeExclusion.fold(false) { exclusions =>
         nextPeriod.isAfter(exclusions.effectiveDate)
@@ -80,7 +80,7 @@ class StartReturnController @Inject()(
 
       val maybeExclusion: Option[EtmpExclusion] = request.registrationWrapper.registration.exclusions.lastOption
 
-      val nextPeriod= period.getNext.firstDay
+      val nextPeriod = period.getNext.firstDay
 
       val isFinalReturn = maybeExclusion.fold(false) { exclusions =>
         nextPeriod.isAfter(exclusions.effectiveDate)

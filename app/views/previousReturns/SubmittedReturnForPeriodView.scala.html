@@ -19,8 +19,8 @@
 @import viewmodels.previousReturns.PreviousReturnsCorrectionsSummary.CorrectionRow
 
 @this(
-        layout: templates.Layout,
         govukButton: GovukButton,
+layout: templates.Layout,
         govukSummaryList: GovukSummaryList
 )
 
@@ -35,13 +35,17 @@
         totalVatPayable: BigDecimal,
         vatDeclared: BigDecimal,
         displayPayNow: Boolean,
-        returnIsExcludedAndOutstandingAmount: Boolean
+        returnIsExcludedAndOutstandingAmount: Boolean,
+        maybePartialReturnPeriod: Option[PartialReturnPeriod],
 )(implicit request: Request[_], messages: Messages)
 
     @layout(pageTitle = titleNoForm(messages("submittedReturnForPeriod.title", period.displayText))) {
 
-        <h1 class="govuk-heading-l">@messages("submittedReturnForPeriod.heading", period.displayText)</h1>
-
+        @if(maybePartialReturnPeriod) {
+            <h1 class="govuk-heading-l">@messages("submittedReturnForPeriod.heading", period.displayToAndFromText)</h1>
+        } else {
+            <h1 class="govuk-heading-l">@messages("submittedReturnForPeriod.heading", period.displayText)</h1>
+        }
         <h2 class="govuk-heading-m">@messages("submittedReturnForPeriod.summary")</h2>
 
         <div class="govuk-summary-card">

@@ -24,7 +24,7 @@ import models.requests.DataRequest
 import models.{Country, TotalVatToCountry, UserAnswers, VatRateFromCountry}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
-import org.mockito.Mockito
+import org.mockito.{ArgumentMatchers, Mockito}
 import org.mockito.Mockito.{times, verify, when}
 import org.scalacheck.Gen
 import org.scalatest.BeforeAndAfterEach
@@ -36,7 +36,7 @@ import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import queries.corrections.{PreviouslyDeclaredCorrectionAmount, PreviouslyDeclaredCorrectionAmountQuery}
-import services.{AuditService, CoreVatReturnService, SalesAtVatRateService}
+import services.{AuditService, CoreVatReturnService, PartialReturnPeriodService, SalesAtVatRateService}
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{Card, CardTitle, SummaryList, SummaryListRow}
 import viewmodels.checkAnswers._
@@ -52,6 +52,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
   private val mockSalesAtVatRateService = mock[SalesAtVatRateService]
   private val mockCoreVatReturnService = mock[CoreVatReturnService]
+  private val mockPartialReturnPeriodService = mock[PartialReturnPeriodService]
   private val mockAuditService = mock[AuditService]
   private val mockSaveForLaterConnector = mock[SaveForLaterConnector]
   private val vatRateFromCountry: VatRateFromCountry = arbitraryVatRateFromCountry.arbitrary.sample.value
@@ -60,6 +61,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
   override def beforeEach(): Unit = {
     Mockito.reset(mockSalesAtVatRateService)
     Mockito.reset(mockCoreVatReturnService)
+    Mockito.reset(mockPartialReturnPeriodService)
     Mockito.reset(mockAuditService)
     Mockito.reset(mockSaveForLaterConnector)
     super.beforeEach()
@@ -70,7 +72,14 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
       "when correct previous return is false / empty" - {
         "must return OK and the correct view for a GET" in {
 
+          when(mockPartialReturnPeriodService.getPartialReturnPeriod(
+            ArgumentMatchers.eq(registrationWrapper),
+            ArgumentMatchers.eq(period)
+          )(any()))
+            .thenReturn(Future.successful(None))
+
           val application = applicationBuilder(userAnswers = Some(completeUserAnswers.set(CorrectPreviousReturnPage(0), false).success.value))
+            .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
             .build()
 
           running(application) {
@@ -94,7 +103,14 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
         "must return OK and the correct view for a GET when the correction choice was NO " in {
 
+          when(mockPartialReturnPeriodService.getPartialReturnPeriod(
+            ArgumentMatchers.eq(registrationWrapper),
+            ArgumentMatchers.eq(period)
+          )(any()))
+            .thenReturn(Future.successful(None))
+
           val application = applicationBuilder(userAnswers = Some(completeUserAnswers.set(CorrectPreviousReturnPage(0), false).success.value))
+            .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
             .build()
 
           running(application) {
@@ -121,7 +137,14 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
         "must contain VAT declared to EU countries after corrections heading if there were corrections and all totals are positive" in {
 
+          when(mockPartialReturnPeriodService.getPartialReturnPeriod(
+            ArgumentMatchers.eq(registrationWrapper),
+            ArgumentMatchers.eq(period)
+          )(any()))
+            .thenReturn(Future.successful(None))
+
           val application = applicationBuilder(userAnswers = Some(completeUserAnswers.set(CorrectPreviousReturnPage(0), true).success.value))
+            .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
             .build()
 
           running(application) {
@@ -168,9 +191,15 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           when(mockSalesAtVatRateService.getTotalVatOnSales(any())) thenReturn None
           when(mockSalesAtVatRateService.getTotalVatOwedAfterCorrections(any())) thenReturn BigDecimal(0)
           when(mockSalesAtVatRateService.getVatOwedToCountries(eqTo(userAnswersWithCorrections))) thenReturn (noPaymentsDue ++ totalVatToCountries)
+          when(mockPartialReturnPeriodService.getPartialReturnPeriod(
+            ArgumentMatchers.eq(registrationWrapper),
+            ArgumentMatchers.eq(period)
+          )(any()))
+            .thenReturn(Future.successful(None))
 
           val application = applicationBuilder(userAnswers = Some(userAnswersWithCorrections))
             .overrides(bind[SalesAtVatRateService].toInstance(mockSalesAtVatRateService))
+            .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
             .build()
 
           running(application) {
@@ -187,7 +216,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
               rows = Seq(
                 BusinessNameSummary.row(registrationWrapper),
                 BusinessVRNSummary.row(vrn),
-                ReturnPeriodSummary.row(userAnswersWithCorrections, waypoints)
+                ReturnPeriodSummary.row(userAnswersWithCorrections, waypoints, Some(period))
               ).flatten
             ).withCssClass("govuk-summary-card govuk-summary-card__content govuk-!-display-block width-auto")
 
