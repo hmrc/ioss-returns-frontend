@@ -19,6 +19,7 @@ package controllers
 import controllers.actions._
 import forms.StartReturnFormProvider
 import models.etmp.EtmpExclusion
+import models.etmp.EtmpExclusionReason.Reversal
 import models.{Period, UserAnswers}
 import pages.{StartReturnPage, Waypoints}
 import play.api.data.Form
@@ -59,12 +60,11 @@ class StartReturnController @Inject()(
 
       val nextPeriod = period.getNext.firstDay
 
-      val isFinalReturn = maybeExclusion.fold(false) { exclusions =>
-        nextPeriod.isAfter(exclusions.effectiveDate)
+      val isFinalReturn = maybeExclusion.fold(false) { exclusion =>
+        exclusion.exclusionReason != Reversal && nextPeriod.isAfter(exclusion.effectiveDate)
       }
 
       partialReturnPeriodService.getPartialReturnPeriod(request.registrationWrapper, period).map { maybePartialReturnPeriod =>
-
         Ok(view(form, waypoints, period, maybeExclusion, isFinalReturn, maybePartialReturnPeriod))
       }
 
@@ -82,8 +82,8 @@ class StartReturnController @Inject()(
 
       val nextPeriod = period.getNext.firstDay
 
-      val isFinalReturn = maybeExclusion.fold(false) { exclusions =>
-        nextPeriod.isAfter(exclusions.effectiveDate)
+      val isFinalReturn = maybeExclusion.fold(false) { exclusion =>
+        exclusion.exclusionReason != Reversal && nextPeriod.isAfter(exclusion.effectiveDate)
       }
 
       form.bindFromRequest().fold(
@@ -100,7 +100,6 @@ class StartReturnController @Inject()(
 
           val (clearSession: Boolean, userAnswers: UserAnswers) = request.userAnswers match {
             case Some(userAnswers) if userAnswers.period == period => (false, userAnswers)
-            case Some(userAnswers) => (true, defaultUserAnswers)
             case _ => (true, defaultUserAnswers)
           }
 
