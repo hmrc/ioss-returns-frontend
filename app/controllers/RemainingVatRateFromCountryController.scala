@@ -48,17 +48,19 @@ class RemainingVatRateFromCountryController @Inject()(
     implicit request =>
       getCountry(waypoints, countryIndex) { country =>
         getAllVatRatesFromCountry(waypoints, countryIndex) { vatRates =>
-
           val period = request.userAnswers.period
 
-          val remainingVatRate = vatRateService.getRemainingVatRatesForCountry(period, country, vatRates).head
+          vatRateService.getRemainingVatRatesForCountry(period, country, vatRates).flatMap { remainingVatRates =>
 
-          val preparedForm = request.userAnswers.get(RemainingVatRateFromCountryPage(countryIndex, vatRateIndex)) match {
-            case None => form
-            case Some(value) => form.fill(value)
+            val remainingVatRate = remainingVatRates.head
+
+            val preparedForm = request.userAnswers.get(RemainingVatRateFromCountryPage(countryIndex, vatRateIndex)) match {
+              case None => form
+              case Some(value) => form.fill(value)
+            }
+
+            Ok(view(preparedForm, waypoints, period, countryIndex, vatRateIndex, remainingVatRate.rateForDisplay, country)).toFuture
           }
-
-          Ok(view(preparedForm, waypoints, period, countryIndex, vatRateIndex, remainingVatRate.rateForDisplay, country)).toFuture
         }
       }
   }
@@ -70,34 +72,37 @@ class RemainingVatRateFromCountryController @Inject()(
 
           val period = request.userAnswers.period
 
-          val remainingVatRate = vatRateService.getRemainingVatRatesForCountry(period, country, vatRates).head
+          vatRateService.getRemainingVatRatesForCountry(period, country, vatRates).flatMap { remainingVatRates =>
 
-          form.bindFromRequest().fold(
-            formWithErrors =>
-              BadRequest(view(formWithErrors, waypoints, period, countryIndex, vatRateIndex, remainingVatRate.rateForDisplay, country)).toFuture,
+            val remainingVatRate = remainingVatRates.head
 
-            value =>
-              if (value) {
-                val updatedVatRates = vatRates.copy(vatRatesFromCountry =
-                  vatRates.vatRatesFromCountry.map(_ :+ VatRateWithOptionalSalesFromCountry.fromVatRateFromCountry(remainingVatRate)))
-                for {
-                  updatedAnswers <- Future.fromTry(request.userAnswers.set(RemainingVatRateFromCountryPage(countryIndex, vatRateIndex), value))
-                  updatedVatRateAnswersWithFinalVatRate <- Future.fromTry(updatedAnswers.set(AllSalesByCountryQuery(countryIndex), updatedVatRates))
-                  _ <- cc.sessionRepository.set(updatedVatRateAnswersWithFinalVatRate)
-                } yield {
-                  Redirect(RemainingVatRateFromCountryPage(countryIndex, vatRateIndex)
-                    .navigate(waypoints, request.userAnswers, updatedVatRateAnswersWithFinalVatRate).route)
+            form.bindFromRequest().fold(
+              formWithErrors =>
+                BadRequest(view(formWithErrors, waypoints, period, countryIndex, vatRateIndex, remainingVatRate.rateForDisplay, country)).toFuture,
+
+              value =>
+                if (value) {
+                  val updatedVatRates = vatRates.copy(vatRatesFromCountry =
+                    vatRates.vatRatesFromCountry.map(_ :+ VatRateWithOptionalSalesFromCountry.fromVatRateFromCountry(remainingVatRate)))
+                  for {
+                    updatedAnswers <- Future.fromTry(request.userAnswers.set(RemainingVatRateFromCountryPage(countryIndex, vatRateIndex), value))
+                    updatedVatRateAnswersWithFinalVatRate <- Future.fromTry(updatedAnswers.set(AllSalesByCountryQuery(countryIndex), updatedVatRates))
+                    _ <- cc.sessionRepository.set(updatedVatRateAnswersWithFinalVatRate)
+                  } yield {
+                    Redirect(RemainingVatRateFromCountryPage(countryIndex, vatRateIndex)
+                      .navigate(waypoints, request.userAnswers, updatedVatRateAnswersWithFinalVatRate).route)
+                  }
+                } else {
+                  for {
+                    updatedAnswers <- Future.fromTry(request.userAnswers.set(RemainingVatRateFromCountryPage(countryIndex, vatRateIndex), value))
+                    _ <- cc.sessionRepository.set(updatedAnswers)
+                  } yield {
+                    Redirect(RemainingVatRateFromCountryPage(countryIndex, vatRateIndex)
+                      .navigate(waypoints, request.userAnswers, updatedAnswers).route)
+                  }
                 }
-              } else {
-                for {
-                  updatedAnswers <- Future.fromTry(request.userAnswers.set(RemainingVatRateFromCountryPage(countryIndex, vatRateIndex), value))
-                  _ <- cc.sessionRepository.set(updatedAnswers)
-                } yield {
-                  Redirect(RemainingVatRateFromCountryPage(countryIndex, vatRateIndex)
-                    .navigate(waypoints, request.userAnswers, updatedAnswers).route)
-                }
-              }
-          )
+            )
+          }
         }
       }
   }

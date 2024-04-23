@@ -54,30 +54,33 @@ class CheckSalesController @Inject()(
 
           val period = request.userAnswers.period
 
-          val canAddAnotherVatRate = vatRateService.getRemainingVatRatesForCountry(period, country, vatRates).nonEmpty
+          vatRateService.getRemainingVatRatesForCountry(period, country, vatRates).flatMap { otherVatRates =>
 
-          val checkSalesSummary = CheckSalesSummary.rows(request.userAnswers, waypoints, countryIndex)
+            val canAddAnotherVatRate = otherVatRates.nonEmpty
 
-          val preparedForm = request.userAnswers.get(CheckSalesPage(countryIndex)) match {
-            case None => form
-            case Some(value) => form.fill(value)
-          }
+            val checkSalesSummary = CheckSalesSummary.rows(request.userAnswers, waypoints, countryIndex)
 
-          withCompleteDataAsync[VatRateWithOptionalSalesFromCountry](
-            countryIndex,
-            data = getIncompleteVatRateAndSales _,
-            onFailure = (incomplete: Seq[VatRateWithOptionalSalesFromCountry]) => {
-              Ok(view(
-                preparedForm,
-                waypoints,
-                period,
-                checkSalesSummary,
-                countryIndex,
-                country,
-                canAddAnotherVatRate,
-                incomplete)).toFuture
-            }) {
-            Ok(view(preparedForm, waypoints, period, checkSalesSummary, countryIndex, country, canAddAnotherVatRate)).toFuture
+            val preparedForm = request.userAnswers.get(CheckSalesPage(countryIndex)) match {
+              case None => form
+              case Some(value) => form.fill(value)
+            }
+
+            withCompleteDataAsync[VatRateWithOptionalSalesFromCountry](
+              countryIndex,
+              data = getIncompleteVatRateAndSales _,
+              onFailure = (incomplete: Seq[VatRateWithOptionalSalesFromCountry]) => {
+                Ok(view(
+                  preparedForm,
+                  waypoints,
+                  period,
+                  checkSalesSummary,
+                  countryIndex,
+                  country,
+                  canAddAnotherVatRate,
+                  incomplete)).toFuture
+              }) {
+              Ok(view(preparedForm, waypoints, period, checkSalesSummary, countryIndex, country, canAddAnotherVatRate)).toFuture
+            }
           }
         }
       }
@@ -87,45 +90,47 @@ class CheckSalesController @Inject()(
     implicit request =>
       getCountry(waypoints, countryIndex) { country =>
         getAllVatRatesFromCountry(waypoints, countryIndex) { vatRates =>
-
           val period = request.userAnswers.period
 
-          val vatRateIndex = Index(vatRates.vatRatesFromCountry.map(_.size).getOrElse(0) - 1)
+          vatRateService.getRemainingVatRatesForCountry(period, country, vatRates).flatMap { remainingVatRates =>
 
-          val remainingVatRates = vatRateService.getRemainingVatRatesForCountry(period, country, vatRates)
+            val vatRateIndex = Index(vatRates.vatRatesFromCountry.map(_.size).getOrElse(0) - 1)
 
-          val canAddAnotherVatRate = remainingVatRates.nonEmpty
+            val canAddAnotherVatRate = remainingVatRates.nonEmpty
 
-          val checkSalesSummary = CheckSalesSummary.rows(request.userAnswers, waypoints, countryIndex)
+            val checkSalesSummary = CheckSalesSummary.rows(request.userAnswers, waypoints, countryIndex)
 
-          val salesToCountry = request.userAnswers.get(SalesToCountryPage(countryIndex, vatRateIndex))
+            val salesToCountry = request.userAnswers.get(SalesToCountryPage(countryIndex, vatRateIndex))
 
-          withCompleteDataAsync[VatRateWithOptionalSalesFromCountry](
-            countryIndex,
-            data = getIncompleteVatRateAndSales _,
-            onFailure = (_: Seq[VatRateWithOptionalSalesFromCountry]) => {
-              if(incompletePromptShown) {
-                salesToCountry match {
-                  case Some(_) =>
-                    Redirect(routes.VatOnSalesController.onPageLoad(waypoints, countryIndex, vatRateIndex)).toFuture
-                  case None =>
-                    Redirect(routes.SalesToCountryController.onPageLoad(waypoints, countryIndex, vatRateIndex)).toFuture
+            withCompleteDataAsync[VatRateWithOptionalSalesFromCountry](
+              countryIndex,
+              data = getIncompleteVatRateAndSales _,
+              onFailure = (_: Seq[VatRateWithOptionalSalesFromCountry]) => {
+                if (incompletePromptShown) {
+                  salesToCountry match {
+                    case Some(_) =>
+                      Redirect(routes.VatOnSalesController.onPageLoad(waypoints, countryIndex, vatRateIndex)).toFuture
+                    case None =>
+                      Redirect(routes.SalesToCountryController.onPageLoad(waypoints, countryIndex, vatRateIndex)).toFuture
+                  }
+                } else {
+                  Redirect(routes.CheckSalesController.onPageLoad(waypoints, countryIndex)).toFuture
                 }
-              } else {
-                Redirect(routes.CheckSalesController.onPageLoad(waypoints, countryIndex)).toFuture
-              }
-            }) {
-            form.bindFromRequest().fold(
-              formWithErrors =>
-                BadRequest(view(formWithErrors, waypoints, period, checkSalesSummary, countryIndex, country, canAddAnotherVatRate, Seq.empty)).toFuture,
+              }) {
+              form.bindFromRequest().fold(
+                formWithErrors =>
+                  BadRequest(view(formWithErrors, waypoints, period, checkSalesSummary, countryIndex, country, canAddAnotherVatRate, Seq.empty)).toFuture,
 
-              value =>
-                for {
-                  updatedAnswers <- Future.fromTry(request.userAnswers.set(CheckSalesPage(countryIndex), value))
-                  updatedAnswersWithRemainingVatRates <- Future.fromTry(updatedAnswers.set(RemainingVatRatesFromCountryQuery(countryIndex), remainingVatRates))
-                  _ <- cc.sessionRepository.set(updatedAnswersWithRemainingVatRates)
-                } yield Redirect(CheckSalesPage(countryIndex).navigate(waypoints, request.userAnswers, updatedAnswersWithRemainingVatRates).route)
-            )
+                value =>
+                  for {
+                    updatedAnswers <- Future.fromTry(request.userAnswers.set(CheckSalesPage(countryIndex), value))
+                    updatedAnswersWithRemainingVatRates <- Future.fromTry(
+                      updatedAnswers.set(RemainingVatRatesFromCountryQuery(countryIndex), remainingVatRates)
+                    )
+                    _ <- cc.sessionRepository.set(updatedAnswersWithRemainingVatRates)
+                  } yield Redirect(CheckSalesPage(countryIndex).navigate(waypoints, request.userAnswers, updatedAnswersWithRemainingVatRates).route)
+              )
+            }
           }
         }
       }

@@ -560,4 +560,20 @@ trait ModelGenerators {
       )
     }
   }
+
+  implicit val arbitraryEuVatRate: Arbitrary[EuVatRate] = {
+    Arbitrary {
+      for {
+        country <- arbitrary[Country]
+        vatRate <- arbitrary[BigDecimal]
+        vatRateType <- Gen.oneOf(VatRateType.values)
+        situatedOn <- arbitrary[LocalDate]
+      } yield EuVatRate(
+        country = country,
+        vatRate = vatRate,
+        vatRateType = vatRateType,
+        situatedOn = situatedOn
+      )
+    }
+  }
 }
