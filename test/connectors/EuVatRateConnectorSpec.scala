@@ -19,12 +19,10 @@ package connectors
 import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock._
 import generators.Generators
-import models.{Country, EuVatRate, InvalidJson, UnexpectedResponseStatus}
-import models.etmp.{EtmpObligations, EtmpVatReturn}
+import models.{Country, EuVatRate}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.Application
-import play.api.http.Status.{INTERNAL_SERVER_ERROR, OK}
 import play.api.libs.json.Json
 import play.api.test.Helpers.running
 import uk.gov.hmrc.http.HeaderCarrier
@@ -56,7 +54,7 @@ class EuVatRateConnectorSpec extends SpecBase
       val dateFrom = LocalDate.of(2021, 1, 1)
       val dateTo = LocalDate.of(2025, 1, 1)
 
-      val getEuVatRatesUrl: String = s"/eu-vat-rates/vat-rates/$country?fromDate=$dateFrom&toDate=$dateTo"
+      val getEuVatRatesUrl: String = s"/eu-vat-rates/vat-rates/${country.code}?fromDate=$dateFrom&toDate=$dateTo"
 
       "must return OK with a payload of EU VAT Rates" in {
 
