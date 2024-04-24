@@ -33,7 +33,7 @@ class EuVatRateConnector @Inject()(
   private val baseUrl = config.get[Service]("microservice.services.eu-vat-rates")
 
   def getEuVatRates(country: Country, fromDate: LocalDate, toDate: LocalDate)(implicit hc: HeaderCarrier): Future[Seq[EuVatRate]] = {
-    httpClient.GET[Seq[EuVatRate]](s"$baseUrl/vat-rate/${country.code}?fromDate=$fromDate&toDate=$toDate")
+    httpClient.GET[Seq[EuVatRate]](s"$baseUrl/vat-rate/${country.code}?startDate=$fromDate&endDate=$toDate")
   }
 
 }

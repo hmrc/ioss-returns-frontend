@@ -54,7 +54,7 @@ class EuVatRateConnectorSpec extends SpecBase
       val dateFrom = LocalDate.of(2021, 1, 1)
       val dateTo = LocalDate.of(2025, 1, 1)
 
-      val getEuVatRatesUrl: String = s"/eu-vat-rates/vat-rate/${country.code}?fromDate=$dateFrom&toDate=$dateTo"
+      val getEuVatRatesUrl: String = s"/eu-vat-rates/vat-rate/${country.code}?startEnd=$dateFrom&endDate=$dateTo"
 
       "must return OK with a payload of EU VAT Rates" in {
 
