@@ -17,83 +17,62 @@
 package services
 
 import base.SpecBase
-import models.VatRateFromCountry._
+import connectors.EuVatRateConnector
+import models.{Country, EuVatRate, VatRateFromCountry}
 import models.VatRateType.{Reduced, Standard}
-import models.{Country, VatRateFromCountry}
 import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito
 import org.mockito.Mockito.when
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
-import play.api.libs.json.Json
-import play.api.{Configuration, Environment}
 import queries.{SalesToCountryWithOptionalSales, VatRateWithOptionalSalesFromCountry}
+import uk.gov.hmrc.http.HeaderCarrier
+import utils.FutureSyntax.FutureOps
 
-import java.io.ByteArrayInputStream
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class VatRateServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
 
   private val country = arbitrary[Country].sample.value
 
+  private implicit lazy val emptyHC: HeaderCarrier = HeaderCarrier()
+
+  private val mockEuVatRateConnector: EuVatRateConnector = mock[EuVatRateConnector]
+
+  override def beforeEach(): Unit = {
+    Mockito.reset(mockEuVatRateConnector)
+  }
+
   "VatRate Service" - {
 
     ".vatRates" - {
 
-      "must get all VAT rates for a country that were valid on or before the last day of the period" - {
+      "covert all vat rates return to VatRateFromCountry" - {
 
         "and which have no end date" in {
 
-          val rates: Map[String, Seq[VatRateFromCountry]] = Map(
-            country.code -> Seq(
-              VatRateFromCountry(BigDecimal(0), Standard, period.firstDay.minusDays(1)),
-              VatRateFromCountry(BigDecimal(1), Reduced, period.firstDay),
-              VatRateFromCountry(BigDecimal(2), Reduced, period.lastDay),
-              VatRateFromCountry(BigDecimal(3), Reduced, period.lastDay.plusDays(1))
-            )
+          val rates: Seq[EuVatRate] = Seq(
+            EuVatRate(country, BigDecimal(0), Standard, period.firstDay.minusDays(1)),
+            EuVatRate(country, BigDecimal(1), Reduced, period.firstDay),
+            EuVatRate(country, BigDecimal(2), Reduced, period.lastDay),
+            EuVatRate(country, BigDecimal(3), Reduced, period.lastDay.plusDays(1))
           )
-          val ratesBytes = Json.toJson(rates).toString.getBytes
 
-          val mockEnv = mock[Environment]
-          val mockConfig = mock[Configuration]
-          when(mockConfig.get[String](any())(any())).thenReturn("foo")
-          when(mockEnv.resourceAsStream(any())).thenReturn(Some(new ByteArrayInputStream(ratesBytes)))
+          when(mockEuVatRateConnector.getEuVatRates(any(), any(), any())(any())) thenReturn rates.toFuture
 
-          val service = new VatRateService(mockEnv, mockConfig)
+          val service = new VatRateService(mockEuVatRateConnector)
 
-          val result = service.vatRates(period, country)
+          val result = service.vatRates(period, country).futureValue
 
           result must contain theSameElementsAs Seq(
             VatRateFromCountry(BigDecimal(0), Standard, period.firstDay.minusDays(1)),
             VatRateFromCountry(BigDecimal(1), Reduced, period.firstDay),
-            VatRateFromCountry(BigDecimal(2), Reduced, period.lastDay)
+            VatRateFromCountry(BigDecimal(2), Reduced, period.lastDay),
+            VatRateFromCountry(BigDecimal(3), Reduced, period.lastDay.plusDays(1))
           )
         }
 
-        "and which have end dates that are on or after the first day of the period" in {
-
-          val rates: Map[String, Seq[VatRateFromCountry]] = Map(
-            country.code -> Seq(
-              VatRateFromCountry(BigDecimal(0), Standard, period.firstDay.minusMonths(1), Some(period.firstDay)),
-              VatRateFromCountry(BigDecimal(1), Reduced, period.firstDay.minusMonths(1), Some(period.firstDay.plusDays(1))),
-              VatRateFromCountry(BigDecimal(2), Reduced, period.lastDay.minusMonths(1), Some(period.firstDay.minusDays(1)))
-            )
-          )
-          val ratesBytes = Json.toJson(rates).toString.getBytes
-
-          val mockEnv = mock[Environment]
-          val mockConfig = mock[Configuration]
-          when(mockConfig.get[String](any())(any())).thenReturn("foo")
-          when(mockEnv.resourceAsStream(any())).thenReturn(Some(new ByteArrayInputStream(ratesBytes)))
-
-          val service = new VatRateService(mockEnv, mockConfig)
-
-          val result = service.vatRates(period, country)
-
-          result must contain theSameElementsAs Seq(
-            VatRateFromCountry(BigDecimal(0), Standard, period.firstDay.minusMonths(1), Some(period.firstDay)),
-            VatRateFromCountry(BigDecimal(1), Reduced, period.firstDay.minusMonths(1), Some(period.firstDay.plusDays(1)))
-          )
-        }
       }
     }
 
@@ -103,16 +82,12 @@ class VatRateServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfterE
 
         "when there is only one VAT rate remaining" in {
 
-          val rates: Map[String, Seq[VatRateFromCountry]] = Map(
-            country.code -> Seq(
-              VatRateFromCountry(BigDecimal(21.0), Standard, period.firstDay),
-              VatRateFromCountry(BigDecimal(17.0), Reduced, period.firstDay),
-              VatRateFromCountry(BigDecimal(14.0), Reduced, period.firstDay),
-              VatRateFromCountry(BigDecimal(5.0), Reduced, period.firstDay)
-            )
+          val rates: Seq[EuVatRate] = Seq(
+            EuVatRate(country, BigDecimal(21.0), Standard, period.firstDay),
+            EuVatRate(country, BigDecimal(17.0), Reduced, period.firstDay),
+            EuVatRate(country, BigDecimal(14.0), Reduced, period.firstDay),
+            EuVatRate(country, BigDecimal(5.0), Reduced, period.firstDay)
           )
-
-          val ratesBytes = Json.toJson(rates).toString.getBytes
 
           val currentlyAnsweredVatRates: SalesToCountryWithOptionalSales = SalesToCountryWithOptionalSales(
             country = country,
@@ -125,33 +100,26 @@ class VatRateServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfterE
             )
           )
 
-          val mockEnv = mock[Environment]
-          val mockConfig = mock[Configuration]
-          when(mockConfig.get[String](any())(any())).thenReturn("foo")
-          when(mockEnv.resourceAsStream(any())).thenReturn(Some(new ByteArrayInputStream(ratesBytes)))
+          when(mockEuVatRateConnector.getEuVatRates(any(), any(), any())(any())) thenReturn rates.toFuture
 
-          val service = new VatRateService(mockEnv, mockConfig)
+          val service = new VatRateService(mockEuVatRateConnector)
 
-          val result = service.getRemainingVatRatesForCountry(period, country, currentlyAnsweredVatRates)
+          val result = service.getRemainingVatRatesForCountry(period, country, currentlyAnsweredVatRates).futureValue
 
           result must contain theSameElementsAs Seq(VatRateFromCountry(BigDecimal(17.0), Reduced, period.firstDay))
         }
 
         "when there are multiple VAT rates remaining" in {
 
-          val rates: Map[String, Seq[VatRateFromCountry]] = Map(
-            country.code -> Seq(
-              VatRateFromCountry(BigDecimal(26.0), Standard, period.firstDay),
-              VatRateFromCountry(BigDecimal(21.0), Reduced, period.firstDay),
-              VatRateFromCountry(BigDecimal(13.0), Reduced, period.firstDay),
-              VatRateFromCountry(BigDecimal(7.5), Reduced, period.firstDay),
-              VatRateFromCountry(BigDecimal(4.3), Reduced, period.firstDay),
-              VatRateFromCountry(BigDecimal(2.09), Reduced, period.firstDay),
-              VatRateFromCountry(BigDecimal(0.3), Reduced, period.firstDay)
-            )
+          val rates: Seq[EuVatRate] = Seq(
+            EuVatRate(country, BigDecimal(26.0), Standard, period.firstDay),
+            EuVatRate(country, BigDecimal(21.0), Reduced, period.firstDay),
+            EuVatRate(country, BigDecimal(13.0), Reduced, period.firstDay),
+            EuVatRate(country, BigDecimal(7.5), Reduced, period.firstDay),
+            EuVatRate(country, BigDecimal(4.3), Reduced, period.firstDay),
+            EuVatRate(country, BigDecimal(2.09), Reduced, period.firstDay),
+            EuVatRate(country, BigDecimal(0.3), Reduced, period.firstDay)
           )
-
-          val ratesBytes = Json.toJson(rates).toString.getBytes
 
           val currentlyAnsweredVatRates: SalesToCountryWithOptionalSales = SalesToCountryWithOptionalSales(
             country = country,
@@ -164,14 +132,11 @@ class VatRateServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfterE
             )
           )
 
-          val mockEnv = mock[Environment]
-          val mockConfig = mock[Configuration]
-          when(mockConfig.get[String](any())(any())).thenReturn("foo")
-          when(mockEnv.resourceAsStream(any())).thenReturn(Some(new ByteArrayInputStream(ratesBytes)))
+          when(mockEuVatRateConnector.getEuVatRates(any(), any(), any())(any())) thenReturn rates.toFuture
 
-          val service = new VatRateService(mockEnv, mockConfig)
+          val service = new VatRateService(mockEuVatRateConnector)
 
-          val result = service.getRemainingVatRatesForCountry(period, country, currentlyAnsweredVatRates)
+          val result = service.getRemainingVatRatesForCountry(period, country, currentlyAnsweredVatRates).futureValue
 
           result must contain theSameElementsAs Seq(
             VatRateFromCountry(BigDecimal(26.0), Standard, period.firstDay),
@@ -183,15 +148,11 @@ class VatRateServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfterE
 
         "when there are no VAT rates remaining" in {
 
-          val rates: Map[String, Seq[VatRateFromCountry]] = Map(
-            country.code -> Seq(
-              VatRateFromCountry(BigDecimal(21.7), Standard, period.firstDay),
-              VatRateFromCountry(BigDecimal(12.0), Reduced, period.firstDay),
-              VatRateFromCountry(BigDecimal(9.4), Reduced, period.firstDay)
-            )
+          val rates: Seq[EuVatRate] = Seq(
+            EuVatRate(country, BigDecimal(21.7), Standard, period.firstDay),
+            EuVatRate(country, BigDecimal(12.0), Reduced, period.firstDay),
+            EuVatRate(country, BigDecimal(9.4), Reduced, period.firstDay)
           )
-
-          val ratesBytes = Json.toJson(rates).toString.getBytes
 
           val currentlyAnsweredVatRates: SalesToCountryWithOptionalSales = SalesToCountryWithOptionalSales(
             country = country,
@@ -204,14 +165,11 @@ class VatRateServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfterE
             )
           )
 
-          val mockEnv = mock[Environment]
-          val mockConfig = mock[Configuration]
-          when(mockConfig.get[String](any())(any())).thenReturn("foo")
-          when(mockEnv.resourceAsStream(any())).thenReturn(Some(new ByteArrayInputStream(ratesBytes)))
+          when(mockEuVatRateConnector.getEuVatRates(any(), any(), any())(any())) thenReturn rates.toFuture
 
-          val service = new VatRateService(mockEnv, mockConfig)
+          val service = new VatRateService(mockEuVatRateConnector)
 
-          val result = service.getRemainingVatRatesForCountry(period, country, currentlyAnsweredVatRates)
+          val result = service.getRemainingVatRatesForCountry(period, country, currentlyAnsweredVatRates).futureValue
 
           result mustBe Seq.empty
         }

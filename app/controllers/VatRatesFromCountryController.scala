@@ -50,31 +50,32 @@ class VatRatesFromCountryController @Inject()(
 
           val period = request.userAnswers.period
 
-          val nextVatRateIndex = Index(currentVatRatesAnswers.vatRatesFromCountry.map(_.size).getOrElse(0))
+          vatRateService.getRemainingVatRatesForCountry(period, country, currentVatRatesAnswers).flatMap { remainingVatRates =>
 
-          val answers = request.userAnswers.get(VatRatesFromCountryPage(countryIndex, nextVatRateIndex))
+            val nextVatRateIndex = Index(currentVatRatesAnswers.vatRatesFromCountry.map(_.size).getOrElse(0))
 
-          val remainingVatRates = vatRateService.getRemainingVatRatesForCountry(period, country, currentVatRatesAnswers)
+            val answers = request.userAnswers.get(VatRatesFromCountryPage(countryIndex, nextVatRateIndex))
 
-          val form: Form[List[VatRateFromCountry]] = formProvider(remainingVatRates.toList)
+            val form: Form[List[VatRateFromCountry]] = formProvider(remainingVatRates.toList)
 
-          val preparedForm = answers match {
-            case None => form
-            case Some(value) => form.fill(value)
-          }
+            val preparedForm = answers match {
+              case None => form
+              case Some(value) => form.fill(value)
+            }
 
-          remainingVatRates.size match {
-            case 0 =>
-              Redirect(CheckSalesPage(countryIndex).route(waypoints)).toFuture
-            case 1 =>
-              answers match {
-                case Some(_) =>
-                  Redirect(RemainingVatRateFromCountryPage(countryIndex, nextVatRateIndex).route(waypoints)).toFuture
-                case _ =>
-                  addVatRateAndRedirect(currentVatRatesAnswers, remainingVatRates.toList, countryIndex, nextVatRateIndex, waypoints)
-              }
-            case _ =>
-              Ok(view(preparedForm, waypoints, period, countryIndex, country, utils.ItemsHelper.checkboxItems(remainingVatRates))).toFuture
+            remainingVatRates.size match {
+              case 0 =>
+                Redirect(CheckSalesPage(countryIndex).route(waypoints)).toFuture
+              case 1 =>
+                answers match {
+                  case Some(_) =>
+                    Redirect(RemainingVatRateFromCountryPage(countryIndex, nextVatRateIndex).route(waypoints)).toFuture
+                  case _ =>
+                    addVatRateAndRedirect(currentVatRatesAnswers, remainingVatRates.toList, countryIndex, nextVatRateIndex, waypoints)
+                }
+              case _ =>
+                Ok(view(preparedForm, waypoints, period, countryIndex, country, utils.ItemsHelper.checkboxItems(remainingVatRates))).toFuture
+            }
           }
         }
       }
@@ -88,18 +89,19 @@ class VatRatesFromCountryController @Inject()(
 
           val period = request.userAnswers.period
 
-          val remainingVatRates = vatRateService.getRemainingVatRatesForCountry(period, country, currentVatRatesAnswers)
+          vatRateService.getRemainingVatRatesForCountry(period, country, currentVatRatesAnswers).flatMap { remainingVatRates =>
 
-          val form = formProvider(remainingVatRates.toList)
-          form.bindFromRequest().fold(
-            formWithErrors =>
-              BadRequest(view(formWithErrors, waypoints, period, countryIndex, country, utils.ItemsHelper.checkboxItems(remainingVatRates).toList)).toFuture,
+            val form = formProvider(remainingVatRates.toList)
+            form.bindFromRequest().fold(
+              formWithErrors =>
+                BadRequest(view(formWithErrors, waypoints, period, countryIndex, country, utils.ItemsHelper.checkboxItems(remainingVatRates).toList)).toFuture,
 
-            value => {
-              val nextVatRateIndex = Index(currentVatRatesAnswers.vatRatesFromCountry.map(_.size).getOrElse(0))
-              addVatRateAndRedirect(currentVatRatesAnswers, value, countryIndex, nextVatRateIndex, waypoints)
-            }
-          )
+              value => {
+                val nextVatRateIndex = Index(currentVatRatesAnswers.vatRatesFromCountry.map(_.size).getOrElse(0))
+                addVatRateAndRedirect(currentVatRatesAnswers, value, countryIndex, nextVatRateIndex, waypoints)
+              }
+            )
+          }
         }
       }
   }

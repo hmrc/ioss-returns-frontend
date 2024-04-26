@@ -33,6 +33,7 @@ import play.api.test.Helpers._
 import queries.{AllSalesByCountryQuery, OptionalSalesAtVatRate, SalesToCountryWithOptionalSales, VatRateWithOptionalSalesFromCountry}
 import repositories.SessionRepository
 import services.VatRateService
+import uk.gov.hmrc.http.HeaderCarrier
 import utils.FutureSyntax.FutureOps
 import views.html.RemainingVatRateFromCountryView
 
@@ -84,6 +85,8 @@ class RemainingVatRateFromCountryControllerSpec extends SpecBase with MockitoSug
 
   private val mockVatRateService = mock[VatRateService]
 
+  private implicit lazy val emptyHC: HeaderCarrier = HeaderCarrier()
+
   override def beforeEach(): Unit = {
     reset(mockVatRateService)
   }
@@ -92,7 +95,7 @@ class RemainingVatRateFromCountryControllerSpec extends SpecBase with MockitoSug
 
     "must return OK and the correct view for a GET" in {
 
-      when(mockVatRateService.getRemainingVatRatesForCountry(any(), any(), any())) thenReturn Seq(remainingVatRate)
+      when(mockVatRateService.getRemainingVatRatesForCountry(any(), any(), any())(any())) thenReturn Seq(remainingVatRate).toFuture
 
       val application = applicationBuilder(userAnswers = Some(completedUserAnswers))
         .overrides(bind[VatRateService].toInstance(mockVatRateService))
@@ -114,7 +117,7 @@ class RemainingVatRateFromCountryControllerSpec extends SpecBase with MockitoSug
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      when(mockVatRateService.getRemainingVatRatesForCountry(any(), any(), any())) thenReturn Seq(remainingVatRate)
+      when(mockVatRateService.getRemainingVatRatesForCountry(any(), any(), any())(any())) thenReturn Seq(remainingVatRate).toFuture
 
       val userAnswers = completedUserAnswers.set(RemainingVatRateFromCountryPage(index, index), true).success.value
 
@@ -138,7 +141,7 @@ class RemainingVatRateFromCountryControllerSpec extends SpecBase with MockitoSug
 
     "must save the answer and redirect to the next page when valid data is submitted" in {
 
-      when(mockVatRateService.getRemainingVatRatesForCountry(any(), any(), any())) thenReturn Seq(remainingVatRate)
+      when(mockVatRateService.getRemainingVatRatesForCountry(any(), any(), any())(any())) thenReturn Seq(remainingVatRate).toFuture
 
       val mockSessionRepository = mock[SessionRepository]
 
@@ -169,7 +172,7 @@ class RemainingVatRateFromCountryControllerSpec extends SpecBase with MockitoSug
 
     "must return a Bad Request and errors when invalid data is submitted" in {
 
-      when(mockVatRateService.getRemainingVatRatesForCountry(any(), any(), any())) thenReturn Seq(remainingVatRate)
+      when(mockVatRateService.getRemainingVatRatesForCountry(any(), any(), any())(any())) thenReturn Seq(remainingVatRate).toFuture
 
       val application = applicationBuilder(userAnswers = Some(completedUserAnswers))
         .overrides(bind[VatRateService].toInstance(mockVatRateService))
