@@ -61,7 +61,7 @@ class YourAccountController @Inject()(
 
       val results: Future[(CurrentReturnsResponse, PrepareDataResponse, Option[UserAnswers])] = getCurrentReturns()
 
-      if (request.enrolments.enrolments.size > 1) {
+      if (request.enrolments.enrolments.count(_.key == appConfig.iossEnrolment) > 1) {
         previousRegistrationService.getPreviousRegistrationPrepareFinancialData().flatMap { prepareDataList =>
           prepareView(results, prepareDataList, waypoints)
         }
