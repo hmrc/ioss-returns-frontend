@@ -38,7 +38,8 @@ object ReturnsViewModel {
     val returnDue = returns.find(_.submissionStatus == Due)
     val overdueReturns = returns.filter(_.submissionStatus == Overdue)
     val nextReturn = returns.find(_.submissionStatus == Next)
-    val outstandingReturnsOlderThanThreeYears = getOutstandingReturnsOlderThanThreeYears(returns, clock)
+    val outstandingReturnsOlderThanThreeYears =
+      overdueReturns.filter(overdueReturn => isOlderThanThreeYears(overdueReturn.dueDate, clock))
 
     nextReturn.map(
       nextReturn =>
@@ -48,13 +49,6 @@ object ReturnsViewModel {
     ).getOrElse(
       dueReturnsModel(outstandingReturnsOlderThanThreeYears, overdueReturns, inProgress, returnDue)
     )
-  }
-
-  private def getOutstandingReturnsOlderThanThreeYears(returns: Seq[Return], clock: Clock): Seq[Return] = {
-    returns.filter { currentReturn =>
-      Seq(SubmissionStatus.Due, SubmissionStatus.Overdue, SubmissionStatus.Next).contains(currentReturn.submissionStatus) &&
-        isOlderThanThreeYears(currentReturn.dueDate, clock)
-    }
   }
 
   private def startDueReturnLink(waypoints: Waypoints, period: StandardPeriod)(implicit messages: Messages) = {
