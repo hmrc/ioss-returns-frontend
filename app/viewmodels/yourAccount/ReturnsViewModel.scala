@@ -16,12 +16,14 @@
 
 package viewmodels.yourAccount
 
-import models.StandardPeriod
+import controllers.CheckCorrectionsTimeLimit.isOlderThanThreeYears
+import models.{StandardPeriod, SubmissionStatus}
 import models.SubmissionStatus.{Due, Next, Overdue}
 import pages.{EmptyWaypoints, Waypoints}
 import play.api.i18n.Messages
 import viewmodels.{LinkModel, Paragraph, ParagraphSimple, ParagraphWithId}
 
+import java.time.Clock
 import java.time.format.DateTimeFormatter
 
 case class ReturnsViewModel(
@@ -31,11 +33,12 @@ case class ReturnsViewModel(
 
 object ReturnsViewModel {
 
-  def apply(returns: Seq[Return])(implicit messages: Messages): ReturnsViewModel = {
+  def apply(returns: Seq[Return], clock: Clock)(implicit messages: Messages): ReturnsViewModel = {
     val inProgress = returns.find(_.inProgress)
     val returnDue = returns.find(_.submissionStatus == Due)
     val overdueReturns = returns.filter(_.submissionStatus == Overdue)
     val nextReturn = returns.find(_.submissionStatus == Next)
+    val outstandingReturnsOlderThanThreeYears = getOutstandingReturnsOlderThanThreeYears(returns, clock)
 
     nextReturn.map(
       nextReturn =>
@@ -43,8 +46,15 @@ object ReturnsViewModel {
           contents = Seq(nextReturnParagraph(nextReturn.period))
         )
     ).getOrElse(
-      dueReturnsModel(overdueReturns, inProgress, returnDue)
+      dueReturnsModel(outstandingReturnsOlderThanThreeYears, overdueReturns, inProgress, returnDue)
     )
+  }
+
+  private def getOutstandingReturnsOlderThanThreeYears(returns: Seq[Return], clock: Clock): Seq[Return] = {
+    returns.filter { currentReturn =>
+      Seq(SubmissionStatus.Due, SubmissionStatus.Overdue, SubmissionStatus.Next).contains(currentReturn.submissionStatus) &&
+        isOlderThanThreeYears(currentReturn.dueDate, clock)
+    }
   }
 
   private def startDueReturnLink(waypoints: Waypoints, period: StandardPeriod)(implicit messages: Messages) = {
@@ -84,9 +94,10 @@ object ReturnsViewModel {
 
 
   private def returnDueInProgressParagraph(period: StandardPeriod)(implicit messages: Messages) =
-    ParagraphSimple(s"""${messages("yourAccount.yourReturns.inProgress", period.displayText)}
-       |<br>${messages("yourAccount.yourReturns.inProgress.due", period.paymentDeadlineDisplay)}
-       |<br>""".stripMargin)
+    ParagraphSimple(
+      s"""${messages("yourAccount.yourReturns.inProgress", period.displayText)}
+         |<br>${messages("yourAccount.yourReturns.inProgress.due", period.paymentDeadlineDisplay)}
+         |<br>""".stripMargin)
 
   private def returnOverdueSingularParagraph()(implicit messages: Messages) =
     ParagraphSimple(messages("yourAccount.yourReturns.returnsOverdue.singular"))
@@ -104,16 +115,19 @@ object ReturnsViewModel {
   private def onlyReturnsOverdueParagraph(numberOfOverdueReturns: Int)(implicit messages: Messages) =
     ParagraphSimple(messages("yourAccount.yourReturns.onlyReturnsOverdue", numberOfOverdueReturns))
 
+  private def returnsOverdueMoreThanThreeYearsParagraph(period: StandardPeriod)(implicit messages: Messages) =
+    ParagraphSimple(messages("yourAccount.yourReturns.returnsOverdue.moreThanThreeYears", period.displayShortText))
+
   private def nextReturnParagraph(nextReturn: StandardPeriod)(implicit messages: Messages) =
     ParagraphWithId(messages("yourAccount.nextPeriod", nextReturn.displayShortText, nextReturn.lastDay.plusDays(1)
       .format(DateTimeFormatter.ofPattern("d MMMM yyyy"))),
       "next-period"
     )
 
-  private def dueReturnsModel(overdueReturns: Seq[Return], currentReturn: Option[Return], dueReturn: Option[Return])(implicit messages: Messages) = {
+  private def dueReturnsModel(outstandingReturnsOlderThanThreeYears: Seq[Return], overdueReturns: Seq[Return], currentReturn: Option[Return], dueReturn: Option[Return])(implicit messages: Messages): ReturnsViewModel = {
     val waypoints = EmptyWaypoints
 
-    (overdueReturns.size, currentReturn, dueReturn) match {
+    val returnsViewModel = (overdueReturns.size, currentReturn, dueReturn) match {
       case (0, None, None) =>
         ReturnsViewModel(
           contents = Seq.empty,
@@ -169,7 +183,13 @@ object ReturnsViewModel {
 
       case _ =>
         throw new RuntimeException(s"Unexpected combination overdueReturns.size:${overdueReturns.size}, currentReturn:$currentReturn, dueReturn:$dueReturn}")
-
     }
+
+    val outstandingReturnsContent =
+      outstandingReturnsOlderThanThreeYears.map(outstandingReturn => returnsOverdueMoreThanThreeYearsParagraph(outstandingReturn.period))
+
+    returnsViewModel.copy(
+      contents = outstandingReturnsContent ++ returnsViewModel.contents
+    )
   }
 }

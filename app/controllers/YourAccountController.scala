@@ -159,7 +159,9 @@ class YourAccountController @Inject()(
           currentReturn.copy(inProgress = true)
         } else {
           currentReturn
-        })),
+        }),
+        clock
+      ),
       previousRegistrationPrepareData = previousRegistrationPrepareData
     ))
   }
