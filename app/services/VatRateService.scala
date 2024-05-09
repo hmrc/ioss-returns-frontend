@@ -32,7 +32,12 @@ class VatRateService @Inject()(
                               )(implicit ec: ExecutionContext) extends Logging {
 
   def vatRates(period: Period, country: Country)(implicit hc: HeaderCarrier): Future[Seq[VatRateFromCountry]] = {
-    euVatRateConnector.getEuVatRates(country, period.firstDay, period.lastDay).map(_.map(VatRateFromCountry.fromEuVatRate))
+    euVatRateConnector
+      .getEuVatRates(country, period.firstDay, period.lastDay)
+      .map(_
+        .map(VatRateFromCountry.fromEuVatRate)
+        .filterNot(_.rate == BigDecimal(0))
+      )
   }
 
   def getRemainingVatRatesForCountry(

@@ -50,7 +50,7 @@ class VatRateServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfterE
 
       "covert all vat rates return to VatRateFromCountry" - {
 
-        "and which have no end date" in {
+        "and which have no end date and removes 0% rate" in {
 
           val rates: Seq[EuVatRate] = Seq(
             EuVatRate(country, BigDecimal(0), Standard, period.firstDay.minusDays(1)),
@@ -66,7 +66,6 @@ class VatRateServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfterE
           val result = service.vatRates(period, country).futureValue
 
           result must contain theSameElementsAs Seq(
-            VatRateFromCountry(BigDecimal(0), Standard, period.firstDay.minusDays(1)),
             VatRateFromCountry(BigDecimal(1), Reduced, period.firstDay),
             VatRateFromCountry(BigDecimal(2), Reduced, period.lastDay),
             VatRateFromCountry(BigDecimal(3), Reduced, period.lastDay.plusDays(1))
