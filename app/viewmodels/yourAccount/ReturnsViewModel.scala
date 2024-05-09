@@ -17,7 +17,7 @@
 package viewmodels.yourAccount
 
 import controllers.CheckCorrectionsTimeLimit.isOlderThanThreeYears
-import models.{StandardPeriod, SubmissionStatus}
+import models.StandardPeriod
 import models.SubmissionStatus.{Due, Next, Overdue}
 import pages.{EmptyWaypoints, Waypoints}
 import play.api.i18n.Messages

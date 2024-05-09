@@ -16,17 +16,20 @@
 
 package viewmodels
 
+import controllers.CheckCorrectionsTimeLimit.isOlderThanThreeYears
 import models.payments.{Payment, PaymentStatus}
 import play.api.i18n.Messages
 import utils.CurrencyFormatter.currencyFormat
 import viewmodels.LinkModel
+
+import java.time.Clock
 
 case class PaymentsViewModel(sections: Seq[PaymentsSection], warning: Option[String] = None, link: Option[LinkModel] = None)
 
 case class PaymentsSection(contents: Seq[String], heading: Option[String] = None)
 
 object PaymentsViewModel {
-  def apply(duePayments: Seq[Payment], overduePayments: Seq[Payment])(implicit messages: Messages): PaymentsViewModel = {
+  def apply(duePayments: Seq[Payment], overduePayments: Seq[Payment], clock: Clock)(implicit messages: Messages): PaymentsViewModel = {
     if (duePayments.isEmpty && overduePayments.isEmpty) {
       PaymentsViewModel(
         sections = Seq(PaymentsSection(
@@ -34,10 +37,23 @@ object PaymentsViewModel {
         ))
       )
     } else {
+      val (overduePaymentsOlderThanThreeYears, overduePaymentsMaxThreeYears) = overduePayments.partition(overduePayment =>
+        isOlderThanThreeYears(overduePayment.dateDue, clock)
+      )
+
+      val overduePaymentsOlderThanThreeYearsSection = if (overduePaymentsOlderThanThreeYears.nonEmpty) {
+        Some(PaymentsSection(contents = overduePaymentsOlderThanThreeYears.map(payment =>
+          messages("yourAccount.payment.paymentsOverdue.moreThanThreeYears", payment.dateDue))
+        ))
+      } else {
+        None
+      }
+
       val duePaymentsSection = getPaymentsSection(duePayments, "due")
-      val overduePaymentsSection = getPaymentsSection(overduePayments, "overdue")
+      val overduePaymentsMaxThreeYearsSection = getPaymentsSection(overduePaymentsMaxThreeYears, "overdue")
+
       PaymentsViewModel(
-        sections = Seq(duePaymentsSection, overduePaymentsSection).flatten,
+        sections = Seq(overduePaymentsOlderThanThreeYearsSection, duePaymentsSection, overduePaymentsMaxThreeYearsSection).flatten,
         warning = Some(messages("yourAccount.payment.pendingPayments")),
         link = Some(
           LinkModel(

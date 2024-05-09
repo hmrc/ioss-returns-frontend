@@ -77,6 +77,7 @@ yourAccount.payment.overdueHeading = Overdue Payments
 yourAccount.payment.pendingPayments = There may be a delay in showing your payments
 yourAccount.payment.nothingOwed = You do not owe anything right now.
 yourAccount.payment.makeAPayment = Make a payment
+yourAccount.payment.paymentsOverdue.moreThanThreeYears = You have an outstanding IOSS VAT payment for {0}. You must contact the countries where you made your sales to pay the VAT due.
 yourAccount.payment.dueAmountOwed = You owe <span class="govuk-body govuk-!-font-weight-bold">{0}</span> for {1}. You must pay this by {2}.
 yourAccount.payment.dueAmountMaybeOwed = You may still owe VAT for {0}. You must pay this by {1}.
 yourAccount.payment.overdueAmountOwed = You owe <span class="govuk-body govuk-!-font-weight-bold">{0}</span> for {1}, which was due by {2}.

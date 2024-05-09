@@ -177,7 +177,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
         ).build()
 
-      val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty)(messages(application))
+      val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, stubClockAtArbitraryDate)(messages(application))
       when(mockFinancialDataConnector.prepareFinancialData()(any())) thenReturn
         Right(PrepareData(List.empty, List.empty, List.empty, 0, 0, iossNumber)).toFuture
 
@@ -244,7 +244,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
         ).build()
 
-      val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty)(messages(application))
+      val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, stubClockAtArbitraryDate)(messages(application))
       when(mockFinancialDataConnector.prepareFinancialData()(any())) thenReturn
         Right(PrepareData(List.empty, List.empty, List.empty, 0, 0, iossNumber)).toFuture
 
@@ -311,7 +311,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
         ).build()
 
-      val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty)(messages(application))
+      val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, stubClockAtArbitraryDate)(messages(application))
       when(mockFinancialDataConnector.prepareFinancialData()(any())) thenReturn
         Right(PrepareData(List.empty, List.empty, List.empty, 0, 0, iossNumber)).toFuture
 
@@ -383,7 +383,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
         ).build()
 
-      val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty)(messages(application))
+      val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, stubClockAtArbitraryDate)(messages(application))
       when(mockFinancialDataConnector.prepareFinancialData()(any())) thenReturn
         Right(PrepareData(List.empty, List.empty, List.empty, 0, 0, iossNumber)).toFuture
 
@@ -481,7 +481,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
         ).build()
 
-      val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty)(messages(application))
+      val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, stubClockAtArbitraryDate)(messages(application))
 
       running(application) {
 
@@ -584,7 +584,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
         ).build()
 
-      val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty)(messages(application))
+      val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, stubClockAtArbitraryDate)(messages(application))
 
       running(application) {
 
@@ -656,7 +656,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
           ).build()
 
-        val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty)(messages(application))
+        val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, stubClockAtArbitraryDate)(messages(application))
         when(mockFinancialDataConnector.prepareFinancialData()(any())) thenReturn
           Right(PrepareData(List.empty, List.empty, List.empty, 0, 0, iossNumber)).toFuture
 
@@ -717,7 +717,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           ).build()
 
 
-        val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty)(messages(application))
+        val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, stubClockAtArbitraryDate)(messages(application))
         when(mockFinancialDataConnector.prepareFinancialData()(any())) thenReturn
           Right(PrepareData(List.empty, List.empty, List.empty, 0, 0, iossNumber)).toFuture
 
@@ -782,7 +782,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
           ).build()
 
-        val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty)(messages(application))
+        val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, stubClockAtArbitraryDate)(messages(application))
         when(mockFinancialDataConnector.prepareFinancialData()(any())) thenReturn
           Right(PrepareData(List.empty, List.empty, List.empty, 0, 0, iossNumber)).toFuture
 
@@ -846,7 +846,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
           ).build()
 
-        val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty)(messages(application))
+        val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, stubClockAtArbitraryDate)(messages(application))
         when(mockFinancialDataConnector.prepareFinancialData()(any())) thenReturn
           Right(PrepareData(List.empty, List.empty, List.empty, 0, 0, iossNumber)).toFuture
 
@@ -911,7 +911,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
           ).build()
 
-        val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty)(messages(application))
+        val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, stubClockAtArbitraryDate)(messages(application))
         when(mockFinancialDataConnector.prepareFinancialData()(any())) thenReturn
           Right(PrepareData(List.empty, List.empty, List.empty, 0, 0, iossNumber)).toFuture
 
@@ -979,7 +979,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
           ).build()
 
-        val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty)(messages(application))
+        val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, stubClockAtArbitraryDate)(messages(application))
         when(mockFinancialDataConnector.prepareFinancialData()(any())) thenReturn
           Right(PrepareData(List.empty, List.empty, List.empty, 0, 0, iossNumber)).toFuture
 

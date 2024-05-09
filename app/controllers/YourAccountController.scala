@@ -141,7 +141,7 @@ class YourAccountController @Inject()(
       None
     }
 
-    val paymentsViewModel = PaymentsViewModel(currentPayments.duePayments, currentPayments.overduePayments)
+    val paymentsViewModel = PaymentsViewModel(currentPayments.duePayments, currentPayments.overduePayments, clock)
     Ok(view(
       waypoints,
       businessName = request.registrationWrapper.vatInfo.getName,
