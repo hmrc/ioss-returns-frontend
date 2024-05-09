@@ -50,7 +50,7 @@ object PaymentsViewModel {
     }
   }
 
-  private def getPaymentsSection(payments: Seq[Payment], key: String)(implicit messages: Messages) = {
+  private def getPaymentsSection(payments: Seq[Payment], key: String)(implicit messages: Messages): Option[PaymentsSection] = {
     if (payments.nonEmpty) {
       Some(
         PaymentsSection(

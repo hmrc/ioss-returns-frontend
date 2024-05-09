@@ -206,7 +206,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           ReturnsViewModel(
             Seq(
               Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
-            )
+            ),
+            stubClockAtArbitraryDate
           )(messages(application)),
           List.empty
         )(request, messages(application)).toString
@@ -272,7 +273,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           ReturnsViewModel(
             Seq(
               Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
-            )
+            ),
+            stubClockAtArbitraryDate
           )(messages(application)),
           List.empty
         )(request, messages(application)).toString
@@ -338,7 +340,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           ReturnsViewModel(
             Seq(
               Return.fromPeriod(nextPeriod, SubmissionStatus.Due, inProgress = false, isOldest = false)
-            )
+            ),
+            stubClockAtArbitraryDate
           )(messages(application)),
           List.empty
         )(request, messages(application)).toString
@@ -409,7 +412,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           ReturnsViewModel(
             Seq(
               Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
-            )
+            ),
+            stubClockAtArbitraryDate
           )(messages(application)),
           List.empty
         )(request, messages(application)).toString
@@ -504,7 +508,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           ReturnsViewModel(
             Seq(
               Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
-            )
+            ),
+            stubClockAtArbitraryDate
           )(messages(application)),
           List(previousRegistrationPrepareData)
         )(request, messages(application)).toString
@@ -606,7 +611,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           ReturnsViewModel(
             Seq(
               Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
-            )
+            ),
+            stubClockAtArbitraryDate
           )(messages(application)),
           List(previousRegistrationPrepareData)
         )(request, messages(application)).toString
@@ -679,7 +685,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             ReturnsViewModel(
               Seq(
                 Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
-              )
+              ),
+              stubClockAtArbitraryDate
             )(messages(application)),
             List.empty
           )(request, messages(application)).toString
@@ -739,7 +746,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             ReturnsViewModel(
               Seq(
                 Return.fromPeriod(period, Due, inProgress = true, isOldest = false)
-              )
+              ),
+              stubClockAtArbitraryDate
             )(messages(application)),
             List.empty
           )(request, messages(application)).toString
@@ -804,7 +812,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               Seq(
                 Return.fromPeriod(secondPeriod, Due, inProgress = false, isOldest = false),
                 Return.fromPeriod(firstPeriod, Overdue, inProgress = false, isOldest = true)
-              )
+              ),
+              stubClockAtArbitraryDate
             )(messages(application)),
             List.empty
           )(request, messages(application)).toString
@@ -866,7 +875,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             ReturnsViewModel(
               Seq(
                 Return.fromPeriod(period, Overdue, inProgress = false, isOldest = true)
-              )
+              ),
+              stubClockAtArbitraryDate
             )(messages(application)),
             List.empty
           )(request, messages(application)).toString
@@ -931,7 +941,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               Seq(
                 Return.fromPeriod(firstPeriod, Overdue, inProgress = false, isOldest = true),
                 Return.fromPeriod(secondPeriod, Overdue, inProgress = false, isOldest = false),
-              )
+              ),
+              stubClockAtArbitraryDate
             )(messages(application)),
             List.empty
           )(request, messages(application)).toString
@@ -999,7 +1010,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
                 Return.fromPeriod(firstPeriod, Overdue, inProgress = false, isOldest = true),
                 Return.fromPeriod(secondPeriod, Overdue, inProgress = false, isOldest = false),
                 Return.fromPeriod(thirdPeriod, Due, inProgress = false, isOldest = false)
-              )
+              ),
+              stubClockAtArbitraryDate
             )(messages(application)),
             List.empty
           )(request, messages(application)).toString
