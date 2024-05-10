@@ -43,7 +43,7 @@ object PaymentsViewModel {
 
       val overduePaymentsOlderThanThreeYearsSection = if (overduePaymentsOlderThanThreeYears.nonEmpty) {
         Some(PaymentsSection(contents = overduePaymentsOlderThanThreeYears.map(payment =>
-          messages("yourAccount.payment.paymentsOverdue.moreThanThreeYears", payment.dateDue))
+          messages("yourAccount.payment.paymentsOverdue.moreThanThreeYears", payment.period.displayShortText))
         ))
       } else {
         None

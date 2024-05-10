@@ -22,7 +22,7 @@ import models.payments.{Payment, PaymentStatus}
 
 import java.time.{LocalDate, Month}
 
-class PaymentsViewModelSpec extends SpecBase{
+class PaymentsViewModelSpec extends SpecBase {
 
   private val paymentDue = Payment(period, BigDecimal(1000), LocalDate.now, PaymentStatus.Unpaid)
   val period1: StandardPeriod = StandardPeriod(2021, Month.JULY)
@@ -91,9 +91,9 @@ class PaymentsViewModelSpec extends SpecBase{
       val result = PaymentsViewModel(Seq(paymentDue.copy(period = period3)), Seq(paymentDue.copy(period = period1, paymentStatus = PaymentStatus.Unknown), paymentDue.copy(period = period2)), stubClockAtArbitraryDate)(messages(app))
       result.sections mustBe Seq(
         PaymentsSection(
-        Seq(
-          s"""You owe <span class="govuk-body govuk-!-font-weight-bold">&pound;1,000</span> for ${period3.displayShortText}. You must pay this by ${period3.paymentDeadlineDisplay}.""",
-        ),
+          Seq(
+            s"""You owe <span class="govuk-body govuk-!-font-weight-bold">&pound;1,000</span> for ${period3.displayShortText}. You must pay this by ${period3.paymentDeadlineDisplay}.""",
+          ),
           Some("Due Payments")),
         PaymentsSection(
           Seq(
@@ -103,6 +103,26 @@ class PaymentsViewModelSpec extends SpecBase{
           Some("Overdue Payments")
         )
       )
+      result.link mustBe defined
+      result.warning mustBe defined
+    }
+
+    "there is one overdue payment older than three years and one payment overdue" in {
+      val paymentOverdueOlderThan3Years = paymentDue.copy(dateDue = arbitraryDate.minusYears(4))
+      val result = PaymentsViewModel(Seq.empty, Seq(paymentOverdueOlderThan3Years, paymentDue), stubClockAtArbitraryDate)(messages(app))
+      result.sections mustBe Seq(
+        PaymentsSection(
+          Seq(
+            s"You have an outstanding IOSS VAT payment for ${period.displayShortText}. You must contact the countries where you made your sales to pay the VAT due."
+          ),
+          None
+        ),
+        PaymentsSection(
+          Seq(
+            s"""You owe <span class="govuk-body govuk-!-font-weight-bold">&pound;1,000</span> for ${period.displayShortText}, which was due by ${period.paymentDeadlineDisplay}."""
+          ),
+          Some("Overdue Payments")
+        ))
       result.link mustBe defined
       result.warning mustBe defined
     }
