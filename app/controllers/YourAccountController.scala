@@ -32,7 +32,7 @@ import pages.Waypoints
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import repositories.SessionRepository
-import services.PreviousRegistrationService
+import services.{ExcludedTraderService, PreviousRegistrationService}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import viewmodels.PaymentsViewModel
 import viewmodels.yourAccount.{CurrentReturns, ReturnsViewModel}
@@ -48,6 +48,7 @@ class YourAccountController @Inject()(
                                        saveForLaterConnector: SaveForLaterConnector,
                                        view: YourAccountView,
                                        returnStatusConnector: ReturnStatusConnector,
+                                       excludedTraderService: ExcludedTraderService,
                                        previousRegistrationService: PreviousRegistrationService,
                                        clock: Clock,
                                        sessionRepository: SessionRepository,
@@ -58,9 +59,12 @@ class YourAccountController @Inject()(
 
   def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request =>
+      request.registrationWrapper.registration.exclusions.lastOption
+
+      //request.registrationWrapper.registration.exclusions.lastOption, request.userAnswers.period
 
       val results: Future[(CurrentReturnsResponse, PrepareDataResponse, Option[UserAnswers])] = getCurrentReturns()
-
+request.registrationWrapper.registration.exclusions.lastOption
       if (request.enrolments.enrolments.count(_.key == appConfig.iossEnrolment) > 1) {
         previousRegistrationService.getPreviousRegistrationPrepareFinancialData().flatMap { prepareDataList =>
           prepareView(results, prepareDataList, waypoints)
@@ -73,10 +77,13 @@ class YourAccountController @Inject()(
   private def prepareView(
                            results: Future[(CurrentReturnsResponse, PrepareDataResponse, Option[UserAnswers])],
                            previousRegistrationPrepareData: List[PrepareData],
+                           maybeExclusion: Option[EtmpExclusion],
                            waypoints: Waypoints
                          )(implicit request: RegistrationRequest[AnyContent]): Future[Result] = {
     results.map {
-      case (Right(availableReturns), Right(vatReturnsWithFinancialData), answers) =>
+      case (Right(availableReturns: CurrentReturns), Right(vatReturnsWithFinancialData), answers) =>
+        println("availableReturns:")
+        println(availableReturns)
         preparedViewWithFinancialData(availableReturns, vatReturnsWithFinancialData, previousRegistrationPrepareData, waypoints, answers.map(_.period))
       case (Left(error), error2, _) =>
         logger.error(s"there was an error with period with status $error and getting periods with outstanding amounts $error2")
@@ -160,6 +167,7 @@ class YourAccountController @Inject()(
         } else {
           currentReturn
         }),
+        excludedTraderService.isExcludedTrader(maybeExclusion, request.userAnswers.period)
         clock
       ),
       previousRegistrationPrepareData = previousRegistrationPrepareData
