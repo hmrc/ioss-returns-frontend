@@ -32,7 +32,8 @@ class CheckExcludedTraderFilterImpl(frontendAppConfig: FrontendAppConfig, exclud
 
   override protected def filter[A](request: DataRequest[A]): Future[Option[Result]] = {
     if (frontendAppConfig.exclusionsEnabled &&
-      excludedTraderService.isExcludedTrader(request.registrationWrapper.registration.exclusions.lastOption, request.userAnswers.period)) {
+      request.registrationWrapper.registration.exclusions.lastOption.exists(exclusion =>
+        excludedTraderService.isExcludedTrader(exclusion, request.userAnswers.period))) {
       Future.successful(Some(Redirect(routes.ExcludedNotPermittedController.onPageLoad())))
     } else {
       Future.successful(None)

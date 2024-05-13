@@ -59,12 +59,8 @@ class YourAccountController @Inject()(
 
   def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request =>
-      request.registrationWrapper.registration.exclusions.lastOption
-
-      //request.registrationWrapper.registration.exclusions.lastOption, request.userAnswers.period
-
       val results: Future[(CurrentReturnsResponse, PrepareDataResponse, Option[UserAnswers])] = getCurrentReturns()
-request.registrationWrapper.registration.exclusions.lastOption
+
       if (request.enrolments.enrolments.count(_.key == appConfig.iossEnrolment) > 1) {
         previousRegistrationService.getPreviousRegistrationPrepareFinancialData().flatMap { prepareDataList =>
           prepareView(results, prepareDataList, waypoints)
@@ -77,7 +73,6 @@ request.registrationWrapper.registration.exclusions.lastOption
   private def prepareView(
                            results: Future[(CurrentReturnsResponse, PrepareDataResponse, Option[UserAnswers])],
                            previousRegistrationPrepareData: List[PrepareData],
-                           maybeExclusion: Option[EtmpExclusion],
                            waypoints: Waypoints
                          )(implicit request: RegistrationRequest[AnyContent]): Future[Result] = {
     results.map {
@@ -148,7 +143,15 @@ request.registrationWrapper.registration.exclusions.lastOption
       None
     }
 
-    val paymentsViewModel = PaymentsViewModel(currentPayments.duePayments, currentPayments.overduePayments, clock)
+    val isExcludedTrader: Boolean = (maybeExclusion, periodInProgress) match {
+      case (Some(exclusion), Some(period)) => excludedTraderService.isExcludedTrader(exclusion, period)
+      case _ => false
+    }
+
+    val returnsViewModel = buildReturnsViewModel(currentReturns, periodInProgress, isExcludedTrader)
+
+    val paymentsViewModel = PaymentsViewModel(currentPayments.duePayments, currentPayments.overduePayments, isExcludedTrader, clock)
+
     Ok(view(
       waypoints,
       businessName = request.registrationWrapper.vatInfo.getName,
@@ -161,17 +164,22 @@ request.registrationWrapper.registration.exclusions.lastOption
       exclusionsEnabled = appConfig.exclusionsEnabled,
       maybeExclusion = maybeExclusion,
       hasSubmittedFinalReturn = currentReturns.finalReturnsCompleted,
-      returnsViewModel = ReturnsViewModel(
-        currentReturns.returns.map(currentReturn => if (periodInProgress.contains(currentReturn.period)) {
-          currentReturn.copy(inProgress = true)
-        } else {
-          currentReturn
-        }),
-        excludedTraderService.isExcludedTrader(maybeExclusion, request.userAnswers.period)
-        clock
-      ),
+      returnsViewModel = returnsViewModel,
       previousRegistrationPrepareData = previousRegistrationPrepareData
     ))
+  }
+
+  private def buildReturnsViewModel(currentReturns: CurrentReturns, periodInProgress: Option[Period], isExcludedTrader: Boolean)
+                                   (implicit request: RegistrationRequest[AnyContent]) = {
+    ReturnsViewModel(
+      currentReturns.returns.map(currentReturn => if (periodInProgress.contains(currentReturn.period)) {
+        currentReturn.copy(inProgress = true)
+      } else {
+        currentReturn
+      }),
+      isExcludedTrader,
+      clock
+    )
   }
 
   private def getExistsOutstandingReturns(currentReturns: CurrentReturns): Boolean = {

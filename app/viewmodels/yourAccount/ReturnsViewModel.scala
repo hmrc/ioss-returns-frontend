@@ -40,7 +40,7 @@ object ReturnsViewModel {
     val overdueReturns = returns.filter(_.submissionStatus == Overdue)
 
     val (overdueReturnsOlderThanThreeYears, overdueReturnsMaxThreeYears) = overdueReturns.partition(overdueReturn =>
-      isOlderThanThreeYears(overdueReturn.dueDate, clock)
+      isExcludedTrader && isOlderThanThreeYears(overdueReturn.dueDate, clock)
     )
 
     nextReturn.map(

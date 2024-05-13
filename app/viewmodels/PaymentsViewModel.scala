@@ -29,7 +29,8 @@ case class PaymentsViewModel(sections: Seq[PaymentsSection], warning: Option[Str
 case class PaymentsSection(contents: Seq[String], heading: Option[String] = None)
 
 object PaymentsViewModel {
-  def apply(duePayments: Seq[Payment], overduePayments: Seq[Payment], clock: Clock)(implicit messages: Messages): PaymentsViewModel = {
+  def apply(duePayments: Seq[Payment], overduePayments: Seq[Payment], isExcludedTrader: Boolean, clock: Clock)
+           (implicit messages: Messages): PaymentsViewModel = {
     if (duePayments.isEmpty && overduePayments.isEmpty) {
       PaymentsViewModel(
         sections = Seq(PaymentsSection(
@@ -38,7 +39,7 @@ object PaymentsViewModel {
       )
     } else {
       val (overduePaymentsOlderThanThreeYears, overduePaymentsMaxThreeYears) = overduePayments.partition(overduePayment =>
-        isOlderThanThreeYears(overduePayment.dateDue, clock)
+        isExcludedTrader && isOlderThanThreeYears(overduePayment.dateDue, clock)
       )
 
       val overduePaymentsOlderThanThreeYearsSection = if (overduePaymentsOlderThanThreeYears.nonEmpty) {
