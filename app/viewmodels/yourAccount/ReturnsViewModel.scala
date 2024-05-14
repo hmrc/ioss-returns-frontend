@@ -33,15 +33,11 @@ case class ReturnsViewModel(
 
 object ReturnsViewModel {
 
-  def apply(returns: Seq[Return], isExcludedTrader: Boolean, clock: Clock)(implicit messages: Messages): ReturnsViewModel = {
+  def apply(excludedReturns: Seq[Return], returns: Seq[Return], isExcludedTrader: Boolean, clock: Clock)(implicit messages: Messages): ReturnsViewModel = {
     val inProgress = returns.find(_.inProgress)
     val returnDue = returns.find(_.submissionStatus == Due)
     val nextReturn = returns.find(_.submissionStatus == Next)
     val overdueReturns = returns.filter(_.submissionStatus == Overdue)
-
-    val (overdueReturnsOlderThanThreeYears, overdueReturnsMaxThreeYears) = overdueReturns.partition(overdueReturn =>
-      isExcludedTrader && isOlderThanThreeYears(overdueReturn.dueDate, clock)
-    )
 
     nextReturn.map(
       nextReturn =>
@@ -49,7 +45,7 @@ object ReturnsViewModel {
           contents = Seq(nextReturnParagraph(nextReturn.period))
         )
     ).getOrElse(
-      dueReturnsModel(overdueReturnsMaxThreeYears, overdueReturnsOlderThanThreeYears, inProgress, returnDue)
+      dueReturnsModel(overdueReturns, excludedReturns, inProgress, returnDue)
     )
   }
 
@@ -111,8 +107,8 @@ object ReturnsViewModel {
   private def onlyReturnsOverdueParagraph(numberOfOverdueReturns: Int)(implicit messages: Messages) =
     ParagraphSimple(messages("yourAccount.yourReturns.onlyReturnsOverdue", numberOfOverdueReturns))
 
-  private def returnsOverdueMoreThanThreeYearsParagraph(period: StandardPeriod)(implicit messages: Messages) =
-    ParagraphSimple(messages("yourAccount.yourReturns.returnsOverdue.moreThanThreeYears", period.displayShortText))
+  private def excludedReturnsParagraph(period: StandardPeriod)(implicit messages: Messages) =
+    ParagraphSimple(messages("yourAccount.yourReturns.excludedReturn", period.displayShortText))
 
   private def nextReturnParagraph(nextReturn: StandardPeriod)(implicit messages: Messages) =
     ParagraphWithId(messages("yourAccount.nextPeriod", nextReturn.displayShortText, nextReturn.lastDay.plusDays(1)
@@ -120,10 +116,10 @@ object ReturnsViewModel {
       "next-period"
     )
 
-  private def dueReturnsModel(overdueReturnsMaxThreeYears: Seq[Return], overdueReturnsOlderThanThreeYears: Seq[Return], currentReturn: Option[Return], dueReturn: Option[Return])(implicit messages: Messages): ReturnsViewModel = {
+  private def dueReturnsModel(overdueReturns: Seq[Return], excludedReturns: Seq[Return], currentReturn: Option[Return], dueReturn: Option[Return])(implicit messages: Messages): ReturnsViewModel = {
     val waypoints = EmptyWaypoints
 
-    val returnsViewModel = (overdueReturnsMaxThreeYears.size, currentReturn, dueReturn) match {
+    val returnsViewModel = (overdueReturns.size, currentReturn, dueReturn) match {
       case (0, None, None) =>
         ReturnsViewModel(
           contents = Seq.empty,
@@ -147,7 +143,7 @@ object ReturnsViewModel {
           Seq(returnOverdueSingularParagraph(), returnDueParagraph(dueReturn.period))).getOrElse(Seq(returnOverdueParagraph()))
         ReturnsViewModel(
           contents = contents,
-          linkToStart = Some(startOverdueReturnLink(waypoints, overdueReturnsMaxThreeYears.head.period))
+          linkToStart = Some(startOverdueReturnLink(waypoints, overdueReturns.head.period))
         )
 
       case (1, Some(inProgress), _) =>
@@ -165,7 +161,7 @@ object ReturnsViewModel {
           .getOrElse(Seq(onlyReturnsOverdueParagraph(x)))
         ReturnsViewModel(
           contents = contents,
-          linkToStart = Some(startOverdueReturnLink(waypoints, overdueReturnsMaxThreeYears.minBy(_.period.lastDay.toEpochDay).period))
+          linkToStart = Some(startOverdueReturnLink(waypoints, overdueReturns.minBy(_.period.lastDay.toEpochDay).period))
         )
 
       case (x, Some(inProgress), _) =>
@@ -178,14 +174,14 @@ object ReturnsViewModel {
         )
 
       case _ =>
-        throw new RuntimeException(s"Unexpected combination overdueReturns.size:${overdueReturnsMaxThreeYears.size}, currentReturn:$currentReturn, dueReturn:$dueReturn}")
+        throw new RuntimeException(s"Unexpected combination overdueReturns.size:${overdueReturns.size}, currentReturn:$currentReturn, dueReturn:$dueReturn}")
     }
 
-    val overdueReturnsOlderThanThreeYearsContent =
-      overdueReturnsOlderThanThreeYears.map(overdueReturn => returnsOverdueMoreThanThreeYearsParagraph(overdueReturn.period))
+    val excludedReturnsContent =
+      excludedReturns.map(excludedReturn => excludedReturnsParagraph(excludedReturn.period))
 
     returnsViewModel.copy(
-      contents = overdueReturnsOlderThanThreeYearsContent ++ returnsViewModel.contents
+      contents = excludedReturnsContent ++ returnsViewModel.contents
     )
   }
 }

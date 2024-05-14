@@ -23,6 +23,7 @@ import connectors._
 import controllers.CheckCorrectionsTimeLimit.isOlderThanThreeYears
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
+import models.SubmissionStatus.{Excluded, Overdue}
 import models.etmp.EtmpExclusion
 import models.etmp.EtmpExclusionReason.{NoLongerSupplies, Reversal, TransferringMSID, VoluntarilyLeaves}
 import models.payments._
@@ -77,8 +78,17 @@ class YourAccountController @Inject()(
                          )(implicit request: RegistrationRequest[AnyContent]): Future[Result] = {
     results.map {
       case (Right(availableReturns: CurrentReturns), Right(vatReturnsWithFinancialData), answers) =>
-        println("availableReturns:")
-        println(availableReturns)
+        println("availableReturns.completeOrExcludedReturns:"+availableReturns.completeOrExcludedReturns)
+        availableReturns.completeOrExcludedReturns.foreach(r =>
+          println(r)
+        )
+        println("availableReturns.results:")
+        availableReturns.returns.foreach(r =>
+          println(r)
+        )
+        println("availableReturns.returns.size: "+ availableReturns.returns.size)
+        availableReturns.returns.foreach(x => println(x.submissionStatus))
+        println("availableReturns.returns.size Overdue: "+ availableReturns.returns.count(_.submissionStatus == Overdue))
         preparedViewWithFinancialData(availableReturns, vatReturnsWithFinancialData, previousRegistrationPrepareData, waypoints, answers.map(_.period))
       case (Left(error), error2, _) =>
         logger.error(s"there was an error with period with status $error and getting periods with outstanding amounts $error2")
@@ -150,7 +160,8 @@ class YourAccountController @Inject()(
 
     val returnsViewModel = buildReturnsViewModel(currentReturns, periodInProgress, isExcludedTrader)
 
-    val paymentsViewModel = PaymentsViewModel(currentPayments.duePayments, currentPayments.overduePayments, isExcludedTrader, clock)
+    val paymentsViewModel = PaymentsViewModel(currentPayments.duePayments, currentPayments.overduePayments,
+      currentPayments.excludedPayments, isExcludedTrader, clock)
 
     Ok(view(
       waypoints,
@@ -172,6 +183,7 @@ class YourAccountController @Inject()(
   private def buildReturnsViewModel(currentReturns: CurrentReturns, periodInProgress: Option[Period], isExcludedTrader: Boolean)
                                    (implicit request: RegistrationRequest[AnyContent]) = {
     ReturnsViewModel(
+      currentReturns.completeOrExcludedReturns.filter(_.submissionStatus == Excluded),
       currentReturns.returns.map(currentReturn => if (periodInProgress.contains(currentReturn.period)) {
         currentReturn.copy(inProgress = true)
       } else {
