@@ -33,11 +33,18 @@ case class ReturnsViewModel(
 
 object ReturnsViewModel {
 
-  def apply(excludedReturns: Seq[Return], returns: Seq[Return], isExcludedTrader: Boolean, clock: Clock)(implicit messages: Messages): ReturnsViewModel = {
+  def apply(excludedReturns: Seq[Return], returns: Seq[Return], clock: Clock)(implicit messages: Messages): ReturnsViewModel = {
     val inProgress = returns.find(_.inProgress)
     val returnDue = returns.find(_.submissionStatus == Due)
     val nextReturn = returns.find(_.submissionStatus == Next)
     val overdueReturns = returns.filter(_.submissionStatus == Overdue)
+
+    println("excludedReturns:")
+    excludedReturns.foreach(println)
+
+    val excludedReturnsOlderThanThreeYears = excludedReturns.filter {
+      excludedReturn => isOlderThanThreeYears(excludedReturn.dueDate, clock)
+    }.sortBy(_.dueDate)
 
     nextReturn.map(
       nextReturn =>
@@ -45,7 +52,7 @@ object ReturnsViewModel {
           contents = Seq(nextReturnParagraph(nextReturn.period))
         )
     ).getOrElse(
-      dueReturnsModel(overdueReturns, excludedReturns, inProgress, returnDue)
+      dueReturnsModel(overdueReturns, excludedReturnsOlderThanThreeYears, inProgress, returnDue)
     )
   }
 

@@ -16,6 +16,7 @@
 
 package viewmodels
 
+import controllers.CheckCorrectionsTimeLimit.isOlderThanThreeYears
 import models.payments.{Payment, PaymentStatus}
 import play.api.i18n.Messages
 import utils.CurrencyFormatter.currencyFormat
@@ -27,7 +28,7 @@ case class PaymentsViewModel(sections: Seq[PaymentsSection], warning: Option[Str
 case class PaymentsSection(contents: Seq[String], heading: Option[String] = None)
 
 object PaymentsViewModel {
-  def apply(duePayments: Seq[Payment], overduePayments: Seq[Payment], excludedPayments: Seq[Payment], isExcludedTrader: Boolean, clock: Clock)
+  def apply(duePayments: Seq[Payment], overduePayments: Seq[Payment], excludedPayments: Seq[Payment], clock: Clock)
            (implicit messages: Messages): PaymentsViewModel = {
     if (duePayments.isEmpty && overduePayments.isEmpty) {
       PaymentsViewModel(
@@ -36,9 +37,13 @@ object PaymentsViewModel {
         ))
       )
     } else {
+      val excludedPaymentsOlderThanThreeYears = excludedPayments.filter(excludedPayment =>
+        isOlderThanThreeYears(excludedPayment.dateDue, clock)
+      ).sortBy(_.dateDue)
+
       val excludedPaymentsSection = if (excludedPayments.nonEmpty) {
-        Some(PaymentsSection(contents = excludedPayments.map(payment =>
-          messages("yourAccount.payment.excludedPayment", payment.period.displayShortText))
+        Some(PaymentsSection(contents = excludedPaymentsOlderThanThreeYears.map(excludedPayment =>
+          messages("yourAccount.payment.excludedPayment", excludedPayment.period.displayShortText))
         ))
       } else {
         None

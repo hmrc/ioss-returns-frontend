@@ -78,6 +78,7 @@ class YourAccountController @Inject()(
                          )(implicit request: RegistrationRequest[AnyContent]): Future[Result] = {
     results.map {
       case (Right(availableReturns: CurrentReturns), Right(vatReturnsWithFinancialData), answers) =>
+
         println("availableReturns.completeOrExcludedReturns:"+availableReturns.completeOrExcludedReturns)
         availableReturns.completeOrExcludedReturns.foreach(r =>
           println(r)
@@ -153,15 +154,17 @@ class YourAccountController @Inject()(
       None
     }
 
+    /*println("maybeExclusion="+maybeExclusion)
+    println("periodInProgress="+periodInProgress)
     val isExcludedTrader: Boolean = (maybeExclusion, periodInProgress) match {
       case (Some(exclusion), Some(period)) => excludedTraderService.isExcludedTrader(exclusion, period)
       case _ => false
-    }
+    }*/
 
-    val returnsViewModel = buildReturnsViewModel(currentReturns, periodInProgress, isExcludedTrader)
+    val returnsViewModel = buildReturnsViewModel(currentReturns, periodInProgress)
 
     val paymentsViewModel = PaymentsViewModel(currentPayments.duePayments, currentPayments.overduePayments,
-      currentPayments.excludedPayments, isExcludedTrader, clock)
+      currentPayments.excludedPayments, clock)
 
     Ok(view(
       waypoints,
@@ -180,7 +183,7 @@ class YourAccountController @Inject()(
     ))
   }
 
-  private def buildReturnsViewModel(currentReturns: CurrentReturns, periodInProgress: Option[Period], isExcludedTrader: Boolean)
+  private def buildReturnsViewModel(currentReturns: CurrentReturns, periodInProgress: Option[Period])
                                    (implicit request: RegistrationRequest[AnyContent]) = {
     ReturnsViewModel(
       currentReturns.completeOrExcludedReturns.filter(_.submissionStatus == Excluded),
@@ -189,7 +192,6 @@ class YourAccountController @Inject()(
       } else {
         currentReturn
       }),
-      isExcludedTrader,
       clock
     )
   }
