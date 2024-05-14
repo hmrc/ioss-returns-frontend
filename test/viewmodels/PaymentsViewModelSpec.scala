@@ -33,14 +33,14 @@ class PaymentsViewModelSpec extends SpecBase {
     val app = applicationBuilder().build()
 
     "there is no payments due or overdue" in {
-      val result = PaymentsViewModel(Seq.empty, Seq.empty, isExcludedTrader = false, stubClockAtArbitraryDate)(messages(app))
+      val result = PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, isExcludedTrader = false, stubClockAtArbitraryDate)(messages(app))
       result.sections mustBe Seq(PaymentsSection(Seq("You do not owe anything right now.")))
       result.link must not be defined
       result.warning must not be defined
     }
 
     "there is one due payment" in {
-      val result = PaymentsViewModel(Seq(paymentDue), Seq.empty, isExcludedTrader = false, stubClockAtArbitraryDate)(messages(app))
+      val result = PaymentsViewModel(Seq(paymentDue), Seq.empty, Seq.empty, isExcludedTrader = false, stubClockAtArbitraryDate)(messages(app))
       result.sections mustBe Seq(PaymentsSection(
         Seq(
           s"""You owe <span class="govuk-body govuk-!-font-weight-bold">&pound;1,000</span> for ${period.displayShortText}. You must pay this by ${period.paymentDeadlineDisplay}."""
@@ -53,7 +53,7 @@ class PaymentsViewModelSpec extends SpecBase {
 
     "there is one due payment with unknown status" in {
       val result = PaymentsViewModel(Seq(paymentDue.copy(paymentStatus = PaymentStatus.Unknown)), Seq.empty,
-        isExcludedTrader = false, stubClockAtArbitraryDate)(messages(app))
+        Seq.empty, isExcludedTrader = false, stubClockAtArbitraryDate)(messages(app))
       result.sections mustBe Seq(PaymentsSection(
         Seq(
           s"""You may still owe VAT for ${period.displayShortText}. You must pay this by ${period.paymentDeadlineDisplay}."""
@@ -65,7 +65,7 @@ class PaymentsViewModelSpec extends SpecBase {
     }
 
     "there is one overdue payment" in {
-      val result = PaymentsViewModel(Seq.empty, Seq(paymentDue), isExcludedTrader = false, stubClockAtArbitraryDate)(messages(app))
+      val result = PaymentsViewModel(Seq.empty, Seq(paymentDue), Seq.empty, isExcludedTrader = false, stubClockAtArbitraryDate)(messages(app))
       result.sections mustBe Seq(PaymentsSection(
         Seq(
           s"""You owe <span class="govuk-body govuk-!-font-weight-bold">&pound;1,000</span> for ${period.displayShortText}, which was due by ${period.paymentDeadlineDisplay}."""
@@ -78,7 +78,7 @@ class PaymentsViewModelSpec extends SpecBase {
 
     "there is one overdue payment with unknown status" in {
       val result = PaymentsViewModel(Seq.empty, Seq(paymentDue.copy(paymentStatus = PaymentStatus.Unknown)),
-        isExcludedTrader = false, stubClockAtArbitraryDate)(messages(app))
+        Seq.empty, isExcludedTrader = false, stubClockAtArbitraryDate)(messages(app))
       result.sections mustBe Seq(PaymentsSection(
         Seq(
           s"""You may still owe VAT for ${period.displayShortText}, which was due by ${period.paymentDeadlineDisplay}."""
@@ -91,7 +91,7 @@ class PaymentsViewModelSpec extends SpecBase {
 
     "there is one due payment, and two overdue payments, one with unknown status" in {
       val result = PaymentsViewModel(Seq(paymentDue.copy(period = period3)), Seq(paymentDue.copy(period = period1, paymentStatus = PaymentStatus.Unknown),
-        paymentDue.copy(period = period2)), isExcludedTrader = false, stubClockAtArbitraryDate)(messages(app))
+        paymentDue.copy(period = period2)), Seq.empty, isExcludedTrader = false, stubClockAtArbitraryDate)(messages(app))
       result.sections mustBe Seq(
         PaymentsSection(
           Seq(
@@ -111,9 +111,9 @@ class PaymentsViewModelSpec extends SpecBase {
     }
 
     "there is one overdue payment older than three years and one payment overdue for an excluded trader" in {
-      val paymentOverdueOlderThan3Years = paymentDue.copy(dateDue = arbitraryDate.minusYears(4))
-      val result = PaymentsViewModel(Seq.empty, Seq(paymentOverdueOlderThan3Years, paymentDue),
-        isExcludedTrader = true, stubClockAtArbitraryDate)(messages(app))
+      val excludedPayment = paymentDue.copy(dateDue = arbitraryDate.minusYears(4))
+      val result = PaymentsViewModel(Seq.empty, Seq(paymentDue),
+        Seq(excludedPayment), isExcludedTrader = true, stubClockAtArbitraryDate)(messages(app))
       result.sections mustBe Seq(
         PaymentsSection(
           Seq(

@@ -16,11 +16,9 @@
 
 package viewmodels
 
-import controllers.CheckCorrectionsTimeLimit.isOlderThanThreeYears
 import models.payments.{Payment, PaymentStatus}
 import play.api.i18n.Messages
 import utils.CurrencyFormatter.currencyFormat
-import viewmodels.LinkModel
 
 import java.time.Clock
 
@@ -38,8 +36,8 @@ object PaymentsViewModel {
         ))
       )
     } else {
-      val excludedPaymentsSection = if (overduePayments.nonEmpty) {
-        Some(PaymentsSection(contents = overduePayments.map(payment =>
+      val excludedPaymentsSection = if (excludedPayments.nonEmpty) {
+        Some(PaymentsSection(contents = excludedPayments.map(payment =>
           messages("yourAccount.payment.excludedPayment", payment.period.displayShortText))
         ))
       } else {

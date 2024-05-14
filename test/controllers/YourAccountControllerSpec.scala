@@ -177,7 +177,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
         ).build()
 
-      val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, isExcludedTrader = false, stubClockAtArbitraryDate)(messages(application))
+      val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, isExcludedTrader = false, stubClockAtArbitraryDate)(messages(application))
       when(mockFinancialDataConnector.prepareFinancialData()(any())) thenReturn
         Right(PrepareData(List.empty, List.empty, List.empty, 0, 0, iossNumber)).toFuture
 
@@ -204,6 +204,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           None,
           hasSubmittedFinalReturn = false,
           ReturnsViewModel(
+            Seq.empty,
             Seq(
               Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
             ),
@@ -245,7 +246,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
         ).build()
 
-      val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, isExcludedTrader = false, stubClockAtArbitraryDate)(messages(application))
+      val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, isExcludedTrader = false, stubClockAtArbitraryDate)(messages(application))
       when(mockFinancialDataConnector.prepareFinancialData()(any())) thenReturn
         Right(PrepareData(List.empty, List.empty, List.empty, 0, 0, iossNumber)).toFuture
 
@@ -272,6 +273,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           Some(registrationWrapperWithExclusion.registration.exclusions.head),
           hasSubmittedFinalReturn = true,
           ReturnsViewModel(
+            Seq.empty,
             Seq(
               Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
             ),
@@ -313,7 +315,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
         ).build()
 
-      val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, isExcludedTrader = false, stubClockAtArbitraryDate)(messages(application))
+      val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, isExcludedTrader = false, stubClockAtArbitraryDate)(messages(application))
       when(mockFinancialDataConnector.prepareFinancialData()(any())) thenReturn
         Right(PrepareData(List.empty, List.empty, List.empty, 0, 0, iossNumber)).toFuture
 
@@ -340,6 +342,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           Some(registrationWrapperWithExclusion.registration.exclusions.head),
           hasSubmittedFinalReturn = false,
           ReturnsViewModel(
+            Seq.empty,
             Seq(
               Return.fromPeriod(nextPeriod, SubmissionStatus.Due, inProgress = false, isOldest = false)
             ),
@@ -386,7 +389,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
         ).build()
 
-      val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, isExcludedTrader = false, stubClockAtArbitraryDate)(messages(application))
+      val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, isExcludedTrader = false, stubClockAtArbitraryDate)(messages(application))
       when(mockFinancialDataConnector.prepareFinancialData()(any())) thenReturn
         Right(PrepareData(List.empty, List.empty, List.empty, 0, 0, iossNumber)).toFuture
 
@@ -413,6 +416,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           maybeExclusion = Some(exclusion),
           hasSubmittedFinalReturn = false,
           ReturnsViewModel(
+            Seq.empty,
             Seq(
               Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
             ),
@@ -485,7 +489,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
         ).build()
 
-      val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, isExcludedTrader = false, stubClockAtArbitraryDate)(messages(application))
+      val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, isExcludedTrader = false, stubClockAtArbitraryDate)(messages(application))
 
       running(application) {
 
@@ -510,6 +514,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           None,
           hasSubmittedFinalReturn = false,
           ReturnsViewModel(
+            Seq.empty,
             Seq(
               Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
             ),
@@ -589,7 +594,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
         ).build()
 
-      val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, isExcludedTrader = false, stubClockAtArbitraryDate)(messages(application))
+      val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, isExcludedTrader = false, stubClockAtArbitraryDate)(messages(application))
 
       running(application) {
 
@@ -614,6 +619,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           None,
           hasSubmittedFinalReturn = false,
           ReturnsViewModel(
+            Seq.empty,
             Seq(
               Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
             ),
@@ -662,7 +668,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
           ).build()
 
-        val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, isExcludedTrader = false, stubClockAtArbitraryDate)(messages(application))
+        val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, isExcludedTrader = false, stubClockAtArbitraryDate)(messages(application))
         when(mockFinancialDataConnector.prepareFinancialData()(any())) thenReturn
           Right(PrepareData(List.empty, List.empty, List.empty, 0, 0, iossNumber)).toFuture
 
@@ -689,6 +695,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             maybeExclusion = None,
             hasSubmittedFinalReturn = false,
             ReturnsViewModel(
+              Seq.empty,
               Seq(
                 Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
               ),
@@ -724,7 +731,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           ).build()
 
 
-        val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, isExcludedTrader = false, stubClockAtArbitraryDate)(messages(application))
+        val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, isExcludedTrader = false, stubClockAtArbitraryDate)(messages(application))
         when(mockFinancialDataConnector.prepareFinancialData()(any())) thenReturn
           Right(PrepareData(List.empty, List.empty, List.empty, 0, 0, iossNumber)).toFuture
 
@@ -751,6 +758,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             maybeExclusion = None,
             hasSubmittedFinalReturn = false,
             ReturnsViewModel(
+              Seq.empty,
               Seq(
                 Return.fromPeriod(period, Due, inProgress = true, isOldest = false)
               ),
@@ -790,7 +798,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
           ).build()
 
-        val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, isExcludedTrader = false, stubClockAtArbitraryDate)(messages(application))
+        val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, isExcludedTrader = false, stubClockAtArbitraryDate)(messages(application))
         when(mockFinancialDataConnector.prepareFinancialData()(any())) thenReturn
           Right(PrepareData(List.empty, List.empty, List.empty, 0, 0, iossNumber)).toFuture
 
@@ -817,6 +825,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             maybeExclusion = None,
             hasSubmittedFinalReturn = false,
             ReturnsViewModel(
+              Seq.empty,
               Seq(
                 Return.fromPeriod(secondPeriod, Due, inProgress = false, isOldest = false),
                 Return.fromPeriod(firstPeriod, Overdue, inProgress = false, isOldest = true)
@@ -855,7 +864,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
           ).build()
 
-        val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, isExcludedTrader = false, stubClockAtArbitraryDate)(messages(application))
+        val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, isExcludedTrader = false, stubClockAtArbitraryDate)(messages(application))
         when(mockFinancialDataConnector.prepareFinancialData()(any())) thenReturn
           Right(PrepareData(List.empty, List.empty, List.empty, 0, 0, iossNumber)).toFuture
 
@@ -882,6 +891,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             maybeExclusion = None,
             hasSubmittedFinalReturn = false,
             ReturnsViewModel(
+              Seq.empty,
               Seq(
                 Return.fromPeriod(period, Overdue, inProgress = false, isOldest = true)
               ),
@@ -921,7 +931,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
           ).build()
 
-        val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, isExcludedTrader = false, stubClockAtArbitraryDate)(messages(application))
+        val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, isExcludedTrader = false, stubClockAtArbitraryDate)(messages(application))
         when(mockFinancialDataConnector.prepareFinancialData()(any())) thenReturn
           Right(PrepareData(List.empty, List.empty, List.empty, 0, 0, iossNumber)).toFuture
 
@@ -948,6 +958,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             maybeExclusion = None,
             hasSubmittedFinalReturn = false,
             ReturnsViewModel(
+              Seq.empty,
               Seq(
                 Return.fromPeriod(firstPeriod, Overdue, inProgress = false, isOldest = true),
                 Return.fromPeriod(secondPeriod, Overdue, inProgress = false, isOldest = false),
@@ -990,7 +1001,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
           ).build()
 
-        val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, isExcludedTrader = false, stubClockAtArbitraryDate)(messages(application))
+        val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, isExcludedTrader = false, stubClockAtArbitraryDate)(messages(application))
         when(mockFinancialDataConnector.prepareFinancialData()(any())) thenReturn
           Right(PrepareData(List.empty, List.empty, List.empty, 0, 0, iossNumber)).toFuture
 
@@ -1017,6 +1028,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             maybeExclusion = None,
             hasSubmittedFinalReturn = false,
             ReturnsViewModel(
+              Seq.empty,
               Seq(
                 Return.fromPeriod(firstPeriod, Overdue, inProgress = false, isOldest = true),
                 Return.fromPeriod(secondPeriod, Overdue, inProgress = false, isOldest = false),
