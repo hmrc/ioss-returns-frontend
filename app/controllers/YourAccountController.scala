@@ -78,18 +78,6 @@ class YourAccountController @Inject()(
                          )(implicit request: RegistrationRequest[AnyContent]): Future[Result] = {
     results.map {
       case (Right(availableReturns: CurrentReturns), Right(vatReturnsWithFinancialData), answers) =>
-
-        println("availableReturns.completeOrExcludedReturns:"+availableReturns.completeOrExcludedReturns)
-        availableReturns.completeOrExcludedReturns.foreach(r =>
-          println(r)
-        )
-        println("availableReturns.results:")
-        availableReturns.returns.foreach(r =>
-          println(r)
-        )
-        println("availableReturns.returns.size: "+ availableReturns.returns.size)
-        availableReturns.returns.foreach(x => println(x.submissionStatus))
-        println("availableReturns.returns.size Overdue: "+ availableReturns.returns.count(_.submissionStatus == Overdue))
         preparedViewWithFinancialData(availableReturns, vatReturnsWithFinancialData, previousRegistrationPrepareData, waypoints, answers.map(_.period))
       case (Left(error), error2, _) =>
         logger.error(s"there was an error with period with status $error and getting periods with outstanding amounts $error2")
@@ -153,13 +141,6 @@ class YourAccountController @Inject()(
     } else {
       None
     }
-
-    /*println("maybeExclusion="+maybeExclusion)
-    println("periodInProgress="+periodInProgress)
-    val isExcludedTrader: Boolean = (maybeExclusion, periodInProgress) match {
-      case (Some(exclusion), Some(period)) => excludedTraderService.isExcludedTrader(exclusion, period)
-      case _ => false
-    }*/
 
     val returnsViewModel = buildReturnsViewModel(currentReturns, periodInProgress)
 
