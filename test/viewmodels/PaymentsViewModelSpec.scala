@@ -110,7 +110,22 @@ class PaymentsViewModelSpec extends SpecBase {
       result.warning mustBe defined
     }
 
-    "there is one overdue payment older than three years and one payment overdue" in {
+    "there is one excluded payment less than three years old and one payment overdue" in {
+      val excludedPayment = paymentDue.copy(dateDue = arbitraryDate.minusYears(2))
+      val result = PaymentsViewModel(Seq.empty, Seq(paymentDue),
+        Seq(excludedPayment), stubClockAtArbitraryDate)(messages(app))
+      result.sections mustBe Seq(
+        PaymentsSection(
+          Seq(
+            s"""You owe <span class="govuk-body govuk-!-font-weight-bold">&pound;1,000</span> for ${period.displayShortText}, which was due by ${period.paymentDeadlineDisplay}."""
+          ),
+          Some("Overdue Payments")
+        ))
+      result.link mustBe defined
+      result.warning mustBe defined
+    }
+
+    "there is one excluded payment older than three years and one payment overdue" in {
       val excludedPayment = paymentDue.copy(dateDue = arbitraryDate.minusYears(4))
       val result = PaymentsViewModel(Seq.empty, Seq(paymentDue),
         Seq(excludedPayment), stubClockAtArbitraryDate)(messages(app))

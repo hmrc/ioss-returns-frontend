@@ -37,7 +37,7 @@ class ReturnsViewModelSpec extends SpecBase {
   "must return correct view model when" - {
 
     "there is no returns due, multiple returns overdue and none in progress" in {
-      val excludedReturns = Seq()
+      val excludedReturns = Seq.empty
       val returns = Seq(
         Return.fromPeriod(earliestPeriod, Overdue, inProgress = false, isOldest = true),
         Return.fromPeriod(middlePeriod, Overdue, inProgress = false, isOldest = false)
@@ -51,7 +51,7 @@ class ReturnsViewModelSpec extends SpecBase {
     }
 
     "there is no returns due, multiple returns overdue and none in progress2" in {
-      val excludedReturns = Seq()
+      val excludedReturns = Seq.empty
       val returns = List(
         Return.fromPeriod(StandardPeriod(2023, Month.DECEMBER), Overdue, false, false),
         Return.fromPeriod(StandardPeriod(2024, Month.JANUARY), Overdue, false, false),
@@ -67,7 +67,7 @@ class ReturnsViewModelSpec extends SpecBase {
     }
 
     "there is no returns due, multiple returns overdue and one in progress" in {
-      val excludedReturns = Seq()
+      val excludedReturns = Seq.empty
       val returns = Seq(
         Return.fromPeriod(earliestPeriod, Overdue, true, true),
         Return.fromPeriod(middlePeriod, Overdue, false, false)
@@ -80,7 +80,7 @@ class ReturnsViewModelSpec extends SpecBase {
     }
 
     "there is no returns due, one return overdue and none in progress" in {
-      val excludedReturns = Seq()
+      val excludedReturns = Seq.empty
       val returns = Seq(
         Return.fromPeriod(earliestPeriod, Overdue, inProgress = false, isOldest = true),
       )
@@ -93,7 +93,7 @@ class ReturnsViewModelSpec extends SpecBase {
     }
 
     "there is overdue, this is prioritised over due" in {
-      val excludedReturns = Seq()
+      val excludedReturns = Seq.empty
       val returns = Seq(
         Return.fromPeriod(earliestPeriod, Overdue, inProgress = false, isOldest = true),
         Return.fromPeriod(middlePeriod, Overdue, inProgress = false, isOldest = false),
@@ -107,7 +107,7 @@ class ReturnsViewModelSpec extends SpecBase {
     }
 
     "there is overdue, this is prioritised over due, even if date wise it is later than the due" in {
-      val excludedReturns = Seq()
+      val excludedReturns = Seq.empty
       val returns = Seq(
         Return.fromPeriod(latestPeriod, Overdue, inProgress = false, isOldest = true),
         Return.fromPeriod(middlePeriod, Overdue, inProgress = false, isOldest = false),
@@ -121,7 +121,7 @@ class ReturnsViewModelSpec extends SpecBase {
     }
 
     "there is no returns due, one return overdue and one in progress" in {
-      val excludedReturns = Seq()
+      val excludedReturns = Seq.empty
       val returns = Seq(
         Return.fromPeriod(earliestPeriod, Overdue, true, true)
       )
@@ -133,7 +133,7 @@ class ReturnsViewModelSpec extends SpecBase {
     }
 
     "there is one return due, multiple returns overdue and none in progress" in {
-      val excludedReturns = Seq()
+      val excludedReturns = Seq.empty
       val returns = Seq(
         Return.fromPeriod(earliestPeriod, Overdue, inProgress = false, isOldest = true),
         Return.fromPeriod(middlePeriod, Overdue, inProgress = false, isOldest = false),
@@ -147,7 +147,7 @@ class ReturnsViewModelSpec extends SpecBase {
     }
 
     "there is one returns due, multiple returns overdue and one in progress" in {
-      val excludedReturns = Seq()
+      val excludedReturns = Seq.empty
       val returns = Seq(
         Return.fromPeriod(earliestPeriod, Overdue, true, true),
         Return.fromPeriod(middlePeriod, Overdue, false, false),
@@ -162,7 +162,7 @@ class ReturnsViewModelSpec extends SpecBase {
     }
 
     "there is one returns due, one return overdue and one in progress" in {
-      val excludedReturns = Seq()
+      val excludedReturns = Seq.empty
       val returns = Seq(
         Return.fromPeriod(earliestPeriod, Overdue, true, true),
         Return.fromPeriod(middlePeriod, Due, false, false)
@@ -176,7 +176,7 @@ class ReturnsViewModelSpec extends SpecBase {
     }
 
     "there is one returns due, one return overdue and none in progress" in {
-      val excludedReturns = Seq()
+      val excludedReturns = Seq.empty
       val returns = Seq(
         Return.fromPeriod(earliestPeriod, Overdue, inProgress = false, isOldest = true),
         Return.fromPeriod(middlePeriod, Due, inProgress = false, isOldest = false)
@@ -189,7 +189,7 @@ class ReturnsViewModelSpec extends SpecBase {
     }
 
     "there is one returns due, no return overdue and one in progress" in {
-      val excludedReturns = Seq()
+      val excludedReturns = Seq.empty
       val returns = Seq(
         Return.fromPeriod(earliestPeriod, Due, true, true)
       )
@@ -205,7 +205,7 @@ class ReturnsViewModelSpec extends SpecBase {
     }
 
     "there is one returns due, no return overdue and none in progress" in {
-      val excludedReturns = Seq()
+      val excludedReturns = Seq.empty
       val returns = Seq(
         Return.fromPeriod(earliestPeriod, Due, inProgress = false, isOldest = true)
       )
@@ -218,7 +218,7 @@ class ReturnsViewModelSpec extends SpecBase {
     }
 
     "there is no returns due, no return overdue" in {
-      val excludedReturns = Seq()
+      val excludedReturns = Seq.empty
       val returns = Seq(
         Return.fromPeriod(earliestPeriod, Next, inProgress = true, isOldest = true)
       )
@@ -228,12 +228,24 @@ class ReturnsViewModelSpec extends SpecBase {
       resultModel.linkToStart must not be defined
     }
 
-    /*"there is one return overdue older than three years and one return overdue" in {
+    "there is one excluded return less than three years old and one return overdue" in {
+      val excludedReturns = Seq(Return.fromPeriod(latestPeriod, Excluded, inProgress = false, isOldest = true))
       val returns = Seq(
-        Return.fromPeriod(olderThan3YearsPeriod, Overdue, inProgress = false, isOldest = true),
         Return.fromPeriod(middlePeriod, Overdue, inProgress = false, isOldest = false)
       )
-      val resultModel = ReturnsViewModel(returns, isExcludedTrader = true, stubClockAtArbitraryDate)(messages(app))
+      val resultModel = ReturnsViewModel(excludedReturns, returns, stubClockAtArbitraryDate)(messages(app))
+      resultModel.contents.map(p => p.content) mustBe Seq("You have an overdue return.")
+      resultModel.linkToStart mustBe defined
+      resultModel.linkToStart.get.linkText mustBe "Start your October 2023 return"
+      resultModel.linkToStart.get.url mustBe controllers.routes.StartReturnController.onPageLoad(waypoints, middlePeriod).url
+    }
+
+    "there is one excluded return older than three years and one return overdue" in {
+      val excludedReturns = Seq(Return.fromPeriod(olderThan3YearsPeriod, Excluded, inProgress = false, isOldest = true))
+      val returns = Seq(
+        Return.fromPeriod(middlePeriod, Overdue, inProgress = false, isOldest = false)
+      )
+      val resultModel = ReturnsViewModel(excludedReturns, returns, stubClockAtArbitraryDate)(messages(app))
       resultModel.contents.map(p => p.content) mustBe Seq(
         s"You have an outstanding return for ${olderThan3YearsPeriod.displayShortText}. You must contact the countries where you made your sales to report any VAT due.",
         "You have an overdue return."
@@ -241,7 +253,7 @@ class ReturnsViewModelSpec extends SpecBase {
       resultModel.linkToStart mustBe defined
       resultModel.linkToStart.get.linkText mustBe "Start your October 2023 return"
       resultModel.linkToStart.get.url mustBe controllers.routes.StartReturnController.onPageLoad(waypoints, middlePeriod).url
-    }*/
+    }
   }
 
 }
