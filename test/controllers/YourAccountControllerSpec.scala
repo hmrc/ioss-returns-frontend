@@ -204,10 +204,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           None,
           hasSubmittedFinalReturn = false,
           ReturnsViewModel(
-            Seq.empty,
-            Seq(
+            returns = Seq(
               Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
             ),
+            excludedReturns = Seq.empty,
             stubClockAtArbitraryDate
           )(messages(application)),
           List.empty
@@ -272,10 +272,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           Some(registrationWrapperWithExclusion.registration.exclusions.head),
           hasSubmittedFinalReturn = true,
           ReturnsViewModel(
-            Seq.empty,
-            Seq(
+            returns = Seq(
               Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
             ),
+            excludedReturns = Seq.empty,
             stubClockAtArbitraryDate
           )(messages(application)),
           List.empty
@@ -340,10 +340,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           Some(registrationWrapperWithExclusion.registration.exclusions.head),
           hasSubmittedFinalReturn = false,
           ReturnsViewModel(
-            Seq.empty,
-            Seq(
+            returns = Seq(
               Return.fromPeriod(nextPeriod, SubmissionStatus.Due, inProgress = false, isOldest = false)
             ),
+            excludedReturns = Seq.empty,
             stubClockAtArbitraryDate
           )(messages(application)),
           List.empty
@@ -413,10 +413,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           maybeExclusion = Some(exclusion),
           hasSubmittedFinalReturn = false,
           ReturnsViewModel(
-            Seq.empty,
-            Seq(
+            returns = Seq(
               Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
             ),
+            excludedReturns = Seq.empty,
             stubClockAtArbitraryDate
           )(messages(application)),
           List.empty
@@ -510,10 +510,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           None,
           hasSubmittedFinalReturn = false,
           ReturnsViewModel(
-            Seq.empty,
-            Seq(
+            returns = Seq(
               Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
             ),
+            excludedReturns = Seq.empty,
             stubClockAtArbitraryDate
           )(messages(application)),
           List(previousRegistrationPrepareData)
@@ -614,11 +614,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           None,
           hasSubmittedFinalReturn = false,
           ReturnsViewModel(
-            Seq.empty,
-            Seq(
+            returns = Seq(
               Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
             ),
-
+            excludedReturns = Seq.empty,
             stubClockAtArbitraryDate
           )(messages(application)),
           List(previousRegistrationPrepareData)
@@ -690,10 +689,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             maybeExclusion = None,
             hasSubmittedFinalReturn = false,
             ReturnsViewModel(
-              Seq.empty,
-              Seq(
+              returns = Seq(
                 Return.fromPeriod(nextPeriod, Next, inProgress = false, isOldest = false)
               ),
+              excludedReturns = Seq.empty,
               stubClockAtArbitraryDate
             )(messages(application)),
             List.empty
@@ -752,10 +751,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             maybeExclusion = None,
             hasSubmittedFinalReturn = false,
             ReturnsViewModel(
-              Seq.empty,
-              Seq(
+              returns = Seq(
                 Return.fromPeriod(period, Due, inProgress = true, isOldest = false)
               ),
+              excludedReturns = Seq.empty,
               stubClockAtArbitraryDate
             )(messages(application)),
             List.empty
@@ -818,11 +817,11 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             maybeExclusion = None,
             hasSubmittedFinalReturn = false,
             ReturnsViewModel(
-              Seq.empty,
-              Seq(
+              returns = Seq(
                 Return.fromPeriod(secondPeriod, Due, inProgress = false, isOldest = false),
                 Return.fromPeriod(firstPeriod, Overdue, inProgress = false, isOldest = true)
               ),
+              excludedReturns = Seq.empty,
               stubClockAtArbitraryDate
             )(messages(application)),
             List.empty
@@ -883,10 +882,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             maybeExclusion = None,
             hasSubmittedFinalReturn = false,
             ReturnsViewModel(
-              Seq.empty,
-              Seq(
+              returns = Seq(
                 Return.fromPeriod(period, Overdue, inProgress = false, isOldest = true)
               ),
+              excludedReturns = Seq.empty,
               stubClockAtArbitraryDate
             )(messages(application)),
             List.empty
@@ -949,12 +948,11 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             maybeExclusion = None,
             hasSubmittedFinalReturn = false,
             ReturnsViewModel(
-              Seq.empty,
-              Seq(
+              returns = Seq(
                 Return.fromPeriod(firstPeriod, Overdue, inProgress = false, isOldest = true),
                 Return.fromPeriod(secondPeriod, Overdue, inProgress = false, isOldest = false),
               ),
-
+              excludedReturns = Seq.empty,
               stubClockAtArbitraryDate
             )(messages(application)),
             List.empty
@@ -1019,12 +1017,12 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             maybeExclusion = None,
             hasSubmittedFinalReturn = false,
             ReturnsViewModel(
-              Seq.empty,
-              Seq(
+              returns = Seq(
                 Return.fromPeriod(firstPeriod, Overdue, inProgress = false, isOldest = true),
                 Return.fromPeriod(secondPeriod, Overdue, inProgress = false, isOldest = false),
                 Return.fromPeriod(thirdPeriod, Due, inProgress = false, isOldest = false)
               ),
+              excludedReturns = Seq.empty,
               stubClockAtArbitraryDate
             )(messages(application)),
             List.empty
@@ -1093,12 +1091,12 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             maybeExclusion = None,
             hasSubmittedFinalReturn = false,
             ReturnsViewModel(
-              Seq(Return.fromPeriod(excludedPeriod, Excluded, inProgress = false, isOldest = true)),
-              Seq(
+              returns = Seq(
                 Return.fromPeriod(firstPeriod, Overdue, inProgress = false, isOldest = true),
                 Return.fromPeriod(secondPeriod, Overdue, inProgress = false, isOldest = false),
                 Return.fromPeriod(thirdPeriod, Due, inProgress = false, isOldest = false)
               ),
+              excludedReturns = Seq(Return.fromPeriod(excludedPeriod, Excluded, inProgress = false, isOldest = true)),
               stubClockAtArbitraryDate
             )(messages(application)),
             List.empty

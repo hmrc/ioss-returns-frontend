@@ -33,7 +33,7 @@ case class ReturnsViewModel(
 
 object ReturnsViewModel {
 
-  def apply(excludedReturns: Seq[Return], returns: Seq[Return], clock: Clock)(implicit messages: Messages): ReturnsViewModel = {
+  def apply(returns: Seq[Return], excludedReturns: Seq[Return], clock: Clock)(implicit messages: Messages): ReturnsViewModel = {
     val inProgress = returns.find(_.inProgress)
     val returnDue = returns.find(_.submissionStatus == Due)
     val nextReturn = returns.find(_.submissionStatus == Next)

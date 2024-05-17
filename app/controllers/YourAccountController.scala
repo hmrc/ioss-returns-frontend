@@ -166,12 +166,12 @@ class YourAccountController @Inject()(
   private def buildReturnsViewModel(currentReturns: CurrentReturns, periodInProgress: Option[Period])
                                    (implicit request: RegistrationRequest[AnyContent]) = {
     ReturnsViewModel(
-      excludedReturns = currentReturns.completeOrExcludedReturns.filter(_.submissionStatus == Excluded),
       returns = currentReturns.returns.map(currentReturn => if (periodInProgress.contains(currentReturn.period)) {
         currentReturn.copy(inProgress = true)
       } else {
         currentReturn
       }),
+      excludedReturns = currentReturns.completeOrExcludedReturns.filter(_.submissionStatus == Excluded),
       clock
     )
   }
