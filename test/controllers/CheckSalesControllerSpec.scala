@@ -35,7 +35,6 @@ import play.api.test.Helpers._
 import queries.RemainingVatRatesFromCountryQuery
 import repositories.SessionRepository
 import services.VatRateService
-import uk.gov.hmrc.http.HeaderCarrier
 import utils.FutureSyntax.FutureOps
 import viewmodels.checkAnswers.CheckSalesSummary
 import viewmodels.govuk.SummaryListFluency
@@ -72,8 +71,6 @@ class CheckSalesControllerSpec extends SpecBase with MockitoSugar with SummaryLi
 
   private lazy val checkSalesRoute: String = CheckSalesPage(index, Some(index)).route(waypoints).url
   private lazy val postCheckSalesRoute: String = controllers.routes.CheckSalesController.onSubmit(waypoints, index, incompletePromptShown = false).url
-  private implicit lazy val emptyHC: HeaderCarrier = HeaderCarrier()
-
 
   override def beforeEach(): Unit = {
     reset(mockVatRateService)

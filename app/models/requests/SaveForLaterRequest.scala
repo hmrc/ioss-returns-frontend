@@ -18,7 +18,6 @@ package models.requests
 
 import models.{Period, UserAnswers}
 import play.api.libs.json.{JsValue, Json, OFormat}
-import uk.gov.hmrc.domain.Vrn
 
 case class SaveForLaterRequest(
                                 iossNumber: String,

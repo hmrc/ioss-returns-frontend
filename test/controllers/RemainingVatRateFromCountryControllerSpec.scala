@@ -33,7 +33,6 @@ import play.api.test.Helpers._
 import queries.{AllSalesByCountryQuery, OptionalSalesAtVatRate, SalesToCountryWithOptionalSales, VatRateWithOptionalSalesFromCountry}
 import repositories.SessionRepository
 import services.VatRateService
-import uk.gov.hmrc.http.HeaderCarrier
 import utils.FutureSyntax.FutureOps
 import views.html.RemainingVatRateFromCountryView
 
@@ -84,8 +83,6 @@ class RemainingVatRateFromCountryControllerSpec extends SpecBase with MockitoSug
   lazy val remainingVatRateFromCountryRoute: String = routes.RemainingVatRateFromCountryController.onPageLoad(waypoints, index, index).url
 
   private val mockVatRateService = mock[VatRateService]
-
-  private implicit lazy val emptyHC: HeaderCarrier = HeaderCarrier()
 
   override def beforeEach(): Unit = {
     reset(mockVatRateService)

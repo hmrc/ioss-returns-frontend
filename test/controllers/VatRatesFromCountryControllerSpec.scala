@@ -51,8 +51,6 @@ class VatRatesFromCountryControllerSpec extends SpecBase with MockitoSugar with 
 
   private lazy val vatRatesFromCountryRoute: String = routes.VatRatesFromCountryController.onPageLoad(waypoints, index).url
 
-  private implicit lazy val emptyHC: HeaderCarrier = HeaderCarrier()
-
   override def beforeEach(): Unit = {
     reset(mockVatRateService)
   }

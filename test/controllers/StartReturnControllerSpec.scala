@@ -328,7 +328,7 @@ class StartReturnControllerSpec
       }
     }
 
-    def createReturn(submissionStatus: SubmissionStatus, period: StandardPeriod = StandardPeriod(1970, Month.JANUARY)): Return = {
+    def createReturn(submissionStatus: SubmissionStatus, period: StandardPeriod): Return = {
       Return(
         period = period,
         firstDay = LocalDate.EPOCH,

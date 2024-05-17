@@ -36,8 +36,8 @@ object ReturnsViewModel {
   def apply(excludedReturns: Seq[Return], returns: Seq[Return], clock: Clock)(implicit messages: Messages): ReturnsViewModel = {
     val inProgress = returns.find(_.inProgress)
     val returnDue = returns.find(_.submissionStatus == Due)
-    val overdueReturns = returns.filter(_.submissionStatus == Overdue)
     val nextReturn = returns.find(_.submissionStatus == Next)
+    val overdueReturns = returns.filter(_.submissionStatus == Overdue)
 
     val excludedReturnsOlderThanThreeYears = excludedReturns.filter { excludedReturn =>
       isOlderThanThreeYears(excludedReturn.dueDate, clock)
