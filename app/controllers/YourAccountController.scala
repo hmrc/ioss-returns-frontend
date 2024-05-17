@@ -23,7 +23,7 @@ import connectors._
 import controllers.CheckCorrectionsTimeLimit.isOlderThanThreeYears
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
-import models.SubmissionStatus.{Excluded, Overdue}
+import models.SubmissionStatus.Excluded
 import models.etmp.EtmpExclusion
 import models.etmp.EtmpExclusionReason.{NoLongerSupplies, Reversal, TransferringMSID, VoluntarilyLeaves}
 import models.payments._
@@ -33,7 +33,7 @@ import pages.Waypoints
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import repositories.SessionRepository
-import services.{ExcludedTraderService, PreviousRegistrationService}
+import services.PreviousRegistrationService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import viewmodels.PaymentsViewModel
 import viewmodels.yourAccount.{CurrentReturns, ReturnsViewModel}
@@ -49,7 +49,6 @@ class YourAccountController @Inject()(
                                        saveForLaterConnector: SaveForLaterConnector,
                                        view: YourAccountView,
                                        returnStatusConnector: ReturnStatusConnector,
-                                       excludedTraderService: ExcludedTraderService,
                                        previousRegistrationService: PreviousRegistrationService,
                                        clock: Clock,
                                        sessionRepository: SessionRepository,
@@ -167,8 +166,8 @@ class YourAccountController @Inject()(
   private def buildReturnsViewModel(currentReturns: CurrentReturns, periodInProgress: Option[Period])
                                    (implicit request: RegistrationRequest[AnyContent]) = {
     ReturnsViewModel(
-      currentReturns.completeOrExcludedReturns.filter(_.submissionStatus == Excluded),
-      currentReturns.returns.map(currentReturn => if (periodInProgress.contains(currentReturn.period)) {
+      excludedReturns = currentReturns.completeOrExcludedReturns.filter(_.submissionStatus == Excluded),
+      returns = currentReturns.returns.map(currentReturn => if (periodInProgress.contains(currentReturn.period)) {
         currentReturn.copy(inProgress = true)
       } else {
         currentReturn
