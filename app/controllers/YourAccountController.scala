@@ -76,7 +76,7 @@ class YourAccountController @Inject()(
                            waypoints: Waypoints
                          )(implicit request: RegistrationRequest[AnyContent]): Future[Result] = {
     results.map {
-      case (Right(availableReturns: CurrentReturns), Right(vatReturnsWithFinancialData), answers) =>
+      case (Right(availableReturns), Right(vatReturnsWithFinancialData), answers) =>
         preparedViewWithFinancialData(availableReturns, vatReturnsWithFinancialData, previousRegistrationPrepareData, waypoints, answers.map(_.period))
       case (Left(error), error2, _) =>
         logger.error(s"there was an error with period with status $error and getting periods with outstanding amounts $error2")
