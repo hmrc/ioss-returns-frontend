@@ -23,6 +23,7 @@ import connectors._
 import controllers.CheckCorrectionsTimeLimit.isOlderThanThreeYears
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
+import models.SubmissionStatus.Excluded
 import models.etmp.EtmpExclusion
 import models.etmp.EtmpExclusionReason.{NoLongerSupplies, Reversal, TransferringMSID, VoluntarilyLeaves}
 import models.payments._
@@ -58,7 +59,6 @@ class YourAccountController @Inject()(
 
   def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request =>
-
       val results: Future[(CurrentReturnsResponse, PrepareDataResponse, Option[UserAnswers])] = getCurrentReturns()
 
       if (request.enrolments.enrolments.count(_.key == appConfig.iossEnrolment) > 1) {
@@ -141,7 +141,11 @@ class YourAccountController @Inject()(
       None
     }
 
-    val paymentsViewModel = PaymentsViewModel(currentPayments.duePayments, currentPayments.overduePayments)
+    val returnsViewModel = buildReturnsViewModel(currentReturns, periodInProgress)
+
+    val paymentsViewModel = PaymentsViewModel(currentPayments.duePayments, currentPayments.overduePayments,
+      currentPayments.excludedPayments, clock)
+
     Ok(view(
       waypoints,
       businessName = request.registrationWrapper.vatInfo.getName,
@@ -154,14 +158,22 @@ class YourAccountController @Inject()(
       exclusionsEnabled = appConfig.exclusionsEnabled,
       maybeExclusion = maybeExclusion,
       hasSubmittedFinalReturn = currentReturns.finalReturnsCompleted,
-      returnsViewModel = ReturnsViewModel(
-        currentReturns.returns.map(currentReturn => if (periodInProgress.contains(currentReturn.period)) {
-          currentReturn.copy(inProgress = true)
-        } else {
-          currentReturn
-        })),
+      returnsViewModel = returnsViewModel,
       previousRegistrationPrepareData = previousRegistrationPrepareData
     ))
+  }
+
+  private def buildReturnsViewModel(currentReturns: CurrentReturns, periodInProgress: Option[Period])
+                                   (implicit request: RegistrationRequest[AnyContent]) = {
+    ReturnsViewModel(
+      returns = currentReturns.returns.map(currentReturn => if (periodInProgress.contains(currentReturn.period)) {
+        currentReturn.copy(inProgress = true)
+      } else {
+        currentReturn
+      }),
+      excludedReturns = currentReturns.completeOrExcludedReturns.filter(_.submissionStatus == Excluded),
+      clock
+    )
   }
 
   private def getExistsOutstandingReturns(currentReturns: CurrentReturns): Boolean = {

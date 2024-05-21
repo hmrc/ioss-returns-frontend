@@ -30,6 +30,7 @@ import play.api.mvc.Result
 import play.api.mvc.Results.Redirect
 import play.api.test.FakeRequest
 import play.api.test.Helpers.running
+import services.ExcludedTraderService
 
 import java.time.LocalDate
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -39,7 +40,7 @@ class CheckExcludedTraderOptionalFilterSpec extends SpecBase with MockitoSugar w
 
   val mockConfig: FrontendAppConfig = mock[FrontendAppConfig]
 
-  class Harness(startReturnPeriod: Period) extends CheckExcludedTraderOptionalFilterImpl(startReturnPeriod, mockConfig) {
+  class Harness(startReturnPeriod: Period) extends CheckExcludedTraderOptionalFilterImpl(startReturnPeriod, mockConfig, new ExcludedTraderService) {
     def callFilter(request: OptionalDataRequest[_]): Future[Option[Result]] = filter(request)
   }
 

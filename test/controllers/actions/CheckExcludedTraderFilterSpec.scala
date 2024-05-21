@@ -29,6 +29,7 @@ import play.api.mvc.Result
 import play.api.mvc.Results.Redirect
 import play.api.test.FakeRequest
 import play.api.test.Helpers.running
+import services.ExcludedTraderService
 
 import java.time.LocalDate
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -38,7 +39,7 @@ class CheckExcludedTraderFilterSpec extends SpecBase with MockitoSugar with Befo
 
   val mockConfig: FrontendAppConfig = mock[FrontendAppConfig]
 
-  class Harness() extends CheckExcludedTraderFilterImpl(mockConfig) {
+  class Harness() extends CheckExcludedTraderFilterImpl(mockConfig, new ExcludedTraderService) {
     def callFilter(request: DataRequest[_]): Future[Option[Result]] = filter(request)
   }
 

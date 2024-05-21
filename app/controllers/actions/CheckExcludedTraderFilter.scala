@@ -18,45 +18,33 @@ package controllers.actions
 
 import config.FrontendAppConfig
 import controllers.routes
-import models.etmp.EtmpExclusionReason.{CeasedTrade, FailsToComply, NoLongerMeetsConditions, NoLongerSupplies, TransferringMSID, VoluntarilyLeaves}
 import models.requests.DataRequest
 import play.api.mvc.Results.Redirect
 import play.api.mvc.{ActionFilter, Result}
+import services.ExcludedTraderService
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class CheckExcludedTraderFilterImpl(frontendAppConfig: FrontendAppConfig)(implicit val executionContext: ExecutionContext)
+class CheckExcludedTraderFilterImpl(frontendAppConfig: FrontendAppConfig, excludedTraderService: ExcludedTraderService)
+                                   (implicit val executionContext: ExecutionContext)
   extends ActionFilter[DataRequest] {
 
   override protected def filter[A](request: DataRequest[A]): Future[Option[Result]] = {
-    if (frontendAppConfig.exclusionsEnabled) {
-      request.registrationWrapper.registration.exclusions.lastOption match {
-        case Some(exclusion) if Seq(TransferringMSID).contains(exclusion.exclusionReason)
-          && request.userAnswers.period.firstDay.isAfter(exclusion.effectiveDate) =>
-          Future.successful(Some(Redirect(routes.ExcludedNotPermittedController.onPageLoad())))
-        case Some(exclusion) if Seq(
-          NoLongerSupplies,
-          VoluntarilyLeaves,
-          CeasedTrade,
-          NoLongerMeetsConditions,
-          FailsToComply
-        ).contains(exclusion.exclusionReason)
-          && request.userAnswers.period.lastDay.isAfter(exclusion.effectiveDate) =>
-          Future.successful(Some(Redirect(routes.ExcludedNotPermittedController.onPageLoad())))
-        case _ =>
-          Future.successful(None)
-      }
+    if (frontendAppConfig.exclusionsEnabled &&
+      request.registrationWrapper.registration.exclusions.lastOption.exists(exclusion =>
+        excludedTraderService.isExcludedPeriod(exclusion, request.userAnswers.period))) {
+      Future.successful(Some(Redirect(routes.ExcludedNotPermittedController.onPageLoad())))
     } else {
       Future.successful(None)
     }
   }
 }
 
-class CheckExcludedTraderFilter @Inject()(frontendAppConfig: FrontendAppConfig)
+class CheckExcludedTraderFilter @Inject()(frontendAppConfig: FrontendAppConfig, excludedTraderService: ExcludedTraderService)
                                          (implicit ec: ExecutionContext) {
 
   def apply(): CheckExcludedTraderFilterImpl =
-    new CheckExcludedTraderFilterImpl(frontendAppConfig)
+    new CheckExcludedTraderFilterImpl(frontendAppConfig, excludedTraderService)
 
 }

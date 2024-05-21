@@ -16,17 +16,20 @@
 
 package viewmodels
 
+import controllers.CheckCorrectionsTimeLimit.isOlderThanThreeYears
 import models.payments.{Payment, PaymentStatus}
 import play.api.i18n.Messages
 import utils.CurrencyFormatter.currencyFormat
-import viewmodels.LinkModel
+
+import java.time.Clock
 
 case class PaymentsViewModel(sections: Seq[PaymentsSection], warning: Option[String] = None, link: Option[LinkModel] = None)
 
 case class PaymentsSection(contents: Seq[String], heading: Option[String] = None)
 
 object PaymentsViewModel {
-  def apply(duePayments: Seq[Payment], overduePayments: Seq[Payment])(implicit messages: Messages): PaymentsViewModel = {
+  def apply(duePayments: Seq[Payment], overduePayments: Seq[Payment], excludedPayments: Seq[Payment], clock: Clock)
+           (implicit messages: Messages): PaymentsViewModel = {
     if (duePayments.isEmpty && overduePayments.isEmpty) {
       PaymentsViewModel(
         sections = Seq(PaymentsSection(
@@ -34,10 +37,23 @@ object PaymentsViewModel {
         ))
       )
     } else {
+      val excludedPaymentsOlderThanThreeYears = excludedPayments.filter(excludedPayment =>
+        isOlderThanThreeYears(excludedPayment.dateDue, clock)
+      ).sortBy(_.dateDue)
+
+      val excludedPaymentsSection = if (excludedPaymentsOlderThanThreeYears.nonEmpty) {
+        Some(PaymentsSection(contents = excludedPaymentsOlderThanThreeYears.map(excludedPayment =>
+          messages("yourAccount.payment.excludedPayment", excludedPayment.period.displayShortText))
+        ))
+      } else {
+        None
+      }
+
       val duePaymentsSection = getPaymentsSection(duePayments, "due")
       val overduePaymentsSection = getPaymentsSection(overduePayments, "overdue")
+
       PaymentsViewModel(
-        sections = Seq(duePaymentsSection, overduePaymentsSection).flatten,
+        sections = Seq(excludedPaymentsSection, duePaymentsSection, overduePaymentsSection).flatten,
         warning = Some(messages("yourAccount.payment.pendingPayments")),
         link = Some(
           LinkModel(
@@ -50,7 +66,7 @@ object PaymentsViewModel {
     }
   }
 
-  private def getPaymentsSection(payments: Seq[Payment], key: String)(implicit messages: Messages) = {
+  private def getPaymentsSection(payments: Seq[Payment], key: String)(implicit messages: Messages): Option[PaymentsSection] = {
     if (payments.nonEmpty) {
       Some(
         PaymentsSection(
