@@ -22,7 +22,7 @@ import models.etmp.EtmpExclusionReason.{CeasedTrade, FailsToComply, NoLongerMeet
 
 class ExcludedTraderService() {
 
-  def isExcludedTrader(exclusion: EtmpExclusion, period: Period): Boolean = {
+  def isExcludedPeriod(exclusion: EtmpExclusion, period: Period): Boolean = {
     val isExcludedFirstDay: Boolean =
       exclusion.exclusionReason == TransferringMSID && period.firstDay.isAfter(exclusion.effectiveDate)
 

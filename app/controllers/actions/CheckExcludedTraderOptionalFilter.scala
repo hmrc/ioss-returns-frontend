@@ -38,7 +38,7 @@ class CheckExcludedTraderOptionalFilterImpl(
 
     if (frontendAppConfig.exclusionsEnabled &&
       request.registrationWrapper.registration.exclusions.lastOption.exists(exclusion =>
-        excludedTraderService.isExcludedTrader(exclusion, startReturnPeriod))) {
+        excludedTraderService.isExcludedPeriod(exclusion, startReturnPeriod))) {
       Future.successful(Some(Redirect(routes.ExcludedNotPermittedController.onPageLoad())))
     } else {
       Future.successful(None)
