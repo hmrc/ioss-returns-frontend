@@ -22,20 +22,21 @@ import logging.Logging
 import models.UnexpectedResponseStatus
 import models.payments.PaymentRequest
 import play.api.Configuration
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions, HttpException}
+import play.api.libs.json.Json
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HttpErrorFunctions, HttpException, StringContextOps}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class PaymentConnector @Inject()(config: Configuration, httpClient: HttpClient)
+class PaymentConnector @Inject()(config: Configuration, httpClientV2: HttpClientV2)
                                 (implicit ec: ExecutionContext) extends HttpErrorFunctions with Logging {
 
   val baseUrl = config.get[Service]("microservice.services.pay-api")
 
   def submit(paymentRequest: PaymentRequest)(implicit hc: HeaderCarrier): Future[ReturnPaymentResponse] = {
-    val url = s"$baseUrl/vat-ioss/ni-eu-vat-ioss/journey/start"
-    httpClient.POST[PaymentRequest, ReturnPaymentResponse](url, paymentRequest)
-      .recover {
+    val url = url"$baseUrl/vat-ioss/ni-eu-vat-ioss/journey/start"
+    httpClientV2.post(url).withBody(Json.toJson(paymentRequest)).execute[ReturnPaymentResponse].recover {
       case e: HttpException =>
         logger.error(s"PaymentResponse received unexpected error with status: ${e.responseCode}")
         Left(UnexpectedResponseStatus(e.responseCode, s"Unexpected response, status ${e.responseCode} returned"))

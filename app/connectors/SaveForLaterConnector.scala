@@ -21,32 +21,35 @@ import connectors.SaveForLaterHttpParser._
 import models.Period
 import models.requests.SaveForLaterRequest
 import play.api.Configuration
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions}
+import play.api.libs.json.Json
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HttpErrorFunctions, StringContextOps}
 
+import java.net.URL
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 
-class SaveForLaterConnector @Inject()(config: Configuration, httpClient: HttpClient)
+class SaveForLaterConnector @Inject()(config: Configuration, httpClientV2: HttpClientV2)
                                      (implicit ec: ExecutionContext) extends HttpErrorFunctions {
 
   private val baseUrl = config.get[Service]("microservice.services.ioss-returns")
 
   def submit(s4lRequest: SaveForLaterRequest)(implicit hc: HeaderCarrier): Future[SaveForLaterResponse] = {
-    val url = s"$baseUrl/save-for-later"
+    val url: URL = url"$baseUrl/save-for-later"
 
-    httpClient.POST[SaveForLaterRequest, SaveForLaterResponse](url, s4lRequest)
+    httpClientV2.post(url).withBody(Json.toJson(s4lRequest)).execute[SaveForLaterResponse]
   }
 
   def get()(implicit hc: HeaderCarrier): Future[SaveForLaterResponse] = {
-    val url = s"$baseUrl/save-for-later"
+    val url: URL = url"$baseUrl/save-for-later"
 
-    httpClient.GET[SaveForLaterResponse](url)
+    httpClientV2.get(url).execute[SaveForLaterResponse]
   }
 
   def delete(period: Period)(implicit hc: HeaderCarrier): Future[DeleteSaveForLaterResponse] = {
-    val url = s"$baseUrl/save-for-later/delete/$period"
+    val url: URL = url"$baseUrl/save-for-later/delete/$period"
 
-    httpClient.GET[DeleteSaveForLaterResponse](url)
+    httpClientV2.get(url).execute[DeleteSaveForLaterResponse]
   }
 }

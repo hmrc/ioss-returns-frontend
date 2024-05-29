@@ -20,15 +20,17 @@ import config.Service
 import connectors.CurrentReturnHttpParser._
 import connectors.ReturnStatusesHttpParser._
 import play.api.Configuration
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions}
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HttpErrorFunctions, StringContextOps}
 
-import java.time.{LocalDate, ZoneId}
+import java.net.URL
 import java.time.format.DateTimeFormatter
+import java.time.{LocalDate, ZoneId}
 import java.util.Locale
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class ReturnStatusConnector @Inject()(config: Configuration, httpClient: HttpClient)
+class ReturnStatusConnector @Inject()(config: Configuration, httpClientV2: HttpClientV2)
                                      (implicit ec: ExecutionContext) extends HttpErrorFunctions {
 
   private val baseUrl = config.get[Service]("microservice.services.ioss-returns")
@@ -37,12 +39,10 @@ class ReturnStatusConnector @Inject()(config: Configuration, httpClient: HttpCli
     .withZone(ZoneId.systemDefault())
 
   def getCurrentReturns(iossNumber: String)(implicit hc: HeaderCarrier): Future[CurrentReturnsResponse] =
-    httpClient.GET[CurrentReturnsResponse](url = s"$baseUrl/vat-returns/current-returns/$iossNumber")
+    httpClientV2.get(url"$baseUrl/vat-returns/current-returns/$iossNumber").execute[CurrentReturnsResponse]
 
   def listStatuses(commencementDate: LocalDate)(implicit hc: HeaderCarrier): Future[ReturnStatusesResponse] = {
-
-    val url = s"$baseUrl/vat-returns/statuses/${dateTimeFormatter.format(commencementDate)}"
-
-    httpClient.GET[ReturnStatusesResponse](url)
+    val url: URL = url"$baseUrl/vat-returns/statuses/${dateTimeFormatter.format(commencementDate)}"
+    httpClientV2.get(url).execute[ReturnStatusesResponse]
   }
 }
