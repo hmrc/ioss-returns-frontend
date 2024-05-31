@@ -18,34 +18,37 @@ package connectors.testOnly
 
 import config.Service
 import connectors.testOnly.TestOnlyExternalResponseHttpParser.{ExternalResponseReads, ExternalResponseResponse}
-import models.external.ExternalRequest
 import models.Period
+import models.external.ExternalRequest
 import play.api.Configuration
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
+import play.api.libs.json.Json
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 
+import java.net.URL
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class TestOnlyConnector @Inject()(
                                config: Configuration,
-                               httpClient: HttpClient
+                               httpClientV2: HttpClientV2
                              )(implicit ec: ExecutionContext) {
 
   private val baseUrl = config.get[Service]("microservice.services.ioss-returns")
 
   def externalEntry(externalRequest: ExternalRequest, endpointName: String, maybePeriod: Option[Period], maybeLang: Option[String])
                    (implicit hc: HeaderCarrier): Future[ExternalResponseResponse] = {
-    val url =
+    val url: URL =
       (maybePeriod, maybeLang) match {
         case (Some(period), Some(lang)) =>
-          s"$baseUrl/external-entry/$endpointName?period=$period&lang=$lang"
+          url"$baseUrl/external-entry/$endpointName?period=$period&lang=$lang"
         case (Some(period), None) =>
-          s"$baseUrl/external-entry/$endpointName?period=$period"
+          url"$baseUrl/external-entry/$endpointName?period=$period"
         case (None, Some(lang)) =>
-          s"$baseUrl/external-entry/$endpointName?lang=$lang"
+          url"$baseUrl/external-entry/$endpointName?lang=$lang"
         case _ =>
-          s"$baseUrl/external-entry/$endpointName"
+          url"$baseUrl/external-entry/$endpointName"
       }
-    httpClient.POST[ExternalRequest, ExternalResponseResponse](url, externalRequest)
+    httpClientV2.post(url).withBody(Json.toJson(externalRequest)).execute[ExternalResponseResponse]
   }
 }

@@ -25,46 +25,41 @@ import models.financialdata.CurrentPaymentsHttpParser.CurrentPaymentsResponse
 import models.financialdata.FinancialData
 import models.financialdata.FinancialData._
 import play.api.Configuration
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 
 import java.time.LocalDate
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class FinancialDataConnector @Inject()(
-                                        http: HttpClient,
+                                        httpClientV2: HttpClientV2,
                                         config: Configuration
                                       )(implicit ec: ExecutionContext) extends Logging {
 
   private val baseUrl = config.get[Service]("microservice.services.ioss-returns")
 
   def getFinancialData(date: LocalDate)(implicit hc: HeaderCarrier): Future[FinancialData] = {
-    val url = s"$baseUrl/financial-data/get/$date"
-    http.GET[FinancialData](url)
+    httpClientV2.get(url"$baseUrl/financial-data/get/$date").execute[FinancialData]
   }
 
   def prepareFinancialData()(implicit hc: HeaderCarrier): Future[PrepareDataResponse] = {
-    val url = s"$baseUrl/financial-data/prepare"
-    http.GET[PrepareDataResponse](url)
+    httpClientV2.get(url"$baseUrl/financial-data/prepare").execute[PrepareDataResponse]
   }
 
   def prepareFinancialDataWithIossNumber(iossNumber: String)(implicit hc: HeaderCarrier): Future[PrepareDataResponse] = {
-    val url = s"$baseUrl/financial-data/prepare/$iossNumber"
-    http.GET[PrepareDataResponse](url)
+    httpClientV2.get(url"$baseUrl/financial-data/prepare/$iossNumber").execute[PrepareDataResponse]
   }
 
   def getCharge(period: Period)(implicit hc: HeaderCarrier): Future[ChargeResponse] = {
-    val url = s"$baseUrl/financial-data/charge/$period"
-    http.GET[ChargeResponse](url)
+    httpClientV2.get(url"$baseUrl/financial-data/charge/$period").execute[ChargeResponse]
   }
 
   def getChargeForIossNumber(period: Period, iossNumber: String)(implicit hc: HeaderCarrier): Future[ChargeResponse] = {
-    val url = s"$baseUrl/financial-data/charge/$period/$iossNumber"
-    http.GET[ChargeResponse](url)
+    httpClientV2.get(url"$baseUrl/financial-data/charge/$period/$iossNumber").execute[ChargeResponse]
   }
 
   def getCurrentPayments(iossNumber: String)(implicit hc: HeaderCarrier): Future[CurrentPaymentsResponse] = {
-    val url = s"$baseUrl/financial-data/prepare"
-    http.GET[CurrentPaymentsResponse](url)
+    httpClientV2.get(url"$baseUrl/financial-data/prepare").execute[CurrentPaymentsResponse]
   }
 }

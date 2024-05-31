@@ -20,21 +20,22 @@ import config.Service
 import models.RegistrationWrapper
 import models.enrolments.EACDEnrolments
 import play.api.Configuration
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions}
 import uk.gov.hmrc.http.HttpReads.Implicits._
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HttpErrorFunctions, StringContextOps}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class RegistrationConnector @Inject()(config: Configuration, httpClient: HttpClient)
+class RegistrationConnector @Inject()(config: Configuration, httpClientV2: HttpClientV2)
                                      (implicit ec: ExecutionContext) extends HttpErrorFunctions {
 
   private val baseUrl = config.get[Service]("microservice.services.ioss-registration")
 
   def get()(implicit hc: HeaderCarrier): Future[RegistrationWrapper] =
-    httpClient.GET[RegistrationWrapper](s"$baseUrl/registration")
+    httpClientV2.get(url"$baseUrl/registration").execute[RegistrationWrapper]
 
   def getAccounts()(implicit hc: HeaderCarrier): Future[EACDEnrolments] =
-    httpClient.GET[EACDEnrolments](s"$baseUrl/accounts")
+    httpClientV2.get(url"$baseUrl/accounts").execute[EACDEnrolments]
 
 }
