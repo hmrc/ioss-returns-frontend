@@ -32,7 +32,6 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
 import services.VatRateService
-import uk.gov.hmrc.http.HeaderCarrier
 import utils.FutureSyntax.FutureOps
 import views.html.VatRatesFromCountryView
 
