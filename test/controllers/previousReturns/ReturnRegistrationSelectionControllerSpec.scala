@@ -21,7 +21,7 @@ import forms.ReturnRegistrationSelectionFormProvider
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.mockito.Mockito.when
-import org.scalatest.{BeforeAndAfterEach, PrivateMethodTester}
+import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar.mock
 import pages.JourneyRecoveryPage
 import play.api.data.Form
@@ -37,7 +37,7 @@ import views.html.previousReturns.ReturnRegistrationSelectionView
 
 import scala.concurrent.Future
 
-class ReturnRegistrationSelectionControllerSpec extends SpecBase with BeforeAndAfterEach with PrivateMethodTester {
+class ReturnRegistrationSelectionControllerSpec extends SpecBase with BeforeAndAfterEach {
 
   private val form: Form[PreviousRegistration] = new ReturnRegistrationSelectionFormProvider()(previousRegistrations)
 

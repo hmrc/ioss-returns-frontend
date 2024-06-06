@@ -61,7 +61,7 @@ class CheckIsCurrentReturnPeriodFilterImpl(startReturnPeriod: Period,
             Some(redirect)
           case other: OtherReturn =>
             other.maybeExpectedCurrentReturn match {
-              case Some(expectedCurrentReturn) if expectedCurrentReturn.period.toEtmpPeriodString == startReturnPeriod.toEtmpPeriodString =>
+              case Some(expectedCurrentReturn) if expectedCurrentReturn.period == startReturnPeriod =>
                 None
 
               case _ =>
@@ -75,7 +75,7 @@ class CheckIsCurrentReturnPeriodFilterImpl(startReturnPeriod: Period,
   }
 
   private def remapCompleteOrExcludedToRedirect(currentReturns: CurrentReturns): Option[Result] = {
-    currentReturns.completeOrExcludedReturns.find(_.period.toEtmpPeriodString == startReturnPeriod.toEtmpPeriodString).map {
+    currentReturns.completeOrExcludedReturns.find(_.period == startReturnPeriod).map {
       foundCompleteOrExcludedReturn =>
         val submissionStatus = foundCompleteOrExcludedReturn.submissionStatus
         submissionStatus match {

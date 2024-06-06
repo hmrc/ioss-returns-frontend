@@ -83,12 +83,14 @@ trait Period {
 
   override def toString: String = s"$year-M${month.getValue}"
 
+  // TODO - Remove this as part of VEIOSS-596 - No longer required in frontend
   def toEtmpPeriodString: String = {
     val lastYearDigits = year.toString.substring(2)
 
     s"$lastYearDigits${toEtmpMonthString(month)}"
   }
 
+  // TODO - Remove this as part of VEIOSS-596 - No longer required in frontend
   private def toEtmpMonthString(month: Month): String = {
     month match {
       case Month.JANUARY => "AA"
@@ -105,8 +107,6 @@ trait Period {
       case Month.DECEMBER => "AL"
     }
   }
-
-
 }
 
 final case class StandardPeriod(year: Int, month: Month) extends Period with Ordered[StandardPeriod] {
