@@ -29,7 +29,7 @@ case class OtherReturn(maybeDueReturn: Option[Return], overDueReturns: Seq[Retur
 
   val maybeExpectedCurrentReturn: Option[Return] =
     overDueReturns
-      .sortBy(_.period.toEtmpPeriodString)
+      .sortBy(_.period.firstDay)
       .headOption
       .map(Some.apply)
       .getOrElse(maybeDueReturn)
