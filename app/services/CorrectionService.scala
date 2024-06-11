@@ -47,7 +47,7 @@ class CorrectionService @Inject()(
     } yield {
       val isPreviouslyDeclaredCountry = correctionReturn match {
         case Right(vatReturn) =>
-          vatReturn.goodsSupplied.filter(_.msOfConsumption == country.code).map(_.vatAmountGBP).sum > 0
+          vatReturn.goodsSupplied.exists(_.msOfConsumption == country.code)
         case Left(error) => throw new IllegalStateException(s"Unable to get vat return for accumulating correction total $error")
       }
 
