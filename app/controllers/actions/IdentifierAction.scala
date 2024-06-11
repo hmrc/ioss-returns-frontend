@@ -53,13 +53,13 @@ class IdentifierAction @Inject()(
     authorised(
       (AffinityGroup.Individual or AffinityGroup.Organisation) and
         CredentialStrength(CredentialStrength.strong)
-    ).retrieve( Retrievals.credentials and
+    ).retrieve(Retrievals.credentials and
       Retrievals.allEnrolments and
       Retrievals.affinityGroup and
-      Retrievals.confidenceLevel and
-      Retrievals.credentialRole ) {
+      Retrievals.confidenceLevel
+    ) {
 
-      case Some(credentials) ~ enrolments ~ Some(Organisation) ~ _ ~ Some(credentialRole) if credentialRole == User =>
+      case Some(credentials) ~ enrolments ~ Some(Organisation) ~ _ =>
         findIossFromEnrolments(enrolments).map { maybeIossNumber =>
           (findVrnFromEnrolments(enrolments), maybeIossNumber) match {
             case (Some(vrn), Some(iossNumber)) =>
@@ -68,10 +68,7 @@ class IdentifierAction @Inject()(
           }
         }
 
-      case _ ~ _ ~ Some(Organisation) ~ _ ~ Some(credentialRole) if credentialRole == Assistant =>
-        throw UnsupportedCredentialRole()
-
-      case Some(credentials) ~ enrolments ~ Some(Individual) ~ confidence ~ _ =>
+      case Some(credentials) ~ enrolments ~ Some(Individual) ~ confidence =>
         findIossFromEnrolments(enrolments).map { maybeIossNumber =>
           (findVrnFromEnrolments(enrolments), maybeIossNumber) match {
             case (Some(vrn), Some(iossNumber)) =>
