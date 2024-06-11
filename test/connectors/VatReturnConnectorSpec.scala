@@ -20,7 +20,9 @@ import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock._
 import generators.Generators
 import models.etmp.{EtmpObligations, EtmpVatReturn}
-import models.{InvalidJson, UnexpectedResponseStatus}
+import models.{Country, InvalidJson, UnexpectedResponseStatus}
+import models.corrections.ReturnCorrectionValue
+import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.Application
 import play.api.http.Status.{INTERNAL_SERVER_ERROR, OK}
@@ -37,6 +39,7 @@ class VatReturnConnectorSpec extends SpecBase
 
   private val etmpObligations: EtmpObligations = arbitraryObligations.arbitrary.sample.value
   private val etmpVatReturn: EtmpVatReturn = arbitraryEtmpVatReturn.arbitrary.sample.value
+  private val returnCorrectionValue: ReturnCorrectionValue = arbitraryReturnCorrectionValue.arbitrary.sample.value
 
   private def application: Application = {
     applicationBuilder()
@@ -135,6 +138,35 @@ class VatReturnConnectorSpec extends SpecBase
           result mustBe Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, ""))
         }
       }
+    }
+
+    ".getReturnCorrectionValue" - {
+
+      val country = arbitrary[Country].sample.value
+
+      val getReturnCorrectionValueUrl: String = s"/ioss-returns/max-correction-value/$iossNumber/${country.code}/$period"
+
+      "must return OK with a payload of ETMP VAT Return" in {
+
+        running(application) {
+
+          val connector = application.injector.instanceOf[VatReturnConnector]
+          val responseBody = Json.toJson(returnCorrectionValue).toString()
+
+          server.stubFor(
+            get(urlEqualTo(getReturnCorrectionValueUrl))
+              .willReturn(
+                aResponse().withStatus(OK).withBody(responseBody)
+              )
+          )
+
+          val result = connector.getReturnCorrectionValue(iossNumber, country.code, period).futureValue
+
+          result mustBe returnCorrectionValue
+        }
+      }
+
+
     }
   }
 }

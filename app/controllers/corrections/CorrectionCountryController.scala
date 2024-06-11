@@ -87,7 +87,7 @@ class CorrectionCountryController @Inject()(
 
             for {
               (isPreviouslyDeclared, accumulativeVatForCountryTotalAmount) <- correctionsService
-                .getAccumulativeVatForCountryTotalAmount(correctionReturnPeriod, period, value)
+                .getAccumulativeVatForCountryTotalAmount(request.iossNumber, value, correctionReturnPeriod)
 
               updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionCountryPage(periodIndex, countryIndex), value))
               updatedAnswersWithPreviouslyDeclaredCorrections <- Future.fromTry(updatedAnswers.set(
