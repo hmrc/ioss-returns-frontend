@@ -24,12 +24,12 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.CannotStartReturnView
 
 import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
 class CannotStartReturnController @Inject()(
                                              cc: AuthenticatedControllerComponents,
                                              view: CannotStartReturnView
-                                           )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
+                                           ) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 

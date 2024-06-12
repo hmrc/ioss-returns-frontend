@@ -31,13 +31,12 @@ import viewmodels.govuk.summarylist._
 import views.html.corrections.CheckVatPayableAmountView
 
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
 
 class CheckVatPayableAmountController @Inject()(
-                                       override val messagesApi: MessagesApi,
-                                       cc: AuthenticatedControllerComponents,
-                                       view: CheckVatPayableAmountView
-                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with CompletionChecks with I18nSupport with CorrectionBaseController {
+                                                 override val messagesApi: MessagesApi,
+                                                 cc: AuthenticatedControllerComponents,
+                                                 view: CheckVatPayableAmountView
+                                               ) extends FrontendBaseController with CompletionChecks with I18nSupport with CorrectionBaseController {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
@@ -85,16 +84,16 @@ class CheckVatPayableAmountController @Inject()(
 
   def onSubmit(waypoints: Waypoints, periodIndex: Index, countryIndex: Index, incompletePromptShown: Boolean): Action[AnyContent] =
     cc.authAndGetDataAndCorrectionEligible() {
-    implicit request =>
-      val incomplete = getIncompleteCorrectionsToCountry(periodIndex, countryIndex)
-      if(incomplete.isEmpty) {
-        Redirect(controllers.corrections.routes.CorrectionListCountriesController.onPageLoad(waypoints, periodIndex))
-      } else {
-        if(incompletePromptShown) {
-          Redirect(routes.CorrectionCountryController.onPageLoad(waypoints, periodIndex, countryIndex))
+      implicit request =>
+        val incomplete = getIncompleteCorrectionsToCountry(periodIndex, countryIndex)
+        if (incomplete.isEmpty) {
+          Redirect(controllers.corrections.routes.CorrectionListCountriesController.onPageLoad(waypoints, periodIndex))
         } else {
-          Redirect(routes.CheckVatPayableAmountController.onPageLoad(waypoints, periodIndex, countryIndex))
+          if (incompletePromptShown) {
+            Redirect(routes.CorrectionCountryController.onPageLoad(waypoints, periodIndex, countryIndex))
+          } else {
+            Redirect(routes.CheckVatPayableAmountController.onPageLoad(waypoints, periodIndex, countryIndex))
+          }
         }
-      }
-  }
+    }
 }

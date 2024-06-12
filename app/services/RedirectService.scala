@@ -31,13 +31,12 @@ import queries._
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
 
 class RedirectService @Inject()(
-                               cc: AuthenticatedControllerComponents,
-                               correctionService: CorrectionService,
-                               vatReturnService: VatReturnService
-                               )(implicit ec:ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
+                                 cc: AuthenticatedControllerComponents,
+                                 correctionService: CorrectionService,
+                                 vatReturnService: VatReturnService
+                               ) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
