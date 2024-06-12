@@ -18,6 +18,7 @@ package generators
 
 import config.Constants.{maxCurrencyAmount, minCurrencyAmount}
 import models._
+import models.corrections.ReturnCorrectionValue
 import models.enrolments.{EACDEnrolment, EACDEnrolments, EACDIdentifiers}
 import models.etmp._
 import models.financialdata.Charge
@@ -573,6 +574,16 @@ trait ModelGenerators {
         vatRate = vatRate,
         vatRateType = vatRateType,
         situatedOn = situatedOn
+      )
+    }
+  }
+
+  implicit val arbitraryReturnCorrectionValue: Arbitrary[ReturnCorrectionValue] = {
+    Arbitrary {
+      for {
+        maximumCorrectionValue <- arbitrary[BigDecimal]
+      } yield ReturnCorrectionValue(
+        maximumCorrectionValue = maximumCorrectionValue
       )
     }
   }

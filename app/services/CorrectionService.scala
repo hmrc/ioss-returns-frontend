@@ -37,62 +37,23 @@ class CorrectionService @Inject()(
                                  )(implicit ec: ExecutionContext) extends Logging {
 
   def getAccumulativeVatForCountryTotalAmount(
-                                               periodFrom: Period,
-                                               periodTo: Period,
-                                               country: Country
+                                               iossNumber: String,
+                                               country: Country,
+                                               correctionPeriod: Period
                                              )(implicit hc: HeaderCarrier): Future[(Boolean, BigDecimal)] = {
     for {
-      etmpVatReturnList <- getAllReturnsInPeriodRange(periodFrom, periodTo)
+      returnCorrectionValue <- vatReturnConnector.getReturnCorrectionValue(iossNumber, country.code, correctionPeriod)
+      correctionReturn <- vatReturnConnector.get(correctionPeriod)
     } yield {
-      val firstReturn = etmpVatReturnList.head
-      val firstReturnVatAmountsDeclaredOnCountry = firstReturn.goodsSupplied.filter(_.msOfConsumption == country.code).map(_.vatAmountGBP)
-
-      val otherReturnsCorrectionsAmountsForCorrectionPeriodAndCountry = etmpVatReturnList.tail.flatMap { etmpVatReturn =>
-        etmpVatReturn.correctionPreviousVATReturn.filter(correctionPreviousVATReturn =>
-            correctionPreviousVATReturn.msOfConsumption == country.code && correctionPreviousVATReturn.periodKey == periodFrom.toEtmpPeriodString
-          ).map(_.totalVATAmountCorrectionGBP)
+      val isPreviouslyDeclaredCountry = correctionReturn match {
+        case Right(vatReturn) =>
+          vatReturn.goodsSupplied.exists(_.msOfConsumption == country.code) ||
+            returnCorrectionValue.maximumCorrectionValue != 0
+        case Left(error) => throw new IllegalStateException(s"Unable to get vat return for accumulating correction total $error")
       }
 
-      val isPreviouslyDeclaredCountry: Boolean = firstReturnVatAmountsDeclaredOnCountry.nonEmpty ||
-        otherReturnsCorrectionsAmountsForCorrectionPeriodAndCountry.nonEmpty
-
-      (isPreviouslyDeclaredCountry, firstReturnVatAmountsDeclaredOnCountry.sum + otherReturnsCorrectionsAmountsForCorrectionPeriodAndCountry.sum)
+      (isPreviouslyDeclaredCountry, returnCorrectionValue.maximumCorrectionValue)
     }
-  }
-
-  private def getAllReturnsInPeriodRange(
-                                          correctionReturnPeriod: Period,
-                                          returnPeriod: Period
-                                        )(implicit hc: HeaderCarrier): Future[Seq[EtmpVatReturn]] = {
-    Future.sequence(
-      getAllPeriods(correctionReturnPeriod, returnPeriod)
-        .sortBy(_.firstDay)
-        .map(period =>
-          vatReturnConnector.get(period)
-            .map {
-              case Left(error) =>
-                val message = s"Error when trying to retrieve vat return from getAllPeriods with error: ${error.body}"
-                logger.error(message)
-                throw new Exception(message)
-              case Right(etmpVatReturn) => etmpVatReturn
-            }
-        )
-    )
-  }
-
-  private def getAllPeriods(periodFrom: Period, periodTo: Period): Seq[Period] = {
-
-    @tailrec
-    def getAllPeriodsInRange(currentPeriods: Seq[Period], periodFrom: Period, periodTo: Period): Seq[Period] = {
-      (periodFrom, periodTo) match {
-        case (pf, pt) if pf isBefore pt =>
-          val updatedPeriod = currentPeriods :+ pf
-          getAllPeriodsInRange(updatedPeriod, pf.getNext, pt)
-        case _ => currentPeriods
-      }
-    }
-
-    getAllPeriodsInRange(Seq.empty, periodFrom, periodTo)
   }
 
   def fromUserAnswers(answers: UserAnswers, vrn: Vrn, period: Period): ValidationResult[CorrectionRequest] = {
@@ -143,8 +104,8 @@ class CorrectionService @Inject()(
     answers.get(CorrectionToCountryQuery(periodIndex, countryIndex)) match {
       case Some(value) =>
         value match {
-          case CorrectionToCountry(_, Some(_)) =>      value.validNec
-          case CorrectionToCountry(_, None) =>         DataMissingError(CorrectionToCountryQuery(periodIndex, countryIndex)).invalidNec
+          case CorrectionToCountry(_, Some(_)) => value.validNec
+          case CorrectionToCountry(_, None) => DataMissingError(CorrectionToCountryQuery(periodIndex, countryIndex)).invalidNec
 
         }
       case _ =>

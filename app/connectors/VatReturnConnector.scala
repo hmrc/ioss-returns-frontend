@@ -21,6 +21,7 @@ import connectors.ExternalEntryUrlHttpParser._
 import connectors.VatReturnHttpParser.{EtmpVatReturnReads, EtmpVatReturnResponse}
 import models.Period
 import models.core.CoreVatReturn
+import models.corrections.ReturnCorrectionValue
 import models.etmp.EtmpObligations
 import play.api.Configuration
 import play.api.libs.json.Json
@@ -49,4 +50,7 @@ class VatReturnConnector @Inject()(config: Configuration, httpClientV2: HttpClie
 
   def getSavedExternalEntry()(implicit hc: HeaderCarrier): Future[ExternalEntryUrlResponse] =
     httpClientV2.get(url"$baseUrl/external-entry").execute[ExternalEntryUrlResponse]
+
+  def getReturnCorrectionValue(iossNumber: String, countryCode: String, period: Period)(implicit hc: HeaderCarrier): Future[ReturnCorrectionValue] =
+    httpClientV2.get(url"$baseUrl/max-correction-value/$iossNumber/$countryCode/$period").execute[ReturnCorrectionValue]
 }
