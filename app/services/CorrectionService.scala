@@ -20,7 +20,6 @@ import cats.implicits.{catsSyntaxValidatedIdBinCompat0, toTraverseOps}
 import connectors.VatReturnConnector
 import logging.Logging
 import models.corrections.{CorrectionToCountry, PeriodWithCorrections}
-import models.etmp.EtmpVatReturn
 import models.requests.corrections.CorrectionRequest
 import models.{Country, DataMissingError, Index, Period, StandardPeriod, UserAnswers, ValidationResult}
 import pages.corrections.CorrectPreviousReturnPage
@@ -29,7 +28,6 @@ import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.HeaderCarrier
 
 import javax.inject.Inject
-import scala.annotation.tailrec
 import scala.concurrent.{ExecutionContext, Future}
 
 class CorrectionService @Inject()(

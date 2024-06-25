@@ -18,9 +18,9 @@ package services
 
 import base.SpecBase
 import connectors.VatReturnConnector
-import models.etmp.{EtmpVatRateType, EtmpVatReturn, EtmpVatReturnCorrection, EtmpVatReturnGoodsSupplied}
-import models.{Country, Period, StandardPeriod, UnexpectedResponseStatus}
 import models.corrections.ReturnCorrectionValue
+import models.etmp.{EtmpVatRateType, EtmpVatReturn, EtmpVatReturnGoodsSupplied}
+import models.{Country, StandardPeriod, UnexpectedResponseStatus}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito
@@ -32,7 +32,6 @@ import uk.gov.hmrc.http.HeaderCarrier
 import utils.FutureSyntax.FutureOps
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 
 
 class CorrectionServiceSpec extends SpecBase with PrivateMethodTester with BeforeAndAfterEach {
@@ -65,7 +64,7 @@ class CorrectionServiceSpec extends SpecBase with PrivateMethodTester with Befor
               vatAmountGBP = BigDecimal(500),
               vatRateType = EtmpVatRateType.StandardVatRate,
               taxableAmountGBP = BigDecimal(2500)
-          ),
+            ),
             EtmpVatReturnGoodsSupplied(
               msOfConsumption = country2.code,
               vatAmountGBP = BigDecimal(800),
@@ -87,7 +86,7 @@ class CorrectionServiceSpec extends SpecBase with PrivateMethodTester with Befor
 
         val result = service.getAccumulativeVatForCountryTotalAmount(iossNumber, country1, period1).futureValue
 
-        result mustBe (isPreviouslyDeclaredCountry, returnCorrectionValue.maximumCorrectionValue)
+        result mustBe(isPreviouslyDeclaredCountry, returnCorrectionValue.maximumCorrectionValue)
         verify(mockVatReturnConnector, times(1)).get(eqTo(period1))(any())
       }
 
