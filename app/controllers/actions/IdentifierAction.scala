@@ -23,14 +23,16 @@ import logging.Logging
 import models.requests.IdentifierRequest
 import play.api.mvc.Results._
 import play.api.mvc._
-import services.AccountService
-import uk.gov.hmrc.auth.core.AffinityGroup.{Individual, Organisation}
+import services.{AccountService, UrlBuilderService}
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve._
+import uk.gov.hmrc.auth.core.AffinityGroup.{Individual, Organisation}
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.{HeaderCarrier, UnauthorizedException}
+import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl.idFunctor
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
+import uk.gov.hmrc.play.bootstrap.binders.{AbsoluteWithHostnameFromAllowlist, OnlyRelative}
 import utils.FutureSyntax.FutureOps
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -39,14 +41,17 @@ import scala.concurrent.{ExecutionContext, Future}
 class IdentifierAction @Inject()(
                                   override val authConnector: AuthConnector,
                                   accountService: AccountService,
-                                  config: FrontendAppConfig
+                                  config: FrontendAppConfig,
+                                  urlBuilderService: UrlBuilderService,
                                 )
                                 (implicit val executionContext: ExecutionContext)
   extends ActionRefiner[Request, IdentifierRequest]
     with AuthorisedFunctions with Logging {
 
+  private type IdentifierActionResult[A] = Future[Either[Result, IdentifierRequest[A]]]
+
   //noinspection ScalaStyle
-  override def refine[A](request: Request[A]): Future[Either[Result, IdentifierRequest[A]]] = {
+  override def refine[A](request: Request[A]): IdentifierActionResult[A] = {
 
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
 
@@ -84,6 +89,9 @@ class IdentifierAction @Inject()(
     } recoverWith {
       case _: NoActiveSession =>
         Left(Redirect(config.loginUrl, Map("continue" -> Seq(config.loginContinueUrl)))).toFuture
+      case _: InsufficientConfidenceLevel =>
+        logger.info("Insufficient confidence level")
+        upliftConfidenceLevel(request)
       case e: AuthorisationException =>
         logger.info(s"Got authorisation exception ${e.getMessage}", e)
         Left(Redirect(routes.NotRegisteredController.onPageLoad())).toFuture
@@ -137,4 +145,16 @@ class IdentifierAction @Inject()(
       } orElse enrolments.enrolments.find(_.key == "HMCE-VATDEC-ORG")
       .flatMap { enrolment => enrolment.identifiers.find(_.key == "VATRegNo").map(e => Vrn(e.value)) }
 
+  private def upliftConfidenceLevel[A](request: Request[A]): IdentifierActionResult[A] = {
+    val redirectPolicy = OnlyRelative | AbsoluteWithHostnameFromAllowlist(config.allowedRedirectUrls: _*)
+    Left(Redirect(
+      config.ivUpliftUrl,
+      Map(
+        "origin" -> Seq(config.origin),
+        "confidenceLevel" -> Seq(ConfidenceLevel.L250.toString),
+        "completionURL" -> Seq(urlBuilderService.loginContinueUrl(request).get(redirectPolicy).url),
+        "failureURL" -> Seq(urlBuilderService.ivFailureUrl(request))
+      )
+    )).toFuture
+  }
 }

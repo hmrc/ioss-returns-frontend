@@ -20,7 +20,7 @@ import config.FrontendAppConfig
 import models.requests.IdentifierRequest
 import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.mvc._
-import services.AccountService
+import services.{AccountService, UrlBuilderService}
 import uk.gov.hmrc.auth.core.{AuthConnector, Enrolment, Enrolments}
 import uk.gov.hmrc.auth.core.retrieve.Credentials
 import uk.gov.hmrc.domain.Vrn
@@ -31,7 +31,8 @@ import scala.concurrent.{ExecutionContext, Future}
 class FakeIdentifierAction extends IdentifierAction(
   mock[AuthConnector],
   mock[AccountService],
-  mock[FrontendAppConfig]
+  mock[FrontendAppConfig],
+  mock[UrlBuilderService]
 )(ExecutionContext.Implicits.global) {
 
   private val iossEnrolmentKey = "HMRC-IOSS-ORG"
