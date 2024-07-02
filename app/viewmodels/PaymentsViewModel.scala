@@ -42,8 +42,10 @@ object PaymentsViewModel {
       ).sortBy(_.dateDue)
 
       val excludedPaymentsSection = if (excludedPaymentsOlderThanThreeYears.nonEmpty) {
-        Some(PaymentsSection(contents = excludedPaymentsOlderThanThreeYears.map(excludedPayment =>
-          messages("yourAccount.payment.excludedPayment", excludedPayment.period.displayShortText))
+        Some(PaymentsSection(
+          contents = excludedPaymentsOlderThanThreeYears.map(
+            excludedPayment => messages("yourAccount.payment.excludedPayment", excludedPayment.period.displayShortText)
+          )
         ))
       } else {
         None

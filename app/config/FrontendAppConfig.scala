@@ -20,6 +20,8 @@ import com.google.inject.{Inject, Singleton}
 import play.api.Configuration
 import play.api.i18n.Lang
 import play.api.mvc.RequestHeader
+
+import java.net.URI
 @Singleton
 class FrontendAppConfig @Inject() (configuration: Configuration) {
 
@@ -45,6 +47,18 @@ class FrontendAppConfig @Inject() (configuration: Configuration) {
   private val exitSurveyBaseUrl: String = configuration.get[String]("microservice.services.feedback-frontend.host") +
     configuration.get[String]("microservice.services.feedback-frontend.basePath")
   val exitSurveyUrl: String             = s"${exitSurveyBaseUrl}/${origin.toLowerCase}"
+
+  val ivUpliftUrl: String = configuration.get[String]("urls.ivUplift")
+
+  val allowedRedirectUrls: Seq[String] = configuration.get[Seq[String]]("urls.allowedRedirects")
+
+  val ivEvidenceStatusUrl: String =
+    s"${configuration.get[Service]("microservice.services.identity-verification").baseUrl}/disabled-evidences?origin=$origin"
+
+  private val ivJourneyServiceUrl: String =
+    s"${configuration.get[Service]("microservice.services.identity-verification").baseUrl}/journey/"
+
+  def ivJourneyResultUrl(journeyId: String): String = new URI(s"$ivJourneyServiceUrl$journeyId").toString
 
   val languageTranslationEnabled: Boolean = configuration.get[Boolean]("features.welsh-translation")
   val exclusionsEnabled: Boolean = configuration.get[Boolean]("features.exclusions.enabled")
