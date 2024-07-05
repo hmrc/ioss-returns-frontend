@@ -37,6 +37,7 @@ class FrontendAppConfig @Inject() (configuration: Configuration) {
 
   val loginUrl: String         = configuration.get[String]("urls.login")
   val loginContinueUrl: String = configuration.get[String]("urls.loginContinue")
+  val loginContinueBaseUrl: String = configuration.get[String]("urls.loginContinueBase")
   val signOutUrl: String       = configuration.get[String]("urls.signOut")
   val amendRegistrationUrl: String = configuration.get[String]("urls.amendRegistrationUrl")
   val cancelYourRequestToLeaveUrl: String = configuration.get[String]("urls.cancelYourRequestToLeaveUrl")

@@ -19,20 +19,20 @@ package connectors
 import config.FrontendAppConfig
 import models.iv.{IdentityVerificationEvidenceSource, IdentityVerificationResponse}
 import connectors.IdentityVerificationHttpParser.IdentityVerificationResponseReads
-
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class IdentityVerificationConnector @Inject()(
-                                               httpClient: HttpClient,
+                                               httpClient: HttpClientV2,
                                                frontendAppConfig: FrontendAppConfig
                                              )(implicit executionContext: ExecutionContext) {
 
   def getJourneyStatus(journeyId: String)(implicit hc: HeaderCarrier): Future[Option[IdentityVerificationResponse]] =
-    httpClient.GET[Option[IdentityVerificationResponse]](frontendAppConfig.ivJourneyResultUrl(journeyId))
+    httpClient.get(url"${frontendAppConfig.ivJourneyResultUrl(journeyId)}").execute[Option[IdentityVerificationResponse]]
 
   def getDisabledEvidenceSource()(implicit hc: HeaderCarrier): Future[List[IdentityVerificationEvidenceSource]] =
-    httpClient.GET[List[IdentityVerificationEvidenceSource]](frontendAppConfig.ivEvidenceStatusUrl)
+    httpClient.get(url"${frontendAppConfig.ivEvidenceStatusUrl}").execute[List[IdentityVerificationEvidenceSource]]
 }

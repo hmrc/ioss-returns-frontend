@@ -33,11 +33,10 @@ class UrlBuilderService @Inject()(config: FrontendAppConfig) {
     val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
 
     val returnUrl = RedirectUrl(
-      request.queryString
-        .get("k")
-        .flatMap(_.headOption)
+      request
+        .getQueryString("k")
         .orElse(hc.sessionId.map(_.value))
-        .map(sessionId => config.loginContinueUrl + request.path + "?k=" + sessionId)
+        .map(sessionId => config.loginContinueBaseUrl + request.path + "?k=" + sessionId)
         .getOrElse {
           request.uri
         }
@@ -47,5 +46,5 @@ class UrlBuilderService @Inject()(config: FrontendAppConfig) {
   }
 
   def ivFailureUrl(request: Request[_]): String =
-    config.loginContinueUrl + authRoutes.IdentityVerificationController.handleIvFailure(loginContinueUrl(request), None).url
+    config.loginContinueBaseUrl + authRoutes.IdentityVerificationController.handleIvFailure(loginContinueUrl(request), None).url
 }
