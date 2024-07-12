@@ -32,10 +32,10 @@
 
     @if(periodsWithFinancialData.isEmpty) {
       <br/>
-      <p class="govuk-body-m">@messages("submittedReturnsHistory.noReturns")</p>
+      <p class="govuk-body-m govuk-!-margin-bottom-9">@messages("submittedReturnsHistory.noReturns")</p>
     } else {
 
-      <div class="govuk-accordion" data-module="govuk-accordion" id="accordion-with-summary-sections">
+      <div class="govuk-accordion govuk-!-margin-bottom-9" data-module="govuk-accordion" id="accordion-with-summary-sections">
       @for((year, periodWithFinancialData) <- periodsWithFinancialData.toList.sortBy(_._1)) {
         <div class="govuk-accordion__section">
           <div class="govuk-accordion__section-header">
