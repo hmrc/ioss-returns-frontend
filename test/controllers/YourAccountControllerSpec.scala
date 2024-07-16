@@ -210,7 +210,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             excludedReturns = Seq.empty,
             stubClockAtArbitraryDate
           )(messages(application)),
-          List.empty
+          List.empty,
+          hasDeregisteredFromVat = false
         )(request, messages(application)).toString
       }
     }
@@ -278,7 +279,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             excludedReturns = Seq.empty,
             stubClockAtArbitraryDate
           )(messages(application)),
-          List.empty
+          List.empty,
+          hasDeregisteredFromVat = false
         )(request, messages(application)).toString
       }
     }
@@ -346,7 +348,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             excludedReturns = Seq.empty,
             stubClockAtArbitraryDate
           )(messages(application)),
-          List.empty
+          List.empty,
+          hasDeregisteredFromVat = false
         )(request, messages(application)).toString
       }
     }
@@ -419,7 +422,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             excludedReturns = Seq.empty,
             stubClockAtArbitraryDate
           )(messages(application)),
-          List.empty
+          List.empty,
+          hasDeregisteredFromVat = false
         )(request, messages(application)).toString
       }
     }
@@ -516,7 +520,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             excludedReturns = Seq.empty,
             stubClockAtArbitraryDate
           )(messages(application)),
-          List(previousRegistrationPrepareData)
+          List(previousRegistrationPrepareData),
+          hasDeregisteredFromVat = false
         )(request, messages(application)).toString
 
         contentAsString(result).contains(messages(application).messages("yourAccount.previousRegistrations.payLink"))
@@ -620,7 +625,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             excludedReturns = Seq.empty,
             stubClockAtArbitraryDate
           )(messages(application)),
-          List(previousRegistrationPrepareData)
+          List(previousRegistrationPrepareData),
+          hasDeregisteredFromVat = false
         )(request, messages(application)).toString
 
         contentAsString(result).contains(messages(application).messages("yourAccount.previousRegistrations.payLink"))
@@ -695,7 +701,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               excludedReturns = Seq.empty,
               stubClockAtArbitraryDate
             )(messages(application)),
-            List.empty
+            List.empty,
+            hasDeregisteredFromVat = false
           )(request, messages(application)).toString
         }
       }
@@ -757,7 +764,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               excludedReturns = Seq.empty,
               stubClockAtArbitraryDate
             )(messages(application)),
-            List.empty
+            List.empty,
+            hasDeregisteredFromVat = false
           )(request, messages(application)).toString
         }
       }
@@ -824,7 +832,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               excludedReturns = Seq.empty,
               stubClockAtArbitraryDate
             )(messages(application)),
-            List.empty
+            List.empty,
+            hasDeregisteredFromVat = false
           )(request, messages(application)).toString
         }
       }
@@ -888,7 +897,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               excludedReturns = Seq.empty,
               stubClockAtArbitraryDate
             )(messages(application)),
-            List.empty
+            List.empty,
+            hasDeregisteredFromVat = false
           )(request, messages(application)).toString
         }
       }
@@ -955,7 +965,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               excludedReturns = Seq.empty,
               stubClockAtArbitraryDate
             )(messages(application)),
-            List.empty
+            List.empty,
+            hasDeregisteredFromVat = false
           )(request, messages(application)).toString
         }
       }
@@ -1025,7 +1036,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               excludedReturns = Seq.empty,
               stubClockAtArbitraryDate
             )(messages(application)),
-            List.empty
+            List.empty,
+            hasDeregisteredFromVat = false
           )(request, messages(application)).toString
         }
       }
@@ -1099,7 +1111,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               excludedReturns = Seq(Return.fromPeriod(excludedPeriod, Excluded, inProgress = false, isOldest = true)),
               stubClockAtArbitraryDate
             )(messages(application)),
-            List.empty
+            List.empty,
+            hasDeregisteredFromVat = false
           )(request, messages(application)).toString
         }
       }

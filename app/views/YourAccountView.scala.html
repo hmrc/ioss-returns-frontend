@@ -40,7 +40,8 @@
         maybeExclusion: Option[EtmpExclusion],
         hasSubmittedFinalReturn: Boolean,
         returnsViewModel: ReturnsViewModel,
-        previousRegistrationPrepareData: List[PrepareData]
+        previousRegistrationPrepareData: List[PrepareData],
+        hasDeregisteredFromVat: Boolean
 )(implicit request: Request[_], messages: Messages)
 
     @layout(
@@ -85,10 +86,23 @@
 
                             case EtmpExclusionReason.NoLongerSupplies | EtmpExclusionReason.VoluntarilyLeaves | EtmpExclusionReason.TransferringMSID => {
                                 @if(exclusion.isActive) {
-                                    @govukWarningText(WarningText(
-                                        iconFallbackText = Option(messages("site.warning")),
-                                        content = Text(messages("yourAccount.leftService"))
-                                    ))
+                                    @if(hasDeregisteredFromVat) {
+                                        <div class="govuk-warning-text">
+                                            <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                                            <strong class="govuk-warning-text__text">
+                                                <span class="govuk-warning-text__assistive">Warning:</span>
+                                                <p class="govuk-body govuk-!-font-weight-bold">
+                                                    @messages("yourAccount.leftService") <br>
+                                                    @messages("yourAccount.deregistered")
+                                                </p>
+                                            </strong>
+                                        </div>
+                                    } else {
+                                        @govukWarningText(WarningText(
+                                            iconFallbackText = Option(messages("site.warning")),
+                                            content = Text(messages("yourAccount.leftService"))
+                                        ))
+                                    }
                                 } else {
                                     @govukWarningText(WarningText(
                                         iconFallbackText = Option(messages("site.warning")),
@@ -99,10 +113,23 @@
 
                             case EtmpExclusionReason.CeasedTrade | EtmpExclusionReason.FailsToComply | EtmpExclusionReason.NoLongerMeetsConditions => {
                                 @if(exclusion.quarantine) {
-                                    @govukWarningText(WarningText(
-                                        iconFallbackText = Option(messages("site.warning")),
-                                        content = Text(messages("yourAccount.quarantined", exclusion.displayRejoinDate))
-                                    ))
+                                    @if(hasDeregisteredFromVat) {
+                                        <div class="govuk-warning-text">
+                                            <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                                            <strong class="govuk-warning-text__text">
+                                                <span class="govuk-warning-text__assistive">Warning:</span>
+                                                <p class="govuk-body govuk-!-font-weight-bold">
+                                                    @messages("yourAccount.removedFromService") <br>
+                                                    @messages("yourAccount.deregistered")
+                                                </p>
+                                            </strong>
+                                        </div>
+                                    } else {
+                                        @govukWarningText(WarningText(
+                                            iconFallbackText = Option(messages("site.warning")),
+                                            content = Text(messages("yourAccount.quarantined", exclusion.displayRejoinDate))
+                                        ))
+                                    }
                                 } else {
                                     @govukWarningText(WarningText(
                                         iconFallbackText = Option(messages("site.warning")),
@@ -125,10 +152,23 @@
                         @exclusion.exclusionReason match {
                             case EtmpExclusionReason.NoLongerSupplies | EtmpExclusionReason.VoluntarilyLeaves | EtmpExclusionReason.TransferringMSID => {
                                 @if(exclusion.isActive) {
-                                    @govukWarningText(WarningText(
-                                        iconFallbackText = Option(messages("site.warning")),
-                                        content = Text(messages("yourAccount.leftService.outstanding"))
-                                    ))
+                                    @if(hasDeregisteredFromVat) {
+                                        <div class="govuk-warning-text">
+                                            <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                                            <strong class="govuk-warning-text__text">
+                                                <span class="govuk-warning-text__assistive">Warning:</span>
+                                                <p class="govuk-body govuk-!-font-weight-bold">
+                                                    @messages("yourAccount.leftService.outstanding") <br>
+                                                    @messages("yourAccount.deregistered")
+                                                </p>
+                                            </strong>
+                                        </div>
+                                    } else {
+                                        @govukWarningText(WarningText(
+                                            iconFallbackText = Option(messages("site.warning")),
+                                            content = Text(messages("yourAccount.leftService.outstanding"))
+                                        ))
+                                    }
                                 } else {
                                     @govukWarningText(WarningText(
                                         iconFallbackText = Option(messages("site.warning")),
@@ -139,10 +179,23 @@
 
                             case EtmpExclusionReason.CeasedTrade | EtmpExclusionReason.FailsToComply | EtmpExclusionReason.NoLongerMeetsConditions => {
                                 @if(exclusion.quarantine) {
-                                    @govukWarningText(WarningText(
-                                        iconFallbackText = Option(messages("site.warning")),
-                                        content = Text(messages("yourAccount.quarantined.outstanding", exclusion.displayRejoinDate))
-                                    ))
+                                    @if(hasDeregisteredFromVat) {
+                                        <div class="govuk-warning-text">
+                                            <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                                            <strong class="govuk-warning-text__text">
+                                                <span class="govuk-warning-text__assistive">Warning:</span>
+                                                <p class="govuk-body govuk-!-font-weight-bold">
+                                                    @messages("yourAccount.removedFromService.outstanding") <br>
+                                                    @messages("yourAccount.deregistered")
+                                                </p>
+                                            </strong>
+                                        </div>
+                                    } else {
+                                        @govukWarningText(WarningText(
+                                            iconFallbackText = Option(messages("site.warning")),
+                                            content = Text(messages("yourAccount.quarantined.outstanding", exclusion.displayRejoinDate))
+                                        ))
+                                    }
                                 } else {
                                     @govukWarningText(WarningText(
                                         iconFallbackText = Option(messages("site.warning")),
@@ -250,12 +303,15 @@
                         </a>
                     </p>
 
+
                     @rejoinRegistrationUrl.map { url =>
-                        <p class="govuk-body">
-                            <a class="govuk-link" href="@url" id="rejoin-scheme">
-                            @messages("yourAccount.details.rejoinThisService")
-                            </a>
-                        </p>
+                        @if(!hasDeregisteredFromVat) {
+                            <p class="govuk-body">
+                                <a class="govuk-link" href="@url" id="rejoin-scheme">
+                                @messages("yourAccount.details.rejoinThisService")
+                                </a>
+                            </p>
+                        }
                     }
 
                     @leaveThisServiceUrl.map { url =>

@@ -106,6 +106,8 @@ yourAccount.finalReturn.complete = You''ve completed your final return.
 
 yourAccount.paragraph = You can correct a previous return when you submit your next one.
 
+yourAccount.deregistered = You are no longer VAT registered. You must re-register for VAT to use the Import One Stop Shop service.
+
 checkYourAnswers.title = Check Your Answers
 checkYourAnswers.heading = Check Your Answers
 checkYourAnswers.label.businessName = Business name
