@@ -19,6 +19,7 @@ package base
 import controllers.actions._
 import generators.{Generators, UserAnswersGenerator}
 import models._
+import models.etmp.{DesAddress, VatCustomerInfo}
 import org.scalacheck.Arbitrary
 import org.scalacheck.Arbitrary._
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
@@ -89,6 +90,18 @@ trait SpecBase
   val completedUserAnswersWithCorrections: UserAnswers = completeUserAnswers
     .set(CorrectPreviousReturnPage(0), true).success.value
     .set(CorrectionReturnYearPage(index), 2023).success.value
+
+  val vatCustomerInfo: VatCustomerInfo =
+    VatCustomerInfo(
+      registrationDate = Some(LocalDate.now(stubClockAtArbitraryDate)),
+      desAddress = DesAddress("Line 1", None, None, None, None, Some("AA11 1AA"), "GB"),
+      partOfVatGroup = false,
+      organisationName = Some("Company name"),
+      singleMarketIndicator = true,
+      individualName = None,
+      deregistrationDecisionDate = Some(LocalDate.now(stubClockAtArbitraryDate)),
+      overseasIndicator = false
+    )
 
   def messages(app: Application): Messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
 
