@@ -22,7 +22,6 @@ import generators.Generators
 import models.{RegistrationWrapper, UnexpectedResponseStatus}
 import models.enrolments.EACDEnrolments
 import models.etmp.VatCustomerInfo
-import org.scalacheck.Arbitrary
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.Application

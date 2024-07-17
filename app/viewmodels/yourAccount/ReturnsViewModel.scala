@@ -98,9 +98,6 @@ object ReturnsViewModel {
   private def returnOverdueSingularParagraph()(implicit messages: Messages) =
     ParagraphSimple(messages("yourAccount.yourReturns.returnsOverdue.singular"))
 
-  private def returnOverdueParagraph()(implicit messages: Messages) =
-    ParagraphSimple(messages("yourAccount.yourReturns.returnsOverdue"))
-
   private def returnOverdueInProgressAdditionalParagraph()(implicit messages: Messages) =
     ParagraphSimple(messages("yourAccount.yourReturns.returnOverdue.additional.inProgress"))
 
@@ -144,10 +141,10 @@ object ReturnsViewModel {
 
       case (1, None, _) =>
         val contents = dueReturn.map(dueReturn =>
-          Seq(returnOverdueSingularParagraph(), returnDueParagraph(dueReturn.period))).getOrElse(Seq(returnOverdueParagraph()))
+          Seq(returnOverdueSingularParagraph(), returnDueParagraph(dueReturn.period))).getOrElse(Seq(returnDueParagraph(overdueReturns.head.period)))
         ReturnsViewModel(
           contents = contents,
-          linkToStart = Some(startOverdueReturnLink(waypoints, overdueReturns.head.period))
+          linkToStart = Some(startDueReturnLink(waypoints, overdueReturns.head.period))
         )
 
       case (1, Some(inProgress), _) =>
