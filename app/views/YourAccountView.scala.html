@@ -131,10 +131,23 @@
                                         ))
                                     }
                                 } else {
-                                    @govukWarningText(WarningText(
-                                        iconFallbackText = Option(messages("site.warning")),
-                                        content = Text(messages("yourAccount.removedFromService"))
-                                    ))
+                                    @if(hasDeregisteredFromVat) {
+                                    <div class="govuk-warning-text">
+                                        <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                                        <strong class="govuk-warning-text__text">
+                                            <span class="govuk-warning-text__assistive">Warning:</span>
+                                            <p class="govuk-body govuk-!-font-weight-bold">
+                                                @messages("yourAccount.removedFromService") <br>
+                                                @messages("yourAccount.deregistered")
+                                            </p>
+                                        </strong>
+                                    </div>
+                                    } else {
+                                        @govukWarningText(WarningText(
+                                            iconFallbackText = Option(messages("site.warning")),
+                                            content = Text(messages("yourAccount.removedFromService"))
+                                        ))
+                                    }
                                 }
                             }
 
@@ -197,10 +210,23 @@
                                         ))
                                     }
                                 } else {
-                                    @govukWarningText(WarningText(
-                                        iconFallbackText = Option(messages("site.warning")),
-                                        content = Text(messages("yourAccount.removedFromService.outstanding"))
-                                    ))
+                                    @if(hasDeregisteredFromVat) {
+                                        <div class="govuk-warning-text">
+                                            <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                                            <strong class="govuk-warning-text__text">
+                                                <span class="govuk-warning-text__assistive">Warning:</span>
+                                                <p class="govuk-body govuk-!-font-weight-bold">
+                                                    @messages("yourAccount.removedFromService") <br>
+                                                    @messages("yourAccount.deregistered")
+                                                </p>
+                                            </strong>
+                                        </div>
+                                    } else {
+                                        @govukWarningText(WarningText(
+                                            iconFallbackText = Option(messages("site.warning")),
+                                            content = Text(messages("yourAccount.removedFromService.outstanding"))
+                                        ))
+                                    }
                                 }
                             }
 
