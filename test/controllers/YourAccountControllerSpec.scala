@@ -26,7 +26,7 @@ import models.etmp.EtmpExclusion
 import models.etmp.EtmpExclusionReason.NoLongerSupplies
 import models.payments.{Payment, PaymentStatus, PrepareData}
 import models.requests.{IdentifierRequest, RegistrationRequest}
-import models.{NotFound, RegistrationWrapper, StandardPeriod, SubmissionStatus}
+import models.{RegistrationWrapper, StandardPeriod, SubmissionStatus}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.mockito.Mockito.when
@@ -117,7 +117,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         when(mockFinancialDataConnector.prepareFinancialData()(any())) thenReturn Right(prepareData).toFuture
 
         when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-        when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
         when(mockReturnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Right(CurrentReturns(
@@ -159,7 +158,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
 
       when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-      when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
 
       when(mockReturnStatusConnector.getCurrentReturns(any())(any())) thenReturn
         Right(CurrentReturns(
@@ -227,7 +225,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
       val registrationWrapperWithExclusion: RegistrationWrapper = createRegistrationWrapperWithExclusion(LocalDate.now())
 
       when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-      when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Left(NotFound))
 
       when(mockReturnStatusConnector.getCurrentReturns(any())(any())) thenReturn
         Right(CurrentReturns(
@@ -288,7 +285,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             stubClockAtArbitraryDate
           )(messages(application)),
           List.empty,
-          hasDeregisteredFromVat = false
+          hasDeregisteredFromVat = true
         )(request, messages(application)).toString
       }
     }
@@ -298,7 +295,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
       val registrationWrapperWithExclusion: RegistrationWrapper = createRegistrationWrapperWithExclusion(LocalDate.now())
 
       when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-      when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Left(NotFound))
 
       when(mockReturnStatusConnector.getCurrentReturns(any())(any())) thenReturn
         Right(CurrentReturns(
@@ -359,7 +355,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             stubClockAtArbitraryDate
           )(messages(application)),
           List.empty,
-          hasDeregisteredFromVat = false
+          hasDeregisteredFromVat = true
         )(request, messages(application)).toString
       }
     }
@@ -378,7 +374,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq(exclusion)))
 
       when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-      when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Left(NotFound))
 
       when(mockReturnStatusConnector.getCurrentReturns(any())(any())) thenReturn
         Right(CurrentReturns(
@@ -470,7 +465,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
       )
 
       when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-      when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
       when(mockPreviousRegistrationService.getPreviousRegistrationPrepareFinancialData()(any())) thenReturn List(previousRegistrationPrepareData).toFuture
       when(mockFinancialDataConnector.prepareFinancialData()(any())) thenReturn
         Right(PrepareData(List.empty, List.empty, List.empty, 0, 0, iossNumber)).toFuture
@@ -576,7 +570,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
       )
 
       when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-      when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
       when(mockPreviousRegistrationService.getPreviousRegistrationPrepareFinancialData()(any())) thenReturn List(previousRegistrationPrepareData).toFuture
       when(mockFinancialDataConnector.prepareFinancialData()(any())) thenReturn
         Right(PrepareData(List.empty, List.empty, List.empty, 0, 0, iossNumber)).toFuture
@@ -660,7 +653,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
 
         when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-        when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
         when(mockReturnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Right(CurrentReturns(
             Seq(Return(
@@ -730,7 +722,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
 
         when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-        when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
         when(mockReturnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Right(CurrentReturns(
             Seq(Return.fromPeriod(period, Due, inProgress = true, isOldest = false
@@ -797,7 +788,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
 
         when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-        when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
         when(mockReturnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Right(CurrentReturns(
             Seq(
@@ -865,7 +855,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
 
         when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-        when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
         when(mockReturnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Right(CurrentReturns(
             Seq(
@@ -932,7 +921,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
 
         when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-        when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
         when(mockReturnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Right(CurrentReturns(
             Seq(
@@ -1002,7 +990,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
 
         when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-        when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
         when(mockReturnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Right(CurrentReturns(
             Seq(
@@ -1075,7 +1062,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
 
         when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-        when(registrationConnector.getVatCustomerInfo()(any())) thenReturn Future.successful(Right(vatCustomerInfo))
         when(mockReturnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Right(CurrentReturns(
             Seq(

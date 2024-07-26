@@ -17,7 +17,6 @@
 package connectors
 
 import config.Service
-import connectors.VatCustomerInfoHttpParser._
 import models.RegistrationWrapper
 import models.enrolments.EACDEnrolments
 import play.api.Configuration
@@ -38,8 +37,5 @@ class RegistrationConnector @Inject()(config: Configuration, httpClientV2: HttpC
 
   def getAccounts()(implicit hc: HeaderCarrier): Future[EACDEnrolments] =
     httpClientV2.get(url"$baseUrl/accounts").execute[EACDEnrolments]
-
-  def getVatCustomerInfo()(implicit hc: HeaderCarrier): Future[VatCustomerInfoResponse] =
-    httpClientV2.get(url"$baseUrl/vat-information").execute[VatCustomerInfoResponse]
 
 }

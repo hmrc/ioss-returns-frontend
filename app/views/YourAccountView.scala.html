@@ -87,16 +87,13 @@
                             case EtmpExclusionReason.NoLongerSupplies | EtmpExclusionReason.VoluntarilyLeaves | EtmpExclusionReason.TransferringMSID => {
                                 @if(exclusion.isActive) {
                                     @if(hasDeregisteredFromVat) {
-                                        <div class="govuk-warning-text">
-                                            <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
-                                            <strong class="govuk-warning-text__text">
-                                                <span class="govuk-warning-text__assistive">Warning:</span>
-                                                <p class="govuk-body govuk-!-font-weight-bold">
-                                                    @messages("yourAccount.leftService") <br>
-                                                    @messages("yourAccount.deregistered")
-                                                </p>
-                                            </strong>
-                                        </div>
+                                        @govukWarningText(WarningText(
+                                            iconFallbackText = Option(messages("site.warning")),
+                                            content = HtmlContent(Html(
+                                                messages("yourAccount.leftService.outstanding") +
+                                                s"""<p class="govuk-body govuk-!-font-weight-bold">${messages("yourAccount.deregistered")}</p>"""
+                                            ))
+                                        ))
                                     } else {
                                         @govukWarningText(WarningText(
                                             iconFallbackText = Option(messages("site.warning")),
@@ -114,16 +111,14 @@
                             case EtmpExclusionReason.CeasedTrade | EtmpExclusionReason.FailsToComply | EtmpExclusionReason.NoLongerMeetsConditions => {
                                 @if(exclusion.quarantine) {
                                     @if(hasDeregisteredFromVat) {
-                                        <div class="govuk-warning-text">
-                                            <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
-                                            <strong class="govuk-warning-text__text">
-                                                <span class="govuk-warning-text__assistive">Warning:</span>
-                                                <p class="govuk-body govuk-!-font-weight-bold">
-                                                    @messages("yourAccount.removedFromService") <br>
-                                                    @messages("yourAccount.deregistered")
-                                                </p>
-                                            </strong>
-                                        </div>
+                                        @govukWarningText(WarningText(
+                                            iconFallbackText = Option(messages("site.warning")),
+                                            content = HtmlContent(Html(
+                                                messages("yourAccount.yourAccount.removedFromService") +
+                                                s"""<p class="govuk-body govuk-!-font-weight-bold">${messages("yourAccount.deregistered")}</p>"""
+                                            ))
+                                        ))
+
                                     } else {
                                         @govukWarningText(WarningText(
                                             iconFallbackText = Option(messages("site.warning")),
@@ -132,16 +127,13 @@
                                     }
                                 } else {
                                     @if(hasDeregisteredFromVat) {
-                                    <div class="govuk-warning-text">
-                                        <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
-                                        <strong class="govuk-warning-text__text">
-                                            <span class="govuk-warning-text__assistive">Warning:</span>
-                                            <p class="govuk-body govuk-!-font-weight-bold">
-                                                @messages("yourAccount.removedFromService") <br>
-                                                @messages("yourAccount.deregistered")
-                                            </p>
-                                        </strong>
-                                    </div>
+                                        @govukWarningText(WarningText(
+                                            iconFallbackText = Option(messages("site.warning")),
+                                            content = HtmlContent(Html(
+                                                messages("yourAccount.removedFromService") +
+                                                s""" <p class="govuk-body govuk-!-font-weight-bold">${messages("yourAccount.deregistered")}</p>"""
+                                            ))
+                                        ))
                                     } else {
                                         @govukWarningText(WarningText(
                                             iconFallbackText = Option(messages("site.warning")),
@@ -166,16 +158,13 @@
                             case EtmpExclusionReason.NoLongerSupplies | EtmpExclusionReason.VoluntarilyLeaves | EtmpExclusionReason.TransferringMSID => {
                                 @if(exclusion.isActive) {
                                     @if(hasDeregisteredFromVat) {
-                                        <div class="govuk-warning-text">
-                                            <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
-                                            <strong class="govuk-warning-text__text">
-                                                <span class="govuk-warning-text__assistive">Warning:</span>
-                                                <p class="govuk-body govuk-!-font-weight-bold">
-                                                    @messages("yourAccount.leftService.outstanding") <br>
-                                                    @messages("yourAccount.deregistered")
-                                                </p>
-                                            </strong>
-                                        </div>
+                                        @govukWarningText(WarningText(
+                                            iconFallbackText = Option(messages("site.warning")),
+                                            content = HtmlContent(Html(
+                                                messages("yourAccount.leftService.outstanding") +
+                                                s"""<p class="govuk-body govuk-!-font-weight-bold">${messages("yourAccount.deregistered")}</p>"""
+                                            ))
+                                        ))
                                     } else {
                                         @govukWarningText(WarningText(
                                             iconFallbackText = Option(messages("site.warning")),
@@ -193,16 +182,13 @@
                             case EtmpExclusionReason.CeasedTrade | EtmpExclusionReason.FailsToComply | EtmpExclusionReason.NoLongerMeetsConditions => {
                                 @if(exclusion.quarantine) {
                                     @if(hasDeregisteredFromVat) {
-                                        <div class="govuk-warning-text">
-                                            <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
-                                            <strong class="govuk-warning-text__text">
-                                                <span class="govuk-warning-text__assistive">Warning:</span>
-                                                <p class="govuk-body govuk-!-font-weight-bold">
-                                                    @messages("yourAccount.removedFromService.outstanding") <br>
-                                                    @messages("yourAccount.deregistered")
-                                                </p>
-                                            </strong>
-                                        </div>
+                                        @govukWarningText(WarningText(
+                                            iconFallbackText = Option(messages("site.warning")),
+                                            content = HtmlContent(Html(
+                                                messages("yourAccount.removedFromService.outstanding") +
+                                                s""" <p class="govuk-body govuk-!-font-weight-bold">${messages("yourAccount.deregistered")}</p>"""
+                                            ))
+                                        ))
                                     } else {
                                         @govukWarningText(WarningText(
                                             iconFallbackText = Option(messages("site.warning")),
@@ -211,16 +197,13 @@
                                     }
                                 } else {
                                     @if(hasDeregisteredFromVat) {
-                                        <div class="govuk-warning-text">
-                                            <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
-                                            <strong class="govuk-warning-text__text">
-                                                <span class="govuk-warning-text__assistive">Warning:</span>
-                                                <p class="govuk-body govuk-!-font-weight-bold">
-                                                    @messages("yourAccount.removedFromService.outstanding") <br>
-                                                    @messages("yourAccount.deregistered")
-                                                </p>
-                                            </strong>
-                                        </div>
+                                        @govukWarningText(WarningText(
+                                            iconFallbackText = Option(messages("site.warning")),
+                                            content = HtmlContent(Html(
+                                                messages("yourAccount.removedFromService.outstanding") +
+                                                s""" <p class="govuk-body govuk-!-font-weight-bold">${messages("yourAccount.deregistered")}</p>"""
+                                            ))
+                                        ))
                                     } else {
                                         @govukWarningText(WarningText(
                                             iconFallbackText = Option(messages("site.warning")),

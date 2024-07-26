@@ -34,7 +34,6 @@ import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import repositories.SessionRepository
 import services.PreviousRegistrationService
-import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import viewmodels.PaymentsViewModel
 import viewmodels.yourAccount.{CurrentReturns, ReturnsViewModel}
@@ -50,7 +49,6 @@ class YourAccountController @Inject()(
                                        saveForLaterConnector: SaveForLaterConnector,
                                        view: YourAccountView,
                                        returnStatusConnector: ReturnStatusConnector,
-                                       registrationConnector: RegistrationConnector,
                                        previousRegistrationService: PreviousRegistrationService,
                                        clock: Clock,
                                        sessionRepository: SessionRepository,
@@ -77,7 +75,7 @@ class YourAccountController @Inject()(
                            previousRegistrationPrepareData: List[PrepareData],
                            waypoints: Waypoints
                          )(implicit request: RegistrationRequest[AnyContent]): Future[Result] = {
-    results.flatMap {
+    results.map {
       case (Right(availableReturns), Right(vatReturnsWithFinancialData), answers) =>
         preparedViewWithFinancialData(availableReturns, vatReturnsWithFinancialData, previousRegistrationPrepareData, waypoints, answers.map(_.period))
       case (Left(error), error2, _) =>
@@ -125,7 +123,7 @@ class YourAccountController @Inject()(
                                              previousRegistrationPrepareData: List[PrepareData],
                                              waypoints: Waypoints,
                                              periodInProgress: Option[Period]
-                                           )(implicit request: RegistrationRequest[AnyContent]): Future[Result] = {
+                                           )(implicit request: RegistrationRequest[AnyContent]): Result = {
 
     val maybeExclusion: Option[EtmpExclusion] = request.registrationWrapper.registration.exclusions.lastOption
 
@@ -148,26 +146,24 @@ class YourAccountController @Inject()(
     val paymentsViewModel = PaymentsViewModel(currentPayments.duePayments, currentPayments.overduePayments,
       currentPayments.excludedPayments, clock)
 
-    for {
-      hasDeregistered <- hasDeregisteredFromVat(registrationConnector)
-    } yield {
-      Ok(view(
-        waypoints,
-        businessName = request.registrationWrapper.vatInfo.getName,
-        iossNumber = request.iossNumber,
-        paymentsViewModel = paymentsViewModel,
-        changeYourRegistrationUrl = appConfig.amendRegistrationUrl,
-        rejoinRegistrationUrl = rejoinUrl,
-        leaveThisServiceUrl = leaveThisServiceUrl,
-        cancelYourRequestToLeaveUrl = cancelYourRequestToLeaveUrl(maybeExclusion),
-        exclusionsEnabled = appConfig.exclusionsEnabled,
-        maybeExclusion = maybeExclusion,
-        hasSubmittedFinalReturn = currentReturns.finalReturnsCompleted,
-        returnsViewModel = returnsViewModel,
-        previousRegistrationPrepareData = previousRegistrationPrepareData,
-        hasDeregisteredFromVat = hasDeregistered
-      ))
-    }
+    val hasDeregistered = hasDeregisteredFromVat(request)
+
+    Ok(view(
+      waypoints,
+      businessName = request.registrationWrapper.vatInfo.getName,
+      iossNumber = request.iossNumber,
+      paymentsViewModel = paymentsViewModel,
+      changeYourRegistrationUrl = appConfig.amendRegistrationUrl,
+      rejoinRegistrationUrl = rejoinUrl,
+      leaveThisServiceUrl = leaveThisServiceUrl,
+      cancelYourRequestToLeaveUrl = cancelYourRequestToLeaveUrl(maybeExclusion),
+      exclusionsEnabled = appConfig.exclusionsEnabled,
+      maybeExclusion = maybeExclusion,
+      hasSubmittedFinalReturn = currentReturns.finalReturnsCompleted,
+      returnsViewModel = returnsViewModel,
+      previousRegistrationPrepareData = previousRegistrationPrepareData,
+      hasDeregisteredFromVat = hasDeregistered
+    ))
   }
 
   private def buildReturnsViewModel(currentReturns: CurrentReturns, periodInProgress: Option[Period])
@@ -205,9 +201,9 @@ class YourAccountController @Inject()(
     }
   }
 
-  private def hasDeregisteredFromVat(registrationConnector: RegistrationConnector)(implicit hc: HeaderCarrier): Future[Boolean] = {
-      registrationConnector.getVatCustomerInfo().map {
-        case Right(vatInfo) if vatInfo.deregistrationDecisionDate.isDefined =>
+  private def hasDeregisteredFromVat(request: RegistrationRequest[AnyContent]): Boolean = {
+      request.registrationWrapper.vatInfo match {
+        case vatInfo if vatInfo.deregistrationDecisionDate.isDefined =>
           true
         case _ =>
           false
