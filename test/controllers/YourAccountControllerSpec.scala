@@ -430,7 +430,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             stubClockAtArbitraryDate
           )(messages(application)),
           List.empty,
-          hasDeregisteredFromVat = false
+          hasDeregisteredFromVat = true
         )(request, messages(application)).toString
       }
     }
