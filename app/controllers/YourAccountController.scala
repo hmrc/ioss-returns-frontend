@@ -146,6 +146,8 @@ class YourAccountController @Inject()(
     val paymentsViewModel = PaymentsViewModel(currentPayments.duePayments, currentPayments.overduePayments,
       currentPayments.excludedPayments, clock)
 
+    val hasDeregistered = hasDeregisteredFromVat(request)
+
     Ok(view(
       waypoints,
       businessName = request.registrationWrapper.vatInfo.getName,
@@ -159,7 +161,8 @@ class YourAccountController @Inject()(
       maybeExclusion = maybeExclusion,
       hasSubmittedFinalReturn = currentReturns.finalReturnsCompleted,
       returnsViewModel = returnsViewModel,
-      previousRegistrationPrepareData = previousRegistrationPrepareData
+      previousRegistrationPrepareData = previousRegistrationPrepareData,
+      hasDeregisteredFromVat = hasDeregistered
     ))
   }
 
@@ -196,5 +199,14 @@ class YourAccountController @Inject()(
         LocalDate.now(clock).isBefore(exclusion.effectiveDate) => Some(appConfig.cancelYourRequestToLeaveUrl)
       case _ => None
     }
+  }
+
+  private def hasDeregisteredFromVat(request: RegistrationRequest[AnyContent]): Boolean = {
+      request.registrationWrapper.vatInfo match {
+        case vatInfo if vatInfo.deregistrationDecisionDate.isDefined =>
+          true
+        case _ =>
+          false
+      }
   }
 }

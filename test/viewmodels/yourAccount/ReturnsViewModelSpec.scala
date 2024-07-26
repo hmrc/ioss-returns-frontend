@@ -86,9 +86,9 @@ class ReturnsViewModelSpec extends SpecBase {
       )
       val resultModel = ReturnsViewModel(returns, excludedReturns, stubClockAtArbitraryDate)(messages(app))
 
-      assert(resultModel.contents.map(p => p.content).contains("You have an overdue return."))
+      assert(resultModel.contents.map(p => p.content).contains("Your July 2023 return is due by 31 August 2023."))
       resultModel.linkToStart mustBe defined
-      resultModel.linkToStart.get.linkText mustBe "Start your July 2023 return"
+      resultModel.linkToStart.get.linkText mustBe "Start your return"
       resultModel.linkToStart.get.url mustBe controllers.routes.StartReturnController.onPageLoad(waypoints, earliestPeriod).url
     }
 
@@ -184,7 +184,7 @@ class ReturnsViewModelSpec extends SpecBase {
       val resultModel = ReturnsViewModel(returns, excludedReturns, stubClockAtArbitraryDate)(messages(app))
       assert(resultModel.contents.map(p => p.content).contains("You have an overdue return."), "Your October 2023 return is due by 30 November 2023.")
       resultModel.linkToStart mustBe defined
-      resultModel.linkToStart.get.linkText mustBe "Start your July 2023 return"
+      resultModel.linkToStart.get.linkText mustBe "Start your return"
       resultModel.linkToStart.get.url mustBe controllers.routes.StartReturnController.onPageLoad(waypoints, earliestPeriod).url
     }
 
@@ -234,9 +234,9 @@ class ReturnsViewModelSpec extends SpecBase {
         Return.fromPeriod(middlePeriod, Overdue, inProgress = false, isOldest = false)
       )
       val resultModel = ReturnsViewModel(returns, excludedReturns, stubClockAtArbitraryDate)(messages(app))
-      resultModel.contents.map(p => p.content) mustBe Seq("You have an overdue return.")
+      resultModel.contents.map(p => p.content) mustBe Seq("Your October 2023 return is due by 30 November 2023.")
       resultModel.linkToStart mustBe defined
-      resultModel.linkToStart.get.linkText mustBe "Start your October 2023 return"
+      resultModel.linkToStart.get.linkText mustBe "Start your return"
       resultModel.linkToStart.get.url mustBe controllers.routes.StartReturnController.onPageLoad(waypoints, middlePeriod).url
     }
 
@@ -247,11 +247,11 @@ class ReturnsViewModelSpec extends SpecBase {
       )
       val resultModel = ReturnsViewModel(returns, excludedReturns, stubClockAtArbitraryDate)(messages(app))
       resultModel.contents.map(p => p.content) mustBe Seq(
-        s"You have an outstanding return for ${olderThan3YearsPeriod.displayShortText}. You must contact the countries where you made your sales to report any VAT due.",
-        "You have an overdue return."
+        s"You must complete your ${olderThan3YearsPeriod.displayShortText} return with the countries where you made your sales.",
+        "Your October 2023 return is due by 30 November 2023."
       )
       resultModel.linkToStart mustBe defined
-      resultModel.linkToStart.get.linkText mustBe "Start your October 2023 return"
+      resultModel.linkToStart.get.linkText mustBe "Start your return"
       resultModel.linkToStart.get.url mustBe controllers.routes.StartReturnController.onPageLoad(waypoints, middlePeriod).url
     }
   }

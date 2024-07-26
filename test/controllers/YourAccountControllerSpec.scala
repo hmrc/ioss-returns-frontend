@@ -76,12 +76,14 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
   private val mockFinancialDataConnector = mock[FinancialDataConnector]
   private val mockPreviousRegistrationService: PreviousRegistrationService = mock[PreviousRegistrationService]
   private val saveForLaterConnector = mock[SaveForLaterConnector]
+  private val registrationConnector = mock[RegistrationConnector]
 
   override def beforeEach(): Unit = {
     Mockito.reset(mockReturnStatusConnector)
     Mockito.reset(mockFinancialDataConnector)
     Mockito.reset(mockPreviousRegistrationService)
     Mockito.reset(saveForLaterConnector)
+    Mockito.reset(registrationConnector)
   }
 
   "Your Account Controller" - {
@@ -134,7 +136,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           .overrides(
             bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector),
             bind[FinancialDataConnector].to(mockFinancialDataConnector),
-            bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
+            bind[SaveForLaterConnector].toInstance(saveForLaterConnector),
+            bind[RegistrationConnector].toInstance(registrationConnector)
           ).build()
 
         running(application) {
@@ -174,7 +177,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         .overrides(
           bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector),
           bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
-          bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
+          bind[SaveForLaterConnector].toInstance(saveForLaterConnector),
+          bind[RegistrationConnector].toInstance(registrationConnector)
         ).build()
 
       val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, stubClockAtArbitraryDate)(messages(application))
@@ -210,7 +214,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             excludedReturns = Seq.empty,
             stubClockAtArbitraryDate
           )(messages(application)),
-          List.empty
+          List.empty,
+          hasDeregisteredFromVat = false
         )(request, messages(application)).toString
       }
     }
@@ -242,7 +247,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         .overrides(
           bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector),
           bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
-          bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
+          bind[SaveForLaterConnector].toInstance(saveForLaterConnector),
+          bind[RegistrationConnector].toInstance(registrationConnector)
         ).build()
 
       val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, stubClockAtArbitraryDate)(messages(application))
@@ -278,7 +284,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             excludedReturns = Seq.empty,
             stubClockAtArbitraryDate
           )(messages(application)),
-          List.empty
+          List.empty,
+          hasDeregisteredFromVat = true
         )(request, messages(application)).toString
       }
     }
@@ -310,7 +317,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         .overrides(
           bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector),
           bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
-          bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
+          bind[SaveForLaterConnector].toInstance(saveForLaterConnector),
+          bind[RegistrationConnector].toInstance(registrationConnector)
         ).build()
 
       val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, stubClockAtArbitraryDate)(messages(application))
@@ -346,7 +354,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             excludedReturns = Seq.empty,
             stubClockAtArbitraryDate
           )(messages(application)),
-          List.empty
+          List.empty,
+          hasDeregisteredFromVat = true
         )(request, messages(application)).toString
       }
     }
@@ -383,7 +392,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         .overrides(
           bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector),
           bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
-          bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
+          bind[SaveForLaterConnector].toInstance(saveForLaterConnector),
+          bind[RegistrationConnector].toInstance(registrationConnector)
         ).build()
 
       val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, stubClockAtArbitraryDate)(messages(application))
@@ -419,7 +429,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             excludedReturns = Seq.empty,
             stubClockAtArbitraryDate
           )(messages(application)),
-          List.empty
+          List.empty,
+          hasDeregisteredFromVat = true
         )(request, messages(application)).toString
       }
     }
@@ -454,7 +465,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
       )
 
       when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-
       when(mockPreviousRegistrationService.getPreviousRegistrationPrepareFinancialData()(any())) thenReturn List(previousRegistrationPrepareData).toFuture
       when(mockFinancialDataConnector.prepareFinancialData()(any())) thenReturn
         Right(PrepareData(List.empty, List.empty, List.empty, 0, 0, iossNumber)).toFuture
@@ -482,7 +492,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector),
           bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
           bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService),
-          bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
+          bind[SaveForLaterConnector].toInstance(saveForLaterConnector),
+          bind[RegistrationConnector].toInstance(registrationConnector)
         ).build()
 
       val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, stubClockAtArbitraryDate)(messages(application))
@@ -516,7 +527,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             excludedReturns = Seq.empty,
             stubClockAtArbitraryDate
           )(messages(application)),
-          List(previousRegistrationPrepareData)
+          List(previousRegistrationPrepareData),
+          hasDeregisteredFromVat = false
         )(request, messages(application)).toString
 
         contentAsString(result).contains(messages(application).messages("yourAccount.previousRegistrations.payLink"))
@@ -558,7 +570,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
       )
 
       when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-
       when(mockPreviousRegistrationService.getPreviousRegistrationPrepareFinancialData()(any())) thenReturn List(previousRegistrationPrepareData).toFuture
       when(mockFinancialDataConnector.prepareFinancialData()(any())) thenReturn
         Right(PrepareData(List.empty, List.empty, List.empty, 0, 0, iossNumber)).toFuture
@@ -586,7 +597,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector),
           bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
           bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService),
-          bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
+          bind[SaveForLaterConnector].toInstance(saveForLaterConnector),
+          bind[RegistrationConnector].toInstance(registrationConnector)
         ).build()
 
       val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, stubClockAtArbitraryDate)(messages(application))
@@ -620,7 +632,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             excludedReturns = Seq.empty,
             stubClockAtArbitraryDate
           )(messages(application)),
-          List(previousRegistrationPrepareData)
+          List(previousRegistrationPrepareData),
+          hasDeregisteredFromVat = false
         )(request, messages(application)).toString
 
         contentAsString(result).contains(messages(application).messages("yourAccount.previousRegistrations.payLink"))
@@ -640,7 +653,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
 
         when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-
         when(mockReturnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Right(CurrentReturns(
             Seq(Return(
@@ -659,7 +671,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           .overrides(
             bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector),
             bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
-            bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
+            bind[SaveForLaterConnector].toInstance(saveForLaterConnector),
+            bind[RegistrationConnector].toInstance(registrationConnector)
           ).build()
 
         val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, stubClockAtArbitraryDate)(messages(application))
@@ -695,7 +708,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               excludedReturns = Seq.empty,
               stubClockAtArbitraryDate
             )(messages(application)),
-            List.empty
+            List.empty,
+            hasDeregisteredFromVat = false
           )(request, messages(application)).toString
         }
       }
@@ -708,7 +722,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
 
         when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-
         when(mockReturnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Right(CurrentReturns(
             Seq(Return.fromPeriod(period, Due, inProgress = true, isOldest = false
@@ -720,7 +733,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           .overrides(
             bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector),
             bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
-            bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
+            bind[SaveForLaterConnector].toInstance(saveForLaterConnector),
+            bind[RegistrationConnector].toInstance(registrationConnector)
           ).build()
 
 
@@ -757,7 +771,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               excludedReturns = Seq.empty,
               stubClockAtArbitraryDate
             )(messages(application)),
-            List.empty
+            List.empty,
+            hasDeregisteredFromVat = false
           )(request, messages(application)).toString
         }
       }
@@ -773,7 +788,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
 
         when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-
         when(mockReturnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Right(CurrentReturns(
             Seq(
@@ -787,7 +801,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           .overrides(
             bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector),
             bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
-            bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
+            bind[SaveForLaterConnector].toInstance(saveForLaterConnector),
+            bind[RegistrationConnector].toInstance(registrationConnector)
           ).build()
 
         val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, stubClockAtArbitraryDate)(messages(application))
@@ -824,7 +839,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               excludedReturns = Seq.empty,
               stubClockAtArbitraryDate
             )(messages(application)),
-            List.empty
+            List.empty,
+            hasDeregisteredFromVat = false
           )(request, messages(application)).toString
         }
       }
@@ -839,7 +855,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
 
         when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-
         when(mockReturnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Right(CurrentReturns(
             Seq(
@@ -852,7 +867,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           .overrides(
             bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector),
             bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
-            bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
+            bind[SaveForLaterConnector].toInstance(saveForLaterConnector),
+            bind[RegistrationConnector].toInstance(registrationConnector)
           ).build()
 
         val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, stubClockAtArbitraryDate)(messages(application))
@@ -888,7 +904,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               excludedReturns = Seq.empty,
               stubClockAtArbitraryDate
             )(messages(application)),
-            List.empty
+            List.empty,
+            hasDeregisteredFromVat = false
           )(request, messages(application)).toString
         }
       }
@@ -904,7 +921,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
 
         when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-
         when(mockReturnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Right(CurrentReturns(
             Seq(
@@ -918,7 +934,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           .overrides(
             bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector),
             bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
-            bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
+            bind[SaveForLaterConnector].toInstance(saveForLaterConnector),
+            bind[RegistrationConnector].toInstance(registrationConnector)
           ).build()
 
         val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, stubClockAtArbitraryDate)(messages(application))
@@ -955,7 +972,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               excludedReturns = Seq.empty,
               stubClockAtArbitraryDate
             )(messages(application)),
-            List.empty
+            List.empty,
+            hasDeregisteredFromVat = false
           )(request, messages(application)).toString
         }
       }
@@ -972,7 +990,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
 
         when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-
         when(mockReturnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Right(CurrentReturns(
             Seq(
@@ -987,7 +1004,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           .overrides(
             bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector),
             bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
-            bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
+            bind[SaveForLaterConnector].toInstance(saveForLaterConnector),
+            bind[RegistrationConnector].toInstance(registrationConnector)
           ).build()
 
         val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, stubClockAtArbitraryDate)(messages(application))
@@ -1025,7 +1043,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               excludedReturns = Seq.empty,
               stubClockAtArbitraryDate
             )(messages(application)),
-            List.empty
+            List.empty,
+            hasDeregisteredFromVat = false
           )(request, messages(application)).toString
         }
       }
@@ -1043,7 +1062,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
 
         when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-
         when(mockReturnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Right(CurrentReturns(
             Seq(
@@ -1061,7 +1079,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           .overrides(
             bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector),
             bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
-            bind[SaveForLaterConnector].toInstance(saveForLaterConnector)
+            bind[SaveForLaterConnector].toInstance(saveForLaterConnector),
+            bind[RegistrationConnector].toInstance(registrationConnector)
           ).build()
 
         val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, stubClockAtArbitraryDate)(messages(application))
@@ -1099,7 +1118,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               excludedReturns = Seq(Return.fromPeriod(excludedPeriod, Excluded, inProgress = false, isOldest = true)),
               stubClockAtArbitraryDate
             )(messages(application)),
-            List.empty
+            List.empty,
+            hasDeregisteredFromVat = false
           )(request, messages(application)).toString
         }
       }

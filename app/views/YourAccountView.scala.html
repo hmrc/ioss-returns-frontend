@@ -40,7 +40,8 @@
         maybeExclusion: Option[EtmpExclusion],
         hasSubmittedFinalReturn: Boolean,
         returnsViewModel: ReturnsViewModel,
-        previousRegistrationPrepareData: List[PrepareData]
+        previousRegistrationPrepareData: List[PrepareData],
+        hasDeregisteredFromVat: Boolean
 )(implicit request: Request[_], messages: Messages)
 
     @layout(
@@ -85,10 +86,20 @@
 
                             case EtmpExclusionReason.NoLongerSupplies | EtmpExclusionReason.VoluntarilyLeaves | EtmpExclusionReason.TransferringMSID => {
                                 @if(exclusion.isActive) {
-                                    @govukWarningText(WarningText(
-                                        iconFallbackText = Option(messages("site.warning")),
-                                        content = Text(messages("yourAccount.leftService"))
-                                    ))
+                                    @if(hasDeregisteredFromVat) {
+                                        @govukWarningText(WarningText(
+                                            iconFallbackText = Option(messages("site.warning")),
+                                            content = HtmlContent(Html(
+                                                messages("yourAccount.leftService.outstanding") +
+                                                s"""<p class="govuk-body govuk-!-font-weight-bold">${messages("yourAccount.deregistered")}</p>"""
+                                            ))
+                                        ))
+                                    } else {
+                                        @govukWarningText(WarningText(
+                                            iconFallbackText = Option(messages("site.warning")),
+                                            content = Text(messages("yourAccount.leftService"))
+                                        ))
+                                    }
                                 } else {
                                     @govukWarningText(WarningText(
                                         iconFallbackText = Option(messages("site.warning")),
@@ -99,15 +110,36 @@
 
                             case EtmpExclusionReason.CeasedTrade | EtmpExclusionReason.FailsToComply | EtmpExclusionReason.NoLongerMeetsConditions => {
                                 @if(exclusion.quarantine) {
-                                    @govukWarningText(WarningText(
-                                        iconFallbackText = Option(messages("site.warning")),
-                                        content = Text(messages("yourAccount.quarantined", exclusion.displayRejoinDate))
-                                    ))
+                                    @if(hasDeregisteredFromVat) {
+                                        @govukWarningText(WarningText(
+                                            iconFallbackText = Option(messages("site.warning")),
+                                            content = HtmlContent(Html(
+                                                messages("yourAccount.yourAccount.removedFromService") +
+                                                s"""<p class="govuk-body govuk-!-font-weight-bold">${messages("yourAccount.deregistered")}</p>"""
+                                            ))
+                                        ))
+
+                                    } else {
+                                        @govukWarningText(WarningText(
+                                            iconFallbackText = Option(messages("site.warning")),
+                                            content = Text(messages("yourAccount.quarantined", exclusion.displayRejoinDate))
+                                        ))
+                                    }
                                 } else {
-                                    @govukWarningText(WarningText(
-                                        iconFallbackText = Option(messages("site.warning")),
-                                        content = Text(messages("yourAccount.removedFromService"))
-                                    ))
+                                    @if(hasDeregisteredFromVat) {
+                                        @govukWarningText(WarningText(
+                                            iconFallbackText = Option(messages("site.warning")),
+                                            content = HtmlContent(Html(
+                                                messages("yourAccount.removedFromService") +
+                                                s""" <p class="govuk-body govuk-!-font-weight-bold">${messages("yourAccount.deregistered")}</p>"""
+                                            ))
+                                        ))
+                                    } else {
+                                        @govukWarningText(WarningText(
+                                            iconFallbackText = Option(messages("site.warning")),
+                                            content = Text(messages("yourAccount.removedFromService"))
+                                        ))
+                                    }
                                 }
                             }
 
@@ -125,10 +157,20 @@
                         @exclusion.exclusionReason match {
                             case EtmpExclusionReason.NoLongerSupplies | EtmpExclusionReason.VoluntarilyLeaves | EtmpExclusionReason.TransferringMSID => {
                                 @if(exclusion.isActive) {
-                                    @govukWarningText(WarningText(
-                                        iconFallbackText = Option(messages("site.warning")),
-                                        content = Text(messages("yourAccount.leftService.outstanding"))
-                                    ))
+                                    @if(hasDeregisteredFromVat) {
+                                        @govukWarningText(WarningText(
+                                            iconFallbackText = Option(messages("site.warning")),
+                                            content = HtmlContent(Html(
+                                                messages("yourAccount.leftService.outstanding") +
+                                                s"""<p class="govuk-body govuk-!-font-weight-bold">${messages("yourAccount.deregistered")}</p>"""
+                                            ))
+                                        ))
+                                    } else {
+                                        @govukWarningText(WarningText(
+                                            iconFallbackText = Option(messages("site.warning")),
+                                            content = Text(messages("yourAccount.leftService.outstanding"))
+                                        ))
+                                    }
                                 } else {
                                     @govukWarningText(WarningText(
                                         iconFallbackText = Option(messages("site.warning")),
@@ -139,15 +181,35 @@
 
                             case EtmpExclusionReason.CeasedTrade | EtmpExclusionReason.FailsToComply | EtmpExclusionReason.NoLongerMeetsConditions => {
                                 @if(exclusion.quarantine) {
-                                    @govukWarningText(WarningText(
-                                        iconFallbackText = Option(messages("site.warning")),
-                                        content = Text(messages("yourAccount.quarantined.outstanding", exclusion.displayRejoinDate))
-                                    ))
+                                    @if(hasDeregisteredFromVat) {
+                                        @govukWarningText(WarningText(
+                                            iconFallbackText = Option(messages("site.warning")),
+                                            content = HtmlContent(Html(
+                                                messages("yourAccount.removedFromService.outstanding") +
+                                                s""" <p class="govuk-body govuk-!-font-weight-bold">${messages("yourAccount.deregistered")}</p>"""
+                                            ))
+                                        ))
+                                    } else {
+                                        @govukWarningText(WarningText(
+                                            iconFallbackText = Option(messages("site.warning")),
+                                            content = Text(messages("yourAccount.quarantined.outstanding", exclusion.displayRejoinDate))
+                                        ))
+                                    }
                                 } else {
-                                    @govukWarningText(WarningText(
-                                        iconFallbackText = Option(messages("site.warning")),
-                                        content = Text(messages("yourAccount.removedFromService.outstanding"))
-                                    ))
+                                    @if(hasDeregisteredFromVat) {
+                                        @govukWarningText(WarningText(
+                                            iconFallbackText = Option(messages("site.warning")),
+                                            content = HtmlContent(Html(
+                                                messages("yourAccount.removedFromService.outstanding") +
+                                                s""" <p class="govuk-body govuk-!-font-weight-bold">${messages("yourAccount.deregistered")}</p>"""
+                                            ))
+                                        ))
+                                    } else {
+                                        @govukWarningText(WarningText(
+                                            iconFallbackText = Option(messages("site.warning")),
+                                            content = Text(messages("yourAccount.removedFromService.outstanding"))
+                                        ))
+                                    }
                                 }
                             }
 
@@ -250,12 +312,15 @@
                         </a>
                     </p>
 
+
                     @rejoinRegistrationUrl.map { url =>
-                        <p class="govuk-body">
-                            <a class="govuk-link" href="@url" id="rejoin-scheme">
-                            @messages("yourAccount.details.rejoinThisService")
-                            </a>
-                        </p>
+                        @if(!hasDeregisteredFromVat) {
+                            <p class="govuk-body">
+                                <a class="govuk-link" href="@url" id="rejoin-scheme">
+                                @messages("yourAccount.details.rejoinThisService")
+                                </a>
+                            </p>
+                        }
                     }
 
                     @leaveThisServiceUrl.map { url =>
