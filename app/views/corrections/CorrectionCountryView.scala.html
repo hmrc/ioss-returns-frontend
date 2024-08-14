@@ -14,10 +14,11 @@
  * limitations under the License.
  *@
 
-@import viewmodels.InputWidth.Fixed20
+@import pages.corrections.CorrectionCountryPage
+@import uk.gov.hmrc.govukfrontend.views.Implicits.RichSelect
+@import uk.gov.hmrc.hmrcfrontend.views.viewmodels.accessibleautocomplete.AccessibleAutocomplete
 @import viewmodels.LabelSize
 @import views.html.components.ButtonGroup
-@import pages.corrections.CorrectionCountryPage
 
 @this(
         layout: templates.Layout,
@@ -31,27 +32,30 @@
 
 @layout(pageTitle = title(form, messages("correctionCountry.title"))) {
 
-    @formHelper(action = controllers.corrections.routes.CorrectionCountryController.onSubmit(waypoints, periodIndex, index)) {
+  @formHelper(action = controllers.corrections.routes.CorrectionCountryController.onSubmit(waypoints, periodIndex, index)) {
 
-        @if(form.errors.nonEmpty) {
-            @govukErrorSummary(ErrorSummaryViewModel(form))
-        }
-        @govukSelect(
-            SelectViewModel(
-                field = form("value"),
-                items = Country.euCountryWithNISelectItems,
-                label = HmrcPageHeadingLabel(
-                    content = messages("correctionCountry.heading"),
-                    caption = messages("correctionCountry.caption", correctionPeriod.displayText)
-                ).asPageHeading(size = LabelSize.Large)
-            )
-                    .withCssClass(Fixed20.toString)
-                    .withCssClass("autocomplete")
-                    .withHint(HintViewModel(messages("correctionCountry.hint")))
-        )
-
-        @button(
-          "site.continue", CorrectionCountryPage(periodIndex, index).route(waypoints).url, period, waypoints
-        )
+    @if(form.errors.nonEmpty) {
+      @govukErrorSummary(ErrorSummaryViewModel(form))
     }
+    @govukSelect(
+      SelectViewModel(
+        field = form("value"),
+        items = Country.euCountryWithNISelectItems,
+        label = HmrcPageHeadingLabel(
+          content = messages("correctionCountry.heading"),
+          caption = messages("correctionCountry.caption", correctionPeriod.displayText)
+        ).asPageHeading(size = LabelSize.Large)
+      ).asAccessibleAutocomplete(Some(
+        AccessibleAutocomplete(
+          showAllValues = true,
+          defaultValue = Some("")
+        )
+      ))
+      .withHint(HintViewModel(messages("correctionCountry.hint")))
+    )
+
+    @button(
+      "site.continue", CorrectionCountryPage(periodIndex, index).route(waypoints).url, period, waypoints
+    )
+  }
 }
