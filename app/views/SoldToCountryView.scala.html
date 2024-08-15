@@ -14,7 +14,8 @@
  * limitations under the License.
  *@
 
-@import viewmodels.InputWidth.Fixed20
+@import uk.gov.hmrc.govukfrontend.views.Implicits.RichSelect
+@import uk.gov.hmrc.hmrcfrontend.views.viewmodels.accessibleautocomplete.AccessibleAutocomplete
 @import viewmodels.LabelSize
 @import views.html.components.ButtonGroup
 
@@ -30,27 +31,30 @@
 
 @layout(pageTitle = title(form, messages("soldToCountry.title"))) {
 
-    @formHelper(action = routes.SoldToCountryController.onSubmit(waypoints, index)) {
+  @formHelper(action = routes.SoldToCountryController.onSubmit(waypoints, index)) {
 
-        @if(form.errors.nonEmpty) {
-            @govukErrorSummary(ErrorSummaryViewModel(form))
-        }
-
-        @govukSelect(
-            SelectViewModel(
-                field = form("value"),
-                items = Country.euCountryWithNISelectItems,
-                label = HmrcPageHeadingLabel(
-                    content = messages("soldToCountry.heading"),
-                    caption = period.displayText
-                ).asPageHeading(size = LabelSize.Large)
-            )
-                    .withCssClass(Fixed20.toString)
-                    .withCssClass("autocomplete")
-        )
-
-        @button(
-            "site.continue", routes.SoldToCountryController.onPageLoad(waypoints, index).url, period, waypoints
-        )
+    @if(form.errors.nonEmpty) {
+      @govukErrorSummary(ErrorSummaryViewModel(form))
     }
+
+    @govukSelect(
+      SelectViewModel(
+        field = form("value"),
+        items = Country.euCountryWithNISelectItems,
+        label = HmrcPageHeadingLabel(
+          content = messages("soldToCountry.heading"),
+          caption = period.displayText
+        ).asPageHeading(size = LabelSize.Large)
+      ).asAccessibleAutocomplete(Some(
+        AccessibleAutocomplete(
+          showAllValues = true,
+          defaultValue = Some("")
+        )
+      ))
+    )
+
+    @button(
+      "site.continue", routes.SoldToCountryController.onPageLoad(waypoints, index).url, period, waypoints
+    )
+  }
 }
