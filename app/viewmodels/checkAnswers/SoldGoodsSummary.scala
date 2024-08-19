@@ -32,11 +32,11 @@ object SoldGoodsSummary  {
         val value = if (answer) "site.yes" else "site.no"
 
         SummaryListRowViewModel(
-          key     = "soldGoods.checkYourAnswersLabel",
+          key     = "checkYourAnswers.label.salesMade",
           value   = ValueViewModel(value).withCssClass("govuk-table__cell--numeric").withCssClass("govuk-!-padding-right-9"),
           actions = Seq(
             ActionItemViewModel("site.change", SoldGoodsPage.changeLink(waypoints, sourcePage).url)
-              .withVisuallyHiddenText(messages("soldGoods.change.hidden"))
+              .withVisuallyHiddenText(messages("checkYourAnswers.salesMade.hidden"))
           )
         )
     }

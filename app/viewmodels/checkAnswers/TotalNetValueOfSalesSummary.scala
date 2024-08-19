@@ -27,15 +27,18 @@ import viewmodels.implicits._
 
 object TotalNetValueOfSalesSummary extends CurrencyFormatter {
 
-  def row(answers: UserAnswers, totalNetValueOfSalesOption: Option[BigDecimal], waypoints: Waypoints, sourcePage: CheckAnswersPage)(implicit messages: Messages): Option[SummaryListRow] = {
+  def row(answers: UserAnswers, totalNetValueOfSalesOption: Option[BigDecimal], waypoints: Waypoints, sourcePage: CheckAnswersPage)
+         (implicit messages: Messages): Option[SummaryListRow] = {
     totalNetValueOfSalesOption.map {
       totalNetValueOfSalesOption =>
         SummaryListRowViewModel(
           key = "checkYourAnswers.label.netValueOfSales",
-          value = ValueViewModel(HtmlContent(currencyFormatWithAccuracy(totalNetValueOfSalesOption))).withCssClass("govuk-table__cell--numeric").withCssClass("govuk-!-padding-right-9"),
+          value = ValueViewModel(HtmlContent(currencyFormatWithAccuracy(totalNetValueOfSalesOption)))
+            .withCssClass("govuk-table__cell--numeric")
+            .withCssClass("govuk-!-padding-right-9"),
           actions = Seq(
             ActionItemViewModel("site.change", SoldToCountryListPage().changeLink(waypoints, sourcePage).url)
-              .withVisuallyHiddenText(messages("soldGoodsFromEu.changeEUSales.hidden"))
+              .withVisuallyHiddenText(messages("checkYourAnswers.netValueOfSales.hidden"))
               .withAttribute(("id", "change-sales-excluding-vat-eu"))
 
           )
