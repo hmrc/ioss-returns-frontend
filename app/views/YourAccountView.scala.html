@@ -52,9 +52,9 @@
 
         <h1 class="govuk-heading-l">
             @messages("yourAccount.heading")
-            <span class="govuk-caption-m">@businessName</span>
-            <span class="govuk-caption-m">@messages("yourAccount.iossNumber", iossNumber)</span>
         </h1>
+        <span class="govuk-caption-m">@businessName</span>
+        <span class="govuk-caption-m">@messages("yourAccount.iossNumber", iossNumber)</span>
 
         @if(previousRegistrationPrepareData.nonEmpty) {
             @if(previousRegistrationPrepareData.size > 1) {
