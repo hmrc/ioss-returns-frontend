@@ -27,17 +27,19 @@ import viewmodels.implicits._
 
 object TotalVatOnSalesSummary extends CurrencyFormatter {
 
-  def row(answers: UserAnswers, totalVatOnSalesOption: Option[BigDecimal], waypoints: Waypoints, sourcePage: CheckAnswersPage)(implicit messages: Messages): Option[SummaryListRow] = {
+  def row(answers: UserAnswers, totalVatOnSalesOption: Option[BigDecimal], waypoints: Waypoints, sourcePage: CheckAnswersPage)
+         (implicit messages: Messages): Option[SummaryListRow] = {
     totalVatOnSalesOption.map {
       totalVatOnSales =>
         SummaryListRowViewModel(
           key = "checkYourAnswers.label.vatOnSales",
-          value = ValueViewModel(HtmlContent(currencyFormat(totalVatOnSales))).withCssClass("govuk-table__cell--numeric").withCssClass("govuk-!-padding-right-9"),
+          value = ValueViewModel(HtmlContent(currencyFormat(totalVatOnSales)))
+            .withCssClass("govuk-table__cell--numeric")
+            .withCssClass("govuk-!-padding-right-9"),
           actions = Seq(
             ActionItemViewModel("site.change", SoldToCountryListPage().changeLink(waypoints, sourcePage).url)
-              .withVisuallyHiddenText(messages("soldGoodsFromEu.changeEUVAT.hidden"))
+              .withVisuallyHiddenText(messages("checkYourAnswers.vatOnSales.hidden"))
               .withAttribute(("id", "change-vat-charged-eu"))
-
           )
         )
     }
