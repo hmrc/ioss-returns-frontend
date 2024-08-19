@@ -188,7 +188,7 @@ startReturn.shortTitle = Do you want to start your return?
 soldGoods.title = Did you make eligible sales into the EU or Northern Ireland in {0}?
 soldGoods.heading = Did you make eligible sales into the EU or Northern Ireland in {0}?
 soldGoods.checkYourAnswersLabel = Sales made
-soldGoods.error.required = Select yes if eligible sales into the EU or Northern Ireland
+soldGoods.error.required = Select yes if you made eligible sales into the EU or Northern Ireland
 soldGoods.change.hidden = Sold Goods
 
 soldToCountry.title = Which country did you sell to?
