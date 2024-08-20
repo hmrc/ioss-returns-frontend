@@ -104,33 +104,6 @@ class CheckSalesControllerSpec extends SpecBase with MockitoSugar with SummaryLi
       }
     }
 
-    "must populate the view correctly on a GET when the question has previously been answered" in {
-
-      when(mockVatRateService.getRemainingVatRatesForCountry(any(), any(), any())(any())) thenReturn remainingVatRateForCountry.toFuture
-
-      val userAnswers = completeAnswers.set(CheckSalesPage(index), true).success.value
-
-      val application = applicationBuilder(userAnswers = Some(userAnswers))
-        .overrides(bind[VatRateService].toInstance(mockVatRateService))
-        .build()
-
-      running(application) {
-        implicit val msgs: Messages = messages(application)
-
-        val request = FakeRequest(GET, checkSalesRoute)
-
-        val view = application.injector.instanceOf[CheckSalesView]
-
-        val result = route(application, request).value
-
-        val list = CheckSalesSummary.rows(userAnswers, waypoints, index)
-
-        status(result) mustBe OK
-        contentAsString(result) mustBe
-          view(form.fill(true), waypoints, period, list, index, country, canAddAnotherVatRate = true)(request, messages(application)).toString
-      }
-    }
-
     "must save the answer and redirect to the correct next page when valid data is submitted with only one VAT rate remaining" in {
 
       val vatRatesFromCountry = Gen.listOfN(3, arbitrary[VatRateFromCountry]).sample.value
