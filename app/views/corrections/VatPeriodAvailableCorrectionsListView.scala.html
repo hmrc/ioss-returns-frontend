@@ -58,10 +58,10 @@ else {
             ))
         }
 
-        @addToList(periodList, itemSize = Long, "", "")
+        @addToList(periodList, itemSize = Long, "vatPeriodCorrectionsList.change", "vatPeriodCorrectionsList.remove")
 
         @if(incompletePeriods.isEmpty) {
-            @formHelper(action = controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onSubmit(waypoints, period, false), 'autoComplete -> "off") {
+            @formHelper(action = controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onSubmit(waypoints, period, false), Symbol("autoComplete") -> "off") {
                 @govukRadios(
                     RadiosViewModel.yesNo(
                         field = form("value"),
@@ -73,7 +73,7 @@ else {
                 @button("site.continue", controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onPageLoad(waypoints, period).url, period, waypoints)
             }
         } else {
-            @formHelper(action = controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onSubmit(waypoints, period, true), 'autoComplete -> "off") {
+            @formHelper(action = controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onSubmit(waypoints, period, true), Symbol("autoComplete") -> "off") {
                 @govukButton(
                     ButtonViewModel(messages("error.resolve_missing_answers"))
                 )
