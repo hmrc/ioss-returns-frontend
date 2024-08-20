@@ -60,17 +60,12 @@ class CheckSalesController @Inject()(
 
             val checkSalesSummary = CheckSalesSummary.rows(request.userAnswers, waypoints, countryIndex)
 
-            val preparedForm = request.userAnswers.get(CheckSalesPage(countryIndex)) match {
-              case None => form
-              case Some(value) => form.fill(value)
-            }
-
             withCompleteDataAsync[VatRateWithOptionalSalesFromCountry](
               countryIndex,
               data = getIncompleteVatRateAndSales _,
               onFailure = (incomplete: Seq[VatRateWithOptionalSalesFromCountry]) => {
                 Ok(view(
-                  preparedForm,
+                  form,
                   waypoints,
                   period,
                   checkSalesSummary,
@@ -79,7 +74,7 @@ class CheckSalesController @Inject()(
                   canAddAnotherVatRate,
                   incomplete)).toFuture
               }) {
-              Ok(view(preparedForm, waypoints, period, checkSalesSummary, countryIndex, country, canAddAnotherVatRate)).toFuture
+              Ok(view(form, waypoints, period, checkSalesSummary, countryIndex, country, canAddAnotherVatRate)).toFuture
             }
           }
         }
