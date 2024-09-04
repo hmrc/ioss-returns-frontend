@@ -22,5 +22,6 @@ object Constants {
     val minCurrencyAmount: BigDecimal = -1000000000
     val correctionsPeriodsLimit: Int = 3
     val periodYear: Int = 2023
+    val submittedReturnsPeriodsLimit: Int = 6
 
 }
