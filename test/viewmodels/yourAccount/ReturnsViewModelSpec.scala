@@ -241,7 +241,7 @@ class ReturnsViewModelSpec extends SpecBase {
     }
 
     "there is one excluded return older than three years and one return overdue" in {
-      val excludedReturns = Seq(Return.fromPeriod(olderThan3YearsPeriod, Excluded, inProgress = false, isOldest = true))
+      val excludedReturns = Seq(Return.fromPeriod(olderThan3YearsPeriod, Expired, inProgress = false, isOldest = true))
       val returns = Seq(
         Return.fromPeriod(middlePeriod, Overdue, inProgress = false, isOldest = false)
       )

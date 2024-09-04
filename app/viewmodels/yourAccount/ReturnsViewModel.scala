@@ -18,7 +18,7 @@ package viewmodels.yourAccount
 
 import controllers.CheckCorrectionsTimeLimit.isOlderThanThreeYears
 import models.StandardPeriod
-import models.SubmissionStatus.{Due, Next, Overdue}
+import models.SubmissionStatus.{Due, Expired, Next, Overdue}
 import pages.{EmptyWaypoints, Waypoints}
 import play.api.i18n.Messages
 import viewmodels.{LinkModel, Paragraph, ParagraphSimple, ParagraphWithId}
@@ -40,7 +40,8 @@ object ReturnsViewModel {
     val overdueReturns = returns.filter(_.submissionStatus == Overdue)
 
     val excludedReturnsOlderThanThreeYears = excludedReturns.filter { excludedReturn =>
-      isOlderThanThreeYears(excludedReturn.dueDate, clock)
+      excludedReturn.submissionStatus == Expired &&
+        isOlderThanThreeYears(excludedReturn.dueDate, clock)
     }.sortBy(_.dueDate)
 
     nextReturn.map(

@@ -23,7 +23,7 @@ import connectors._
 import controllers.CheckCorrectionsTimeLimit.isOlderThanThreeYears
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
-import models.SubmissionStatus.Excluded
+import models.SubmissionStatus.{Excluded, Expired}
 import models.etmp.EtmpExclusion
 import models.etmp.EtmpExclusionReason.{NoLongerSupplies, Reversal, TransferringMSID, VoluntarilyLeaves}
 import models.payments._
@@ -98,6 +98,7 @@ class YourAccountController @Inject()(
       userAnswers.map(answers => sessionRepository.set(answers))
       (currentReturns, currentPayments, userAnswers)
     }
+
   }
 
   private def getSavedAnswers()(implicit request: RegistrationRequest[AnyContent]): Future[Option[UserAnswers]] = {
@@ -174,7 +175,9 @@ class YourAccountController @Inject()(
       } else {
         currentReturn
       }),
-      excludedReturns = currentReturns.completeOrExcludedReturns.filter(_.submissionStatus == Excluded),
+      excludedReturns = currentReturns.completeOrExcludedReturns.filter(r =>
+        r.submissionStatus == Excluded || r.submissionStatus == Expired
+      ),
       clock
     )
   }
