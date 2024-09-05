@@ -91,7 +91,7 @@ class IdentifierActionSpec extends SpecBase with MockitoSugar with BeforeAndAfte
 
           val authAction = new IdentifierAction(mockAuthConnector, mockAccountService, appConfig, urlBuilder(application))
           val controller = new Harness(authAction, actionBuilder)
-          val result = controller.onPageLoad()(FakeRequest())
+          val result = controller.onPageLoad()(FakeRequest(GET, "/example"))
 
           status(result) mustBe OK
         }
@@ -111,7 +111,7 @@ class IdentifierActionSpec extends SpecBase with MockitoSugar with BeforeAndAfte
 
           val authAction = new IdentifierAction(mockAuthConnector, mockAccountService, appConfig, urlBuilder(application))
           val controller = new Harness(authAction, actionBuilder)
-          val result = controller.onPageLoad()(FakeRequest())
+          val result = controller.onPageLoad()(FakeRequest(GET, "/example"))
 
           status(result) mustBe SEE_OTHER
           redirectLocation(result).value mustEqual routes.NotRegisteredController.onPageLoad().url
@@ -248,7 +248,7 @@ class IdentifierActionSpec extends SpecBase with MockitoSugar with BeforeAndAfte
             urlBuilder(application)
           )
           val controller = new Harness(authAction, actionBuilder)
-          val result = controller.onPageLoad()(FakeRequest())
+          val result = controller.onPageLoad()(FakeRequest(GET, "/example"))
 
           status(result) mustBe SEE_OTHER
           redirectLocation(result).value must startWith(appConfig.loginUrl)
@@ -272,7 +272,7 @@ class IdentifierActionSpec extends SpecBase with MockitoSugar with BeforeAndAfte
             urlBuilder(application)
           )
           val controller = new Harness(authAction, actionBuilder)
-          val result = controller.onPageLoad()(FakeRequest())
+          val result = controller.onPageLoad()(FakeRequest(GET, "/example"))
 
           status(result) mustBe SEE_OTHER
           redirectLocation(result).value must startWith(appConfig.loginUrl)
