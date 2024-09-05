@@ -36,7 +36,7 @@ class UrlBuilderService @Inject()(config: FrontendAppConfig) {
       request
         .getQueryString("k")
         .orElse(hc.sessionId.map(_.value))
-        .map(sessionId => config.loginContinueBaseUrl + request.path + "?k=" + sessionId)
+        .map(sessionId => config.loginContinueUrl + request.path + "?k=" + sessionId)
         .getOrElse {
           request.uri
         }
@@ -46,5 +46,5 @@ class UrlBuilderService @Inject()(config: FrontendAppConfig) {
   }
 
   def ivFailureUrl(request: Request[_]): String =
-    config.loginContinueBaseUrl + authRoutes.IdentityVerificationController.handleIvFailure(loginContinueUrl(request), None).url
+    config.loginContinueUrl + authRoutes.IdentityVerificationController.handleIvFailure(loginContinueUrl(request), None).url
 }

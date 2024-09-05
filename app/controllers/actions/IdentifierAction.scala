@@ -48,6 +48,8 @@ class IdentifierAction @Inject()(
   extends ActionRefiner[Request, IdentifierRequest]
     with AuthorisedFunctions with Logging {
 
+  private lazy val redirectPolicy = (OnlyRelative | AbsoluteWithHostnameFromAllowlist(config.allowedRedirectUrls: _*))
+
   private type IdentifierActionResult[A] = Future[Either[Result, IdentifierRequest[A]]]
 
   //noinspection ScalaStyle
@@ -88,7 +90,8 @@ class IdentifierAction @Inject()(
 
     } recoverWith {
       case _: NoActiveSession =>
-        Left(Redirect(config.loginUrl, Map("continue" -> Seq(config.loginContinueUrl)))).toFuture
+        Left(Redirect(config.loginUrl, Map("continue" ->
+          Seq(urlBuilderService.loginContinueUrl(request).get(redirectPolicy).url)))).toFuture
       case _: InsufficientConfidenceLevel =>
         logger.info("Insufficient confidence level")
         upliftConfidenceLevel(request)
