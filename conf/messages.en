@@ -458,6 +458,7 @@ noMoreWelsh.submit = Yn eich blaen
 
 submittedReturnsHistory.title = Submitted returns
 submittedReturnsHistory.heading = Submitted returns
+submittedReturnsHistory.p1 = You cannot view returns that are over 6 years old.
 submittedReturnsHistory.noReturns = You have not submitted any returns.
 submittedReturnsHistory.returnPeriod = Return month
 submittedReturnsHistory.amountLeftToPay = Amount left to pay
@@ -472,6 +473,7 @@ submittedReturnsHistory.payNow.hidden = for {0} return
 
 viewReturnsMultipleReg.title = Submitted returns from {0} to {1}
 viewReturnsMultipleReg.heading = Submitted returns from {0} to {1}
+viewReturnsMultipleReg.p1 = You cannot view returns that are over 6 years old.
 viewReturnsMultipleReg.iossNumber = IOSS number: {0}
 viewReturnsMultipleReg.noReturns = You have not submitted any returns.
 viewReturnsMultipleReg.returnPeriod = Return month

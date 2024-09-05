@@ -16,16 +16,19 @@
 
 package services
 
+import config.Constants.submittedReturnsPeriodsLimit
 import connectors.VatReturnConnector
 import logging.Logging
 import models.Period
 import models.payments._
 import uk.gov.hmrc.http.HeaderCarrier
 
+import java.time.{Clock, LocalDate}
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class PeriodWithFinancialDataService @Inject()(
+                                                clock: Clock,
                                                 paymentsService: PaymentsService,
                                                 obligationsService: ObligationsService,
                                                 vatReturnConnector: VatReturnConnector,
@@ -35,7 +38,7 @@ class PeriodWithFinancialDataService @Inject()(
     for {
       obligations <- obligationsService.getFulfilledObligations(iossNumber)
       preparedFinancialData <- paymentsService.prepareFinancialDataWithIossNumber(iossNumber)
-      periods = obligations.map(_.periodKey).map(Period.fromKey)
+      periods = getPeriodsWithinSixYears(obligations.map(_.periodKey).map(Period.fromKey))
       allUnpaidPayments = preparedFinancialData.duePayments ++ preparedFinancialData.overduePayments ++ preparedFinancialData.excludedPayments
       allPaymentsForPeriod <- getAllPaymentsForPeriods(periods, allUnpaidPayments)
     } yield allPaymentsForPeriod.flatten.groupBy(_._1.year)
@@ -69,5 +72,12 @@ class PeriodWithFinancialDataService @Inject()(
           }
       }
     })
+  }
+
+  private def getPeriodsWithinSixYears(periods: Seq[Period]): Seq[Period] = {
+    val endOfPreviousPeriod = LocalDate.now(clock).withDayOfMonth(1).minusDays(1)
+    periods.filter { period =>
+      period.lastDay.isAfter(endOfPreviousPeriod.minusYears(submittedReturnsPeriodsLimit))
+    }
   }
 }
