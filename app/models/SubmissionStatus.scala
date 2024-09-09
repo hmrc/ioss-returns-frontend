@@ -30,7 +30,9 @@ object SubmissionStatus extends Enumerable.Implicits {
 
   case object Excluded extends WithName("EXCLUDED") with SubmissionStatus
 
-  val values: Seq[SubmissionStatus] = Seq(Due, Overdue, Complete, Next, Excluded)
+  case object Expired extends WithName("EXPIRED") with SubmissionStatus
+
+  val values: Seq[SubmissionStatus] = Seq(Due, Overdue, Complete, Next, Excluded, Expired)
 
   implicit val enumerable: Enumerable[SubmissionStatus] =
     Enumerable(values.map(v => v.toString -> v): _*)
