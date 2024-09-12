@@ -81,9 +81,7 @@ class CheckIsCurrentReturnPeriodFilterImpl(startReturnPeriod: Period,
         submissionStatus match {
           case Complete =>
             Redirect(controllers.previousReturns.routes.SubmittedReturnForPeriodController.onPageLoad(EmptyWaypoints, startReturnPeriod))
-          case Excluded =>
-            Redirect(controllers.routes.CannotStartExcludedReturnController.onPageLoad())
-          case Expired =>
+          case Excluded | Expired =>
             Redirect(controllers.routes.CannotStartExcludedReturnController.onPageLoad())
           case _ =>
             throw new RuntimeException(s"Unexpected status found in foundCompleteOrExcludedReturn $submissionStatus")
