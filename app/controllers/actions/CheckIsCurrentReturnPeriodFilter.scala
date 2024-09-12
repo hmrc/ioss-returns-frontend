@@ -19,7 +19,7 @@ package controllers.actions
 import connectors.CurrentReturnHttpParser.CurrentReturnsResponse
 import connectors.ReturnStatusConnector
 import models.{ErrorResponse, Period}
-import models.SubmissionStatus.{Complete, Excluded}
+import models.SubmissionStatus.{Complete, Excluded, Expired}
 import models.requests.OptionalDataRequest
 import pages.EmptyWaypoints
 import play.api.mvc.Results.Redirect
@@ -81,7 +81,7 @@ class CheckIsCurrentReturnPeriodFilterImpl(startReturnPeriod: Period,
         submissionStatus match {
           case Complete =>
             Redirect(controllers.previousReturns.routes.SubmittedReturnForPeriodController.onPageLoad(EmptyWaypoints, startReturnPeriod))
-          case Excluded =>
+          case Excluded | Expired =>
             Redirect(controllers.routes.CannotStartExcludedReturnController.onPageLoad())
           case _ =>
             throw new RuntimeException(s"Unexpected status found in foundCompleteOrExcludedReturn $submissionStatus")
