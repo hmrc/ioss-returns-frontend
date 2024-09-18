@@ -106,3 +106,17 @@ if (typeof HMRCAccessibleAutocomplete != 'undefined' && document.querySelector('
   }
 }
 
+function showTheSpinner() {
+
+    const processingWheel = document.getElementById("processing-wheel");
+
+    //make the spinning wheel visible
+    processingWheel.removeAttribute("aria-hidden");
+    processingWheel.hidden = false;
+
+    //make the elements hidden
+    document.getElementById("processing-button-group").style.visibility = 'hidden';
+
+    return false;
+}
+
