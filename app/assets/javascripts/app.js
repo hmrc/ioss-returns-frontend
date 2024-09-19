@@ -106,6 +106,8 @@ if (typeof HMRCAccessibleAutocomplete != 'undefined' && document.querySelector('
   }
 }
 
+document.getElementById("submit").addEventListener("click", showTheSpinner);
+
 function showTheSpinner() {
 
     const processingWheel = document.getElementById("processing-wheel");
