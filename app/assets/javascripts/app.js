@@ -106,7 +106,11 @@ if (typeof HMRCAccessibleAutocomplete != 'undefined' && document.querySelector('
   }
 }
 
-document.getElementById("submit").addEventListener("click", showTheSpinner);
+const submitButton = document.querySelector('#submit');
+
+if(submitButton) {
+  submitButton.addEventListener("click", showTheSpinner);
+}
 
 function showTheSpinner() {
 
