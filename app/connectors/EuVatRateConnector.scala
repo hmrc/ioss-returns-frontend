@@ -16,8 +16,9 @@
 
 package connectors
 
-import config.Service
+import config.{FrontendAppConfig, Service}
 import models.{Country, EuVatRate}
+import org.playframework.cachecontrol.HeaderNames
 import play.api.Configuration
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpErrorFunctions, StringContextOps}
@@ -28,13 +29,16 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class EuVatRateConnector @Inject()(
                                     config: Configuration,
+                                    appConfig: FrontendAppConfig,
                                     httpClientV2: HttpClientV2,
                                   )(implicit ec: ExecutionContext) extends HttpErrorFunctions {
 
   private val baseUrl = config.get[Service]("microservice.services.eu-vat-rates")
 
   def getEuVatRates(country: Country, fromDate: LocalDate, toDate: LocalDate)(implicit hc: HeaderCarrier): Future[Seq[EuVatRate]] = {
-    httpClientV2.get(url"$baseUrl/vat-rate/${country.code}?startDate=$fromDate&endDate=$toDate").execute[Seq[EuVatRate]]
+    httpClientV2.get(url"$baseUrl/vat-rate/${country.code}?startDate=$fromDate&endDate=$toDate")
+      .setHeader(HeaderNames.Authorization.toString -> appConfig.internalAuthToken)
+      .execute[Seq[EuVatRate]]
   }
 
 }
