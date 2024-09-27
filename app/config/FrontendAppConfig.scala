@@ -78,4 +78,5 @@ class FrontendAppConfig @Inject() (configuration: Configuration) {
   val saveForLaterTtl: Int = configuration.get[Int]("mongodb.saveForLaterTTLInDays")
 
   val iossEnrolment: String = configuration.get[String]("ioss-enrolment")
+  val internalAuthToken: String = configuration.get[String]("internal-auth.token")
 }
