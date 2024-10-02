@@ -19,31 +19,38 @@ package controllers.corrections
 import base.SpecBase
 import controllers.routes
 import forms.corrections.RemoveCountryCorrectionFormProvider
+import models.{Country, UserAnswers}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
-import pages.corrections.RemoveCountryCorrectionPage
+import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, RemoveCountryCorrectionPage, VatAmountCorrectionCountryPage}
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import queries.{CorrectionPeriodQuery, CorrectionToCountryQuery}
 import repositories.SessionRepository
+import utils.FutureSyntax.FutureOps
 import views.html.corrections.RemoveCountryCorrectionView
-
-import scala.concurrent.Future
 
 class RemoveCountryCorrectionControllerSpec extends SpecBase with MockitoSugar {
 
-  val formProvider = new RemoveCountryCorrectionFormProvider()
-  val form: Form[Boolean] = formProvider()
+  private val country: Country = arbitraryCountry.arbitrary.sample.value
+  private val formProvider = new RemoveCountryCorrectionFormProvider()
+  private val form: Form[Boolean] = formProvider(country)
 
-  lazy val removeCountryCorrectionRoute: String = controllers.corrections.routes.RemoveCountryCorrectionController.onPageLoad(waypoints, index, index).url
+  private lazy val removeCountryCorrectionRoute: String =
+    controllers.corrections.routes.RemoveCountryCorrectionController.onPageLoad(waypoints, index, index).url
+
+  private val answers: UserAnswers = completedUserAnswersWithCorrections
+    .set(CorrectionReturnPeriodPage(index), period).success.value
+    .set(CorrectionCountryPage(index, index), country).success.value
 
   "RemoveCountryCorrection Controller" - {
 
     "must return OK and the correct view for a GET" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(answers)).build()
 
       running(application) {
         val request = FakeRequest(GET, removeCountryCorrectionRoute)
@@ -52,37 +59,19 @@ class RemoveCountryCorrectionControllerSpec extends SpecBase with MockitoSugar {
 
         val view = application.injector.instanceOf[RemoveCountryCorrectionView]
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, waypoints, period, index, index)(request, messages(application)).toString
+        status(result) mustBe OK
+        contentAsString(result) mustBe view(form, waypoints, period, index, index, country)(request, messages(application)).toString
       }
     }
 
-    "must populate the view correctly on a GET when the question has previously been answered" in {
-
-      val userAnswers = emptyUserAnswers.set(RemoveCountryCorrectionPage(index, index), true).success.value
-
-      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
-
-      running(application) {
-        val request = FakeRequest(GET, removeCountryCorrectionRoute)
-
-        val view = application.injector.instanceOf[RemoveCountryCorrectionView]
-
-        val result = route(application, request).value
-
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(true), waypoints, period, index, index)(request, messages(application)).toString
-      }
-    }
-
-    "must redirect to the next page when valid data is submitted" in {
+    "must save the answer and redirect to the next page when the answer is true for a single country" in {
 
       val mockSessionRepository = mock[SessionRepository]
 
-      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      when(mockSessionRepository.set(any())) thenReturn true.toFuture
 
       val application =
-        applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        applicationBuilder(userAnswers = Some(answers))
           .overrides(
             bind[SessionRepository].toInstance(mockSessionRepository)
           )
@@ -94,16 +83,51 @@ class RemoveCountryCorrectionControllerSpec extends SpecBase with MockitoSugar {
             .withFormUrlEncodedBody(("value", "true"))
 
         val result = route(application, request).value
-        val expectedAnswers = emptyUserAnswers.set(RemoveCountryCorrectionPage(index, index), true).success.value
+        val expectedAnswers = answers
+          .remove(CorrectionToCountryQuery(index, index)).success.value
+          .remove(CorrectionPeriodQuery(index)).success.value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual RemoveCountryCorrectionPage(index, index).navigate(waypoints, emptyUserAnswers, expectedAnswers).url
+        status(result) mustBe SEE_OTHER
+        redirectLocation(result).value mustBe RemoveCountryCorrectionPage(index, index).navigate(waypoints, answers, expectedAnswers).url
+      }
+    }
+
+    "must save the answer and redirect to the next page when the answer is true and there are multiple countries" in {
+
+      val additionalCountry: Country = arbitraryCountry.arbitrary.suchThat(_ != country).sample.value
+
+      val multipleAnswers: UserAnswers = answers
+        .set(CorrectionCountryPage(index, index + 1), additionalCountry).success.value
+        .set(VatAmountCorrectionCountryPage(index, index + 1), arbitraryBigDecimal.arbitrary.sample.value).success.value
+
+      val mockSessionRepository = mock[SessionRepository]
+
+      when(mockSessionRepository.set(any())) thenReturn true.toFuture
+
+      val application =
+        applicationBuilder(userAnswers = Some(multipleAnswers))
+          .overrides(
+            bind[SessionRepository].toInstance(mockSessionRepository)
+          )
+          .build()
+
+      running(application) {
+        val request =
+          FakeRequest(POST, removeCountryCorrectionRoute)
+            .withFormUrlEncodedBody(("value", "true"))
+
+        val result = route(application, request).value
+        val expectedAnswers = multipleAnswers
+          .remove(CorrectionToCountryQuery(index, index)).success.value
+
+        status(result) mustBe SEE_OTHER
+        redirectLocation(result).value mustBe RemoveCountryCorrectionPage(index, index).navigate(waypoints, multipleAnswers, expectedAnswers).url
       }
     }
 
     "must return a Bad Request and errors when invalid data is submitted" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(answers)).build()
 
       running(application) {
         val request =
@@ -116,8 +140,8 @@ class RemoveCountryCorrectionControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, waypoints, period, index, index)(request, messages(application)).toString
+        status(result) mustBe BAD_REQUEST
+        contentAsString(result) mustBe view(boundForm, waypoints, period, index, index, country)(request, messages(application)).toString
       }
     }
 
@@ -130,8 +154,8 @@ class RemoveCountryCorrectionControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+        status(result) mustBe SEE_OTHER
+        redirectLocation(result).value mustBe routes.JourneyRecoveryController.onPageLoad().url
       }
     }
 
@@ -146,8 +170,8 @@ class RemoveCountryCorrectionControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+        status(result) mustBe SEE_OTHER
+        redirectLocation(result).value mustBe routes.JourneyRecoveryController.onPageLoad().url
       }
     }
   }

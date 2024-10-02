@@ -18,8 +18,8 @@ package controllers.corrections
 
 import base.SpecBase
 import connectors.VatReturnConnector
-import models.{Country, Index, Period, StandardPeriod, UserAnswers}
 import models.etmp.{EtmpObligation, EtmpObligationDetails, EtmpObligations, EtmpObligationsFulfilmentStatus}
+import models.{Country, Index, Period, StandardPeriod, UserAnswers}
 import org.jsoup.Jsoup
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
@@ -69,7 +69,7 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
 
   private def vatCorrectionsListUrl(index: Int) = s"/pay-vat-on-goods-sold-to-eu/import-one-stop-shop-returns-payments/correction-list-countries/$index"
 
-  private def removePeriodCorrectionUrl(index: Int) = s"/pay-vat-on-goods-sold-to-eu/import-one-stop-shop-returns-payments/remove-period-correction/$index"
+  private def removePeriodCorrectionUrl(index: Int) = s"/pay-vat-on-goods-sold-to-eu/import-one-stop-shop-returns-payments/remove-month-correction/$index"
 
   override def completeUserAnswers: UserAnswers = emptyUserAnswers.copy(period = periodJuly2021)
 
@@ -152,7 +152,7 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
         when(mockVatReturnConnector.getObligations(any())(any()))
           .thenReturn(getStatusResponse(allPeriods))
 
-        val expectedTitle = "You have corrected the VAT amount for 3 return periods"
+        val expectedTitle = "You have corrected the VAT amount for 3 return months"
         val expectedTableRows = 3
         val userAnswers = addCorrectionPeriods(completeUserAnswers, allPeriods)
         val application = applicationBuilder(userAnswers) //addCorrectionPeriods(completeUserAnswers, allPeriods))
@@ -185,7 +185,7 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
         when(mockVatReturnConnector.getObligations(any())(any()))
           .thenReturn(getStatusResponse(allPeriods))
 
-        val expectedTitle = "You have corrected the VAT amount for 3 return periods"
+        val expectedTitle = "You have corrected the VAT amount for 3 return months"
         val expectedTableRows = 3
         val answers = addCorrectionPeriods(completeUserAnswers, allPeriods.tail).value
           .set(CorrectionReturnPeriodPage(Index(allPeriods.tail.size)), allPeriods.head).success.value

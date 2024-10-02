@@ -21,10 +21,12 @@ import forms.corrections.RemovePeriodCorrectionFormProvider
 import models.Index
 import pages.Waypoints
 import pages.corrections.RemovePeriodCorrectionPage
+import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import queries.{AllCorrectionPeriodsQuery, CorrectionPeriodQuery, DeriveNumberOfCorrectionPeriods}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.FutureSyntax.FutureOps
 import views.html.corrections.RemovePeriodCorrectionView
 
 import javax.inject.Inject
@@ -34,51 +36,57 @@ class RemovePeriodCorrectionController @Inject()(
                                        cc: AuthenticatedControllerComponents,
                                        formProvider: RemovePeriodCorrectionFormProvider,
                                        view: RemovePeriodCorrectionView
-                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with CorrectionBaseController {
 
-  private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(waypoints: Waypoints, periodIndex: Index): Action[AnyContent] = cc.authAndRequireData() {
+  def onPageLoad(waypoints: Waypoints, periodIndex: Index): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
 
-      val preparedForm = request.userAnswers.get(RemovePeriodCorrectionPage(periodIndex)) match {
-        case None => form
-        case Some(value) => form.fill(value)
-      }
+      getCorrectionReturnPeriod(waypoints, periodIndex) { correctionPeriod =>
+        println(s"CORRECTION_PERIOD: ${correctionPeriod.displayText}")
+        println(s"CORRECTION_PERIOD_INDEX: ${periodIndex}")
 
-      Ok(view(preparedForm, waypoints, request.userAnswers.period, periodIndex))
+        val preparedForm: Form[Boolean] = formProvider(correctionPeriod)
+
+        Ok(view(preparedForm, waypoints, request.userAnswers.period, periodIndex, correctionPeriod)).toFuture
+      }
   }
 
   def onSubmit(waypoints: Waypoints, periodIndex: Index): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
 
-      form.bindFromRequest().fold(
-        formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, waypoints, request.userAnswers.period, periodIndex))),
+      getCorrectionReturnPeriod(waypoints, periodIndex) { correctionPeriod =>
 
-        value =>
-          if (value) {
-            Future.fromTry(request.userAnswers.remove(CorrectionPeriodQuery(periodIndex))).flatMap {
-              updatedAnswers =>
-                if (updatedAnswers.get(DeriveNumberOfCorrectionPeriods).getOrElse(0) == 0) {
-                  for {
-                    answersWithRemovedPeriods <- Future.fromTry(updatedAnswers.remove(AllCorrectionPeriodsQuery))
-                    _ <- cc.sessionRepository.set(answersWithRemovedPeriods)
-                  } yield {
-                    Redirect(RemovePeriodCorrectionPage(periodIndex).navigate(waypoints, request.userAnswers, answersWithRemovedPeriods).route)
-                  }
-                } else {
+        val form: Form[Boolean] = formProvider(correctionPeriod)
+
+        form.bindFromRequest().fold(
+          formWithErrors =>
+            Future.successful(BadRequest(view(formWithErrors, waypoints, request.userAnswers.period, periodIndex, correctionPeriod))),
+
+          value =>
+            if (value) {
+              Future.fromTry(request.userAnswers.remove(CorrectionPeriodQuery(periodIndex))).flatMap {
+                updatedAnswers =>
+                  if (updatedAnswers.get(DeriveNumberOfCorrectionPeriods).getOrElse(0) == 0) {
+                    for {
+                      answersWithRemovedPeriods <- Future.fromTry(updatedAnswers.remove(AllCorrectionPeriodsQuery))
+                      _ <- cc.sessionRepository.set(answersWithRemovedPeriods)
+                    } yield {
+                      Redirect(RemovePeriodCorrectionPage(periodIndex).navigate(waypoints, request.userAnswers, answersWithRemovedPeriods).route)
+                    }
+                  } else {
                     for {
                       _ <- cc.sessionRepository.set(updatedAnswers)
                     } yield {
                       Redirect(RemovePeriodCorrectionPage(periodIndex).navigate(waypoints, request.userAnswers, request.userAnswers).route)
                     }
                   }
-            }
-          } else {
+              }
+            } else {
               Future.successful(Redirect(RemovePeriodCorrectionPage(periodIndex).navigate(waypoints, request.userAnswers, request.userAnswers).route))
-          }
-      )
+            }
+        )
+      }
   }
 }

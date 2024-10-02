@@ -17,31 +17,30 @@
 @import components.ButtonGroup
 
 @this(
-    layout: templates.Layout,
-    formHelper: FormWithCSRF,
-    govukErrorSummary: GovukErrorSummary,
-    govukRadios: GovukRadios,
-    button: ButtonGroup
+        layout: templates.Layout,
+        formHelper: FormWithCSRF,
+        govukErrorSummary: GovukErrorSummary,
+        govukRadios: GovukRadios,
+        button: ButtonGroup
 )
 
-@(form: Form[_], waypoints: Waypoints, period: Period, periodIndex: Index)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, period: Period, periodIndex: Index, correctionPeriod: Period)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = title(form, messages("removePeriodCorrection.title"))) {
+  @layout(pageTitle = title(form, messages("removePeriodCorrection.title", correctionPeriod.displayText))) {
 
     @formHelper(action = controllers.corrections.routes.RemovePeriodCorrectionController.onSubmit(waypoints, periodIndex), 'autoComplete -> "off") {
 
-        @if(form.errors.nonEmpty) {
-            @govukErrorSummary(ErrorSummaryViewModel(form))
-        }
+      @if(form.errors.nonEmpty) {
+        @govukErrorSummary(ErrorSummaryViewModel(form))
+      }
 
-        @govukRadios(
-            RadiosViewModel.yesNo(
-                field = form("value"),
-                legend = LegendViewModel(messages("removePeriodCorrection.heading")).asPageHeading()
-            )
+      @govukRadios(
+        RadiosViewModel.yesNo(
+          field = form("value"),
+          legend = LegendViewModel(messages("removePeriodCorrection.heading", correctionPeriod.displayText)).asPageHeading()
         )
+      )
 
-        @button("site.continue", controllers.corrections.routes.RemovePeriodCorrectionController.onPageLoad(waypoints, periodIndex).url, period, waypoints)
-
+      @button("site.continue", controllers.corrections.routes.RemovePeriodCorrectionController.onPageLoad(waypoints, periodIndex).url, period, waypoints)
     }
-}
+  }

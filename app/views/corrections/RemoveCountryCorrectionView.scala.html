@@ -15,33 +15,33 @@
  *@
 
 @this(
-    layout: templates.Layout,
-    formHelper: FormWithCSRF,
-    govukErrorSummary: GovukErrorSummary,
-    govukRadios: GovukRadios,
-    govukButton: GovukButton
+        layout: templates.Layout,
+        formHelper: FormWithCSRF,
+        govukErrorSummary: GovukErrorSummary,
+        govukRadios: GovukRadios,
+        govukButton: GovukButton
 )
 
-@(form: Form[_], waypoints: Waypoints, period: Period, periodIndex: Index, countryIndex: Index)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, period: Period, periodIndex: Index, countryIndex: Index, country: Country)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = title(form, messages("removeCountryCorrection.title"))) {
+  @layout(pageTitle = title(form, messages("removeCountryCorrection.title", country.name))) {
 
     @formHelper(action = controllers.corrections.routes.RemoveCountryCorrectionController.onSubmit(waypoints, periodIndex, countryIndex), Symbol("autoComplete") -> "off") {
 
-        @if(form.errors.nonEmpty) {
-            @govukErrorSummary(ErrorSummaryViewModel(form))
-        }
+      @if(form.errors.nonEmpty) {
+        @govukErrorSummary(ErrorSummaryViewModel(form))
+      }
 
-        @govukRadios(
-            RadiosViewModel.yesNo(
-                field = form("value"),
-                legend = LegendViewModel(messages("removeCountryCorrection.heading")).asPageHeading()
-            )
+      @govukRadios(
+        RadiosViewModel.yesNo(
+          field = form("value"),
+          legend = LegendViewModel(messages("removeCountryCorrection.heading", country.name)).asPageHeading()
         )
+      )
 
-        @govukButton(
-            ButtonViewModel(messages("site.continue"))
-                .withAttribute("id", "continue")
-        )
+      @govukButton(
+        ButtonViewModel(messages("site.continue"))
+        .withAttribute("id", "continue")
+      )
     }
-}
+  }

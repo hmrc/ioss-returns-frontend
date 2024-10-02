@@ -27,6 +27,7 @@ object VatPeriodCorrectionsListSummary {
     answers
       .get(DeriveCompletedCorrectionPeriods).getOrElse(List.empty).sortBy(_.firstDay.toEpochDay).zipWithIndex.map{
       case (correctionPeriod, index) =>
+        println(s"SUMMARY: ${correctionPeriod.displayText} and $index")
         ListItem(
           name = correctionPeriod.displayText,
           changeUrl = controllers.corrections.routes.CorrectionListCountriesController.onPageLoad(waypoints, Index(index)).url,
