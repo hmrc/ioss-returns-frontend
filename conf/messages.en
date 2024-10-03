@@ -297,7 +297,6 @@ correctionReturnPeriod.error.invalid = Select which return you want to correct
 correctionReturnPeriod.change.hidden = which return you want to correct
 correctionReturnPeriod.error.duplicate = You selected this month already. Select a different one.
 
-
 noOtherCorrectionPeriodsAvailable.title = You cannot make a correction to other VAT Import One Stop Shop months
 noOtherCorrectionPeriodsAvailable.heading = You cannot make a correction to other VAT Import One Stop Shop months
 noOtherCorrectionPeriodsAvailable.paragraph = You can only make corrections for months that have ended.
@@ -321,7 +320,6 @@ correctionReturnYear.heading = What is the year of the return you want to correc
 correctionReturnYear.checkYourAnswersLabel = What is the year of the return you want to correct?
 correctionReturnYear.error.required = Select which year you want to correct
 correctionReturnYear.error.invalid = Select which year you want to correct
-
 
 vatPayableForCountry.title = Is the total VAT payable for {0} {1}?
 vatPayableForCountry.heading = Is the total VAT payable for {0} {1}?

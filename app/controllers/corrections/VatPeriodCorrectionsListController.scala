@@ -80,7 +80,6 @@ class VatPeriodCorrectionsListController @Inject()(
       ) orWhenEmpty {
         Redirect(VatPeriodCorrectionsListPage(period, addAnother = false).navigate(waypoints, request.userAnswers, request.userAnswers).url)
       }
-
   }
-
 }
+
