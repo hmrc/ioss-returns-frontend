@@ -33,10 +33,10 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class RemovePeriodCorrectionController @Inject()(
-                                       cc: AuthenticatedControllerComponents,
-                                       formProvider: RemovePeriodCorrectionFormProvider,
-                                       view: RemovePeriodCorrectionView
-                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with CorrectionBaseController {
+                                                  cc: AuthenticatedControllerComponents,
+                                                  formProvider: RemovePeriodCorrectionFormProvider,
+                                                  view: RemovePeriodCorrectionView
+                                                )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with CorrectionBaseController {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
@@ -44,8 +44,6 @@ class RemovePeriodCorrectionController @Inject()(
     implicit request =>
 
       getCorrectionReturnPeriod(waypoints, periodIndex) { correctionPeriod =>
-        println(s"CORRECTION_PERIOD: ${correctionPeriod.displayText}")
-        println(s"CORRECTION_PERIOD_INDEX: ${periodIndex}")
 
         val preparedForm: Form[Boolean] = formProvider(correctionPeriod)
 
@@ -79,7 +77,7 @@ class RemovePeriodCorrectionController @Inject()(
                     for {
                       _ <- cc.sessionRepository.set(updatedAnswers)
                     } yield {
-                      Redirect(RemovePeriodCorrectionPage(periodIndex).navigate(waypoints, request.userAnswers, request.userAnswers).route)
+                      Redirect(RemovePeriodCorrectionPage(periodIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route)
                     }
                   }
               }
