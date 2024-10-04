@@ -123,6 +123,12 @@ function showTheSpinner() {
     //make the elements hidden
     document.getElementById("processing-button-group").style.visibility = 'hidden';
 
+    //make spinner visible in High Contrast Mode
+    const processing = document.getElementById("processing");
+
+    processing.innerHTML = '';
+    processing.innerHTML = '<h2 class="govuk-heading-m">We are processing your registration.</h2><div><svg class="processing-wheel-loader" height="100" width="100"><circle cx="50" cy="50" r="40"  fill="none"/></svg></div>';
+
     return false;
 }
 
