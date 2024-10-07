@@ -25,7 +25,7 @@ object VatPeriodCorrectionsListSummary {
 
   def getCompletedRows(waypoints: Waypoints, answers: UserAnswers): Seq[ListItem] = {
     answers
-      .get(DeriveCompletedCorrectionPeriods).getOrElse(List.empty).sortBy(_.firstDay.toEpochDay).zipWithIndex.map {
+      .get(DeriveCompletedCorrectionPeriods).getOrElse(List.empty).zipWithIndex.map {
         case (correctionPeriod, index) =>
           ListItem(
             name = correctionPeriod.displayText,
