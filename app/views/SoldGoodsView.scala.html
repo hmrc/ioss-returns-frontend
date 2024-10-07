@@ -14,7 +14,6 @@
  * limitations under the License.
  *@
 
-@import viewmodels.LegendSize
 @import components.ButtonGroup
 
 @this(
@@ -41,7 +40,7 @@
                     legend = HmrcPageHeadingLegend(
                         content = messages("soldGoods.heading", period.displayText),
                         caption = period.displayText
-                    ).asPageHeading(size = LegendSize.Large)
+                    )
                 )
             )
 
