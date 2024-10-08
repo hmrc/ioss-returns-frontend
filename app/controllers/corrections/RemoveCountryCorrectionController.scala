@@ -24,7 +24,7 @@ import pages.corrections.RemoveCountryCorrectionPage
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import queries.{AllCorrectionPeriodsQuery, CorrectionPeriodQuery, CorrectionToCountryQuery, DeriveNumberOfCorrectionPeriods, DeriveNumberOfCorrections}
+import queries._
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax.FutureOps
 import views.html.corrections.RemoveCountryCorrectionView
@@ -37,70 +37,71 @@ class RemoveCountryCorrectionController @Inject()(
                                          cc: AuthenticatedControllerComponents,
                                          formProvider: RemoveCountryCorrectionFormProvider,
                                          view: RemoveCountryCorrectionView
-                                 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with CorrectionBaseController {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  private val form: Form[Boolean] = formProvider()
-
-  def onPageLoad(waypoints: Waypoints, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndRequireData() {
+  def onPageLoad(waypoints: Waypoints, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
+      getCountry(waypoints, periodIndex, countryIndex) { country =>
 
-      val period = request.userAnswers.period
+        val period = request.userAnswers.period
 
-      val preparedForm = request.userAnswers.get(RemoveCountryCorrectionPage(periodIndex, countryIndex)) match {
-        case None => form
-        case Some(value) => form.fill(value)
+        val preparedForm: Form[Boolean] = formProvider(country)
+
+        Ok(view(preparedForm, waypoints, period, periodIndex, countryIndex, country)).toFuture
       }
-
-      Ok(view(preparedForm, waypoints, period, periodIndex, countryIndex))
   }
 
   def onSubmit(waypoints: Waypoints, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
+      getCountry(waypoints, periodIndex, countryIndex) { country =>
 
-      val period = request.userAnswers.period
+        val period = request.userAnswers.period
 
-      form.bindFromRequest().fold(
-        formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, waypoints, period, periodIndex, countryIndex))),
+        val form: Form[Boolean] = formProvider(country)
 
-        value =>
-          if (value) {
-            Future.fromTry(request.userAnswers.remove(CorrectionToCountryQuery(periodIndex, countryIndex))).flatMap {
-              updatedAnswers =>
-                if (updatedAnswers.get(DeriveNumberOfCorrections(periodIndex)).getOrElse(0) == 0) {
-                  Future.fromTry(updatedAnswers.remove(CorrectionPeriodQuery(periodIndex))).flatMap {
-                    answersWithRemovedPeriod =>
-                      if (answersWithRemovedPeriod.get(DeriveNumberOfCorrectionPeriods).getOrElse(0) == 0) {
-                        for {
-                          answersWithRemovedCorrections <- Future.fromTry(answersWithRemovedPeriod.remove(AllCorrectionPeriodsQuery))
-                          _ <- cc.sessionRepository.set(answersWithRemovedCorrections)
-                        } yield {
-                          Redirect(RemoveCountryCorrectionPage(periodIndex, countryIndex)
-                            .navigate(waypoints, request.userAnswers, answersWithRemovedCorrections).route)
+        form.bindFromRequest().fold(
+          formWithErrors =>
+            Future.successful(BadRequest(view(formWithErrors, waypoints, period, periodIndex, countryIndex, country))),
+
+          value =>
+            if (value) {
+              Future.fromTry(request.userAnswers.remove(CorrectionToCountryQuery(periodIndex, countryIndex))).flatMap {
+                updatedAnswers =>
+                  if (updatedAnswers.get(DeriveNumberOfCorrections(periodIndex)).getOrElse(0) == 0) {
+                    Future.fromTry(updatedAnswers.remove(CorrectionPeriodQuery(periodIndex))).flatMap {
+                      answersWithRemovedPeriod =>
+                        if (answersWithRemovedPeriod.get(DeriveNumberOfCorrectionPeriods).getOrElse(0) == 0) {
+                          for {
+                            answersWithRemovedCorrections <- Future.fromTry(answersWithRemovedPeriod.remove(AllCorrectionPeriodsQuery))
+                            _ <- cc.sessionRepository.set(answersWithRemovedCorrections)
+                          } yield {
+                            Redirect(RemoveCountryCorrectionPage(periodIndex, countryIndex)
+                              .navigate(waypoints, request.userAnswers, answersWithRemovedCorrections).route)
+                          }
+                        } else {
+                          for {
+                            _ <- cc.sessionRepository.set(answersWithRemovedPeriod)
+                          } yield {
+                            Redirect(RemoveCountryCorrectionPage(periodIndex, countryIndex)
+                              .navigate(waypoints, request.userAnswers, answersWithRemovedPeriod).route)
+                          }
                         }
-                      } else {
-                        for {
-                          _ <- cc.sessionRepository.set(answersWithRemovedPeriod)
-                        } yield {
-                          Redirect(RemoveCountryCorrectionPage(periodIndex, countryIndex)
-                          .navigate(waypoints, request.userAnswers, answersWithRemovedPeriod).route)
-                        }
-                      }
+                    }
+                  } else {
+                    for {
+                      _ <- cc.sessionRepository.set(updatedAnswers)
+                    } yield {
+                      Redirect(RemoveCountryCorrectionPage(periodIndex, countryIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route)
+                    }
                   }
-                } else {
-                  for {
-                    _ <- cc.sessionRepository.set(updatedAnswers)
-                  } yield {
-                    Redirect(RemoveCountryCorrectionPage(periodIndex, countryIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route)
-                  }
-                }
+              }
+
+            } else {
+              Redirect(RemoveCountryCorrectionPage(periodIndex, countryIndex).navigate(waypoints, request.userAnswers, request.userAnswers).route).toFuture
             }
-
-          } else {
-            Redirect(RemoveCountryCorrectionPage(periodIndex, countryIndex).navigate(waypoints, request.userAnswers, request.userAnswers).route).toFuture
-          }
-      )
+        )
+      }
   }
 }

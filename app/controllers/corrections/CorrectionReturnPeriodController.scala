@@ -61,14 +61,18 @@ class CorrectionReturnPeriodController @Inject()(
       val selectedYear = request.userAnswers.get(CorrectionReturnYearPage(index)).getOrElse(0)
 
       filteredFulfilledObligations.map { obligations =>
-        val obligationYears = obligations.filter(obligation => ConvertPeriodKey.yearFromEtmpPeriodKey(obligation.periodKey) == selectedYear)
+        val obligationYears = obligations.filter { obligation =>
+          ConvertPeriodKey.yearFromEtmpPeriodKey(obligation.periodKey) == selectedYear
+        }
 
-        val correctionPeriod = obligationYears.map(obligation => ConvertPeriodKey.periodkeyToPeriod(obligation.periodKey))
+        val correctionPeriod = obligationYears.map { obligation =>
+          ConvertPeriodKey.periodkeyToPeriod(obligation.periodKey)
+        }.sortBy(_.firstDay.toEpochDay)
 
-        val completedCorrectionPeriods: List[Period] = request.userAnswers.get(DeriveCompletedCorrectionPeriods).getOrElse(List.empty)
+        val completedCorrectionPeriods: List[Period] = request.userAnswers.get(DeriveCompletedCorrectionPeriods)
+          .getOrElse(List.empty).sortBy(_.firstDay.toEpochDay)
 
         val uncompletedCorrectionPeriods = correctionPeriod.diff(completedCorrectionPeriods)
-
 
         val form: Form[Period] = formProvider(index, correctionPeriod, request.userAnswers
           .get(AllCorrectionPeriodsQuery).getOrElse(Seq.empty).map(_.correctionReturnPeriod))
@@ -98,11 +102,16 @@ class CorrectionReturnPeriodController @Inject()(
 
       filteredFulfilledObligations.flatMap { obligations =>
 
-        val obligationYears = obligations.filter(obligation => ConvertPeriodKey.yearFromEtmpPeriodKey(obligation.periodKey) == selectedYear)
+        val obligationYears = obligations.filter { obligation =>
+          ConvertPeriodKey.yearFromEtmpPeriodKey(obligation.periodKey) == selectedYear
+        }
 
-        val correctionPeriod = obligationYears.map(obligation => ConvertPeriodKey.periodkeyToPeriod(obligation.periodKey))
+        val correctionPeriod = obligationYears.map { obligation =>
+          ConvertPeriodKey.periodkeyToPeriod(obligation.periodKey)
+        }.sortBy(_.firstDay.toEpochDay)
 
-        val completedCorrectionPeriods: List[Period] = request.userAnswers.get(DeriveCompletedCorrectionPeriods).getOrElse(List.empty)
+        val completedCorrectionPeriods: List[Period] = request.userAnswers.get(DeriveCompletedCorrectionPeriods)
+          .getOrElse(List.empty).sortBy(_.firstDay.toEpochDay)
 
         val uncompletedCorrectionPeriods = correctionPeriod.diff(completedCorrectionPeriods).distinct
 

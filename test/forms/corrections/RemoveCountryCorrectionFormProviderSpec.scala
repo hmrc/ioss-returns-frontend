@@ -14,18 +14,19 @@
  * limitations under the License.
  */
 
-package forms
+package forms.corrections
 
 import forms.behaviours.BooleanFieldBehaviours
-import forms.corrections.RemoveCountryCorrectionFormProvider
+import models.Country
 import play.api.data.FormError
 
 class RemoveCountryCorrectionFormProviderSpec extends BooleanFieldBehaviours {
 
-  val requiredKey = "removeCountryCorrection.error.required"
-  val invalidKey = "error.boolean"
+  private val requiredKey: String = "removeCountryCorrection.error.required"
+  private val invalidKey: String = "error.boolean"
+  private val country: Country = arbitraryCountry.arbitrary.sample.value
 
-  val form = new RemoveCountryCorrectionFormProvider()()
+  val form = new RemoveCountryCorrectionFormProvider()(country)
 
   ".value" - {
 
@@ -34,13 +35,13 @@ class RemoveCountryCorrectionFormProviderSpec extends BooleanFieldBehaviours {
     behave like booleanField(
       form,
       fieldName,
-      invalidError = FormError(fieldName, invalidKey)
+      invalidError = FormError(fieldName, invalidKey, Seq(country.name))
     )
 
     behave like mandatoryField(
       form,
       fieldName,
-      requiredError = FormError(fieldName, requiredKey)
+      requiredError = FormError(fieldName, requiredKey, Seq(country.name))
     )
   }
 }

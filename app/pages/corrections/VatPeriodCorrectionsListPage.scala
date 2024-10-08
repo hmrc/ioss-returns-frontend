@@ -91,5 +91,5 @@ final case class VatPeriodCorrectionsListPage(
     } yield finalAnswers
   }
 
-
 }
+

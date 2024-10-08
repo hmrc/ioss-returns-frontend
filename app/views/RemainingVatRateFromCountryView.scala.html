@@ -14,6 +14,8 @@
  * limitations under the License.
  *@
 
+@import viewmodels.LegendSize
+
 @this(
         layout: templates.Layout,
         formHelper: FormWithCSRF,
@@ -37,9 +39,8 @@
                     field = form("value"),
                     legend = HmrcPageHeadingLegend(
                         content = messages("remainingVatRateFromCountry.heading", vatRate),
-                        caption = messages("remainingVatRateFromCountry.caption", period.displayText, country.name),
-                        classes = "govuk-label--l"
-                    )
+                        caption = messages("remainingVatRateFromCountry.caption", period.displayText, country.name)
+                    ).withSize(LegendSize.Large)
                 )
             )
 

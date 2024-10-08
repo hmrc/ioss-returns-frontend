@@ -17,14 +17,15 @@
 package forms.corrections
 
 import forms.mappings.Mappings
+import models.Country
 import play.api.data.Form
 
 import javax.inject.Inject
 
 class RemoveCountryCorrectionFormProvider @Inject() extends Mappings {
 
-  def apply(): Form[Boolean] =
+  def apply(country: Country): Form[Boolean] =
     Form(
-      "value" -> boolean("removeCountryCorrection.error.required")
+      "value" -> boolean("removeCountryCorrection.error.required", args = Seq(country.name))
     )
 }

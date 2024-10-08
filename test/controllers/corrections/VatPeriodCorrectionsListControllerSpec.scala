@@ -18,8 +18,8 @@ package controllers.corrections
 
 import base.SpecBase
 import connectors.VatReturnConnector
-import models.{Country, Index, Period, StandardPeriod, UserAnswers}
 import models.etmp.{EtmpObligation, EtmpObligationDetails, EtmpObligations, EtmpObligationsFulfilmentStatus}
+import models.{Country, Index, Period, StandardPeriod, UserAnswers}
 import org.jsoup.Jsoup
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
@@ -41,6 +41,7 @@ import scala.concurrent.Future
 class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
   private val year = 2021
   private val periodJuly2021 = StandardPeriod(year, Month.JULY)
+
   override def commencementDate: LocalDate = periodJuly2021.lastDay.minusDays(1)
 
   private lazy val vatPeriodCorrectionsListRoute = controllers
@@ -51,10 +52,11 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
 
   private def addCorrectionPeriods(userAnswers: UserAnswers, periods: Seq[Period]): Option[UserAnswers] = //Some(userAnswers)
     periods.zipWithIndex
-      .foldLeft(Option(userAnswers))((ua, indexedPeriod) =>
-        ua.flatMap(_.set(CorrectionReturnPeriodPage(Index(indexedPeriod._2)), indexedPeriod._1).toOption)
-          .flatMap(_.set(CorrectionCountryPage(Index(indexedPeriod._2), Index(0)), Country.euCountries.head).toOption)
-          .flatMap(_.set(VatAmountCorrectionCountryPage(Index(indexedPeriod._2), Index(0)), BigDecimal(200.0)).toOption))
+      .foldLeft(Option(userAnswers)) { case (ua, (period, index)) =>
+        ua.flatMap(_.set(CorrectionReturnPeriodPage(Index(index)), period).toOption)
+          .flatMap(_.set(CorrectionCountryPage(Index(index), Index(0)), Country.euCountries.head).toOption)
+          .flatMap(_.set(VatAmountCorrectionCountryPage(Index(index), Index(0)), BigDecimal(200.0)).toOption)
+      }
 
   private def getStatusResponse(periods: Seq[StandardPeriod]): Future[EtmpObligations] = {
     Future.successful {
@@ -69,7 +71,7 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
 
   private def vatCorrectionsListUrl(index: Int) = s"/pay-vat-on-goods-sold-to-eu/import-one-stop-shop-returns-payments/correction-list-countries/$index"
 
-  private def removePeriodCorrectionUrl(index: Int) = s"/pay-vat-on-goods-sold-to-eu/import-one-stop-shop-returns-payments/remove-period-correction/$index"
+  private def removePeriodCorrectionUrl(index: Int) = s"/pay-vat-on-goods-sold-to-eu/import-one-stop-shop-returns-payments/remove-month-correction/$index"
 
   override def completeUserAnswers: UserAnswers = emptyUserAnswers.copy(period = periodJuly2021)
 
@@ -84,6 +86,7 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
       StandardPeriod(year, Month.OCTOBER),
       StandardPeriod(year + 1, Month.JANUARY)
     )
+
     val allPeriodsModel = Seq(
       ListItem(
         name = "July 2021",
@@ -152,7 +155,7 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
         when(mockVatReturnConnector.getObligations(any())(any()))
           .thenReturn(getStatusResponse(allPeriods))
 
-        val expectedTitle = "You have corrected the VAT amount for 3 return periods"
+        val expectedTitle = "You have corrected the VAT amount for 3 return months"
         val expectedTableRows = 3
         val userAnswers = addCorrectionPeriods(completeUserAnswers, allPeriods)
         val application = applicationBuilder(userAnswers) //addCorrectionPeriods(completeUserAnswers, allPeriods))
@@ -185,11 +188,10 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
         when(mockVatReturnConnector.getObligations(any())(any()))
           .thenReturn(getStatusResponse(allPeriods))
 
-        val expectedTitle = "You have corrected the VAT amount for 3 return periods"
+        val expectedTitle = "You have corrected the VAT amount for 3 return months"
         val expectedTableRows = 3
-        val answers = addCorrectionPeriods(completeUserAnswers, allPeriods.tail).value
-          .set(CorrectionReturnPeriodPage(Index(allPeriods.tail.size)), allPeriods.head).success.value
-          .set(CorrectionCountryPage(Index(allPeriods.tail.size), index), Country.euCountries.head).success.value
+        val answers = addCorrectionPeriods(completeUserAnswers, allPeriods).value
+          .remove(VatAmountCorrectionCountryPage(Index(allPeriods.size - 1), Index(0))).success.value
 
         val application = applicationBuilder(userAnswers = Some(answers))
           .configure("bootstrap.filters.csrf.enabled" -> false)
@@ -209,9 +211,9 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
           doc.getElementsByClass("hmrc-add-to-a-list__contents").size() mustEqual expectedTableRows
 
           val view = application.injector.instanceOf[VatPeriodCorrectionsListView]
-          responseString.filterNot(_.isWhitespace) mustEqual
+          responseString mustEqual
             view(waypoints, periodJuly2021, allPeriodsModel, List(allPeriods.head))(request, messages(application))
-              .toString.filterNot(_.isWhitespace)
+              .toString
         }
       }
     }

@@ -18,7 +18,7 @@ package controllers.corrections
 
 import base.SpecBase
 import forms.corrections.RemovePeriodCorrectionFormProvider
-import models.{Country, Index}
+import models.{Country, Period, UserAnswers}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{never, times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
@@ -26,23 +26,31 @@ import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, Rem
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import queries.{AllCorrectionPeriodsQuery, CorrectionPeriodQuery}
 import repositories.SessionRepository
+import utils.FutureSyntax.FutureOps
 import views.html.corrections.RemovePeriodCorrectionView
-
-import scala.concurrent.Future
 
 class RemovePeriodCorrectionControllerSpec extends SpecBase with MockitoSugar {
 
+  private val correctionCountry: Country = arbitraryCountry.arbitrary.sample.value
+  private val correctionPeriod: Period = arbitraryPeriod.arbitrary.sample.value
   private val formProvider = new RemovePeriodCorrectionFormProvider()
-  private val form = formProvider()
+  private val form = formProvider(correctionPeriod)
 
   private lazy val removePeriodCorrectionRoute = controllers.corrections.routes.RemovePeriodCorrectionController.onPageLoad(waypoints, index).url
+
+  private val answers: UserAnswers = completeUserAnswers
+    .set(CorrectionReturnPeriodPage(index), correctionPeriod).success.value
+    .set(CorrectionCountryPage(index, index), correctionCountry).success.value
+    .set(VatAmountCorrectionCountryPage(index, index), arbitraryBigDecimal.arbitrary.sample.value).success.value
+
 
   "RemovePeriodCorrection Controller" - {
 
     "must return OK and the correct view for a GET" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(answers)).build()
 
       running(application) {
         val request = FakeRequest(GET, removePeriodCorrectionRoute)
@@ -51,26 +59,8 @@ class RemovePeriodCorrectionControllerSpec extends SpecBase with MockitoSugar {
 
         val view = application.injector.instanceOf[RemovePeriodCorrectionView]
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, waypoints, period, index)(request, messages(application)).toString
-      }
-    }
-
-    "must populate the view correctly on a GET when the question has previously been answered" in {
-
-      val userAnswers = emptyUserAnswers.set(RemovePeriodCorrectionPage(index), true).success.value
-
-      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
-
-      running(application) {
-        val request = FakeRequest(GET, removePeriodCorrectionRoute)
-
-        val view = application.injector.instanceOf[RemovePeriodCorrectionView]
-
-        val result = route(application, request).value
-
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(true), waypoints, period, index)(request, messages(application)).toString
+        status(result) mustBe OK
+        contentAsString(result) mustBe view(form, waypoints, period, index, correctionPeriod)(request, messages(application)).toString
       }
     }
 
@@ -78,11 +68,7 @@ class RemovePeriodCorrectionControllerSpec extends SpecBase with MockitoSugar {
 
       val mockSessionRepository = mock[SessionRepository]
 
-      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-
-      val answers = emptyUserAnswers.set(CorrectionReturnPeriodPage(index), period).success.value
-        .set(CorrectionCountryPage(index, index), Country("DE", "Germany")).success.value
-        .set(VatAmountCorrectionCountryPage(index, index), BigDecimal(10)).success.value
+      when(mockSessionRepository.set(any())) thenReturn true.toFuture
 
       val application =
         applicationBuilder(userAnswers = Some(answers))
@@ -95,28 +81,29 @@ class RemovePeriodCorrectionControllerSpec extends SpecBase with MockitoSugar {
             .withFormUrlEncodedBody(("value", "true"))
 
         val result = route(application, request).value
-        val expectedAnswers = emptyUserAnswers
+        val expectedAnswers = answers.remove(AllCorrectionPeriodsQuery).success.value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual RemovePeriodCorrectionPage(index).navigate(waypoints, emptyUserAnswers, expectedAnswers).url
+        status(result) mustBe SEE_OTHER
+        redirectLocation(result).value mustBe RemovePeriodCorrectionPage(index).navigate(waypoints, answers, expectedAnswers).url
         verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
       }
     }
 
     "must save the answer and redirect to VatPeriodCorrectionsList page when true is submitted and there are multiple periods" in {
 
+      val nextCorrectionPeriod: Period = correctionPeriod.getNext
+
+      val multipleAnswers: UserAnswers = answers
+        .set(CorrectionReturnPeriodPage(index + 1), nextCorrectionPeriod).success.value
+        .set(CorrectionCountryPage(index, index + 1), correctionCountry).success.value
+        .set(VatAmountCorrectionCountryPage(index, index + 1), arbitraryBigDecimal.arbitrary.sample.value).success.value
+
       val mockSessionRepository = mock[SessionRepository]
 
-      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-      val answers = emptyUserAnswers.set(CorrectionReturnPeriodPage(index), period).success.value
-        .set(CorrectionCountryPage(index, index), Country("DE", "Germany")).success.value
-        .set(VatAmountCorrectionCountryPage(index, index), BigDecimal(10)).success.value
-        .set(CorrectionReturnPeriodPage(Index(1)), period).success.value
-        .set(CorrectionCountryPage(Index(1), index), Country("ES", "Spain")).success.value
-        .set(VatAmountCorrectionCountryPage(Index(1), index), BigDecimal(10)).success.value
+      when(mockSessionRepository.set(any())) thenReturn true.toFuture
 
       val application =
-        applicationBuilder(userAnswers = Some(answers))
+        applicationBuilder(userAnswers = Some(multipleAnswers))
           .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
           .build()
 
@@ -126,12 +113,10 @@ class RemovePeriodCorrectionControllerSpec extends SpecBase with MockitoSugar {
             .withFormUrlEncodedBody(("value", "true"))
 
         val result = route(application, request).value
-        val expectedAnswers = emptyUserAnswers.set(CorrectionReturnPeriodPage(index), period).success.value
-          .set(CorrectionCountryPage(index, index), Country("ES", "Spain")).success.value
-          .set(VatAmountCorrectionCountryPage(index, index), BigDecimal(10)).success.value
+        val expectedAnswers = multipleAnswers.remove(CorrectionPeriodQuery(index)).success.value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual RemovePeriodCorrectionPage(index).navigate(waypoints, expectedAnswers, expectedAnswers).url
+        status(result) mustBe SEE_OTHER
+        redirectLocation(result).value mustBe RemovePeriodCorrectionPage(index).navigate(waypoints, multipleAnswers, expectedAnswers).url
         verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
       }
     }
@@ -140,7 +125,7 @@ class RemovePeriodCorrectionControllerSpec extends SpecBase with MockitoSugar {
 
       val mockSessionRepository = mock[SessionRepository]
 
-      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      when(mockSessionRepository.set(any())) thenReturn true.toFuture
       val answers = emptyUserAnswers.set(CorrectionReturnPeriodPage(index), period).success.value
         .set(CorrectionCountryPage(index, index), Country("DE", "Germany")).success.value
         .set(VatAmountCorrectionCountryPage(index, index), BigDecimal(10)).success.value
@@ -158,15 +143,15 @@ class RemovePeriodCorrectionControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
         val expectedAnswers = answers
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual RemovePeriodCorrectionPage(index).navigate(waypoints, expectedAnswers, expectedAnswers).url
+        status(result) mustBe SEE_OTHER
+        redirectLocation(result).value mustBe RemovePeriodCorrectionPage(index).navigate(waypoints, expectedAnswers, expectedAnswers).url
         verify(mockSessionRepository, never()).set(any())
       }
     }
 
     "must return a Bad Request and errors when invalid data is submitted" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(answers)).build()
 
       running(application) {
         val request =
@@ -179,8 +164,8 @@ class RemovePeriodCorrectionControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, waypoints, period, index)(request, messages(application)).toString
+        status(result) mustBe BAD_REQUEST
+        contentAsString(result) mustBe view(boundForm, waypoints, period, index, correctionPeriod)(request, messages(application)).toString
       }
     }
 
@@ -193,8 +178,8 @@ class RemovePeriodCorrectionControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+        status(result) mustBe SEE_OTHER
+        redirectLocation(result).value mustBe controllers.routes.JourneyRecoveryController.onPageLoad().url
       }
     }
 
@@ -209,8 +194,8 @@ class RemovePeriodCorrectionControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+        status(result) mustBe SEE_OTHER
+        redirectLocation(result).value mustBe controllers.routes.JourneyRecoveryController.onPageLoad().url
       }
     }
   }

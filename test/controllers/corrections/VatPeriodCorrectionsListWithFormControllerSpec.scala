@@ -126,7 +126,7 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
 
       "and no corrections have been added must display empty table and form" in {
 
-        val expectedTitle = "You have not corrected the VAT amount for any return periods"
+        val expectedTitle = "You have not corrected the VAT amount for any return months"
         val expectedTableRows = 0
 
         val completedCorrections = List.empty[Period]
@@ -161,7 +161,7 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
 
         "and there are uncompleted correction periods must display filled table and form" in {
 
-          val expectedTitle = "You have corrected the VAT amount for one return period"
+          val expectedTitle = "You have corrected the VAT amount for one return month"
           val expectedTableRows = 1
           val periodQ3 = periodJuly2021
 

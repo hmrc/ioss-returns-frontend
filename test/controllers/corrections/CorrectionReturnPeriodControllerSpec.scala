@@ -46,7 +46,7 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
   private val stubbedClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
   private val year = 2023
 
-  private val periodKeys = Seq("23AL", "23AK", "23AD")
+  private val periodKeys = Seq("23AD", "23AK", "23AL")
 
   val selectedYear: UserAnswers = emptyUserAnswers.set(CorrectionReturnYearPage(Index(0)), year).success.value
 
@@ -139,7 +139,6 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
       }
 
     }
-
 
     "must redirect to the next page when valid data is submitted" in {
 

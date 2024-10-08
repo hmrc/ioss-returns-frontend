@@ -31,6 +31,7 @@ object SubmittedReturnForPeriodSummary {
   def rowVatDeclared(etmpVatReturn: EtmpVatReturn)(implicit messages: Messages): Option[SummaryListRow] = {
     val value = etmpVatReturn.totalVATAmountDueForAllMSGBP
 
+    // TODO -> Key wrapping css
     Some(SummaryListRowViewModel(
       key = "submittedReturnForPeriod.summary.vatDeclared",
       value = ValueViewModel(HtmlContent(currencyFormat(value))).withCssClass("govuk-table__cell--numeric")

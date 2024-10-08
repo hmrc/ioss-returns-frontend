@@ -25,14 +25,14 @@ object VatPeriodCorrectionsListSummary {
 
   def getCompletedRows(waypoints: Waypoints, answers: UserAnswers): Seq[ListItem] = {
     answers
-      .get(DeriveCompletedCorrectionPeriods).getOrElse(List.empty).sortBy(_.firstDay.toEpochDay).zipWithIndex.map{
-      case (correctionPeriod, index) =>
-        ListItem(
-          name = correctionPeriod.displayText,
-          changeUrl = controllers.corrections.routes.CorrectionListCountriesController.onPageLoad(waypoints, Index(index)).url,
-          removeUrl = controllers.corrections.routes.RemovePeriodCorrectionController.onPageLoad(waypoints, Index(index)).url
-        )
-    }
+      .get(DeriveCompletedCorrectionPeriods).getOrElse(List.empty).zipWithIndex.map {
+        case (correctionPeriod, index) =>
+          ListItem(
+            name = correctionPeriod.displayText,
+            changeUrl = controllers.corrections.routes.CorrectionListCountriesController.onPageLoad(waypoints, Index(index)).url,
+            removeUrl = controllers.corrections.routes.RemovePeriodCorrectionController.onPageLoad(waypoints, Index(index)).url
+          )
+      }
   }
-
 }
+

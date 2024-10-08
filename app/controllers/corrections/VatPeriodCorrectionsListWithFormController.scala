@@ -48,7 +48,7 @@ class VatPeriodCorrectionsListWithFormController @Inject()(
 
   def onPageLoad(waypoints: Waypoints, period: Period): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
-      VatPeriodCorrectionsListPage(period, false).cleanup(request.userAnswers, cc).flatMap { result =>
+      VatPeriodCorrectionsListPage(period, addAnother = false).cleanup(request.userAnswers, cc).flatMap { result =>
         result.fold(
           _ => {
             Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
