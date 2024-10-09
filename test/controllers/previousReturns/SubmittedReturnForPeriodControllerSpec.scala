@@ -44,7 +44,7 @@ import viewmodels.govuk.summarylist._
 import viewmodels.previousReturns._
 import views.html.previousReturns.SubmittedReturnForPeriodView
 
-import java.time.{LocalDate, LocalDateTime}
+import java.time.{LocalDate, LocalDateTime, Month}
 import scala.concurrent.Future
 
 class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfterEach with PrivateMethodTester {
@@ -67,6 +67,26 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
   "SubmittedReturnForPeriod Controller" - {
 
     "onPageLoad" - {
+
+      "must return Kick out page if older than 6 years old" in {
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+          .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
+          .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
+          .overrides(bind[CompletedPartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
+          .build()
+
+        running(application) {
+          val oldPeriod = StandardPeriod(year = LocalDate.now().getYear - 7, month = Month.JANUARY)
+
+          val request = FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoad(waypoints, oldPeriod).url)
+
+          val result = route(application, request).value
+
+          status(result) mustBe SEE_OTHER
+          redirectLocation(result) mustBe Some(controllers.routes.NoLongerAbleToViewReturnController.onPageLoad().url)
+        }
+      }
+
       "must return OK and the correct view for a GET" - {
 
         "when there are corrections present" in {

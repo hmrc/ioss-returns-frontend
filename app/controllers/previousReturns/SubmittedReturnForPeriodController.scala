@@ -16,6 +16,7 @@
 
 package controllers.previousReturns
 
+import config.Constants.submittedReturnsPeriodsLimit
 import connectors.FinancialDataHttpParser.ChargeResponse
 import connectors.VatReturnHttpParser.EtmpVatReturnResponse
 import connectors.{FinancialDataConnector, VatReturnConnector}
@@ -54,12 +55,16 @@ class SubmittedReturnForPeriodController @Inject()(
   protected val controllerComponents: MessagesControllerComponents = cc
 
   def onPageLoad(waypoints: Waypoints, period: Period): Action[AnyContent] = cc.authAndGetOptionalData().async { implicit request =>
-    (for {
-      maybePartialReturnPeriod <- partialReturnPeriodService.getCompletedPartialReturnPeriod(request.registrationWrapper, period)
-      settingPeriod = maybePartialReturnPeriod.getOrElse(period)
-      etmpVatReturnResponse <- vatReturnConnector.get(settingPeriod)
-      chargeResponse <- financialDataConnector.getCharge(settingPeriod)
-    } yield onPageLoad(waypoints, settingPeriod, etmpVatReturnResponse, chargeResponse)).flatten
+    if (isPeriodOlderThanSixYears(period)) {
+      Redirect(controllers.routes.NoLongerAbleToViewReturnController.onPageLoad()).toFuture
+    } else {
+      (for {
+        maybePartialReturnPeriod <- partialReturnPeriodService.getCompletedPartialReturnPeriod(request.registrationWrapper, period)
+        settingPeriod = maybePartialReturnPeriod.getOrElse(period)
+        etmpVatReturnResponse <- vatReturnConnector.get(settingPeriod)
+        chargeResponse <- financialDataConnector.getCharge(settingPeriod)
+      } yield onPageLoad(waypoints, settingPeriod, etmpVatReturnResponse, chargeResponse)).flatten
+    }
   }
 
   def onPageLoadForIossNumber(waypoints: Waypoints, period: Period, iossNumber: String): Action[AnyContent] = cc.authAndGetOptionalData().async {
@@ -171,5 +176,10 @@ class SubmittedReturnForPeriodController @Inject()(
   private def hasActiveWindowExpired(dueDate: LocalDate): Boolean = {
     val today = LocalDate.now(clock)
     today.isAfter(dueDate.plusYears(3))
+  }
+
+  private def isPeriodOlderThanSixYears(period: Period): Boolean = {
+    val sixYearsOld = LocalDate.now(clock).minusYears(submittedReturnsPeriodsLimit)
+    period.lastDay.isBefore(sixYearsOld)
   }
 }
