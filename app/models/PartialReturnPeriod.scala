@@ -48,7 +48,7 @@ object PartialReturnPeriod {
         (__ \ "lastDay").write[LocalDate] and
         (__ \ "year").write[Int] and
         (__ \ "month").write[String].contramap[Month](m => s"M${m.getValue}")
-      )(unlift(PartialReturnPeriod.unapply))
+      )(partialReturnPeriod => Tuple.fromProductTyped(partialReturnPeriod))
   }
 
   implicit val format: Format[PartialReturnPeriod] = Format(reads, writes)

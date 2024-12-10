@@ -44,7 +44,7 @@ object SelectedIossNumber {
       (__ \ "userId").write[String] and
         (__ \ "iossNumber").write[String] and
         (__ \ "lastUpdated").write(MongoJavatimeFormats.instantFormat)
-      )(unlift(SelectedIossNumber.unapply))
+      )(selectedIossNumber => Tuple.fromProductTyped(selectedIossNumber))
   }
 
   implicit val format: OFormat[SelectedIossNumber] = OFormat(reads, writes)

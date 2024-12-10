@@ -21,21 +21,21 @@ import connectors.VatReturnConnector
 import models.NotFound
 import models.external.ExternalEntryUrl
 import org.mockito.ArgumentMatchers.any
-import org.mockito.IdiomaticMockito
-import org.mockito.Mockito.when
+import org.mockito.Mockito.{reset, when}
 import org.scalatest.prop.TableDrivenPropertyChecks
+import org.scalatestplus.mockito.MockitoSugar.mock
 import pages.SoldGoodsPage
 import pages.corrections.CorrectPreviousReturnPage
 import play.api.inject.bind
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import queries.TotalAmountVatDueGBPQuery
 import views.html.submissionResults.SuccessfullySubmittedView
 
 import scala.concurrent.Future
 
 
-class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPropertyChecks with IdiomaticMockito {
+class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPropertyChecks {
   private val options = Table(
     ("SoldGoodsPage", "CorrectPreviousReturnPage", "nilReturn"),
     (false, false, true),

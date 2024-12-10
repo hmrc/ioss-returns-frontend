@@ -31,7 +31,7 @@ import scala.concurrent.Future
 
 class CheckCommencementDateFilterSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
 
-    class Harness extends CheckCommencementDateFilterImpl() {
+  class Harness extends CheckCommencementDateFilterImpl() {
     def callFilter(request: DataRequest[_]): Future[Option[Result]] = filter(request)
   }
 

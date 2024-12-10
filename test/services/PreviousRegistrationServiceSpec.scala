@@ -83,7 +83,7 @@ class PreviousRegistrationServiceSpec extends SpecBase with BeforeAndAfterEach {
 
         val service = new PreviousRegistrationService(mockRegistrationConnector, mockFinancialDataConnector)
 
-        val result = service.getPreviousRegistrationPrepareFinancialData.futureValue
+        val result = service.getPreviousRegistrationPrepareFinancialData().futureValue
 
         result mustBe List(prepareData)
       }
@@ -96,7 +96,7 @@ class PreviousRegistrationServiceSpec extends SpecBase with BeforeAndAfterEach {
 
         val service = new PreviousRegistrationService(mockRegistrationConnector, mockFinancialDataConnector)
 
-        val result = service.getPreviousRegistrationPrepareFinancialData.failed
+        val result = service.getPreviousRegistrationPrepareFinancialData().failed
 
         whenReady(result) { exp =>
 

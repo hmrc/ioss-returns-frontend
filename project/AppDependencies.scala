@@ -12,20 +12,18 @@ object AppDependencies {
     "uk.gov.hmrc"         %% "bootstrap-frontend-play-30"             % bootstrapVersion,
     "uk.gov.hmrc.mongo"   %% "hmrc-mongo-play-30"                     % hmrcMongoVersion,
     "uk.gov.hmrc"         %% "domain-play-30"                         % "10.0.0",
-    "org.typelevel"       %% "cats-core"                              % "2.9.0"
+    "org.typelevel"       %% "cats-core"                              % "2.12.0"
   )
 
   val test = Seq(
     "uk.gov.hmrc"           %% "bootstrap-test-play-30"   % bootstrapVersion,
     "uk.gov.hmrc.mongo"     %% "hmrc-mongo-test-play-30"  % hmrcMongoVersion,
-    "org.scalatest"         %% "scalatest"                % "3.2.15",
+    "org.scalatest"         %% "scalatest"                % "3.2.19",
     "org.scalatestplus"     %% "scalacheck-1-15"          % "3.2.11.0",
-    "org.scalatestplus"     %% "mockito-4-6"              % "3.2.15.0",
-    "org.mockito"           %% "mockito-scala"            % "1.17.30",
-    "org.scalacheck"        %% "scalacheck"               % "1.17.0",
+    "org.scalacheck"        %% "scalacheck"               % "1.18.0",
     "org.pegdown"           % "pegdown"                   % "1.6.0",
-    "org.jsoup"             % "jsoup"                     % "1.15.4",
-    "com.vladsch.flexmark"  % "flexmark-all"              % "0.64.6"
+    "org.jsoup"             % "jsoup"                     % "1.18.1",
+    "com.vladsch.flexmark"  % "flexmark-all"              % "0.64.8"
   ).map(_ % "test, it")
 
   def apply(): Seq[ModuleID] = compile ++ test

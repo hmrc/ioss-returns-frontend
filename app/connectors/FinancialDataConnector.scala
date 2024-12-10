@@ -27,7 +27,7 @@ import models.financialdata.FinancialData._
 import play.api.Configuration
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
-
+import uk.gov.hmrc.http.HttpReads.Implicits._
 import java.time.LocalDate
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}

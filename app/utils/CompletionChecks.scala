@@ -90,7 +90,7 @@ trait CompletionChecks {
   }
 
   def getIncompleteVatRateAndSales(countryIndex: Index)(implicit request: DataRequest[AnyContent]): Seq[VatRateWithOptionalSalesFromCountry] = {
-      val noSales = request.userAnswers
+    val noSales = request.userAnswers
         .get(AllSalesWithOptionalVatQuery(countryIndex))
         .map(_.filter(_.salesAtVatRate.isEmpty)).getOrElse(List.empty)
 

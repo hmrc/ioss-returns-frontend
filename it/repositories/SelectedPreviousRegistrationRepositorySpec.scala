@@ -33,14 +33,15 @@ class SelectedPreviousRegistrationRepositorySpec
     StandardPeriod(YearMonth.of(2021, 10))
   )
 
-  private val selectedPreviousRegistration: SelectedPreviousRegistration = SelectedPreviousRegistration("id", previousRegistrationIM900987654322, lastUpdated = Instant.now(stubClock))
+  private val selectedPreviousRegistration: SelectedPreviousRegistration =
+    SelectedPreviousRegistration("id", previousRegistrationIM900987654322, lastUpdated = Instant.now(stubClock))
 
   private val mockAppConfig = mock[FrontendAppConfig]
 
-  protected override val repository = new SelectedPreviousRegistrationRepository(
+  protected override val repository: SelectedPreviousRegistrationRepository = new SelectedPreviousRegistrationRepository(
     mongoComponent = mongoComponent,
-    appConfig      = mockAppConfig,
-    clock          = stubClock
+    appConfig = mockAppConfig,
+    clock = stubClock
   )
 
   ".set" - {

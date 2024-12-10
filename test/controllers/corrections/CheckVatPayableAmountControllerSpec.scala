@@ -90,7 +90,7 @@ class CheckVatPayableAmountControllerSpec extends SpecBase {
 
     "must redirect to Journey Recovery if no correction period or country found in user answers" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
       running(application) {
         val request = FakeRequest(GET, CheckVatAmountRoute)

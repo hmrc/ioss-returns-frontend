@@ -43,7 +43,7 @@
     Some(messages("vatOnSales.caption", period.displayText, country.name))
 )) {
 
-    @formHelper(action = routes.VatOnSalesController.onSubmit(waypoints, countryIndex, nextVatRateIndex), 'autoComplete -> "off") {
+    @formHelper(action = routes.VatOnSalesController.onSubmit(waypoints, countryIndex, nextVatRateIndex), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))

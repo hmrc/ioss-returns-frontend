@@ -24,7 +24,7 @@
 
 @layout(pageTitle = titleNoForm(messages("noOtherCorrectionPeriodsAvailable.title"))) {
 
-    @formHelper(action = controllers.corrections.routes.NoOtherCorrectionPeriodsAvailableController.onSubmit(), 'autoComplete -> "off") {
+    @formHelper(action = controllers.corrections.routes.NoOtherCorrectionPeriodsAvailableController.onSubmit(), Symbol("autoComplete") -> "off") {
 
         <h1 class="govuk-heading-l">@messages("noOtherCorrectionPeriodsAvailable.heading")</h1>
 

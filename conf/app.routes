@@ -15,8 +15,8 @@ GET         /there-is-a-problem                                                 
 GET         /check-your-answers                                                       controllers.CheckYourAnswersController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
 POST        /check-your-answers                                                       controllers.CheckYourAnswersController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, incompletePromptShown:Boolean)
 
-GET         /account/sign-out-survey                                                  controllers.auth.AuthController.signOut
-GET         /account/sign-out                                                         controllers.auth.AuthController.signOutNoSurvey
+GET         /account/sign-out-survey                                                  controllers.auth.AuthController.signOut()
+GET         /account/sign-out                                                         controllers.auth.AuthController.signOutNoSurvey()
 GET         /account/signed-out                                                       controllers.auth.SignedOutController.onPageLoad
 
 GET         /unauthorised                                                             controllers.UnauthorisedController.onPageLoad

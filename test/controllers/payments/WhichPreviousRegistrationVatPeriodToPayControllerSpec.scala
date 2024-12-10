@@ -21,8 +21,7 @@ import config.FrontendAppConfig
 import forms.payments.WhichPreviousRegistrationVatPeriodToPayFormProvider
 import models.payments.{Payment, PaymentResponse, PaymentStatus, PrepareData}
 import models.{Period, UnexpectedResponseStatus}
-import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchersSugar.eqTo
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito
 import org.mockito.Mockito.when
 import org.scalacheck.Gen

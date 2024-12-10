@@ -42,7 +42,7 @@ object EACDEnrolment {
         (__ \ "state").write[String] and
         (__ \ "activationDate").writeNullable[String].contramap[Option[LocalDateTime]](_.map(t => t.format(dateTimeEACDFormat))) and
         (__ \ "identifiers").write[Seq[EACDIdentifiers]]
-      )(unlift(EACDEnrolment.unapply))
+      )(eACDEnrolment => Tuple.fromProductTyped(eACDEnrolment))
   }
 
   implicit val format: OFormat[EACDEnrolment] = OFormat(reads, writes)

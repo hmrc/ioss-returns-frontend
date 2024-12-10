@@ -48,7 +48,7 @@ class StartReturnController @Inject()(
   val form: Form[Boolean] = formProvider()
 
   def onPageLoad(waypoints: Waypoints, period: Period): Action[AnyContent] = (
-    cc.authAndGetOptionalData
+    cc.authAndGetOptionalData()
       andThen cc.checkExcludedTraderOptional(period)
       andThen cc.checkCommencementDateOptional(period)
       andThen cc.checkIsCurrentReturnPeriodFilter(period)).async {
@@ -71,7 +71,7 @@ class StartReturnController @Inject()(
   }
 
   def onSubmit(waypoints: Waypoints, period: Period): Action[AnyContent] = (
-    cc.authAndGetOptionalData
+    cc.authAndGetOptionalData()
       andThen cc.checkExcludedTraderOptional(period)
       andThen cc.checkCommencementDateOptional(period)
       andThen cc.checkIsCurrentReturnPeriodFilter(period)).async {
@@ -108,7 +108,7 @@ class StartReturnController @Inject()(
             _ <- if (clearSession) {
               cc.sessionRepository.clear(answers.id)
             } else {
-              Future.successful()
+              Future.successful(())
             }
             updatedAnswers <- Future.fromTry(answers.set(StartReturnPage(period), value))
             _ <- cc.sessionRepository.set(updatedAnswers)

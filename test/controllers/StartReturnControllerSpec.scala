@@ -24,12 +24,13 @@ import models.{PartialReturnPeriod, StandardPeriod, SubmissionStatus}
 import models.etmp.EtmpExclusion
 import models.etmp.EtmpExclusionReason.{NoLongerSupplies, Reversal}
 import org.mockito.ArgumentMatchers.any
-import org.mockito.{ArgumentMatchers, IdiomaticMockito, Mockito}
+import org.mockito.{ArgumentMatchers, Mockito}
 import org.mockito.Mockito.when
 import org.scalacheck.Gen
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.prop.TableDrivenPropertyChecks
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
+import org.scalatestplus.mockito.MockitoSugar.mock
 import pages.{EmptyWaypoints, NoOtherPeriodsAvailablePage, SoldGoodsPage}
 import play.api.data.Form
 import play.api.inject.bind
@@ -44,7 +45,6 @@ import scala.concurrent.Future
 
 class StartReturnControllerSpec
   extends SpecBase
-    with IdiomaticMockito
     with ScalaCheckPropertyChecks
     with TableDrivenPropertyChecks
     with BeforeAndAfterEach {

@@ -58,7 +58,7 @@ class IdentifierActionSpec extends SpecBase with MockitoSugar with BeforeAndAfte
     )
   ))
 
-  class Harness(authAction: IdentifierAction, defaultAction: DefaultActionBuilder) extends {
+  class Harness(authAction: IdentifierAction, defaultAction: DefaultActionBuilder) {
     def onPageLoad(): Action[AnyContent] = (defaultAction andThen authAction) { _ => Results.Ok }
   }
 

@@ -31,7 +31,7 @@ class SelectedIossNumberRepositorySpec extends AnyFreeSpec
   private val selectedIossNumber: SelectedIossNumber = SelectedIossNumber("userId", iossNumber, lastUpdated = Instant.ofEpochSecond(1))
 
   private val mockAppConfig = mock[FrontendAppConfig]
-  when(mockAppConfig.cacheTtl) thenReturn 1
+  when(mockAppConfig.cacheTtl) thenReturn 1L
 
   protected override val repository: SelectedIossNumberRepository = new SelectedIossNumberRepository(
     mongoComponent = mongoComponent,

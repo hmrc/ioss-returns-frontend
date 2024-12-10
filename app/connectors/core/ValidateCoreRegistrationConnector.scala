@@ -22,6 +22,7 @@ import logging.Logging
 import models.EisError
 import models.core.{CoreRegistrationRequest, EisErrorResponse}
 import play.api.libs.json.Json
+import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpErrorFunctions, HttpException, StringContextOps}
 

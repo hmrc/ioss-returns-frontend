@@ -16,7 +16,6 @@
 
 package controllers.actions
 
-import connectors.CurrentReturnHttpParser.CurrentReturnsResponse
 import connectors.ReturnStatusConnector
 import models.{ErrorResponse, Period}
 import models.SubmissionStatus.{Complete, Excluded, Expired}
@@ -39,8 +38,8 @@ class CheckIsCurrentReturnPeriodFilterImpl(startReturnPeriod: Period,
   override protected def filter[A](request: OptionalDataRequest[A]): Future[Option[Result]] = {
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
 
-    returnStatusConnector.getCurrentReturns(request.iossNumber).map { errorOrReturns: CurrentReturnsResponse =>
-      errorOrReturns match {
+    returnStatusConnector.getCurrentReturns(request.iossNumber).map { (currentReturnsResponse: Either[ErrorResponse, CurrentReturns]) =>
+      currentReturnsResponse match {
         case Left(value: ErrorResponse) => throw new RuntimeException(s"failed getting current returns: $value")
         case Right(currentReturns: CurrentReturns) => processCurrentReturns(currentReturns)
       }
