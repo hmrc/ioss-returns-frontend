@@ -17,13 +17,7 @@
 package controllers.external
 
 import base.SpecBase
-import controllers.actions.AuthenticatedControllerComponents
-import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito
-import org.mockito.Mockito.{atLeastOnce, times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
-import org.slf4j.Logger
-import play.api.mvc.ActionBuilder
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl

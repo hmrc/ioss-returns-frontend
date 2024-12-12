@@ -114,7 +114,7 @@ trait ModelGenerators {
     Arbitrary {
       for {
         year <- Gen.choose(2022, 2099)
-        quarter <- Gen.oneOf(Month.values)
+        quarter <- Gen.oneOf(Month.values.toIndexedSeq)
       } yield StandardPeriod(year, quarter)
     }
 
@@ -631,7 +631,7 @@ trait ModelGenerators {
       totalVatAmountCorrectionGBP <- arbitrary[BigDecimal]
     } yield CoreCorrection(period, totalVatAmountCorrectionGBP)
   }
-  
+
   implicit val arbitraryCoreMsconSupply: Arbitrary[CoreMsconSupply] = Arbitrary {
     for {
       msconCountryCode <- arbitrary[String]
@@ -682,7 +682,7 @@ trait ModelGenerators {
     Arbitrary {
       for {
         year <- Gen.choose(2022, 2099)
-        month <- Gen.oneOf(Month.values)
+        month <- Gen.oneOf(Month.values.toIndexedSeq)
       } yield StandardPeriod(year, month)
     }
 
@@ -693,5 +693,5 @@ trait ModelGenerators {
         status <- Gen.oneOf(SubmissionStatus.values)
       } yield PeriodWithStatus(period, status)
     }
-  
+
 }

@@ -18,10 +18,9 @@ package models.requests
 
 import base.SpecBase
 import models.domain.{VatRate, VatRateType => DomainVatRateType}
-import models.{Country, UserAnswers, VatOnSales, VatOnSalesChoice, VatRateType}
+import models.{Country, VatOnSales, VatOnSalesChoice}
 import play.api.libs.json.Json
 import queries.{SalesDetails, SalesToCountry}
-import uk.gov.hmrc.domain.Vrn
 
 import java.time.LocalDate
 

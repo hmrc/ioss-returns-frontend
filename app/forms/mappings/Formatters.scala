@@ -91,8 +91,8 @@ trait Formatters {
       override def bind(key: String, data: Map[String, String]): Either[Seq[FormError], BigDecimal] =
         baseFormatter
           .bind(key, data)
-          .right.map(_.replace(",", "").replaceAll("[,£ ]", "").replace(" ", ""))
-          .right.flatMap {
+          .map(_.replace(",", "").replaceAll("[,£ ]", "").replace(" ", ""))
+          .flatMap {
             case s if !s.matches(validNumeric) =>
               Left(Seq(FormError(key, nonNumericKey, args)))
             case s if !s.matches(isdp) =>
@@ -132,7 +132,7 @@ trait Formatters {
       override def bind(key: String, data: Map[String, String]): Either[Seq[FormError], Period] =
         baseFormatter
           .bind(key, data)
-          .right.flatMap { s => Period.fromString(s).toRight(Seq(FormError(key, invalidKey, args))) }
+          .flatMap { s => Period.fromString(s).toRight(Seq(FormError(key, invalidKey, args))) }
 
       def unbind(key: String, value: Period) = Map(key -> value.toString)
     }
