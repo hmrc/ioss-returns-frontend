@@ -13,6 +13,7 @@ lazy val root = (project in file("."))
   .settings(inConfig(IntegrationTest)(itSettings): _*)
   .settings(majorVersion := 0)
   .settings(ThisBuild / useSuperShell := false)
+  .settings(CodeCoverageSettings.settings: _*)
 
   .settings(
     scalaVersion := "3.3.4",
@@ -39,11 +40,6 @@ lazy val root = (project in file("."))
       "views.html.components._"
     ),
     PlayKeys.playDefaultPort := 10193,
-    ScoverageKeys.coverageExcludedFiles := "<empty>;Reverse.*;.*handlers.*;.*components.*;" +
-      ".*Routes.*;.*viewmodels.govuk.*;",
-    ScoverageKeys.coverageMinimumStmtTotal := 78,
-    ScoverageKeys.coverageFailOnMinimum := true,
-    ScoverageKeys.coverageHighlighting := true,
     scalacOptions ++= Seq(
       "-feature",
       "-rootdir",

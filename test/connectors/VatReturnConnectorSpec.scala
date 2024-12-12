@@ -17,11 +17,14 @@
 package connectors
 
 import base.SpecBase
-import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.client.WireMock.*
+import connectors.ExternalEntryUrlHttpParser.ExternalEntryUrlResponse
 import generators.Generators
+import models.core.CoreVatReturn
 import models.etmp.{EtmpObligations, EtmpVatReturn}
 import models.{Country, InvalidJson, UnexpectedResponseStatus}
 import models.corrections.ReturnCorrectionValue
+import models.external.ExternalEntryUrl
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.Application
@@ -165,8 +168,188 @@ class VatReturnConnectorSpec extends SpecBase
           result mustBe returnCorrectionValue
         }
       }
+    }
 
+    ".submit" - {
 
+      val submitUrl: String = "/ioss-returns/return"
+      val coreVatReturn: CoreVatReturn = arbitraryCoreVatReturn.arbitrary.sample.value
+
+      "must return OK when the submission is successful" in {
+
+        running(application) {
+
+          val connector = application.injector.instanceOf[VatReturnConnector]
+          val responseBody = "{}"
+
+          server.stubFor(
+            post(urlEqualTo(submitUrl))
+              .withRequestBody(equalToJson(Json.toJson(coreVatReturn).toString()))
+              .willReturn(
+                aResponse().withStatus(OK).withBody(responseBody)
+              )
+          )
+
+          val result = connector.submit(coreVatReturn).futureValue
+
+          result.status mustBe OK
+        }
+
+      }
+
+      "must return InternalServerError when the submission fails" in {
+
+        running(application) {
+
+          val connector = application.injector.instanceOf[VatReturnConnector]
+
+          server.stubFor(
+            post(urlEqualTo(submitUrl))
+              .withRequestBody(equalToJson(Json.toJson(coreVatReturn).toString()))
+              .willReturn(
+                aResponse().withStatus(INTERNAL_SERVER_ERROR).withBody("Error")
+              )
+          )
+
+          val result = connector.submit(coreVatReturn).futureValue
+
+          result.status mustBe INTERNAL_SERVER_ERROR
+        }
+
+      }
+
+    }
+
+    ".getForIossNumber" - {
+
+      val getForIossNumberUrl: String = s"/ioss-returns/return/$period/$iossNumber"
+
+      "must return OK with a payload of ETMP VAT Return" in {
+
+        running(application) {
+
+          val connector = application.injector.instanceOf[VatReturnConnector]
+          val responseBody = Json.toJson(etmpVatReturn).toString()
+
+          server.stubFor(
+            get(urlEqualTo(getForIossNumberUrl))
+              .willReturn(
+                aResponse().withStatus(OK).withBody(responseBody)
+              )
+          )
+
+          val result = connector.getForIossNumber(period, iossNumber).futureValue
+
+          result mustBe Right(etmpVatReturn)
+        }
+      }
+
+      "must return Left(InvalidJson) when invalid JSON is returned" in {
+
+        running(application) {
+
+          val connector = application.injector.instanceOf[VatReturnConnector]
+          val responseBody = Json.toJson("").toString()
+
+          server.stubFor(
+            get(urlEqualTo(getForIossNumberUrl))
+              .willReturn(
+                aResponse().withStatus(OK).withBody(responseBody)
+              )
+          )
+
+          val result = connector.getForIossNumber(period, iossNumber).futureValue
+
+          result mustBe Left(InvalidJson)
+        }
+      }
+
+      "must return Left(UnexpectedResponseStatus) when the server responds with an error code" in {
+
+        running(application) {
+
+          val connector = application.injector.instanceOf[VatReturnConnector]
+
+          server.stubFor(
+            get(urlEqualTo(getForIossNumberUrl))
+              .willReturn(
+                aResponse().withStatus(INTERNAL_SERVER_ERROR).withBody("Error")
+              )
+          )
+
+          val result = connector.getForIossNumber(period, iossNumber).futureValue
+
+          result mustBe Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "Error"))
+        }
+      }
+    }
+
+    ".getSavedExternalEntry" - {
+
+      val getSavedExternalEntryUrl: String = "/ioss-returns/external-entry"
+
+      val validExternalEntryUrl = ExternalEntryUrl(Some("https://example.com/entry"))
+      val externalEntryResponse: ExternalEntryUrlResponse = Right(validExternalEntryUrl)
+
+      "must return OK with a payload of External Entry URL Response" in {
+
+        running(application) {
+
+          val connector = application.injector.instanceOf[VatReturnConnector]
+          val responseBody = Json.toJson(validExternalEntryUrl).toString()
+
+          server.stubFor(
+            get(urlEqualTo(getSavedExternalEntryUrl))
+              .willReturn(
+                aResponse().withStatus(OK).withBody(responseBody)
+              )
+          )
+
+          val result = connector.getSavedExternalEntry().futureValue
+
+          result mustBe externalEntryResponse
+        }
+
+      }
+
+      "must return Left(InvalidJson) when invalid JSON is returned" in {
+
+        running(application) {
+
+          val connector = application.injector.instanceOf[VatReturnConnector]
+          val responseBody = Json.toJson("").toString()
+
+          server.stubFor(
+            get(urlEqualTo(getSavedExternalEntryUrl))
+              .willReturn(
+                aResponse().withStatus(OK).withBody(responseBody)
+              )
+          )
+
+          val result = connector.getSavedExternalEntry().futureValue
+
+          result mustBe Left(InvalidJson)
+        }
+      }
+
+      "must return Left(UnexpectedResponseStatus) when the server responds with an error code" in {
+
+        running(application) {
+
+          val connector = application.injector.instanceOf[VatReturnConnector]
+
+          server.stubFor(
+            get(urlEqualTo(getSavedExternalEntryUrl))
+              .willReturn(
+                aResponse().withStatus(INTERNAL_SERVER_ERROR).withBody("Error")
+              )
+          )
+
+          val result = connector.getSavedExternalEntry().futureValue
+
+          result mustBe Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "Received unexpected response code 500 with body Error"))
+        }
+      }
     }
   }
 }

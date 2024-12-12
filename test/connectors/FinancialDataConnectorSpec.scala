@@ -17,7 +17,7 @@
 package connectors
 
 import base.SpecBase
-import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.client.WireMock.*
 import models.financialdata.{Charge, FinancialData, FinancialTransaction, Item}
 import models.payments.{Payment, PaymentStatus, PrepareData}
 import models.{InvalidJson, StandardPeriod, UnexpectedResponseStatus}
@@ -187,6 +187,152 @@ class FinancialDataConnectorSpec extends SpecBase with WireMockHelper with Finan
         val result = connector.getCharge(period).futureValue
 
         result mustBe Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, ""))
+      }
+    }
+  }
+
+  ".getChargeForIossNumber" - {
+
+    val url = s"/$baseUrl/charge/$period/$iossNumber"
+
+    "must return Some(Charge) when successful" in {
+
+      running(application) {
+
+        val connector = application.injector.instanceOf[FinancialDataConnector]
+        val responseJson = Json.toJson(charge).toString()
+
+        server.stubFor(
+          get(urlEqualTo(url))
+            .willReturn(
+              aResponse().withStatus(OK).withBody(responseJson)
+            )
+        )
+
+        val result = connector.getChargeForIossNumber(period, iossNumber).futureValue
+
+        result mustBe Right(Some(charge))
+      }
+    }
+
+    "must return Right(None) when no charge is retrieved" in {
+
+      running(application) {
+
+        val connector = application.injector.instanceOf[FinancialDataConnector]
+        val responseJson = Json.toJson(None).toString()
+
+        server.stubFor(
+          get(urlEqualTo(url))
+            .willReturn(
+              aResponse().withStatus(OK).withBody(responseJson)
+            )
+        )
+
+        val result = connector.getChargeForIossNumber(period, iossNumber).futureValue
+
+        result mustBe Right(None)
+      }
+    }
+
+    "must return Left(InvalidJson) response when invalid json is returned" in {
+
+      running(application) {
+
+        val connector = application.injector.instanceOf[FinancialDataConnector]
+        val responseJson = Json.toJson("").toString()
+
+        server.stubFor(
+          get(urlEqualTo(url))
+            .willReturn(
+              aResponse().withStatus(OK).withBody(responseJson)
+            )
+        )
+
+        val result = connector.getChargeForIossNumber(period, iossNumber).futureValue
+
+        result mustBe Left(InvalidJson)
+      }
+    }
+
+    "must return Left(UnexpectedResponseStatus) when the server responds with an error code" in {
+
+      running(application) {
+
+        val connector = application.injector.instanceOf[FinancialDataConnector]
+
+        server.stubFor(
+          get(urlEqualTo(url))
+            .willReturn(
+              aResponse().withStatus(INTERNAL_SERVER_ERROR).withBody("")
+            )
+        )
+
+        val result = connector.getChargeForIossNumber(period, iossNumber).futureValue
+
+        result mustBe Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, ""))
+      }
+    }
+  }
+
+  ".getCurrentPayments" - {
+
+    val url = s"/$baseUrl/prepare"
+
+    val payment = Payment(period, 1000L, period.paymentDeadline, PaymentStatus.Unpaid)
+    val excludedPayment = Payment(period, 1000L, period.paymentDeadline.plusYears(3), PaymentStatus.Excluded)
+
+    val currentPayments = PrepareData(
+      List(payment), List(payment), List(excludedPayment), payment.amountOwed, payment.amountOwed + payment.amountOwed, iossNumber
+    )
+
+    val responseJson = Json.toJson(currentPayments)
+
+    "must return Current Payments when successful" in {
+
+      running(application) {
+        val connector = application.injector.instanceOf[FinancialDataConnector]
+
+        server.stubFor(
+          get(urlEqualTo(s"$url"))
+            .willReturn(
+              aResponse().withStatus(OK).withBody(responseJson.toString())
+            ))
+
+        connector.getCurrentPayments(iossNumber).futureValue mustBe Right(currentPayments)
+      }
+    }
+
+    "must return invalid response when invalid current payments json returned" in {
+
+      val responseJson = Json.toJson(StandardPeriod(2021, Month.SEPTEMBER))
+
+      running(application) {
+        val connector = application.injector.instanceOf[FinancialDataConnector]
+
+        server.stubFor(
+          get(urlEqualTo(s"$url"))
+            .willReturn(
+              aResponse().withStatus(OK).withBody(responseJson.toString())
+            ))
+
+        connector.getCurrentPayments(iossNumber).futureValue mustBe Left(InvalidJson)
+      }
+    }
+
+    "must return Left(UnexpectedResponseStatus) when the server responds with an error code" in {
+
+      running(application) {
+        val connector = application.injector.instanceOf[FinancialDataConnector]
+
+        server.stubFor(
+          get(urlEqualTo(s"$url"))
+            .willReturn(
+              aResponse().withStatus(INTERNAL_SERVER_ERROR).withBody("")
+            ))
+
+        connector.getCurrentPayments(iossNumber)
+          .futureValue mustBe Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, ""))
       }
     }
   }
