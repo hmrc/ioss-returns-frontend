@@ -55,6 +55,7 @@ object IdentityVerificationEvidenceSource {
     case JsString("NtcService")     => JsSuccess(NtcService)
     case JsString("passport")       => JsSuccess(Passport)
     case JsString("call-validate")  => JsSuccess(CallValidate)
+    case JsString(other)            => JsSuccess(UnrecognisedSource(other))
     case value: JsValue             => JsSuccess(UnrecognisedSource(value.toString))
   }
 

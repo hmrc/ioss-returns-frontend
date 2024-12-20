@@ -22,9 +22,16 @@ import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.OptionValues
+import play.api.i18n.{Messages, MessagesApi}
 import play.api.libs.json.{JsError, JsString, Json}
+import play.api.test.FakeRequest
+import play.api.test.Helpers.stubMessagesApi
+import uk.gov.hmrc.govukfrontend.views.Aliases.Text
 
 class VatOnSalesChoiceSpec extends AnyFreeSpec with Matchers with ScalaCheckPropertyChecks with OptionValues {
+
+  val messagesApi: MessagesApi = stubMessagesApi()
+  implicit val messages: Messages = messagesApi.preferred(FakeRequest())
 
   "VatOnSales" - {
 
@@ -59,6 +66,27 @@ class VatOnSalesChoiceSpec extends AnyFreeSpec with Matchers with ScalaCheckProp
 
           Json.toJson(vatOnSales) mustEqual JsString(vatOnSales.toString)
       }
+    }
+
+    "generate the correct number of RadioItem options" in {
+      val options = VatOnSalesChoice.options
+
+      options.size mustEqual 2
+
+      options.head.value mustBe Some("option1")
+      options(1).value mustBe Some("option2")
+    }
+
+    "generate correct RadioItem content, value, and id" in {
+      val options = VatOnSalesChoice.options
+
+      options.head.content mustBe Text(messages("vatOnSales.option1"))
+      options.head.value mustBe Some("option1")
+      options.head.id mustBe Some("value_0")
+
+      options(1).content mustBe Text(messages("vatOnSales.option2"))
+      options(1).value mustBe Some("option2")
+      options(1).id mustBe Some("value_1")
     }
   }
 }

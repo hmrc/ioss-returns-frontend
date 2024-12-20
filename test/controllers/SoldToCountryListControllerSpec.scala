@@ -20,7 +20,7 @@ import base.SpecBase
 import config.Constants.{maxCurrencyAmount, minCurrencyAmount}
 import forms.SoldToCountryListFormProvider
 import models.{Country, Index, UserAnswers, VatRateFromCountry}
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.{times, verify, when}
 import org.scalacheck.Gen
 import org.scalatestplus.mockito.MockitoSugar
@@ -28,7 +28,8 @@ import pages.{JourneyRecoveryPage, SalesToCountryPage, SoldGoodsPage, SoldToCoun
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
+import queries.{AllSalesWithTotalAndVatQuery, SalesToCountryWithOptionalSales}
 import repositories.SessionRepository
 import utils.FutureSyntax.FutureOps
 import viewmodels.checkAnswers.SoldToCountryListSummary
@@ -52,6 +53,7 @@ class SoldToCountryListControllerSpec extends SpecBase with MockitoSugar {
 
   private lazy val soldToCountryListRoute: String = routes.SoldToCountryListController.onPageLoad(waypoints).url
   private lazy val soldToCountryPostRoute: String = routes.SoldToCountryListController.onSubmit(waypoints, incompletePromptShown = false).url
+  private lazy val soldToCountryPostRouteTrue: String = routes.SoldToCountryListController.onSubmit(waypoints, incompletePromptShown = true).url
 
   "SoldToCountryList Controller" - {
 
@@ -240,6 +242,92 @@ class SoldToCountryListControllerSpec extends SpecBase with MockitoSugar {
 
         status(result) mustBe SEE_OTHER
         redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
+      }
+    }
+
+    "must return OK and the correct view for a GET with incomplete sales data" in {
+
+      val userAnswers = baseAnswers
+        .set(SoldToCountryPage(Index(0)), country).success.value
+        .remove(SalesToCountryPage(Index(0), vatRateIndex)).success.value
+
+      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+
+      running(application) {
+
+        val request = FakeRequest(GET, soldToCountryListRoute)
+
+        val result = route(application, request).value
+
+        val view = application.injector.instanceOf[SoldToCountryListView]
+
+        val salesSummary = SoldToCountryListSummary.addToListRows(userAnswers, waypoints, SoldToCountryListPage())
+        val incompleteCountries = Seq(country)
+
+        status(result) mustBe OK
+        contentAsString(result) mustBe view(
+          form,
+          waypoints,
+          period,
+          salesSummary,
+          canAddSales = true,
+          incompleteCountries
+        )(request, messages(application)).toString
+      }
+    }
+
+    "must redirect to VatRatesFromCountryController when incompletePromptShown is true and the first incomplete country has no VAT rates" in {
+
+      val salesToCountryWithNoVatRates = SalesToCountryWithOptionalSales(country, None)
+
+      val userAnswers = emptyUserAnswers.set(AllSalesWithTotalAndVatQuery, List(salesToCountryWithNoVatRates)).success.value
+
+      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+
+      running(application) {
+        val request = FakeRequest(POST, soldToCountryPostRouteTrue)
+
+        val result = route(application, request).value
+
+        status(result) mustBe SEE_OTHER
+        redirectLocation(result).value mustBe routes.VatRatesFromCountryController.onPageLoad(waypoints, Index(0)).url
+      }
+    }
+
+    "must redirect to CheckSalesController when incompletePromptShown is true and the first incomplete country has VAT rates" in {
+
+      val userAnswers = baseAnswers
+        .set(SoldToCountryPage(Index(0)), country).success.value
+        .set(VatRatesFromCountryPage(Index(0), Index(0)), List(vatRateFromCountry)).success.value
+        .remove(SalesToCountryPage(Index(0), vatRateIndex)).success.value
+
+      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+
+      running(application) {
+        val request = FakeRequest(POST, soldToCountryPostRouteTrue)
+
+        val result = route(application, request).value
+
+        status(result) mustBe SEE_OTHER
+        redirectLocation(result).value mustBe routes.CheckSalesController.onPageLoad(waypoints, Index(0)).url
+      }
+    }
+
+    "must redirect to SoldToCountryListController when incompletePromptShown is false" in {
+
+      val userAnswers = baseAnswers
+        .set(SoldToCountryPage(Index(0)), country).success.value
+        .remove(SalesToCountryPage(Index(0), vatRateIndex)).success.value
+
+      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+
+      running(application) {
+        val request = FakeRequest(POST, soldToCountryPostRoute)
+
+        val result = route(application, request).value
+
+        status(result) mustBe SEE_OTHER
+        redirectLocation(result).value mustBe routes.SoldToCountryListController.onPageLoad(waypoints).url
       }
     }
   }

@@ -19,6 +19,7 @@ package base
 import controllers.actions.*
 import generators.{Generators, UserAnswersGenerator}
 import models.*
+import models.core._
 import models.etmp.{DesAddress, VatCustomerInfo}
 import org.scalacheck.Arbitrary
 import org.scalacheck.Arbitrary.*
@@ -130,4 +131,33 @@ trait SpecBase
         bind[CheckSubmittedReturnsFilterProvider].toInstance(new FakeCheckSubmittedReturnsFilterProvider())
       )
   }
+
+  val coreVatReturn: CoreVatReturn = CoreVatReturn(
+    vatReturnReferenceNumber = "XI/XI063407423/M11.2086",
+    version = Instant.ofEpochSecond(1630670836),
+    traderId = CoreTraderId(vrn.vrn, "XI"),
+    period = CorePeriod(2021, "03"),
+    startDate = LocalDate.now(stubClockAtArbitraryDate),
+    endDate = LocalDate.now(stubClockAtArbitraryDate),
+    submissionDateTime = Instant.now(stubClockAtArbitraryDate),
+    totalAmountVatDueGBP = BigDecimal(10),
+    msconSupplies = List(CoreMsconSupply(
+      "DE",
+      BigDecimal(10),
+      BigDecimal(10),
+      BigDecimal(-10),
+      List(CoreSupply(
+        "GOODS",
+        BigDecimal(10),
+        "STANDARD",
+        BigDecimal(10),
+        BigDecimal(10)
+      )),
+      List(CoreCorrection(
+        CorePeriod(2021, "02"),
+        BigDecimal(-10)
+      ))
+    )),
+    changeDate = Some(LocalDateTime.now(stubClockAtArbitraryDate))
+  )
 }
