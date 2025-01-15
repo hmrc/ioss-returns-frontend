@@ -18,7 +18,6 @@ package controllers.auth
 
 import base.SpecBase
 import play.api.test.FakeRequest
-import play.api.test.Helpers.{GET, contentAsString, route, running, status}
 import play.api.test.Helpers._
 
 import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl

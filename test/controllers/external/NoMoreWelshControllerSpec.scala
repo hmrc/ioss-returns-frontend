@@ -17,16 +17,17 @@
 package controllers.external
 
 import base.SpecBase
-import controllers.external.routes
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
+import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl
 import views.html.NoMoreWelshView
 
-class NoMoreWelshControllerSpec extends SpecBase {
+class NoMoreWelshControllerSpec extends SpecBase with MockitoSugar {
 
   "NoMoreWelsh Controller" - {
 
-    "must return OK and the correct view for a GET" in {
+    "must return OK and the correct view for a GET with no RedirectUrl" in {
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
@@ -38,7 +39,23 @@ class NoMoreWelshControllerSpec extends SpecBase {
         val view = application.injector.instanceOf[NoMoreWelshView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view()(request, messages(application)).toString
+        contentAsString(result) mustEqual view(None)(request, messages(application)).toString
+      }
+    }
+
+    "must return OK and the correct view for a GET with a valid redirectUrl" in {
+      val redirectUrl = RedirectUrl("/relative-url")
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+
+      running(application) {
+        val request = FakeRequest(GET, routes.NoMoreWelshController.onPageLoad(Some(redirectUrl)).url)
+
+        val result = route(application, request).value
+
+        val view = application.injector.instanceOf[NoMoreWelshView]
+
+        status(result) mustEqual OK
+        contentAsString(result) mustEqual view(Some("/relative-url"))(request, messages(application)).toString
       }
     }
   }

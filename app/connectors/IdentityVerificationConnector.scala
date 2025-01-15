@@ -21,6 +21,7 @@ import models.iv.{IdentityVerificationEvidenceSource, IdentityVerificationRespon
 import connectors.IdentityVerificationHttpParser.IdentityVerificationResponseReads
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
+import uk.gov.hmrc.http.HttpReads.Implicits.*
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}

@@ -55,7 +55,7 @@ class PaymentsServiceSpec extends SpecBase with BeforeAndAfterEach {
 
         val service = new PaymentsService(mockFinancialDataConnector, mockPaymentConnector)
 
-        val result = service.prepareFinancialData.futureValue
+        val result = service.prepareFinancialData().futureValue
 
         result mustBe prepareData
       }
@@ -67,7 +67,7 @@ class PaymentsServiceSpec extends SpecBase with BeforeAndAfterEach {
 
         val service = new PaymentsService(mockFinancialDataConnector, mockPaymentConnector)
 
-        val result = service.prepareFinancialData.failed
+        val result = service.prepareFinancialData().failed
 
         whenReady(result) { exp =>
 

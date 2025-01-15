@@ -44,7 +44,7 @@ object SelectedPreviousRegistration {
       (__ \ "userId").write[String] and
         (__ \ "previousRegistration").write[PreviousRegistration] and
         (__ \ "lastUpdated").write(MongoJavatimeFormats.instantFormat)
-      ) (unlift(SelectedPreviousRegistration.unapply))
+      ) (selectedPreviousRegistration => Tuple.fromProductTyped(selectedPreviousRegistration))
   }
 
   implicit val format: OFormat[SelectedPreviousRegistration] = OFormat(reads, writes)

@@ -57,11 +57,11 @@ else {
         @addToList(periodList, itemSize = Long, "vatPeriodCorrectionsList.change.hidden", "vatPeriodCorrectionsList.remove.hidden")
 
         @if(incompletePeriods.isEmpty) {
-            @formHelper(action = controllers.corrections.routes.VatPeriodCorrectionsListController.onSubmit(waypoints, period, false), 'autoComplete -> "off") {
+            @formHelper(action = controllers.corrections.routes.VatPeriodCorrectionsListController.onSubmit(waypoints, period, false), Symbol("autoComplete") -> "off") {
                 @button(messages("site.continue"), VatPeriodCorrectionsListPage(period, false).route(waypoints).url, period, waypoints)
             }
         } else {
-            @formHelper(action = controllers.corrections.routes.VatPeriodCorrectionsListController.onSubmit(waypoints, period, true), 'autoComplete -> "off") {
+            @formHelper(action = controllers.corrections.routes.VatPeriodCorrectionsListController.onSubmit(waypoints, period, true), Symbol("autoComplete") -> "off") {
                 @govukButton(
                     ButtonViewModel(messages("error.resolve_missing_answers"))
                 )

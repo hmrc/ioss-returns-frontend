@@ -40,7 +40,7 @@ object PaymentPeriod {
       (__ \ "year").write[Int] and
         (__ \ "month").write[Int].contramap[Month](_.getValue) and
         (__ \ "dueDate").write[LocalDate]
-      )(unlift(PaymentPeriod.unapply))
+      )(paymentPeriod => Tuple.fromProductTyped(paymentPeriod))
 
   }
 

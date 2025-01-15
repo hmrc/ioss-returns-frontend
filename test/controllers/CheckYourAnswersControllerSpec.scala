@@ -22,8 +22,7 @@ import connectors.{SaveForLaterConnector, SavedUserAnswers}
 import models.audit.{ReturnsAuditModel, SubmissionResult}
 import models.requests.DataRequest
 import models.{Country, TotalVatToCountry, UserAnswers, VatRateFromCountry}
-import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchersSugar.eqTo
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.{ArgumentMatchers, Mockito}
 import org.mockito.Mockito.{times, verify, when}
 import org.scalacheck.Gen

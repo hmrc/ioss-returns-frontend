@@ -20,12 +20,13 @@ import base.SpecBase
 import connectors.ReturnStatusConnector
 import models.core.{Match, MatchType}
 import models.etmp.EtmpExclusion
-import models.etmp.EtmpExclusionReason._
+import models.etmp.EtmpExclusionReason.*
 import models.{PartialReturnPeriod, PeriodWithStatus, RegistrationWrapper, SubmissionStatus}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
-import org.mockito.MockitoSugar.{mock, when}
+import org.mockito.Mockito.when
 import org.scalatest.BeforeAndAfterEach
+import org.scalatestplus.mockito.MockitoSugar.mock
 import services.core.CoreRegistrationValidationService
 import uk.gov.hmrc.http.HeaderCarrier
 import utils.FutureSyntax.FutureOps

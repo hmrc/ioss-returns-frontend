@@ -21,8 +21,7 @@ import connectors.VatReturnConnector
 import models.{Country, TotalVatToCountry}
 import models.core._
 import models.requests.DataRequest
-import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchersSugar.eqTo
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{reset, times, verify, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar.mock

@@ -51,7 +51,7 @@ class VatAmountCorrectionCountryFormProviderSpec extends DecimalFieldBehaviours 
     "bind valid data positive" in {
 
       forAll(validDataGeneratorForPositive -> "validDataItem") {
-        dataItem: String =>
+        (dataItem: String) =>
           val result = form.bind(Map(fieldName -> dataItem)).apply(fieldName)
           result.value.value mustBe dataItem
           result.errors mustBe empty
@@ -99,7 +99,7 @@ class VatAmountCorrectionCountryFormProviderSpec extends DecimalFieldBehaviours 
       val form = new VatAmountCorrectionCountryFormProvider()(country, maximumCorrectionAmount)
 
       forAll(validDataGeneratorForOutOfRangeNegative -> "validDataItem") {
-        dataItem: String =>
+        (dataItem: String) =>
           val result = form.bind(Map(fieldName -> dataItem)).apply(fieldName)
           result.value.value mustBe dataItem
           result.errors mustBe List(FormError(

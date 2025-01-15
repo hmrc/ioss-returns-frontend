@@ -58,7 +58,7 @@ class PeriodService @Inject() {
     StandardPeriod(s"20$yearLast2".toInt, fromEtmpMonthString(month))
   }
 
-  private def fromEtmpMonthString(keyMonth: String): Month = {
+  def fromEtmpMonthString(keyMonth: String): Month = {
     keyMonth match {
       case "AA" => Month.JANUARY
       case "AB" => Month.FEBRUARY

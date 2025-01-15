@@ -21,8 +21,7 @@ import controllers.routes
 import forms.corrections.CorrectionReturnSinglePeriodFormProvider
 import models.Period
 import models.etmp.{EtmpObligationDetails, EtmpObligationsFulfilmentStatus}
-import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchersSugar.eqTo
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
 import pages.corrections.{CorrectionReturnPeriodPage, CorrectionReturnSinglePeriodPage}

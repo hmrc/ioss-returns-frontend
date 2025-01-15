@@ -23,7 +23,8 @@ import models.SubmissionStatus.{Complete, Due, Excluded, Next, Overdue}
 import models.requests.OptionalDataRequest
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
-import org.mockito.{ArgumentMatchers, IdiomaticMockito, Mockito}
+import org.mockito.{ArgumentMatchers, Mockito}
+import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.mvc.Result
@@ -35,7 +36,7 @@ import java.time.Month
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class CheckIsCurrentReturnPeriodFilterImplSpec extends SpecBase with IdiomaticMockito with BeforeAndAfterEach with TableDrivenPropertyChecks{
+class CheckIsCurrentReturnPeriodFilterImplSpec extends SpecBase with BeforeAndAfterEach with TableDrivenPropertyChecks {
 
   private val earliestPeriod: StandardPeriod = StandardPeriod(2021, Month.JULY)
   private val middlePeriod: StandardPeriod = StandardPeriod(2021, Month.OCTOBER)
@@ -85,7 +86,7 @@ class CheckIsCurrentReturnPeriodFilterImplSpec extends SpecBase with IdiomaticMo
         Return.fromPeriod(period = earliestPeriod, submissionStatus = Excluded, inProgress = false, isOldest = false)
       )
 
-     forAll(activeReturnOptions) { activeReturnOption =>
+      forAll(activeReturnOptions) { activeReturnOption =>
         val currentReturns = CurrentReturns(
           returns = activeReturnOption,
           excluded = false,
@@ -119,7 +120,7 @@ class CheckIsCurrentReturnPeriodFilterImplSpec extends SpecBase with IdiomaticMo
         Return.fromPeriod(period = earliestPeriod, submissionStatus = Excluded, inProgress = false, isOldest = false)
       )
 
-      forAll(activeReturnOptions){ activeReturnOption =>
+      forAll(activeReturnOptions) { activeReturnOption =>
 
         val currentReturns = CurrentReturns(
           returns = activeReturnOption,

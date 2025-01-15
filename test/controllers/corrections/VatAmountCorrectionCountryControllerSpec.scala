@@ -19,18 +19,18 @@ package controllers.corrections
 import base.SpecBase
 import forms.corrections.VatAmountCorrectionCountryFormProvider
 import models.Country
-import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
+import org.mockito.Mockito
 import org.mockito.Mockito.when
-import org.mockito.MockitoSugar.{times, verify}
-import org.mockito.{ArgumentMatchersSugar, Mockito}
+import org.mockito.Mockito.{times, verify}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import pages.JourneyRecoveryPage
-import pages.corrections._
+import pages.corrections.*
 import play.api.inject.bind
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import queries.corrections.{PreviouslyDeclaredCorrectionAmount, PreviouslyDeclaredCorrectionAmountQuery}
 import repositories.SessionRepository
 import utils.FutureSyntax.FutureOps
@@ -166,7 +166,7 @@ class VatAmountCorrectionCountryControllerSpec extends SpecBase with MockitoSuga
         status(result) mustBe SEE_OTHER
         redirectLocation(result).value mustBe VatPayableForCountryPage(index, index).route(waypoints).url
 
-        verify(mockSessionRepository, times(1)).set(ArgumentMatchersSugar.eqTo(expectedAnswers))
+        verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
       }
     }
 

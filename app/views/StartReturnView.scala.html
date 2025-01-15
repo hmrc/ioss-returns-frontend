@@ -16,6 +16,9 @@
 
 @import components.ButtonGroup
 @import models.etmp.EtmpExclusion
+@import uk.gov.hmrc.govukfrontend.views.html.components.Radios
+@import uk.gov.hmrc.govukfrontend.views.viewmodels.radios.RadioItem
+@import uk.gov.hmrc.govukfrontend.views.viewmodels.radios.Radios
 
 @this(
     layout: templates.Layout,
@@ -43,16 +46,23 @@
         }
 
         @{
-          val radioYesNo =
-            RadiosViewModel.yesNo(
-                field = form("value"),
-                legend = LegendViewModel(
-                    if(maybeExclusion.isDefined && isFinalReturn) {
-                        messages("startReturn.finalReturn")
-                    } else {
-                        messages("startReturn.heading", period.displayText)
-                    }
-                ).asPageHeading()
+            val radioYesNo: Radios = Radios(
+                items = Seq(
+                    RadioItem(
+                        id = Some(form("value").id),
+                        value = Some("true"),
+                        content = Text(messages("site.yes"))
+                    ),
+                    RadioItem(
+                        id = Some(s"${form("value").id}-no"),
+                        value = Some("false"),
+                        content = Text(messages("site.no"))
+                    )
+                ),
+                fieldset = Some(Fieldset(
+                    legend = Some(Legend(messages("startReturn.heading", period.displayText)))
+                )),
+                errorMessage = None
             )
 
             maybePartialReturnPeriod match {

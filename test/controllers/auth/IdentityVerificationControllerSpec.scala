@@ -26,7 +26,6 @@ import org.mockito.Mockito.{reset, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.Application
-import play.api.http.Status.{OK, SEE_OTHER}
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._

@@ -16,20 +16,23 @@
 
 package generators
 
+import connectors.SavedUserAnswers
 import config.Constants.{maxCurrencyAmount, minCurrencyAmount}
-import models._
+import models.*
+import models.core.{CoreCorrection, CoreMsconSupply, CorePeriod, CoreSupply, CoreTraderId, CoreVatReturn}
 import models.corrections.ReturnCorrectionValue
 import models.enrolments.{EACDEnrolment, EACDEnrolments, EACDIdentifiers}
-import models.etmp._
+import models.etmp.*
 import models.financialdata.Charge
 import models.payments.{Payment, PaymentStatus, PrepareData}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Arbitrary, Gen}
+import play.api.libs.json.{JsObject, Json}
 import queries.{OptionalSalesAtVatRate, SalesToCountryWithOptionalSales, VatRateWithOptionalSalesFromCountry}
 import viewmodels.previousReturns.PreviousRegistration
 
 import java.time.temporal.ChronoUnit
-import java.time.{LocalDate, LocalDateTime, Month}
+import java.time.{Instant, LocalDate, LocalDateTime, Month}
 import scala.math.BigDecimal.RoundingMode
 
 trait ModelGenerators {
@@ -111,7 +114,7 @@ trait ModelGenerators {
     Arbitrary {
       for {
         year <- Gen.choose(2022, 2099)
-        quarter <- Gen.oneOf(Month.values)
+        quarter <- Gen.oneOf(Month.values.toIndexedSeq)
       } yield StandardPeriod(year, quarter)
     }
 
@@ -587,5 +590,108 @@ trait ModelGenerators {
       )
     }
   }
+
+  implicit val arbitrarySavedUserAnswers: Arbitrary[SavedUserAnswers] =
+    Arbitrary {
+      for {
+        iossNumber <- arbitrary[String]
+        period <- arbitrary[StandardPeriod]
+        data = JsObject(Seq("test" -> Json.toJson("test")))
+        now = Instant.now
+      } yield SavedUserAnswers(iossNumber, period, data, now)
+    }
+
+  implicit val arbitraryCoreTraderId: Arbitrary[CoreTraderId] = Arbitrary {
+    for {
+      iossNumber <- arbitrary[String]
+      issuedBy <- arbitrary[String]
+    } yield CoreTraderId(iossNumber, issuedBy)
+  }
+
+  implicit val arbitraryCorePeriod: Arbitrary[CorePeriod] = Arbitrary {
+    for {
+      year <- Gen.choose(2022, 2099)
+      month <- Gen.oneOf("AA", "AB", "AC", "AD", "AE", "AF", "AG", "AH", "AI", "AJ", "AK", "AL")
+    } yield CorePeriod(year, month)
+  }
+
+  implicit val arbitraryCoreSupply: Arbitrary[CoreSupply] = Arbitrary {
+    for {
+      supplyType <- arbitrary[String]
+      vatRate <- arbitrary[BigDecimal]
+      vatRateType <- arbitrary[String]
+      taxableAmountGBP <- arbitrary[BigDecimal]
+      vatAmountGBP <- arbitrary[BigDecimal]
+    } yield CoreSupply(supplyType, vatRate, vatRateType, taxableAmountGBP, vatAmountGBP)
+  }
+
+  implicit val arbitraryCoreCorrection: Arbitrary[CoreCorrection] = Arbitrary {
+    for {
+      period <- arbitrary[CorePeriod]
+      totalVatAmountCorrectionGBP <- arbitrary[BigDecimal]
+    } yield CoreCorrection(period, totalVatAmountCorrectionGBP)
+  }
+
+  implicit val arbitraryCoreMsconSupply: Arbitrary[CoreMsconSupply] = Arbitrary {
+    for {
+      msconCountryCode <- arbitrary[String]
+      balanceOfVatDueGBP <- arbitrary[BigDecimal]
+      grandTotalMsidGoodsGBP <- arbitrary[BigDecimal]
+      correctionsTotalGBP <- arbitrary[BigDecimal]
+      msidSupplies <- Gen.listOf(arbitrary[CoreSupply])
+      corrections <- Gen.listOf(arbitrary[CoreCorrection])
+    } yield CoreMsconSupply(
+      msconCountryCode,
+      balanceOfVatDueGBP,
+      grandTotalMsidGoodsGBP,
+      correctionsTotalGBP,
+      msidSupplies,
+      corrections
+    )
+  }
+
+  implicit val arbitraryCoreVatReturn: Arbitrary[CoreVatReturn] = {
+    Arbitrary {
+      for {
+        vatReturnReferenceNumber <- arbitrary[String]
+        version <- Gen.const(Instant.now())
+        traderId <- arbitrary[CoreTraderId]
+        period <- arbitrary[CorePeriod]
+        startDate <- arbitrary[LocalDate]
+        endDate <- arbitrary[LocalDate]
+        submissionDateTime <- Gen.const(Instant.now())
+        totalAmountVatDueGBP <- arbitrary[BigDecimal]
+        msconSupplies <- Gen.listOf(arbitrary[CoreMsconSupply])
+        changeDate <- arbitrary[LocalDate]
+      } yield CoreVatReturn(
+        vatReturnReferenceNumber = vatReturnReferenceNumber,
+        version = version,
+        traderId = traderId,
+        period = period,
+        startDate = startDate,
+        endDate = endDate,
+        submissionDateTime = submissionDateTime,
+        totalAmountVatDueGBP = totalAmountVatDueGBP,
+        msconSupplies = msconSupplies,
+        changeDate = Some(LocalDateTime.now())
+      )
+    }
+  }
+
+  implicit val arbitraryStandardPeriod: Arbitrary[StandardPeriod] =
+    Arbitrary {
+      for {
+        year <- Gen.choose(2022, 2099)
+        month <- Gen.oneOf(Month.values.toIndexedSeq)
+      } yield StandardPeriod(year, month)
+    }
+
+  implicit val arbitraryPeriodWithStatus: Arbitrary[PeriodWithStatus] =
+    Arbitrary {
+      for {
+        period <- arbitrary[StandardPeriod]
+        status <- Gen.oneOf(SubmissionStatus.values)
+      } yield PeriodWithStatus(period, status)
+    }
 
 }

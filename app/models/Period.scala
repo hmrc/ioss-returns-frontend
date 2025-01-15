@@ -138,7 +138,7 @@ object StandardPeriod {
     (
       (__ \ "year").write[Int] and
         (__ \ "month").write[String].contramap[Month](m => s"M${m.getValue}")
-      )(unlift(StandardPeriod.unapply))
+      )(standardPeriod => Tuple.fromProductTyped(standardPeriod))
   }
 
   implicit val format: Format[StandardPeriod] = Format(reads, writes)

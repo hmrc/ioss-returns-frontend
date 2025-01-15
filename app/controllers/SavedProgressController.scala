@@ -46,7 +46,7 @@ class SavedProgressController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(period: Period, continueUrl: RedirectUrl): Action[AnyContent] = cc.authAndRequireData.async {
+  def onPageLoad(period: Period, continueUrl: RedirectUrl): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
       val dateTimeFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy")
       val answersExpiry = request.userAnswers.lastUpdated.plus(appConfig.saveForLaterTtl, ChronoUnit.DAYS)
