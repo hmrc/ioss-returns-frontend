@@ -42,8 +42,6 @@ lazy val root = (project in file("."))
     PlayKeys.playDefaultPort := 10193,
     scalacOptions ++= Seq(
       "-feature",
-      "-rootdir",
-      baseDirectory.value.getCanonicalPath,
       "-Wconf:msg=deprecation:w,msg=feature:w,msg=optimizer:w,src=target/.*:s",
       "-Wconf:msg=Flag.*repeatedly:s"
     ),
