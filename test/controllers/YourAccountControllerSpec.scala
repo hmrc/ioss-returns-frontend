@@ -980,9 +980,10 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
       "when there is multiple returns overdue and one due" in {
 
-        val firstPeriod = StandardPeriod(LocalDate.now.minusYears(1).getYear, Month.JANUARY)
-        val secondPeriod = StandardPeriod(LocalDate.now.minusYears(1).getYear, Month.FEBRUARY)
-        val thirdPeriod = StandardPeriod(LocalDate.now.minusYears(1).getYear, Month.MARCH)
+        val periodYear = 2023
+        val firstPeriod = StandardPeriod(periodYear, Month.JANUARY)
+        val secondPeriod = StandardPeriod(periodYear, Month.FEBRUARY)
+        val thirdPeriod = StandardPeriod(periodYear, Month.MARCH)
 
         val registrationWrapper: RegistrationWrapper = arbitrary[RegistrationWrapper].sample.value
 
@@ -1051,10 +1052,12 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
       "when there is multiple returns overdue, one due and one excluded return" in {
 
-        val firstPeriod = StandardPeriod(LocalDate.now.minusYears(1).getYear, Month.JANUARY)
-        val secondPeriod = StandardPeriod(LocalDate.now.minusYears(1).getYear, Month.FEBRUARY)
-        val thirdPeriod = StandardPeriod(LocalDate.now.minusYears(1).getYear, Month.MARCH)
-        val excludedPeriod = StandardPeriod(LocalDate.now.minusYears(4).getYear, Month.MARCH)
+        val periodYear = 2023
+        val excludedYear = 2019
+        val firstPeriod = StandardPeriod(periodYear, Month.JANUARY)
+        val secondPeriod = StandardPeriod(periodYear, Month.FEBRUARY)
+        val thirdPeriod = StandardPeriod(periodYear, Month.MARCH)
+        val excludedPeriod = StandardPeriod(excludedYear, Month.MARCH)
 
         val registrationWrapper: RegistrationWrapper = arbitrary[RegistrationWrapper].sample.value
 
