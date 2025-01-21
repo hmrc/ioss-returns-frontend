@@ -23,10 +23,12 @@ import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.OptionValues
 import play.api.i18n.{Messages, MessagesApi}
-import play.api.libs.json.{JsError, JsString, Json}
+import play.api.libs.json.{JsError, JsNumber, JsString, Json, JsonValidationError, __}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.stubMessagesApi
 import uk.gov.hmrc.govukfrontend.views.Aliases.Text
+
+import scala.language.postfixOps
 
 class VatOnSalesChoiceSpec extends AnyFreeSpec with Matchers with ScalaCheckPropertyChecks with OptionValues {
 
@@ -87,6 +89,23 @@ class VatOnSalesChoiceSpec extends AnyFreeSpec with Matchers with ScalaCheckProp
       options(1).content mustBe Text(messages("vatOnSales.option2"))
       options(1).value mustBe Some("option2")
       options(1).id mustBe Some("value_1")
+    }
+
+    "must fail to deserialise with missing fields" in {
+      val jsonMissingChoice = Json.obj("amount" -> JsNumber(100.50))
+      val jsonMissingAmount = Json.obj("choice" -> JsString("option1"))
+
+      jsonMissingChoice.validate[VatOnSales] mustEqual JsError(__ \ "choice" -> JsonValidationError("error.path.missing"))
+      jsonMissingAmount.validate[VatOnSales] mustEqual JsError(__ \ "amount" -> JsonValidationError("error.path.missing"))
+    }
+
+    "must fail to deserialise with invalid amount" in {
+      val jsonInvalidAmount = Json.obj(
+        "choice" -> JsString("option1"),
+        "amount" -> JsString("not_a_number")
+      )
+
+      jsonInvalidAmount.validate[VatOnSales] mustEqual JsError(__ \ "amount" -> JsonValidationError("error.expected.numberformatexception"))
     }
   }
 }

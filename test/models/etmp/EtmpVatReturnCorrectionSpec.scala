@@ -17,7 +17,7 @@
 package models.etmp
 
 import base.SpecBase
-import play.api.libs.json.{JsSuccess, Json}
+import play.api.libs.json.{JsError, JsNull, JsSuccess, Json}
 import testUtils.EtmpVatReturnData.etmpVatReturnCorrection
 
 class EtmpVatReturnCorrectionSpec extends SpecBase {
@@ -48,6 +48,38 @@ class EtmpVatReturnCorrectionSpec extends SpecBase {
 
       Json.toJson(expectedResult) mustBe json
       json.validate[EtmpVatReturnCorrection] mustBe JsSuccess(expectedResult)
+    }
+
+    "must handle missing fields during deserialization" in {
+      val expectedJson = Json.obj()
+
+      expectedJson.validate[EtmpVatReturnCorrection] mustBe a[JsError]
+    }
+
+    "must handle invalid data during deserialization" in {
+      val json = Json.obj(
+        "periodKey" -> 12345,
+        "periodFrom" -> genEtmpVatReturnCorrection.periodFrom,
+        "periodTo" -> genEtmpVatReturnCorrection.periodTo,
+        "msOfConsumption" -> genEtmpVatReturnCorrection.msOfConsumption,
+        "totalVATAmountCorrectionGBP" -> genEtmpVatReturnCorrection.totalVATAmountCorrectionGBP,
+        "totalVATAmountCorrectionEUR" -> genEtmpVatReturnCorrection.totalVATAmountCorrectionEUR
+      )
+
+      json.validate[EtmpVatReturnCorrection] mustBe a[JsError]
+    }
+
+    "must handle null data during deserialization" in {
+      val json = Json.obj(
+        "periodKey" -> JsNull,
+        "periodFrom" -> genEtmpVatReturnCorrection.periodFrom,
+        "periodTo" -> genEtmpVatReturnCorrection.periodTo,
+        "msOfConsumption" -> genEtmpVatReturnCorrection.msOfConsumption,
+        "totalVATAmountCorrectionGBP" -> genEtmpVatReturnCorrection.totalVATAmountCorrectionGBP,
+        "totalVATAmountCorrectionEUR" -> genEtmpVatReturnCorrection.totalVATAmountCorrectionEUR
+      )
+
+      json.validate[EtmpVatReturnCorrection] mustBe a[JsError]
     }
   }
 }

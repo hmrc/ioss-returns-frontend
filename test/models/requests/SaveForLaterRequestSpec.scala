@@ -18,7 +18,7 @@ package models.requests
 
 import base.SpecBase
 import models.UserAnswers
-import play.api.libs.json.Json
+import play.api.libs.json.{JsError, JsNull, Json}
 
 class SaveForLaterRequestSpec extends SpecBase {
 
@@ -70,6 +70,37 @@ class SaveForLaterRequestSpec extends SpecBase {
       )
 
       saveForLaterRequest mustBe expectedSaveForLaterRequest
+    }
+
+    "must handle missing fields during deserialization" in {
+      val expectedJson = Json.obj()
+
+      expectedJson.validate[SaveForLaterRequest] mustBe a[JsError]
+    }
+
+    "must handle invalid data during deserialization" in {
+      val expectedJson = Json.obj(
+        "iossNumber" -> 1234567,
+        "period" -> Json.obj(
+          "year" -> 2024,
+          "month" -> "M3"
+        ),
+        "data" -> Json.obj(
+          "key" -> "value"
+        )
+      )
+
+      expectedJson.validate[SaveForLaterRequest] mustBe a[JsError]
+    }
+
+    "must handle null data during deserialization" in {
+      val expectedJson = Json.obj(
+        "iossNumber" -> JsNull,
+        "period" -> JsNull,
+        "data" -> JsNull
+      )
+
+      expectedJson.validate[SaveForLaterRequest] mustBe a[JsError]
     }
   }
 }

@@ -18,7 +18,7 @@ package models.domain
 
 import base.SpecBase
 import org.scalatest.matchers.must.Matchers
-import play.api.libs.json.Json
+import play.api.libs.json.{JsError, JsNull, Json}
 
 class VatRateSpec extends SpecBase with Matchers {
 
@@ -52,6 +52,30 @@ class VatRateSpec extends SpecBase with Matchers {
       val vatRate = Json.parse(json).as[VatRate]
       vatRate.rate mustBe BigDecimal(5.5)
       vatRate.rateType mustBe VatRateType.Reduced
+    }
+
+    "must handle invalid data during deserialization" in {
+      val json = Json.obj(
+        "rate" -> "test",
+        "rateType" -> "REDUCED"
+      )
+
+      json.validate[VatRate] mustBe a[JsError]
+    }
+
+    "must handle missing fields during deserialization" in {
+      val json = Json.obj()
+
+      json.validate[VatRate] mustBe a[JsError]
+    }
+
+    "must handle null data during deserialization" in {
+      val json = Json.obj(
+        "rate" -> JsNull,
+        "rateType" -> "REDUCED"
+      )
+
+      json.validate[VatRate] mustBe a[JsError]
     }
   }
   

@@ -31,7 +31,7 @@ import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, Vat
 import play.api.inject.bind
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.ListItem
 import views.html.corrections.VatPeriodAvailableCorrectionsListView
 
@@ -280,6 +280,24 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
         whenReady(result.failed) {
           exp => exp.getMessage mustEqual exceptionMessage
         }
+      }
+    }
+
+    "must redirect to JourneyRecoveryController when cleanup fails" in {
+
+      when(mockVatReturnConnector.getObligations(any())(any()))
+        .thenReturn(getStatusResponse(allPeriods, EtmpObligationsFulfilmentStatus.Open))
+
+      val incompleteUserAnswers = emptyUserAnswers
+      val application = applicationBuilder(userAnswers = Some(incompleteUserAnswers))
+        .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
+        .build()
+
+      running(application) {
+        implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, vatPeriodCorrectionsListRoute)
+        val result = route(application, request).value
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
       }
     }
   }

@@ -17,7 +17,7 @@
 package models.etmp
 
 import base.SpecBase
-import play.api.libs.json.{JsSuccess, Json}
+import play.api.libs.json.{JsError, JsNull, JsSuccess, Json}
 import testUtils.EtmpVatReturnData.etmpVatReturnBalanceOfVatDue
 
 class EtmpVatReturnBalanceOfVatDueSpec extends SpecBase {
@@ -42,6 +42,32 @@ class EtmpVatReturnBalanceOfVatDueSpec extends SpecBase {
 
       Json.toJson(expectedResult) mustBe json
       json.validate[EtmpVatReturnBalanceOfVatDue] mustBe JsSuccess(expectedResult)
+    }
+
+    "must handle missing fields during deserialization" in {
+      val json = Json.obj()
+
+      json.validate[EtmpVatReturnBalanceOfVatDue] mustBe a[JsError]
+    }
+
+    "must handle invalid data during deserialization" in {
+      val json = Json.obj(
+        "msOfConsumption" -> 12345,
+        "totalVATDueGBP" -> genEtmpVatReturnBalanceOfVatDue.totalVATDueGBP,
+        "totalVATEUR" -> genEtmpVatReturnBalanceOfVatDue.totalVATEUR
+      )
+
+      json.validate[EtmpVatReturnBalanceOfVatDue] mustBe a[JsError]
+    }
+
+    "must handle null data during deserialization" in {
+      val json = Json.obj(
+        "msOfConsumption" -> JsNull,
+        "totalVATDueGBP" -> genEtmpVatReturnBalanceOfVatDue.totalVATDueGBP,
+        "totalVATEUR" -> genEtmpVatReturnBalanceOfVatDue.totalVATEUR
+      )
+
+      json.validate[EtmpVatReturnBalanceOfVatDue] mustBe a[JsError]
     }
   }
 }

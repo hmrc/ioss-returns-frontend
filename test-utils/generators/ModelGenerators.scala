@@ -322,6 +322,12 @@ trait ModelGenerators {
     }
   }
 
+  implicit lazy val arbitraryEtmpExclusionReason: Arbitrary[EtmpExclusionReason] =
+    Arbitrary {
+      Gen.oneOf(EtmpExclusionReason.values)
+    }
+
+
   implicit lazy val arbitraryAdminUse: Arbitrary[EtmpAdminUse] =
     Arbitrary {
       for {

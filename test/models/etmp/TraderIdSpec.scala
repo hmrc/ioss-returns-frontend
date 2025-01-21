@@ -71,92 +71,152 @@ class TraderIdSpec extends SpecBase {
       json.validate[TraderId] mustBe a[JsError]
     }
 
-    "VatNumberTraderId" - {
+    "deserialize from valid VatNumberTraderId JSON" in {
+      val json = Json.obj(
+        "vatNumber" -> "GB123456789"
+      )
 
-      "serialize correctly to JSON" in {
-        val vatNumberTraderId = VatNumberTraderId("GB123456789")
-
-        val expectedJson = Json.obj(
-          "vatNumber" -> "GB123456789"
-        )
-
-        Json.toJson(vatNumberTraderId) mustBe expectedJson
-      }
-
-      "deserialize correctly from valid JSON" in {
-        val json = Json.obj(
-          "vatNumber" -> "GB123456789"
-        )
-
-        json.validate[VatNumberTraderId] mustBe JsSuccess(VatNumberTraderId("GB123456789"))
-      }
-
-      "fail to deserialize from invalid JSON (missing vatNumber)" in {
-        val json = Json.obj(
-          "taxReferenceNumber" -> "TR123456789"
-        )
-
-        json.validate[VatNumberTraderId] mustBe a[JsError]
-      }
-
-      "fail to deserialize from invalid JSON (wrong field type)" in {
-        val json = Json.obj(
-          "vatNumber" -> 123456789
-        )
-
-        json.validate[VatNumberTraderId] mustBe a[JsError]
-      }
-
-      "properly use the Json.format for VatNumberTraderId" in {
-        val vatNumberTraderId = VatNumberTraderId("GB123456789")
-
-        val json = Json.toJson(vatNumberTraderId)
-        (json \ "vatNumber").asOpt[String] mustBe Some("GB123456789")
-      }
+      json.validate[TraderId] mustBe JsSuccess(VatNumberTraderId("GB123456789"))
     }
 
-    "TaxRefTraderID" - {
+    "deserialize from valid TaxRefTraderID JSON" in {
+      val json = Json.obj(
+        "taxReferenceNumber" -> "TR123456789"
+      )
 
-      "serialize correctly to JSON" in {
-        val taxRefTraderID = TaxRefTraderID("TR123456789")
+      json.validate[TraderId] mustBe JsSuccess(TaxRefTraderID("TR123456789"))
+    }
 
-        val expectedJson = Json.obj(
-          "taxReferenceNumber" -> "TR123456789"
-        )
+    "serialize and deserialize correctly from VatNumberTraderId JSON to TraderId" in {
+      val vatNumberTraderId = VatNumberTraderId("GB123456789")
+      val json = Json.toJson(vatNumberTraderId)
 
-        Json.toJson(taxRefTraderID) mustBe expectedJson
-      }
+      json.validate[TraderId] mustBe JsSuccess(vatNumberTraderId)
+    }
 
-      "deserialize correctly from valid JSON" in {
-        val json = Json.obj(
-          "taxReferenceNumber" -> "TR123456789"
-        )
+    "serialize and deserialize correctly from TaxRefTraderID JSON to TraderId" in {
+      val taxRefTraderID = TaxRefTraderID("TR123456789")
+      val json = Json.toJson(taxRefTraderID)
 
-        json.validate[TaxRefTraderID] mustBe JsSuccess(TaxRefTraderID("TR123456789"))
-      }
+      json.validate[TraderId] mustBe JsSuccess(taxRefTraderID)
+    }
 
-      "fail to deserialize from invalid JSON (missing taxReferenceNumber)" in {
-        val json = Json.obj(
-          "vatNumber" -> "GB123456789"
-        )
+    "handle deserialization from a JSON representing either VatNumberTraderId or TaxRefTraderID" in {
+      val vatNumberJson = Json.obj("vatNumber" -> "GB123456789")
+      val taxRefJson = Json.obj("taxReferenceNumber" -> "TR123456789")
 
-        json.validate[TaxRefTraderID] mustBe a[JsError]
-      }
+      vatNumberJson.validate[TraderId] mustBe JsSuccess(VatNumberTraderId("GB123456789"))
+      taxRefJson.validate[TraderId] mustBe JsSuccess(TaxRefTraderID("TR123456789"))
+    }
 
-      "fail to deserialize from invalid JSON (wrong field type)" in {
-        val json = Json.obj(
-          "taxReferenceNumber" -> 123456789
-        )
+    "fail to deserialize if the JSON doesn't match either VatNumberTraderId or TaxRefTraderID" in {
+      val invalidJson = Json.obj("someOtherField" -> "value")
 
-        json.validate[TaxRefTraderID] mustBe a[JsError]
-      }
+      invalidJson.validate[TraderId] mustBe a[JsError]
+    }
 
-      "properly use the Json.format for TaxRefTraderID" in {
-        val taxRefTraderID = TaxRefTraderID("TR123456789")
+    "serialize VatNumberTraderId using VatNumberTraderId.format" in {
+      val vatNumberTraderId = VatNumberTraderId("GB123456789")
 
-        val json = Json.toJson(taxRefTraderID)
-        (json \ "taxReferenceNumber").asOpt[String] mustBe Some("TR123456789")
-      }
+      val json = TraderId.writes.writes(vatNumberTraderId)
+
+      json mustBe Json.toJson(vatNumberTraderId)(VatNumberTraderId.format)
+    }
+
+    "serialize TaxRefTraderID using TaxRefTraderID.format" in {
+      val taxRefTraderID = TaxRefTraderID("TR123456789")
+
+      val json = TraderId.writes.writes(taxRefTraderID)
+
+      json mustBe Json.toJson(taxRefTraderID)(TaxRefTraderID.format)
+    }
+  }
+
+  "VatNumberTraderId" - {
+
+    "serialize correctly to JSON" in {
+      val vatNumberTraderId = VatNumberTraderId("GB123456789")
+
+      val expectedJson = Json.obj(
+        "vatNumber" -> "GB123456789"
+      )
+
+      Json.toJson(vatNumberTraderId) mustBe expectedJson
+    }
+
+    "deserialize correctly from valid JSON" in {
+      val json = Json.obj(
+        "vatNumber" -> "GB123456789"
+      )
+
+      json.validate[VatNumberTraderId] mustBe JsSuccess(VatNumberTraderId("GB123456789"))
+    }
+
+    "fail to deserialize from invalid JSON (missing vatNumber)" in {
+      val json = Json.obj(
+        "taxReferenceNumber" -> "TR123456789"
+      )
+
+      json.validate[VatNumberTraderId] mustBe a[JsError]
+    }
+
+    "fail to deserialize from invalid JSON (wrong field type)" in {
+      val json = Json.obj(
+        "vatNumber" -> 123456789
+      )
+
+      json.validate[VatNumberTraderId] mustBe a[JsError]
+    }
+
+    "properly use the Json.format for VatNumberTraderId" in {
+      val vatNumberTraderId = VatNumberTraderId("GB123456789")
+
+      val json = Json.toJson(vatNumberTraderId)
+      (json \ "vatNumber").asOpt[String] mustBe Some("GB123456789")
+    }
+  }
+
+  "TaxRefTraderID" - {
+
+    "serialize correctly to JSON" in {
+      val taxRefTraderID = TaxRefTraderID("TR123456789")
+
+      val expectedJson = Json.obj(
+        "taxReferenceNumber" -> "TR123456789"
+      )
+
+      Json.toJson(taxRefTraderID) mustBe expectedJson
+    }
+
+    "deserialize correctly from valid JSON" in {
+      val json = Json.obj(
+        "taxReferenceNumber" -> "TR123456789"
+      )
+
+      json.validate[TaxRefTraderID] mustBe JsSuccess(TaxRefTraderID("TR123456789"))
+    }
+
+    "fail to deserialize from invalid JSON (missing taxReferenceNumber)" in {
+      val json = Json.obj(
+        "vatNumber" -> "GB123456789"
+      )
+
+      json.validate[TaxRefTraderID] mustBe a[JsError]
+    }
+
+    "fail to deserialize from invalid JSON (wrong field type)" in {
+      val json = Json.obj(
+        "taxReferenceNumber" -> 123456789
+      )
+
+      json.validate[TaxRefTraderID] mustBe a[JsError]
+    }
+
+    "properly use the Json.format for TaxRefTraderID" in {
+      val taxRefTraderID = TaxRefTraderID("TR123456789")
+
+      val json = Json.toJson(taxRefTraderID)
+      (json \ "taxReferenceNumber").asOpt[String] mustBe Some("TR123456789")
     }
   }
 }
