@@ -20,7 +20,7 @@ import base.SpecBase
 import models.{Country, StandardPeriod}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
-import play.api.libs.json.Json
+import play.api.libs.json.{JsNull, Json}
 
 import java.time.Month
 
@@ -61,6 +61,19 @@ class PeriodsWithCorrectionsSpec extends AnyFreeSpec with Matchers with SpecBase
       val invalidJson = Json.obj(
         "correctionCountry" -> Json.obj(
           "code" -> "DE",
+          "name" -> "Germany"
+        ),
+        "countryVatCorrection" -> "invalid"
+      )
+
+      val result = invalidJson.validate[CorrectionToCountry]
+      result.isError mustBe true
+    }
+
+    "handle null field types in JSON" in {
+      val invalidJson = Json.obj(
+        "correctionCountry" -> Json.obj(
+          "code" -> JsNull,
           "name" -> "Germany"
         ),
         "countryVatCorrection" -> "invalid"

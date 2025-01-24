@@ -17,7 +17,7 @@
 package models.etmp
 
 import base.SpecBase
-import play.api.libs.json.{JsSuccess, Json}
+import play.api.libs.json.{JsError, JsNull, JsSuccess, Json}
 
 class EtmpObligationDetailsSpec extends SpecBase {
 
@@ -39,6 +39,33 @@ class EtmpObligationDetailsSpec extends SpecBase {
 
       json mustBe Json.toJson(expectedResult)
       json.validate[EtmpObligationDetails] mustBe JsSuccess(expectedResult)
+    }
+
+    "must handle invalid data during deserialization" in {
+
+      val json = Json.obj(
+        "status" -> 12345,
+        "periodKey" -> etmpObligationDetails.periodKey
+      )
+
+      json.validate[EtmpObligationDetails] mustBe a[JsError]
+    }
+
+    "must handle missing fields during deserialization" in {
+
+      val json = Json.obj()
+
+      json.validate[EtmpObligationDetails] mustBe a[JsError]
+    }
+
+    "must handle null data during deserialization" in {
+
+      val json = Json.obj(
+        "status" -> JsNull,
+        "periodKey" -> etmpObligationDetails.periodKey
+      )
+
+      json.validate[EtmpObligationDetails] mustBe a[JsError]
     }
   }
 }

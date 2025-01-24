@@ -125,5 +125,52 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
         }
       }
     }
+
+    "must return OK and a view with no external url when (SoldGoodsPage, None) => nilReturn = true" in {
+      val returnReference = s"XI/${iossNumber}/M0${period.month.getValue}.${period.year}"
+      val application = createApplication(soldGoodsPage = false, correctPreviousReturnPage = false)
+
+      reset(mockVatReturnConnector)
+      when(mockVatReturnConnector.getSavedExternalEntry()(any()))
+        .thenReturn(Future.successful(Left(NotFound)))
+
+      running(application) {
+        val request = FakeRequest(GET, routes.SuccessfullySubmittedController.onPageLoad().url)
+        val result = route(application, request).value
+        val view = application.injector.instanceOf[SuccessfullySubmittedView]
+
+        status(result) mustEqual OK
+        val totalOwed = BigDecimal(200.52)
+
+        contentAsString(result) mustEqual view(
+          returnReference = returnReference,
+          nilReturn = true,
+          period = period,
+          owedAmount = totalOwed,
+          externalUrl = None
+        )(request, messages(application)).toString
+      }
+    }
+
+    "must throw RuntimeException when TotalAmountVatDueGBPQuery is missing in userAnswers" in {
+      val incompleteAnswers = completeUserAnswers
+        .set(SoldGoodsPage, false).success.value
+        .set(CorrectPreviousReturnPage(0), false).success.value
+
+      val application = applicationBuilder(userAnswers = Some(incompleteAnswers))
+        .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
+        .build()
+
+      running(application) {
+        val request = FakeRequest(GET, routes.SuccessfullySubmittedController.onPageLoad().url)
+
+        val exception = intercept[RuntimeException] {
+          val result = route(application, request).value
+          contentAsString(result) // Force evaluation
+        }
+
+        exception.getMessage mustEqual "TotalAmountVatDueGBPQuery has not been set in answers"
+      }
+    }
   }
 }

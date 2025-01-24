@@ -9,7 +9,7 @@ object CodeCoverageSettings {
     ".*handlers.*",
     ".*components.*",
     ".*Routes.*",
-    "viewmodels.govuk.",
+    ".*viewmodels.govuk.*",
     "connectors.testOnly.*",
     "controllers.testOnly.*",
   )

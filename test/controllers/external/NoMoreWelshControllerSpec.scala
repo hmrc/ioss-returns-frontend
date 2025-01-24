@@ -58,5 +58,22 @@ class NoMoreWelshControllerSpec extends SpecBase with MockitoSugar {
         contentAsString(result) mustEqual view(Some("/relative-url"))(request, messages(application)).toString
       }
     }
+
+    "must return OK and the correct view when given an invalid redirectUrl" in {
+      val invalidRedirectUrl = RedirectUrl("http://malicious-site.com")
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+
+      running(application) {
+        val request = FakeRequest(GET, routes.NoMoreWelshController.onPageLoad(Some(invalidRedirectUrl)).url)
+
+        val result = route(application, request).value
+
+        val view = application.injector.instanceOf[NoMoreWelshView]
+
+        status(result) mustEqual OK
+
+        contentAsString(result) mustEqual view(None)(request, messages(application)).toString
+      }
+    }
   }
 }

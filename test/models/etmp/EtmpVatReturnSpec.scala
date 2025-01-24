@@ -17,7 +17,7 @@
 package models.etmp
 
 import base.SpecBase
-import play.api.libs.json.{JsSuccess, Json}
+import play.api.libs.json.{JsError, JsNull, JsSuccess, Json}
 import testUtils.EtmpVatReturnData.etmpVatReturn
 
 class EtmpVatReturnSpec extends SpecBase {
@@ -64,6 +64,57 @@ class EtmpVatReturnSpec extends SpecBase {
 
       Json.toJson(expectedResult) mustBe json
       json.validate[EtmpVatReturn] mustBe JsSuccess(expectedResult)
+    }
+
+    "must handle missing fields during deserialization" in {
+
+      val json = Json.obj()
+
+      json.validate[EtmpVatReturn] mustBe a[JsError]
+    }
+
+    "must handle invalid data during deserialization" in {
+
+      val json = Json.obj(
+        "returnReference" -> 12345,
+        "returnVersion" -> genEtmpVatReturn.returnVersion,
+        "periodKey" -> genEtmpVatReturn.periodKey,
+        "returnPeriodFrom" -> genEtmpVatReturn.returnPeriodFrom,
+        "returnPeriodTo" -> genEtmpVatReturn.returnPeriodTo,
+        "goodsSupplied" -> genEtmpVatReturn.goodsSupplied,
+        "totalVATGoodsSuppliedGBP" -> genEtmpVatReturn.totalVATGoodsSuppliedGBP,
+        "totalVATAmountPayable" -> genEtmpVatReturn.totalVATAmountPayable,
+        "totalVATAmountPayableAllSpplied" -> genEtmpVatReturn.totalVATAmountPayableAllSpplied,
+        "correctionPreviousVATReturn" -> genEtmpVatReturn.correctionPreviousVATReturn,
+        "totalVATAmountFromCorrectionGBP" -> genEtmpVatReturn.totalVATAmountFromCorrectionGBP,
+        "balanceOfVATDueForMS" -> genEtmpVatReturn.balanceOfVATDueForMS,
+        "totalVATAmountDueForAllMSGBP" -> genEtmpVatReturn.totalVATAmountDueForAllMSGBP,
+        "paymentReference" -> genEtmpVatReturn.paymentReference
+      )
+
+      json.validate[EtmpVatReturn] mustBe a[JsError]
+    }
+
+    "must handle null data during deserialization" in {
+
+      val json = Json.obj(
+        "returnReference" -> JsNull,
+        "returnVersion" -> genEtmpVatReturn.returnVersion,
+        "periodKey" -> genEtmpVatReturn.periodKey,
+        "returnPeriodFrom" -> genEtmpVatReturn.returnPeriodFrom,
+        "returnPeriodTo" -> genEtmpVatReturn.returnPeriodTo,
+        "goodsSupplied" -> genEtmpVatReturn.goodsSupplied,
+        "totalVATGoodsSuppliedGBP" -> genEtmpVatReturn.totalVATGoodsSuppliedGBP,
+        "totalVATAmountPayable" -> genEtmpVatReturn.totalVATAmountPayable,
+        "totalVATAmountPayableAllSpplied" -> genEtmpVatReturn.totalVATAmountPayableAllSpplied,
+        "correctionPreviousVATReturn" -> genEtmpVatReturn.correctionPreviousVATReturn,
+        "totalVATAmountFromCorrectionGBP" -> genEtmpVatReturn.totalVATAmountFromCorrectionGBP,
+        "balanceOfVATDueForMS" -> genEtmpVatReturn.balanceOfVATDueForMS,
+        "totalVATAmountDueForAllMSGBP" -> genEtmpVatReturn.totalVATAmountDueForAllMSGBP,
+        "paymentReference" -> genEtmpVatReturn.paymentReference
+      )
+
+      json.validate[EtmpVatReturn] mustBe a[JsError]
     }
   }
 }

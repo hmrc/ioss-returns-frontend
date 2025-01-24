@@ -19,7 +19,7 @@ package models.payments
 import base.SpecBase
 import org.scalacheck.Gen
 import play.api.i18n.Messages
-import play.api.libs.json.{JsSuccess, Json}
+import play.api.libs.json.{JsError, JsNull, JsSuccess, Json}
 import play.api.test.Helpers.running
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.radios.RadioItem
@@ -84,6 +84,43 @@ class PrepareDataSpec extends SpecBase {
 
         result mustBe expectedResult
       }
+    }
+
+    "must handle missing fields during deserialization" in {
+
+      val expectedJson = Json.obj()
+
+      expectedJson.validate[PrepareData] mustBe a[JsError]
+    }
+
+    "must handle invalid data during deserialization" in {
+
+      val prepareData: PrepareData = prepareDataList.head
+
+      val expectedJson = Json.obj(
+        "duePayments" -> 12345,
+        "overduePayments" -> prepareData.overduePayments,
+        "excludedPayments" -> prepareData.excludedPayments,
+        "totalAmountOwed" -> prepareData.totalAmountOwed,
+        "totalAmountOverdue" -> prepareData.totalAmountOverdue,
+        "iossNumber" -> prepareData.iossNumber
+      )
+
+      expectedJson.validate[PrepareData] mustBe a[JsError]
+    }
+
+    "must handle null data during deserialization" in {
+
+      val expectedJson = Json.obj(
+        "duePayments" -> JsNull,
+        "overduePayments" -> JsNull,
+        "excludedPayments" -> JsNull,
+        "totalAmountOwed" -> JsNull,
+        "totalAmountOverdue" -> JsNull,
+        "iossNumber" -> JsNull
+      )
+
+      expectedJson.validate[PrepareData] mustBe a[JsError]
     }
   }
 }
