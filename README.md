@@ -80,6 +80,8 @@ It is recommended to use VRN 100000001 and IOSS Number IM9001234567 for a regula
 can be found in the ioss-registration-stub and ioss-returns-stub, which hold scenarios for registered traders and 
 returns/corrections that will be available to submit.
 
+There is also a test-only endpoint that can be used that have some default values http://localhost:10193/pay-vat-on-goods-sold-to-eu/import-one-stop-shop-returns-payments/test-only/login
+
 
 Unit and Integration Tests
 ------------

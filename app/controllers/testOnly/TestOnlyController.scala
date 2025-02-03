@@ -16,21 +16,29 @@
 
 package controllers.testOnly
 
+import config.FrontendAppConfig
 import connectors.testOnly.TestOnlyConnector
 import controllers.actions.AuthenticatedControllerComponents
 import models.Period
-import models.external._
-import play.api.mvc.{Action, AnyContent}
-import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
+import models.external.*
+import play.api.i18n.I18nSupport
+import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
+import uk.gov.hmrc.play.bootstrap.binders.{RedirectUrl, UnsafePermitAll}
+import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl.idFunctor
+import uk.gov.hmrc.play.bootstrap.frontend.controller.{FrontendBaseController, FrontendController}
+import views.html.testonly.AuthLoginStubView
 
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
 class TestOnlyController @Inject()(
                                     testConnector: TestOnlyConnector,
-                                    cc: AuthenticatedControllerComponents
-                                  )(implicit ec: ExecutionContext) extends FrontendController(cc) {
+                                    config: FrontendAppConfig,
+                                    cc: AuthenticatedControllerComponents,
+                                    authLoginStubView: AuthLoginStubView
+                                  )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
+  protected val controllerComponents: MessagesControllerComponents = cc
 
   private val externalRequest = ExternalRequest("BTA", "/business-account")
 
@@ -73,6 +81,27 @@ class TestOnlyController @Inject()(
         case Left(_) => InternalServerError
       }
 
+  }
+
+  def quickAuthStub(): Action[AnyContent] = cc.actionBuilder { implicit request =>
+
+    val defaultIossNumber = "IM9001234567"
+    val defaultVrn = "100000002"
+    val postAction: Call = Call("POST", config.authLoginStubSignInUrl)
+    val startUrl: String = s"${config.host}${controllers.routes.YourAccountController.onPageLoad()}"
+    val redirectPolicy = UnsafePermitAll
+
+    val iossNumber = request.getQueryString("ioss").getOrElse(defaultIossNumber)
+    val vrn = request.getQueryString("vrn").getOrElse(defaultVrn)
+
+    val continueUrl =
+      request
+        .getQueryString("continue")
+        .map(RedirectUrl.apply)
+        .map(_.get(redirectPolicy).url)
+        .getOrElse(startUrl)
+
+    Ok(authLoginStubView(iossNumber, vrn, continueUrl, postAction)).withNewSession
   }
 
 }
