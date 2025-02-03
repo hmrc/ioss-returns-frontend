@@ -79,4 +79,6 @@ class FrontendAppConfig @Inject() (configuration: Configuration) {
 
   val iossEnrolment: String = configuration.get[String]("ioss-enrolment")
   val internalAuthToken: String = configuration.get[String]("internal-auth.token")
+
+  val authLoginStubSignInUrl: String = configuration.get[String]("urls.authStubSignIn")
 }

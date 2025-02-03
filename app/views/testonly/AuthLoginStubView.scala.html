@@ -1,0 +1,88 @@
+@*
+ * Copyright 2023 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import play.api.mvc.{Call, Request}
+@import play.twirl.api.Html
+
+@this(
+        layout: templates.Layout,
+        govukWarningText: GovukWarningText,
+        govukButton: GovukButton
+)
+
+@(iossNumber: String, vrn: String, continueUrl: String, postAction: Call)(implicit request: Request[_], messages: Messages)
+
+@title = @{
+  "Sign in using test credentials"
+}
+
+@layout(pageTitle = titleNoForm(s"$title")) {
+
+  <h1 class="govuk-heading-l">
+    @Html(title)
+  </h1>
+
+  <form method="POST" novalidate="" action="@postAction" id="inputForm">
+
+    <input type="hidden" name="authorityId" value=""/>
+    <input type="hidden" name="usersName" value="Test User"/>
+    <input type="hidden" name="credentialStrength" value="strong"/>
+    <input type="hidden" name="confidenceLevel" value="250"/>
+    <input type="hidden" name="affinityGroup" value="Organisation"/>
+    <input type="hidden" name="enrolment[0].name" value="HMRC-MTD-VAT"/>
+    <input type="hidden" name="enrolment[0].taxIdentifier[0].name" value="VRN"/>
+    <input type="hidden" name="enrolment[0].state" value="Activated"/>
+    <input type="hidden" name="enrolment[1].name" value="HMRC-IOSS-ORG"/>
+    <input type="hidden" name="enrolment[1].taxIdentifier[0].name" value="IOSSNumber"/>
+    <input type="hidden" name="enrolment[1].state" value="Activated"/>
+    <input type="hidden" name="redirectionUrl" value="@continueUrl"/>
+
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="input-0-0-value"> VRN </label>
+      <div id="eoriNumber-hint" class="govuk-hint">
+        The VRN of the assumed testing user.
+      </div>
+      <input
+      class="govuk-input"
+      id="input-0-0-value"
+      name="enrolment[0].taxIdentifier[0].value"
+      type="text"
+      value="@vrn"
+      aria-describedby="vrn-hint"
+      />
+    </div>
+
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="input-1-0-value"> IOSS Number </label>
+      <div id="eoriNumber-hint" class="govuk-hint">
+        The IOSS Number of the assumed testing user.
+      </div>
+      <input
+      class="govuk-input"
+      id="input-1-0-value"
+      name="enrolment[1].taxIdentifier[0].value"
+      type="text"
+      value="@iossNumber"
+      aria-describedby="iossNumber-hint"
+      />
+    </div>
+
+    @govukButton(
+      ButtonViewModel(messages("site.signIn"))
+    )
+  </form>
+
+}
