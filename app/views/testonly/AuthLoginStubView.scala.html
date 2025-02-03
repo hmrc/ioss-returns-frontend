@@ -29,7 +29,7 @@
   "Sign in using test credentials"
 }
 
-@layout(pageTitle = titleNoForm(s"$title")) {
+@layout(pageTitle = titleNoForm(s"$title"), showBackLink = false) {
 
   <h1 class="govuk-heading-l">
     @Html(title)
@@ -52,7 +52,7 @@
 
     <div class="govuk-form-group">
       <label class="govuk-label" for="input-0-0-value"> VRN </label>
-      <div id="eoriNumber-hint" class="govuk-hint">
+      <div id="vrn-hint" class="govuk-hint">
         The VRN of the assumed testing user.
       </div>
       <input
@@ -67,7 +67,7 @@
 
     <div class="govuk-form-group">
       <label class="govuk-label" for="input-1-0-value"> IOSS Number </label>
-      <div id="eoriNumber-hint" class="govuk-hint">
+      <div id="iossNumber-hint" class="govuk-hint">
         The IOSS Number of the assumed testing user.
       </div>
       <input
