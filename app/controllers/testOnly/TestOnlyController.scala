@@ -19,13 +19,12 @@ package controllers.testOnly
 import config.FrontendAppConfig
 import connectors.testOnly.TestOnlyConnector
 import controllers.actions.AuthenticatedControllerComponents
-import models.Period
-import models.external.*
+import models.{Period, external}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
-import uk.gov.hmrc.play.bootstrap.binders.{RedirectUrl, UnsafePermitAll}
 import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl.idFunctor
-import uk.gov.hmrc.play.bootstrap.frontend.controller.{FrontendBaseController, FrontendController}
+import uk.gov.hmrc.play.bootstrap.binders.{RedirectUrl, UnsafePermitAll}
+import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.testonly.AuthLoginStubView
 
 import javax.inject.Inject
