@@ -21,7 +21,7 @@ import config.FrontendAppConfig
 import connectors.{FinancialDataConnector, RegistrationConnector, ReturnStatusConnector, SaveForLaterConnector}
 import controllers.actions.GetRegistrationAction
 import generators.Generators
-import models.SubmissionStatus._
+import models.SubmissionStatus.*
 import models.etmp.EtmpExclusion
 import models.etmp.EtmpExclusionReason.NoLongerSupplies
 import models.payments.{Payment, PaymentStatus, PrepareData}
@@ -35,9 +35,9 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.inject.bind
-import play.api.mvc._
+import play.api.mvc.*
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import services.PreviousRegistrationService
 import uk.gov.hmrc.auth.core.{Enrolment, EnrolmentIdentifier, Enrolments}
 import utils.FutureSyntax.FutureOps
@@ -58,7 +58,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
   private def createRegistrationWrapperWithExclusion(effectiveDate: LocalDate): RegistrationWrapper = {
     val registration = registrationWrapper.registration
 
-    registrationWrapper.copy(
+    registrationWrapper
+      .copy(vatInfo = registrationWrapper.vatInfo.copy(deregistrationDecisionDate = Some(LocalDate.now(stubClockAtArbitraryDate))))
+      .copy(
       registration = registration.copy(
         exclusions = List(
           EtmpExclusion(
@@ -370,8 +372,11 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         LocalDate.now(stubClockAtArbitraryDate).minusDays(1),
         quarantine = false
       )
+
       val registrationWrapperEmptyExclusions: RegistrationWrapper =
-        registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq(exclusion)))
+        registrationWrapper
+          .copy(vatInfo = registrationWrapper.vatInfo.copy(deregistrationDecisionDate = Some(LocalDate.now(stubClockAtArbitraryDate))))
+          .copy(registration = registrationWrapper.registration.copy(exclusions = Seq(exclusion)))
 
       when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
 
