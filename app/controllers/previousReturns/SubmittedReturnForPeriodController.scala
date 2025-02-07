@@ -20,7 +20,7 @@ import config.Constants.submittedReturnsPeriodsLimit
 import connectors.FinancialDataHttpParser.ChargeResponse
 import connectors.VatReturnHttpParser.EtmpVatReturnResponse
 import connectors.{FinancialDataConnector, VatReturnConnector}
-import controllers.actions._
+import controllers.actions.*
 import logging.Logging
 import models.Period
 import models.etmp.{EtmpExclusion, EtmpExclusionReason, EtmpVatReturn}
@@ -33,8 +33,8 @@ import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{Card, CardTitle, SummaryList, SummaryListRow}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax.FutureOps
-import viewmodels.govuk.summarylist._
-import viewmodels.previousReturns._
+import viewmodels.govuk.summarylist.*
+import viewmodels.previousReturns.*
 import views.html.previousReturns.SubmittedReturnForPeriodView
 
 import java.time.{Clock, LocalDate}

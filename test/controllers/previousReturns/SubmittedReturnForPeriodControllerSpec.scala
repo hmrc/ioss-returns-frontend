@@ -23,8 +23,8 @@ import models.financialdata.Charge
 import models.requests.OptionalDataRequest
 import models.{RegistrationWrapper, StandardPeriod, UnexpectedResponseStatus}
 import org.mockito.ArgumentMatchers.any
-import org.mockito.{ArgumentMatchers, Mockito}
 import org.mockito.Mockito.when
+import org.mockito.{ArgumentMatchers, Mockito}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.{BeforeAndAfterEach, PrivateMethodTester}
 import org.scalatestplus.mockito.MockitoSugar.mock
@@ -32,7 +32,7 @@ import pages.JourneyRecoveryPage
 import play.api.i18n.Messages
 import play.api.inject.bind
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import services.{CompletedPartialReturnPeriodService, PreviousRegistrationService}
 import testUtils.EtmpVatReturnData.etmpVatReturn
 import testUtils.PreviousRegistrationData.previousRegistrations
@@ -40,8 +40,8 @@ import testUtils.RegistrationData.etmpDisplayRegistration
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{Card, CardTitle}
 import utils.FutureSyntax.FutureOps
-import viewmodels.govuk.summarylist._
-import viewmodels.previousReturns._
+import viewmodels.govuk.summarylist.*
+import viewmodels.previousReturns.*
 import views.html.previousReturns.SubmittedReturnForPeriodView
 
 import java.time.{LocalDate, LocalDateTime, Month}
@@ -69,14 +69,13 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
     "onPageLoad" - {
 
       "must return Kick out page if older than 6 years old" in {
+
+        val oldPeriod = StandardPeriod(year = LocalDate.now(stubClockAtArbitraryDate).getYear - 7, month = Month.JANUARY)
+
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-          .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
-          .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
-          .overrides(bind[CompletedPartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
           .build()
 
         running(application) {
-          val oldPeriod = StandardPeriod(year = LocalDate.now().getYear - 7, month = Month.JANUARY)
 
           val request = FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoad(waypoints, oldPeriod).url)
 
