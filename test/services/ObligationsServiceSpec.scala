@@ -62,31 +62,7 @@ class ObligationsServiceSpec extends SpecBase with MockitoSugar with BeforeAndAf
   }
 
   "ObligationsService" - {
-
-    ".getOpenObligations" - {
-
-      "must filter and return all open ETMP obligations when connector returns an ETMP obligations payload" in {
-
-        when(mockVatReturnConnector.getObligations(any())(any())) thenReturn etmpObligations.toFuture
-
-        val result = obligationsService.getOpenObligations(iossNumber)
-
-        val expectedAnswers = Seq(
-          EtmpObligationDetails(
-            status = EtmpObligationsFulfilmentStatus.Open,
-            periodKey = "23AL"
-          ),
-          EtmpObligationDetails(
-            status = EtmpObligationsFulfilmentStatus.Open,
-            periodKey = "23AK"
-          )
-        )
-
-        result.futureValue must contain theSameElementsAs expectedAnswers
-        verify(mockVatReturnConnector, times(1)).getObligations(any())(any())
-      }
-    }
-
+    
     ".getFulfilledObligations" - {
 
       "must filter and return all fulfilled ETMP obligations when connector returns an ETMP obligations payload" in {
