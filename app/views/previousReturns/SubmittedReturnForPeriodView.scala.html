@@ -35,17 +35,14 @@ layout: templates.Layout,
         totalVatPayable: BigDecimal,
         vatDeclared: BigDecimal,
         displayPayNow: Boolean,
-        returnIsExcludedAndOutstandingAmount: Boolean,
-        maybePartialReturnPeriod: Option[PartialReturnPeriod],
+        returnIsExcludedAndOutstandingAmount: Boolean
 )(implicit request: Request[_], messages: Messages)
 
     @layout(pageTitle = titleNoForm(messages("submittedReturnForPeriod.title", period.displayText))) {
 
-        @if(maybePartialReturnPeriod) {
-            <h1 class="govuk-heading-l">@messages("submittedReturnForPeriod.heading", period.displayToAndFromText)</h1>
-        } else {
-            <h1 class="govuk-heading-l">@messages("submittedReturnForPeriod.heading", period.displayText)</h1>
-        }
+
+        <h1 class="govuk-heading-l">@messages("submittedReturnForPeriod.heading", period.displayText)</h1>
+
         <h2 class="govuk-heading-m">@messages("submittedReturnForPeriod.summary")</h2>
 
         <div class="govuk-summary-card">

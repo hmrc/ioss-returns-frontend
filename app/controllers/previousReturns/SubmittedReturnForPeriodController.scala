@@ -22,13 +22,13 @@ import connectors.VatReturnHttpParser.EtmpVatReturnResponse
 import connectors.{FinancialDataConnector, VatReturnConnector}
 import controllers.actions.*
 import logging.Logging
-import models.Period
+import models.{PartialReturnPeriod, Period}
 import models.etmp.{EtmpExclusion, EtmpExclusionReason, EtmpVatReturn}
 import models.requests.OptionalDataRequest
 import pages.{JourneyRecoveryPage, Waypoints}
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
-import services.{CompletedPartialReturnPeriodService, PreviousRegistrationService}
+import services.PreviousRegistrationService
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{Card, CardTitle, SummaryList, SummaryListRow}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -48,7 +48,6 @@ class SubmittedReturnForPeriodController @Inject()(
                                                     vatReturnConnector: VatReturnConnector,
                                                     financialDataConnector: FinancialDataConnector,
                                                     previousRegistrationService: PreviousRegistrationService,
-                                                    partialReturnPeriodService: CompletedPartialReturnPeriodService,
                                                     view: SubmittedReturnForPeriodView
                                                   )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
@@ -59,11 +58,9 @@ class SubmittedReturnForPeriodController @Inject()(
       Redirect(controllers.routes.NoLongerAbleToViewReturnController.onPageLoad()).toFuture
     } else {
       (for {
-        maybePartialReturnPeriod <- partialReturnPeriodService.getCompletedPartialReturnPeriod(request.registrationWrapper, period)
-        settingPeriod = maybePartialReturnPeriod.getOrElse(period)
-        etmpVatReturnResponse <- vatReturnConnector.get(settingPeriod)
-        chargeResponse <- financialDataConnector.getCharge(settingPeriod)
-      } yield onPageLoad(waypoints, settingPeriod, etmpVatReturnResponse, chargeResponse)).flatten
+        etmpVatReturnResponse <- vatReturnConnector.get(period)
+        chargeResponse <- financialDataConnector.getCharge(period)
+      } yield onPageLoad(waypoints, period, etmpVatReturnResponse, chargeResponse)).flatten
     }
   }
 
@@ -88,6 +85,8 @@ class SubmittedReturnForPeriodController @Inject()(
       case (Right(etmpVatReturn), chargeResponse) =>
         val maybeCharge = chargeResponse.fold(_ => None, charge => charge)
 
+        val determinedPeriod = determineIfPartialPeriod(period, etmpVatReturn)
+
         val outstandingAmount = maybeCharge.map(_.outstandingAmount)
 
         val outstanding = outstandingAmount.getOrElse(etmpVatReturn.totalVATAmountPayable)
@@ -101,22 +100,22 @@ class SubmittedReturnForPeriodController @Inject()(
 
         val returnIsExcludedAndOutstandingAmount = currentReturnExcluded && (etmpVatReturn.totalVATAmountDueForAllMSGBP > 0 && outstanding > 0)
 
-        partialReturnPeriodService.getCompletedPartialReturnPeriod(request.registrationWrapper, period).map { maybePartialReturnPeriod =>
-          Ok(view(
-            waypoints = waypoints,
-            period = period,
-            mainSummaryList = SummaryListViewModel(rows = getMainSummaryList(etmpVatReturn, period, outstandingAmount)),
-            salesToEuAndNiSummaryList = getSalesToEuAndNiSummaryList(etmpVatReturn),
-            correctionRows = PreviousReturnsCorrectionsSummary.correctionRows(etmpVatReturn),
-            negativeAndZeroBalanceCorrectionCountries = PreviousReturnsDeclaredVATNoPaymentDueSummary.summaryRowsOfNegativeAndZeroValues(etmpVatReturn),
-            vatOwedSummaryList = getVatOwedSummaryList(etmpVatReturn),
-            totalVatPayable = outstanding,
-            vatDeclared = vatDeclared,
-            displayPayNow = displayPayNow,
-            returnIsExcludedAndOutstandingAmount = returnIsExcludedAndOutstandingAmount,
-            maybePartialReturnPeriod = maybePartialReturnPeriod
-          ))
-        }
+        val mainSummaryList = SummaryListViewModel(rows = getMainSummaryList(etmpVatReturn, period, outstandingAmount))
+
+        Future.successful(Ok(view(
+          waypoints = waypoints,
+          period = determinedPeriod,
+          mainSummaryList = mainSummaryList,
+          salesToEuAndNiSummaryList = getSalesToEuAndNiSummaryList(etmpVatReturn),
+          correctionRows = PreviousReturnsCorrectionsSummary.correctionRows(etmpVatReturn),
+          negativeAndZeroBalanceCorrectionCountries = PreviousReturnsDeclaredVATNoPaymentDueSummary.summaryRowsOfNegativeAndZeroValues(etmpVatReturn),
+          vatOwedSummaryList = getVatOwedSummaryList(etmpVatReturn),
+          totalVatPayable = outstanding,
+          vatDeclared = vatDeclared,
+          displayPayNow = displayPayNow,
+          returnIsExcludedAndOutstandingAmount = returnIsExcludedAndOutstandingAmount
+        )))
+
       case (Left(error), _) =>
         logger.error(s"Unexpected result from api while getting ETMP VAT return: $error")
         Redirect(JourneyRecoveryPage.route(waypoints).url).toFuture
@@ -181,5 +180,18 @@ class SubmittedReturnForPeriodController @Inject()(
   private def isPeriodOlderThanSixYears(period: Period): Boolean = {
     val sixYearsOld = LocalDate.now(clock).minusYears(submittedReturnsPeriodsLimit)
     period.lastDay.isBefore(sixYearsOld)
+  }
+
+  private def determineIfPartialPeriod(period: Period, etmpVatReturn: EtmpVatReturn): Period = {
+    if (period.firstDay == etmpVatReturn.returnPeriodFrom && period.lastDay == etmpVatReturn.returnPeriodTo) {
+      period
+    } else {
+      PartialReturnPeriod(
+        firstDay = etmpVatReturn.returnPeriodFrom,
+        lastDay = etmpVatReturn.returnPeriodTo,
+        year = period.year,
+        month = period.month
+      )
+    }
   }
 }
