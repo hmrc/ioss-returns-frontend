@@ -17,7 +17,8 @@
 package testUtils
 
 import base.SpecBase
-import models.etmp._
+import models.Period.fromEtmpPeriodKey
+import models.etmp.*
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Gen
 
@@ -51,12 +52,14 @@ object EtmpVatReturnData extends SpecBase {
     totalVATEUR = arbitrary[BigDecimal].sample.value
   )
 
+  val periodKey: String = arbitraryPeriodKey.arbitrary.sample.value
+
   val etmpVatReturn: EtmpVatReturn = EtmpVatReturn(
     returnReference = arbitrary[String].sample.value,
     returnVersion = arbitrary[LocalDateTime].sample.value,
-    periodKey = arbitraryPeriodKey.arbitrary.sample.value,
-    returnPeriodFrom = arbitrary[LocalDate].sample.value,
-    returnPeriodTo = arbitrary[LocalDate].sample.value,
+    periodKey = periodKey,
+    returnPeriodFrom = fromEtmpPeriodKey(periodKey).firstDay,
+    returnPeriodTo = fromEtmpPeriodKey(periodKey).lastDay,
     goodsSupplied = Gen.listOfN(amountOfGoodsSupplied, etmpVatReturnGoodsSupplied).sample.value,
     totalVATGoodsSuppliedGBP = arbitrary[BigDecimal].sample.value,
     totalVATAmountPayable = arbitrary[BigDecimal].sample.value,

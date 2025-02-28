@@ -238,6 +238,14 @@ object Period {
       )
   }
 
+  def fromEtmpPeriodKey(key: String): Period = {
+    val yearLast2 = key.take(2)
+    val etmpMonthString = key.drop(2)
+    val year = s"20$yearLast2".toInt
+    val month = fromEtmpMonthString(etmpMonthString)
+    StandardPeriod(year, month)
+  }
+
   private def fromEtmpMonthString(keyMonth: String): Month = {
     keyMonth match {
       case "AA" => Month.JANUARY

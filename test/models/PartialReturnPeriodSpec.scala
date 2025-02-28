@@ -29,14 +29,14 @@ class PartialReturnPeriodSpec extends AnyWordSpec with Matchers {
     "serialize to JSON correctly" in {
       val partialReturnPeriod = PartialReturnPeriod(
         firstDay = LocalDate.of(2024, 1, 1),
-        lastDay = LocalDate.of(2024, 3, 31),
+        lastDay = LocalDate.of(2024, 1, 31),
         year = 2024,
         month = Month.JANUARY
       )
 
       val expectedJson: JsObject = Json.obj(
         "firstDay" -> "2024-01-01",
-        "lastDay" -> "2024-03-31",
+        "lastDay" -> "2024-01-31",
         "year" -> 2024,
         "month" -> "M1"
       )
@@ -47,7 +47,7 @@ class PartialReturnPeriodSpec extends AnyWordSpec with Matchers {
     "deserialize from JSON correctly" in {
       val json = Json.obj(
         "firstDay" -> "2024-01-01",
-        "lastDay" -> "2024-03-31",
+        "lastDay" -> "2024-01-31",
         "year" -> 2024,
         "month" -> "M1",
         "isPartial" -> true
@@ -55,7 +55,7 @@ class PartialReturnPeriodSpec extends AnyWordSpec with Matchers {
 
       val expectedPartialReturnPeriod = PartialReturnPeriod(
         firstDay = LocalDate.of(2024, 1, 1),
-        lastDay = LocalDate.of(2024, 3, 31),
+        lastDay = LocalDate.of(2024, 1, 31),
         year = 2024,
         month = Month.JANUARY
       )
@@ -66,7 +66,7 @@ class PartialReturnPeriodSpec extends AnyWordSpec with Matchers {
     "correctly set isPartial to true" in {
       val partialReturnPeriod = PartialReturnPeriod(
         firstDay = LocalDate.of(2024, 1, 1),
-        lastDay = LocalDate.of(2024, 3, 31),
+        lastDay = LocalDate.of(2024, 1, 31),
         year = 2024,
         month = Month.JANUARY
       )
