@@ -42,7 +42,7 @@ layout: templates.Layout,
 
         @period match {
             case period: PartialReturnPeriod => {
-                <h1 class="govuk-heading-l">@messages("submittedReturnForPeriod.heading", period.displayPartialPeriodLastDayText)</h1>
+                <h1 class="govuk-heading-l">@messages("submittedReturnForPeriod.heading", period.displayToAndFromText)</h1>
             }
             case period: StandardPeriod => {
                 <h1 class="govuk-heading-l">@messages("submittedReturnForPeriod.heading", period.displayText)</h1>
