@@ -40,8 +40,14 @@ layout: templates.Layout,
 
     @layout(pageTitle = titleNoForm(messages("submittedReturnForPeriod.title", period.displayText))) {
 
-
-        <h1 class="govuk-heading-l">@messages("submittedReturnForPeriod.heading", period.displayText)</h1>
+        @period match {
+            case period: PartialReturnPeriod => {
+                <h1 class="govuk-heading-l">@messages("submittedReturnForPeriod.heading", period.displayPartialPeriodLastDayText)</h1>
+            }
+            case period: StandardPeriod => {
+                <h1 class="govuk-heading-l">@messages("submittedReturnForPeriod.heading", period.displayText)</h1>
+            }
+        }
 
         <h2 class="govuk-heading-m">@messages("submittedReturnForPeriod.summary")</h2>
 

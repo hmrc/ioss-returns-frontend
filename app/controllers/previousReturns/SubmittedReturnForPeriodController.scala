@@ -100,8 +100,8 @@ class SubmittedReturnForPeriodController @Inject()(
 
         val returnIsExcludedAndOutstandingAmount = currentReturnExcluded && (etmpVatReturn.totalVATAmountDueForAllMSGBP > 0 && outstanding > 0)
 
-        val mainSummaryList = SummaryListViewModel(rows = getMainSummaryList(etmpVatReturn, period, outstandingAmount))
-
+        val mainSummaryList = SummaryListViewModel(rows = getMainSummaryList(etmpVatReturn, determinedPeriod, outstandingAmount))
+        
         Future.successful(Ok(view(
           waypoints = waypoints,
           period = determinedPeriod,

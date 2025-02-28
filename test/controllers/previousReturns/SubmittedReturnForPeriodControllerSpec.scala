@@ -35,7 +35,7 @@ import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import services.PreviousRegistrationService
-import testUtils.EtmpVatReturnData.etmpVatReturn
+import testUtils.EtmpVatReturnData.{arbitraryPeriodKey, etmpVatReturn}
 import testUtils.PreviousRegistrationData.previousRegistrations
 import testUtils.RegistrationData.etmpDisplayRegistration
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
@@ -46,12 +46,13 @@ import viewmodels.previousReturns.*
 import views.html.previousReturns.SubmittedReturnForPeriodView
 
 import java.time.{LocalDate, LocalDateTime, Month}
-import scala.concurrent.Future
 
 class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfterEach with PrivateMethodTester {
 
   private val vatReturn = etmpVatReturn
   private val charge: Charge = arbitraryCharge.arbitrary.sample.value
+  private val periodKey: String = arbitraryPeriodKey.arbitrary.sample.value
+  private val determinedPeriod: Period = fromEtmpPeriodKey(etmpVatReturn.periodKey)
 
   private val mockVatReturnConnector: VatReturnConnector = mock[VatReturnConnector]
   private val mockFinancialDataConnector: FinancialDataConnector = mock[FinancialDataConnector]
@@ -99,8 +100,6 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Right(Some(charge)).toFuture
 
             implicit val msgs: Messages = messages(application)
-
-            val determinedPeriod: Period = fromEtmpPeriodKey(etmpVatReturn.periodKey)
 
             val request = FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoad(waypoints, determinedPeriod).url)
 
@@ -179,8 +178,6 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Right(Some(charge)).toFuture
 
             implicit val msgs: Messages = messages(application)
-
-            val determinedPeriod: Period = fromEtmpPeriodKey(vatReturnNoCorrections.periodKey)
 
             val request = FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoad(waypoints, determinedPeriod).url)
 
@@ -340,9 +337,9 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             EtmpVatReturn(
               returnReference = arbitrary[String].sample.value,
               returnVersion = arbitrary[LocalDateTime].sample.value,
-              periodKey = arbitraryPeriodKey.arbitrary.sample.value,
-              returnPeriodFrom = arbitrary[LocalDate].sample.value,
-              returnPeriodTo = arbitrary[LocalDate].sample.value,
+              periodKey = periodKey,
+              returnPeriodFrom = fromEtmpPeriodKey(periodKey).firstDay,
+              returnPeriodTo = fromEtmpPeriodKey(periodKey).lastDay,
               goodsSupplied = Seq.empty,
               totalVATGoodsSuppliedGBP = BigDecimal(0),
               totalVATAmountPayable = BigDecimal(0),
@@ -443,8 +440,6 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
 
             implicit val msgs: Messages = messages(application)
 
-            val determinedPeriod: Period = fromEtmpPeriodKey(etmpVatReturn.periodKey)
-
             val request = FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoad(waypoints, determinedPeriod).url)
 
             val result = route(application, request).value
@@ -512,7 +507,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
           "and nothing owed" in {
 
             val charge = Charge(
-              period = period,
+              period = determinedPeriod,
               originalAmount = BigDecimal(1000),
               outstandingAmount = BigDecimal(0),
               clearedAmount = BigDecimal(1000)
@@ -521,7 +516,11 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             val date = LocalDate.ofInstant(stubClockAtArbitraryDate.instant(), stubClockAtArbitraryDate.getZone)
             val exceededDate = date.minusYears(3).minusMonths(2)
             val exceededPeriod = StandardPeriod(exceededDate.getYear, exceededDate.getMonth)
-            val vatReturnNoCorrections = vatReturn.copy(correctionPreviousVATReturn = Seq.empty, periodKey = exceededPeriod.toEtmpPeriodString)
+            val vatReturnNoCorrections = vatReturn.copy(
+              correctionPreviousVATReturn = Seq.empty,
+              periodKey = exceededPeriod.toEtmpPeriodString,
+              returnPeriodFrom = exceededPeriod.firstDay,
+              returnPeriodTo = exceededPeriod.lastDay)
 
             val etmpExclusion: EtmpExclusion = EtmpExclusion(
               exclusionReason = EtmpExclusionReason.NoLongerSupplies,
@@ -629,7 +628,11 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             val date = LocalDate.ofInstant(stubClockAtArbitraryDate.instant(), stubClockAtArbitraryDate.getZone)
             val exceededDate = date.minusYears(3).minusMonths(2)
             val exceededPeriod = StandardPeriod(exceededDate.getYear, exceededDate.getMonth)
-            val vatReturnNoCorrections = vatReturn.copy(correctionPreviousVATReturn = Seq.empty, periodKey = exceededPeriod.toEtmpPeriodString)
+            val vatReturnNoCorrections = vatReturn.copy(
+              correctionPreviousVATReturn = Seq.empty,
+              periodKey = exceededPeriod.toEtmpPeriodString,
+              returnPeriodFrom = exceededPeriod.firstDay,
+              returnPeriodTo = exceededPeriod.lastDay)
 
             val etmpExclusion: EtmpExclusion = EtmpExclusion(
               exclusionReason = EtmpExclusionReason.NoLongerSupplies,
@@ -767,7 +770,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
 
             implicit val msgs: Messages = messages(application)
 
-            val request = FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoadForIossNumber(waypoints, period, iossNumber).url)
+            val request = FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoadForIossNumber(waypoints, determinedPeriod, iossNumber).url)
 
             val result = route(application, request).value
 
@@ -778,7 +781,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 SubmittedReturnForPeriodSummary.rowVatDeclared(vatReturn),
                 SubmittedReturnForPeriodSummary.rowRemainingAmount(Some(charge.outstandingAmount)),
                 SubmittedReturnForPeriodSummary.rowReturnSubmittedDate(vatReturn),
-                SubmittedReturnForPeriodSummary.rowPaymentDueDate(period),
+                SubmittedReturnForPeriodSummary.rowPaymentDueDate(determinedPeriod),
                 SubmittedReturnForPeriodSummary.rowReturnReference(vatReturn),
                 SubmittedReturnForPeriodSummary.rowPaymentReference(vatReturn)
               ).flatten
@@ -816,7 +819,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             contentAsString(result) mustBe
               view(
                 waypoints,
-                period,
+                determinedPeriod,
                 mainSummaryList,
                 salesToEuAndNiSummaryList,
                 correctionRowsSummaryList,
@@ -847,7 +850,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
 
             implicit val msgs: Messages = messages(application)
 
-            val request = FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoadForIossNumber(waypoints, period, iossNumber).url)
+            val request = FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoadForIossNumber(waypoints, determinedPeriod, iossNumber).url)
 
             val result = route(application, request).value
 
@@ -858,7 +861,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 SubmittedReturnForPeriodSummary.rowVatDeclared(vatReturnNoCorrections),
                 SubmittedReturnForPeriodSummary.rowRemainingAmount(Some(charge.outstandingAmount)),
                 SubmittedReturnForPeriodSummary.rowReturnSubmittedDate(vatReturnNoCorrections),
-                SubmittedReturnForPeriodSummary.rowPaymentDueDate(period),
+                SubmittedReturnForPeriodSummary.rowPaymentDueDate(determinedPeriod),
                 SubmittedReturnForPeriodSummary.rowReturnReference(vatReturnNoCorrections),
                 SubmittedReturnForPeriodSummary.rowPaymentReference(vatReturnNoCorrections)
               ).flatten
@@ -896,7 +899,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             contentAsString(result) mustBe
               view(
                 waypoints,
-                period,
+                determinedPeriod,
                 mainSummaryList,
                 salesToEuAndNiSummaryList,
                 correctionRowsSummaryList,
@@ -936,7 +939,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
 
             implicit val msgs: Messages = messages(application)
 
-            val request = FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoadForIossNumber(waypoints, period, iossNumber).url)
+            val request = FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoadForIossNumber(waypoints, determinedPeriod, iossNumber).url)
 
             val result = route(application, request).value
 
@@ -947,7 +950,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 SubmittedReturnForPeriodSummary.rowVatDeclared(vatReturnPositiveCorrections),
                 SubmittedReturnForPeriodSummary.rowRemainingAmount(Some(charge.outstandingAmount)),
                 SubmittedReturnForPeriodSummary.rowReturnSubmittedDate(vatReturnPositiveCorrections),
-                SubmittedReturnForPeriodSummary.rowPaymentDueDate(period),
+                SubmittedReturnForPeriodSummary.rowPaymentDueDate(determinedPeriod),
                 SubmittedReturnForPeriodSummary.rowReturnReference(vatReturnPositiveCorrections),
                 SubmittedReturnForPeriodSummary.rowPaymentReference(vatReturnPositiveCorrections)
               ).flatten
@@ -985,7 +988,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             contentAsString(result) mustBe
               view(
                 waypoints,
-                period,
+                determinedPeriod,
                 mainSummaryList,
                 salesToEuAndNiSummaryList,
                 correctionRowsSummaryList,
@@ -1005,9 +1008,9 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             EtmpVatReturn(
               returnReference = arbitrary[String].sample.value,
               returnVersion = arbitrary[LocalDateTime].sample.value,
-              periodKey = arbitraryPeriodKey.arbitrary.sample.value,
-              returnPeriodFrom = arbitrary[LocalDate].sample.value,
-              returnPeriodTo = arbitrary[LocalDate].sample.value,
+              periodKey = periodKey,
+              returnPeriodFrom = fromEtmpPeriodKey(periodKey).firstDay,
+              returnPeriodTo = fromEtmpPeriodKey(periodKey).lastDay,
               goodsSupplied = Seq.empty,
               totalVATGoodsSuppliedGBP = BigDecimal(0),
               totalVATAmountPayable = BigDecimal(0),
@@ -1032,7 +1035,9 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
 
             implicit val msgs: Messages = messages(application)
 
-            val request = FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoadForIossNumber(waypoints, period, iossNumber).url)
+            val determinedPeriod: Period = fromEtmpPeriodKey(nilEtmpVatReturn.periodKey)
+
+            val request = FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoadForIossNumber(waypoints, determinedPeriod, iossNumber).url)
 
             val result = route(application, request).value
 
@@ -1043,7 +1048,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 SubmittedReturnForPeriodSummary.rowVatDeclared(nilEtmpVatReturn),
                 SubmittedReturnForPeriodSummary.rowRemainingAmount(None),
                 SubmittedReturnForPeriodSummary.rowReturnSubmittedDate(nilEtmpVatReturn),
-                SubmittedReturnForPeriodSummary.rowPaymentDueDate(period),
+                SubmittedReturnForPeriodSummary.rowPaymentDueDate(determinedPeriod),
                 SubmittedReturnForPeriodSummary.rowReturnReference(nilEtmpVatReturn),
                 SubmittedReturnForPeriodSummary.rowPaymentReference(nilEtmpVatReturn)
               ).flatten
@@ -1081,7 +1086,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             contentAsString(result) mustBe
               view(
                 waypoints,
-                period,
+                determinedPeriod,
                 mainSummaryList,
                 salesToEuAndNiSummaryList,
                 correctionRowsSummaryList,
@@ -1111,7 +1116,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
 
             implicit val msgs: Messages = messages(application)
 
-            val request = FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoadForIossNumber(waypoints, period, iossNumber).url)
+            val request = FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoadForIossNumber(waypoints, determinedPeriod, iossNumber).url)
 
             val result = route(application, request).value
 
@@ -1122,7 +1127,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 SubmittedReturnForPeriodSummary.rowVatDeclared(vatReturn),
                 SubmittedReturnForPeriodSummary.rowRemainingAmount(None),
                 SubmittedReturnForPeriodSummary.rowReturnSubmittedDate(vatReturn),
-                SubmittedReturnForPeriodSummary.rowPaymentDueDate(period),
+                SubmittedReturnForPeriodSummary.rowPaymentDueDate(determinedPeriod),
                 SubmittedReturnForPeriodSummary.rowReturnReference(vatReturn),
                 SubmittedReturnForPeriodSummary.rowPaymentReference(vatReturn)
               ).flatten
@@ -1160,7 +1165,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             contentAsString(result) mustBe
               view(
                 waypoints,
-                period,
+                determinedPeriod,
                 mainSummaryList,
                 salesToEuAndNiSummaryList,
                 correctionRowsSummaryList,
@@ -1187,7 +1192,11 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             val date = LocalDate.ofInstant(stubClockAtArbitraryDate.instant(), stubClockAtArbitraryDate.getZone)
             val exceededDate = date.minusYears(3).minusMonths(2)
             val exceededPeriod = StandardPeriod(exceededDate.getYear, exceededDate.getMonth)
-            val vatReturnNoCorrections = vatReturn.copy(correctionPreviousVATReturn = Seq.empty, periodKey = exceededPeriod.toEtmpPeriodString)
+            val vatReturnNoCorrections = vatReturn.copy(
+              correctionPreviousVATReturn = Seq.empty,
+              periodKey = exceededPeriod.toEtmpPeriodString,
+              returnPeriodFrom = exceededPeriod.firstDay,
+              returnPeriodTo = exceededPeriod.lastDay)
 
             val etmpExclusion: EtmpExclusion = EtmpExclusion(
               exclusionReason = EtmpExclusionReason.NoLongerSupplies,
@@ -1297,7 +1306,11 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             val date = LocalDate.ofInstant(stubClockAtArbitraryDate.instant(), stubClockAtArbitraryDate.getZone)
             val exceededDate = date.minusYears(3).minusMonths(2)
             val exceededPeriod = StandardPeriod(exceededDate.getYear, exceededDate.getMonth)
-            val vatReturnNoCorrections = vatReturn.copy(correctionPreviousVATReturn = Seq.empty, periodKey = exceededPeriod.toEtmpPeriodString)
+            val vatReturnNoCorrections = vatReturn.copy(
+              correctionPreviousVATReturn = Seq.empty,
+              periodKey = exceededPeriod.toEtmpPeriodString,
+              returnPeriodFrom = exceededPeriod.firstDay,
+              returnPeriodTo = exceededPeriod.lastDay)
 
             val etmpExclusion: EtmpExclusion = EtmpExclusion(
               exclusionReason = EtmpExclusionReason.NoLongerSupplies,
