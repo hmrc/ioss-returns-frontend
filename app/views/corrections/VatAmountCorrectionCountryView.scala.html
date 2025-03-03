@@ -56,7 +56,8 @@
                     field = form("value"),
                     label = HmrcPageHeadingLabel(
                         content = messages("vatAmountCorrectionCountry.heading", country.name),
-                        caption = messages("vatAmountCorrectionCountry.caption", correctionPeriod.displayText)
+                        caption = messages("vatAmountCorrectionCountry.caption", correctionPeriod.displayText),
+                        classes = "govuk-label--l"
                     )
                 )
                 .withHint(HintViewModel(HtmlContent(
