@@ -40,7 +40,8 @@
                 name   = "value",
                 legend = HmrcPageHeadingLegend(
                     content = messages("vatRatesFromCountry.heading"),
-                    caption = messages("vatRatesFromCountry.caption", period.displayText, country.name)
+                    caption = messages("vatRatesFromCountry.caption", period.displayText, country.name),
+                    classes = "govuk-fieldset__legend--l"
                 ),
                 items  = checkboxItems
             ).withHint(HintViewModel(messages("vatRatesFromCountry.hint")))

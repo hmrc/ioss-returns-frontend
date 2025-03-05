@@ -16,7 +16,6 @@
 
 @import uk.gov.hmrc.govukfrontend.views.Implicits.RichSelect
 @import uk.gov.hmrc.hmrcfrontend.views.viewmodels.accessibleautocomplete.AccessibleAutocomplete
-@import viewmodels.LabelSize
 @import views.html.components.ButtonGroup
 
 @this(
@@ -43,8 +42,9 @@
         items = Country.euCountryWithNISelectItems,
         label = HmrcPageHeadingLabel(
           content = messages("soldToCountry.heading"),
-          caption = period.displayText
-        ).asPageHeading(size = LabelSize.Large)
+          caption = period.displayText,
+          classes = "govuk-label--l"
+        )
       ).asAccessibleAutocomplete(Some(
         AccessibleAutocomplete(
           showAllValues = true,

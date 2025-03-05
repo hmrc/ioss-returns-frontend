@@ -328,7 +328,7 @@ vatPayableForCountry.hint = We''ve calculated this total based on your most rece
 vatPayableForCountry.error.required = Select yes if the total VAT payable for {0} is {1}
 
 vatAmountCorrectionCountry.title = What is your correction for the VAT payable to {0}?
-vatAmountCorrectionCountry.heading = What is your correction for the VAT payable to {0}?
+vatAmountCorrectionCountry.heading = What is your correction for the total VAT payable to {0}?
 vatAmountCorrectionCountry.caption = Correction month: {0}
 vatAmountCorrectionCountry.hint = Enter a minus value if you declared too much in your previous return.
 vatAmountCorrectionCountry.previous-amount.hint = Your most recent declaration for this month is {0}.

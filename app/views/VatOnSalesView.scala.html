@@ -54,7 +54,8 @@
                 field  = form("choice"),
                 legend = HmrcPageHeadingLegend(
                     content = HtmlContent(messages("vatOnSales.heading", currencyFormat(netSales), vatRate.rateForDisplay)),
-                    caption = messages("vatOnSales.caption", period.displayText, country.name)
+                    caption = messages("vatOnSales.caption", period.displayText, country.name),
+                    classes = "govuk-fieldset__legend--l"
                 ),
                 items = Seq(
                     RadioItem(

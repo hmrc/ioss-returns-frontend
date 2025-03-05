@@ -22,7 +22,7 @@ import models.etmp.*
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Gen
 
-import java.time.{LocalDate, LocalDateTime}
+import java.time.LocalDateTime
 
 object EtmpVatReturnData extends SpecBase {
 
