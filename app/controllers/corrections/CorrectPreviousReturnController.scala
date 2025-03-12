@@ -16,7 +16,7 @@
 
 package controllers.corrections
 
-import controllers.actions._
+import controllers.actions.*
 import forms.corrections.CorrectPreviousReturnFormProvider
 import models.etmp.EtmpExclusion
 import pages.Waypoints
@@ -24,23 +24,21 @@ import pages.corrections.CorrectPreviousReturnPage
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import services.{ObligationsService, PeriodService}
+import services.{ObligationsService, PartialReturnPeriodService}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.corrections.CorrectPreviousReturnView
 
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class CorrectPreviousReturnController @Inject()(
-                                         override val messagesApi: MessagesApi,
-                                         cc: AuthenticatedControllerComponents,
-                                         formProvider: CorrectPreviousReturnFormProvider,
-                                         obligationService: ObligationsService,
-                                         periodService: PeriodService,
-                                         view: CorrectPreviousReturnView
-                                 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                                 override val messagesApi: MessagesApi,
+                                                 cc: AuthenticatedControllerComponents,
+                                                 formProvider: CorrectPreviousReturnFormProvider,
+                                                 obligationService: ObligationsService,
+                                                 partialReturnPeriodService: PartialReturnPeriodService,
+                                                 view: CorrectPreviousReturnView
+                                               )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
@@ -55,13 +53,7 @@ class CorrectPreviousReturnController @Inject()(
 
       val maybeExclusion: Option[EtmpExclusion] = request.registrationWrapper.registration.exclusions.lastOption
 
-      val nextPeriodString = periodService.getNextPeriod(period).displayYearMonth
-
-      val nextPeriod: LocalDate = LocalDate.parse(nextPeriodString, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-
-      val isFinalReturn = maybeExclusion.fold(false) { exclusions =>
-        nextPeriod.isAfter(exclusions.effectiveDate)
-      }
+      val isFinalReturn = partialReturnPeriodService.isFinalReturn(maybeExclusion, period)
 
       fulfilledObligations.flatMap { obligations =>
 
@@ -85,13 +77,7 @@ class CorrectPreviousReturnController @Inject()(
 
       val maybeExclusion: Option[EtmpExclusion] = request.registrationWrapper.registration.exclusions.lastOption
 
-      val nextPeriodString = periodService.getNextPeriod(period).displayYearMonth
-
-      val nextPeriod: LocalDate = LocalDate.parse(nextPeriodString, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-
-      val isFinalReturn = maybeExclusion.fold(false) { exclusions =>
-        nextPeriod.isAfter(exclusions.effectiveDate)
-      }
+      val isFinalReturn = partialReturnPeriodService.isFinalReturn(maybeExclusion, period)
 
       fulfilledObligations.flatMap { obligations =>
 

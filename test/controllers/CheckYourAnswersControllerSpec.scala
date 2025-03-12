@@ -20,25 +20,28 @@ import base.SpecBase
 import config.Constants.{maxCurrencyAmount, minCurrencyAmount}
 import connectors.{SaveForLaterConnector, SavedUserAnswers}
 import models.audit.{ReturnsAuditModel, SubmissionResult}
+import models.etmp.EtmpExclusionReason.TransferringMSID
+import models.etmp.{EtmpDisplayRegistration, EtmpExclusion}
 import models.requests.DataRequest
-import models.{Country, TotalVatToCountry, UserAnswers, VatRateFromCountry}
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
-import org.mockito.{ArgumentMatchers, Mockito}
+import models.{Country, RegistrationWrapper, TotalVatToCountry, UserAnswers, VatRateFromCountry}
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.{times, verify, when}
+import org.mockito.{ArgumentMatchers, Mockito}
 import org.scalacheck.Gen
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
-import pages.corrections._
+import pages.corrections.*
 import pages.{CheckYourAnswersPage, SalesToCountryPage, SoldGoodsPage, SoldToCountryPage, VatRatesFromCountryPage}
 import play.api.i18n.Messages
 import play.api.inject.bind
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import queries.corrections.{PreviouslyDeclaredCorrectionAmount, PreviouslyDeclaredCorrectionAmountQuery}
 import services.{AuditService, CoreVatReturnService, PartialReturnPeriodService, SalesAtVatRateService}
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{Card, CardTitle, SummaryList, SummaryListRow}
-import viewmodels.checkAnswers._
+import utils.FutureSyntax.FutureOps
+import viewmodels.checkAnswers.*
 import viewmodels.checkAnswers.corrections.{CorrectPreviousReturnSummary, CorrectionNoPaymentDueSummary, CorrectionReturnPeriodSummary}
 import viewmodels.govuk.SummaryListFluency
 import views.html.CheckYourAnswersView
@@ -67,8 +70,11 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
   }
 
   "Check Your Answers Controller" - {
+
     "onPageLoad" - {
+
       "when correct previous return is false / empty" - {
+
         "must return OK and the correct view for a GET" in {
 
           when(mockPartialReturnPeriodService.getPartialReturnPeriod(
@@ -86,17 +92,16 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
             val result = route(application, request).value
 
-            status(result) mustEqual OK
-            contentAsString(result).contains("Business name") mustBe true
-            contentAsString(result).contains("UK VAT registration number") mustBe true
-            contentAsString(result).contains("Return month") mustBe true
-            contentAsString(result).contains("Sales to EU countries, Northern Ireland or both") mustBe true
-            contentAsString(result).contains("Sales made") mustBe true
-            contentAsString(result).contains("Sales excluding VAT") mustBe true
-            contentAsString(result).contains("Corrections") mustBe true
-            //          contentAsString(result).contains("Corrections made") mustBe true
-            contentAsString(result).contains("VAT owed") mustBe true
-            contentAsString(result).contains("Total VAT payable") mustBe true
+            status(result) `mustBe` OK
+            contentAsString(result).contains("Business name") `mustBe` true
+            contentAsString(result).contains("UK VAT registration number") `mustBe` true
+            contentAsString(result).contains("Return month") `mustBe` true
+            contentAsString(result).contains("Sales to EU countries, Northern Ireland or both") `mustBe` true
+            contentAsString(result).contains("Sales made") `mustBe` true
+            contentAsString(result).contains("Sales excluding VAT") `mustBe` true
+            contentAsString(result).contains("Corrections") `mustBe` true
+            contentAsString(result).contains("VAT owed") `mustBe` true
+            contentAsString(result).contains("Total VAT payable") `mustBe` true
           }
         }
 
@@ -117,19 +122,113 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
             val result = route(application, request).value
 
-            status(result) mustEqual OK
-            contentAsString(result).contains("Business name") mustBe true
-            contentAsString(result).contains("UK VAT registration number") mustBe true
-            contentAsString(result).contains("Return month") mustBe true
-            contentAsString(result).contains("Sales to EU countries, Northern Ireland or both") mustBe true
-            contentAsString(result).contains("Sales made") mustBe true
-            contentAsString(result).contains("Sales excluding VAT") mustBe true
-            contentAsString(result).contains("Corrections") mustBe true
-            contentAsString(result).contains("VAT owed") mustBe true
-            contentAsString(result).contains("Total VAT payable") mustBe true
+            status(result) `mustBe` OK
+            contentAsString(result).contains("Business name") `mustBe` true
+            contentAsString(result).contains("UK VAT registration number") `mustBe` true
+            contentAsString(result).contains("Return month") `mustBe` true
+            contentAsString(result).contains("Sales to EU countries, Northern Ireland or both") `mustBe` true
+            contentAsString(result).contains("Sales made") `mustBe` true
+            contentAsString(result).contains("Sales excluding VAT") `mustBe` true
+            contentAsString(result).contains("Corrections") `mustBe` true
+            contentAsString(result).contains("VAT owed") `mustBe` true
+            contentAsString(result).contains("Total VAT payable") `mustBe` true
           }
         }
 
+        "must return OK and the correct view for a GET when there is an exclusion present and it's the trader's final return" in {
+
+          val etmpExclusion: EtmpExclusion = EtmpExclusion(
+            exclusionReason = TransferringMSID,
+            effectiveDate = period.firstDay,
+            decisionDate = period.firstDay,
+            quarantine = false
+          )
+
+          val registration: EtmpDisplayRegistration = registrationWrapper.registration.copy(exclusions = Seq(etmpExclusion))
+
+          val updatedRegistrationWrapper: RegistrationWrapper = registrationWrapper.copy(registration = registration)
+
+          when(mockPartialReturnPeriodService.getPartialReturnPeriod(eqTo(updatedRegistrationWrapper), eqTo(period))(any())) thenReturn None.toFuture
+          when(mockPartialReturnPeriodService.isFinalReturn(any(), any())) thenReturn true
+
+          when(mockSalesAtVatRateService.getTotalNetSales(any())) thenReturn None
+          when(mockSalesAtVatRateService.getTotalVatOnSales(any())) thenReturn None
+          when(mockSalesAtVatRateService.getVatOwedToCountries(any())) thenReturn List.empty
+          when(mockSalesAtVatRateService.getTotalVatOwedAfterCorrections(any())) thenReturn BigDecimal(0)
+
+          val answers: UserAnswers = completeUserAnswers
+            .set(SoldGoodsPage, false).success.value
+            .set(CorrectPreviousReturnPage(0), false).success.value
+
+          val application = applicationBuilder(userAnswers = Some(answers), registration = updatedRegistrationWrapper)
+            .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
+            .overrides(bind[SalesAtVatRateService].toInstance(mockSalesAtVatRateService))
+            .build()
+
+          running(application) {
+            implicit val msgs: Messages = messages(application)
+
+            val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad(waypoints).url)
+
+            val result = route(application, request).value
+
+            val view = application.injector.instanceOf[CheckYourAnswersView]
+
+            val businessSummaryList: SummaryList = SummaryListViewModel(
+              rows = Seq(
+                BusinessNameSummary.row(registrationWrapper),
+                BusinessVRNSummary.row(vrn),
+                ReturnPeriodSummary.row(answers, waypoints, Some(period))
+              ).flatten
+            ).withCssClass("govuk-summary-card govuk-summary-card__content govuk-!-display-block width-auto")
+
+            val salesFromEuSummaryList: SummaryList = SummaryListViewModel(
+              rows = Seq(
+                SoldGoodsSummary.row(answers, waypoints, CheckYourAnswersPage),
+                TotalNetValueOfSalesSummary.row(answers, None, waypoints, CheckYourAnswersPage),
+                TotalVatOnSalesSummary.row(answers, None, waypoints, CheckYourAnswersPage)
+              ).flatten
+            ).withCard(
+              card = Card(
+                title = Some(CardTitle(content = HtmlContent(msgs("checkYourAnswers.sales.heading"))))
+              )
+            )
+
+            val correctionsSummaryList: SummaryList = SummaryListViewModel(
+              rows = Seq(
+                CorrectPreviousReturnSummary.row(answers, waypoints, CheckYourAnswersPage),
+                CorrectionReturnPeriodSummary.getAllRows(answers, waypoints, CheckYourAnswersPage)
+              ).flatten
+            ).withCard(
+              card = Card(
+                title = Some(CardTitle(content = HtmlContent(msgs("checkYourAnswers.correction.heading"))))
+              )
+            )
+
+            val allSummaryLists = Seq(
+              (None, businessSummaryList),
+              (None, salesFromEuSummaryList),
+              (None, correctionsSummaryList)
+            )
+
+            val noPaymentDueSummaryList: Seq[SummaryListRow] = CorrectionNoPaymentDueSummary.row(List.empty)
+            val totalVatOnSales: BigDecimal = BigDecimal(0)
+
+            status(result) `mustBe` OK
+            contentAsString(result) `mustBe` view(
+              waypoints = waypoints,
+              summaryLists = allSummaryLists,
+              period = period,
+              totalVatToCountries = List.empty,
+              totalVatOnSales = totalVatOnSales,
+              noPaymentDueSummaryList = noPaymentDueSummaryList,
+              containsCorrections = false,
+              missingData = List.empty,
+              maybeExclusion = Some(etmpExclusion),
+              isFinalReturn = true
+            )(request, messages(application)).toString
+          }
+        }
       }
 
       "when correct previous return is true" - {
@@ -151,16 +250,16 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
             val result = route(application, request).value
 
-            status(result) mustEqual OK
-            contentAsString(result).contains("Business name") mustBe true
-            contentAsString(result).contains("UK VAT registration number") mustBe true
-            contentAsString(result).contains("Return month") mustBe true
-            contentAsString(result).contains("Sales to EU countries, Northern Ireland or both") mustBe true
-            contentAsString(result).contains("Sales made") mustBe true
-            contentAsString(result).contains("Sales excluding VAT") mustBe true
-            contentAsString(result).contains("Corrections") mustBe true
-            contentAsString(result).contains("VAT owed") mustBe true
-            contentAsString(result).contains("Total VAT payable") mustBe true
+            status(result) `mustBe` OK
+            contentAsString(result).contains("Business name") `mustBe` true
+            contentAsString(result).contains("UK VAT registration number") `mustBe` true
+            contentAsString(result).contains("Return month") `mustBe` true
+            contentAsString(result).contains("Sales to EU countries, Northern Ireland or both") `mustBe` true
+            contentAsString(result).contains("Sales made") `mustBe` true
+            contentAsString(result).contains("Sales excluding VAT") `mustBe` true
+            contentAsString(result).contains("Corrections") `mustBe` true
+            contentAsString(result).contains("VAT owed") `mustBe` true
+            contentAsString(result).contains("Total VAT payable") `mustBe` true
           }
         }
 
@@ -250,8 +349,8 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
             val noPaymentsDueSummaryList: Seq[SummaryListRow] = CorrectionNoPaymentDueSummary.row(noPaymentsDue)
 
-            status(result) mustEqual OK
-            contentAsString(result) mustBe
+            status(result) `mustBe` OK
+            contentAsString(result) `mustBe`
               view(
                 waypoints,
                 allSummaryLists,
@@ -277,8 +376,8 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
           val result = route(application, request).value
 
-          status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+          status(result) `mustBe` SEE_OTHER
+          redirectLocation(result).value `mustBe` routes.JourneyRecoveryController.onPageLoad().url
         }
       }
     }
@@ -308,8 +407,8 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
           val expectedAuditEvent = ReturnsAuditModel.build(userAnswers, SubmissionResult.Success)
 
-          status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual controllers.submissionResults.routes.SuccessfullySubmittedController.onPageLoad().url
+          status(result) `mustBe` SEE_OTHER
+          redirectLocation(result).value `mustBe` controllers.submissionResults.routes.SuccessfullySubmittedController.onPageLoad().url
           verify(mockAuditService, times(1)).audit(eqTo(expectedAuditEvent))(any(), any())
         }
       }
@@ -338,8 +437,8 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
           val expectedAuditEvent = ReturnsAuditModel.build(userAnswers, SubmissionResult.Failure)
 
-          status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual controllers.submissionResults.routes.ReturnSubmissionFailureController.onPageLoad().url
+          status(result) `mustBe` SEE_OTHER
+          redirectLocation(result).value `mustBe` controllers.submissionResults.routes.ReturnSubmissionFailureController.onPageLoad().url
           verify(mockAuditService, times(1)).audit(eqTo(expectedAuditEvent))(any(), any())
         }
       }
@@ -358,8 +457,8 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, incompletePromptShown = false).url)
           val result = route(app, request).value
 
-          status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual routes.CheckYourAnswersController.onPageLoad(waypoints).url
+          status(result) `mustBe` SEE_OTHER
+          redirectLocation(result).value `mustBe` routes.CheckYourAnswersController.onPageLoad(waypoints).url
         }
       }
 
@@ -374,8 +473,8 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, incompletePromptShown = true).url)
           val result = route(app, request).value
 
-          status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual routes.SoldToCountryController.onPageLoad(waypoints, index).url
+          status(result) `mustBe` SEE_OTHER
+          redirectLocation(result).value `mustBe` routes.SoldToCountryController.onPageLoad(waypoints, index).url
         }
       }
 
@@ -391,8 +490,8 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, incompletePromptShown = true).url)
           val result = route(app, request).value
 
-          status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual routes.VatRatesFromCountryController.onPageLoad(waypoints, index).url
+          status(result) `mustBe` SEE_OTHER
+          redirectLocation(result).value `mustBe` routes.VatRatesFromCountryController.onPageLoad(waypoints, index).url
         }
       }
 
@@ -409,8 +508,8 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, incompletePromptShown = true).url)
           val result = route(app, request).value
 
-          status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual routes.SalesToCountryController.onPageLoad(waypoints, index, index).url
+          status(result) `mustBe` SEE_OTHER
+          redirectLocation(result).value `mustBe` routes.SalesToCountryController.onPageLoad(waypoints, index, index).url
         }
       }
 
@@ -428,8 +527,8 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, incompletePromptShown = true).url)
           val result = route(app, request).value
 
-          status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual routes.VatOnSalesController.onPageLoad(waypoints, index, index).url
+          status(result) `mustBe` SEE_OTHER
+          redirectLocation(result).value `mustBe` routes.VatOnSalesController.onPageLoad(waypoints, index, index).url
         }
       }
 
@@ -445,8 +544,8 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, incompletePromptShown = true).url)
           val result = route(app, request).value
 
-          status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual controllers.corrections.routes.CorrectionReturnYearController.onPageLoad(waypoints, index).url
+          status(result) `mustBe` SEE_OTHER
+          redirectLocation(result).value `mustBe` controllers.corrections.routes.CorrectionReturnYearController.onPageLoad(waypoints, index).url
         }
       }
 
@@ -464,8 +563,8 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, incompletePromptShown = true).url)
           val result = route(app, request).value
 
-          status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual controllers.corrections.routes.CorrectionCountryController.onPageLoad(waypoints, index, index).url
+          status(result) `mustBe` SEE_OTHER
+          redirectLocation(result).value `mustBe` controllers.corrections.routes.CorrectionCountryController.onPageLoad(waypoints, index, index).url
         }
       }
 
@@ -483,8 +582,8 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, incompletePromptShown = true).url)
           val result = route(app, request).value
 
-          status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual controllers.corrections.routes.VatAmountCorrectionCountryController.onPageLoad(waypoints, index, index).url
+          status(result) `mustBe` SEE_OTHER
+          redirectLocation(result).value `mustBe` controllers.corrections.routes.VatAmountCorrectionCountryController.onPageLoad(waypoints, index, index).url
         }
       }
     }

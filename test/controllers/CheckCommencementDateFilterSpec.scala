@@ -53,6 +53,7 @@ class CheckCommencementDateFilterSpec extends SpecBase with MockitoSugar with Be
 
 
     "must redirect when there are no periods to be submitted" in {
+      
       val application = applicationBuilder(None).build()
 
       val registration = registrationWrapper.copy(registration =

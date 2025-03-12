@@ -19,9 +19,9 @@ package services
 
 import connectors.ReturnStatusConnector
 import models.core.MatchType
-import models.etmp.{EtmpExclusion, EtmpExclusionReason, EtmpPreviousEuRegistrationDetails}
 import models.etmp.EtmpExclusionReason.TransferringMSID
 import models.etmp.SchemeType.{IOSSWithIntermediary, IOSSWithoutIntermediary}
+import models.etmp.{EtmpExclusion, EtmpExclusionReason, EtmpPreviousEuRegistrationDetails}
 import models.{PartialReturnPeriod, Period, PeriodWithStatus, RegistrationWrapper, StandardPeriod, SubmissionStatus}
 import services.core.CoreRegistrationValidationService
 import uk.gov.hmrc.http.HeaderCarrier
@@ -66,8 +66,8 @@ class PartialReturnPeriodService @Inject()(
   }
 
   private def getMaybeFirstPartialReturnPeriod(
-                                        registrationWrapper: RegistrationWrapper
-                                      )(implicit hc: HeaderCarrier): Future[Option[PartialReturnPeriod]] = {
+                                                registrationWrapper: RegistrationWrapper
+                                              )(implicit hc: HeaderCarrier): Future[Option[PartialReturnPeriod]] = {
 
     val commencementDateString = registrationWrapper.registration.schemeDetails.commencementDate
     val commencementDate = LocalDate.parse(commencementDateString.toString)
@@ -122,7 +122,7 @@ class PartialReturnPeriodService @Inject()(
     !checkDate.isBefore(period.firstDay) &&
       !checkDate.isAfter(period.lastDay)
 
-  private def isFinalReturn(maybeExclusion: Option[EtmpExclusion], period: Period): Boolean = {
+  def isFinalReturn(maybeExclusion: Option[EtmpExclusion], period: Period): Boolean = {
     maybeExclusion match {
       case Some(exclusion) if exclusion.exclusionReason == EtmpExclusionReason.TransferringMSID =>
         isWithinPeriod(StandardPeriod.fromPeriod(period), exclusion.effectiveDate)
