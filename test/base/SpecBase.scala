@@ -19,7 +19,7 @@ package base
 import controllers.actions.*
 import generators.{Generators, UserAnswersGenerator}
 import models.*
-import models.core._
+import models.core.*
 import models.etmp.{DesAddress, VatCustomerInfo}
 import org.scalacheck.Arbitrary
 import org.scalacheck.Arbitrary.*
@@ -27,7 +27,7 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.{OptionValues, TryValues}
-import pages.corrections.{CorrectPreviousReturnPage, CorrectionReturnYearPage}
+import pages.corrections.{CorrectPreviousReturnPage, CorrectionCountryPage, CorrectionReturnPeriodPage, CorrectionReturnYearPage}
 import pages.{EmptyWaypoints, SalesToCountryPage, SoldGoodsPage, SoldToCountryPage, VatOnSalesPage, VatRatesFromCountryPage, Waypoints}
 import play.api.Application
 import play.api.i18n.{Messages, MessagesApi}
@@ -91,6 +91,8 @@ trait SpecBase
   val completedUserAnswersWithCorrections: UserAnswers = completeUserAnswers
     .set(CorrectPreviousReturnPage(0), true).success.value
     .set(CorrectionReturnYearPage(index), 2023).success.value
+    .set(CorrectionReturnPeriodPage(index), period).success.value
+    .set(CorrectionCountryPage(index, index), Country("DE", "Germany")).success.value
 
   val vatCustomerInfo: VatCustomerInfo =
     VatCustomerInfo(

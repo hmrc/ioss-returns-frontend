@@ -24,7 +24,7 @@ import queries.AllCorrectionPeriodsQuery
 
 import scala.util.Try
 
-case class CorrectPreviousReturnPage(etmpObligationDetails: Int) extends QuestionPage[Boolean] {
+case class CorrectPreviousReturnPage(numberOfExistingReturnPeriods: Int) extends QuestionPage[Boolean] {
 
   override def path: JsPath = JsPath \ toString
 
@@ -34,8 +34,8 @@ case class CorrectPreviousReturnPage(etmpObligationDetails: Int) extends Questio
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page = {
 
-    answers.get(CorrectPreviousReturnPage(etmpObligationDetails)) match {
-      case Some(true) => if (etmpObligationDetails > 1) {
+    answers.get(CorrectPreviousReturnPage(numberOfExistingReturnPeriods)) match {
+      case Some(true) => if (numberOfExistingReturnPeriods > 1) {
         CorrectionReturnYearPage(Index(0))
       } else {
         CorrectionReturnSinglePeriodPage(Index(0))
