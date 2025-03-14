@@ -17,9 +17,9 @@
 package services
 
 import cats.data.Validated.Invalid
-import controllers._
+import controllers.*
 import controllers.actions.AuthenticatedControllerComponents
-import controllers.corrections.{routes => correctionsRoutes}
+import controllers.corrections.routes as correctionsRoutes
 import logging.Logging
 import models.requests.DataRequest
 import models.{DataMissingError, Index, Period, ValidationError}
@@ -27,7 +27,7 @@ import pages.corrections.CorrectPreviousReturnPage
 import pages.{VatRatesFromCountryPage, Waypoints}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{AnyContent, Call, MessagesControllerComponents}
-import queries._
+import queries.*
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import javax.inject.Inject

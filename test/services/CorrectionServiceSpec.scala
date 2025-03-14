@@ -85,7 +85,7 @@ class CorrectionServiceSpec extends SpecBase with PrivateMethodTester with Befor
 
         val result = service.getAccumulativeVatForCountryTotalAmount(iossNumber, country1, period1).futureValue
 
-        result mustBe(isPreviouslyDeclaredCountry, returnCorrectionValue.maximumCorrectionValue)
+        result `mustBe`(isPreviouslyDeclaredCountry, returnCorrectionValue.maximumCorrectionValue)
         verify(mockVatReturnConnector, times(1)).get(eqTo(period1))(any())
       }
 
@@ -104,7 +104,7 @@ class CorrectionServiceSpec extends SpecBase with PrivateMethodTester with Befor
 
         whenReady(result.failed) { exp =>
 
-          exp mustBe a[Exception]
+          exp `mustBe` a[Exception]
         }
       }
     }

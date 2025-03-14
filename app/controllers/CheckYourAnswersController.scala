@@ -27,22 +27,20 @@ import models.{ConflictFound, ValidationError}
 import pages.corrections.CorrectPreviousReturnPage
 import pages.{CheckYourAnswersPage, SavedProgressPage, Waypoints}
 import play.api.i18n.{I18nSupport, Messages}
-import play.api.mvc._
+import play.api.mvc.*
 import queries.{AllCorrectionPeriodsQuery, TotalAmountVatDueGBPQuery}
-import services._
+import services.*
 import uk.gov.hmrc.govukfrontend.views.Aliases.Card
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{CardTitle, SummaryList}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax.FutureOps
-import viewmodels.checkAnswers._
+import viewmodels.checkAnswers.*
 import viewmodels.checkAnswers.corrections.{CorrectPreviousReturnSummary, CorrectionNoPaymentDueSummary, CorrectionReturnPeriodSummary}
-import viewmodels.govuk.summarylist._
+import viewmodels.govuk.summarylist.*
 import views.html.CheckYourAnswersView
 
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
@@ -51,10 +49,9 @@ class CheckYourAnswersController @Inject()(
                                             salesAtVatRateService: SalesAtVatRateService,
                                             coreVatReturnService: CoreVatReturnService,
                                             auditService: AuditService,
-                                            periodService: PeriodService,
+                                            partialReturnPeriodService: PartialReturnPeriodService,
                                             view: CheckYourAnswersView,
                                             saveForLaterConnector: SaveForLaterConnector,
-                                            partialReturnPeriodService: PartialReturnPeriodService,
                                             redirectService: RedirectService
                                           )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
@@ -77,20 +74,14 @@ class CheckYourAnswersController @Inject()(
       } yield {
 
         val containsCorrections = request.userAnswers.get(AllCorrectionPeriodsQuery).isDefined
-
+        
         val (noPaymentDueCountries, totalVatToCountries) = salesAtVatRateService.getVatOwedToCountries(request.userAnswers).partition(vat => vat.totalVat <= 0)
-
+        
         val totalVatOnSales = salesAtVatRateService.getTotalVatOwedAfterCorrections(request.userAnswers)
 
         val maybeExclusion: Option[EtmpExclusion] = request.registrationWrapper.registration.exclusions.lastOption
 
-        val nextPeriodString = periodService.getNextPeriod(period).displayYearMonth
-
-        val nextPeriod: LocalDate = LocalDate.parse(nextPeriodString, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-
-        val isFinalReturn = maybeExclusion.fold(false) { exclusions =>
-          nextPeriod.isAfter(exclusions.effectiveDate)
-        }
+        val isFinalReturn: Boolean = partialReturnPeriodService.isFinalReturn(maybeExclusion, period)
 
         Ok(view(
           waypoints,
@@ -186,12 +177,12 @@ class CheckYourAnswersController @Inject()(
 
   private def getBusinessSummaryList(request: DataRequest[AnyContent], waypoints: Waypoints)(implicit hc: HeaderCarrier, messages: Messages) = {
 
-    val maybePartialReturnPeriod = partialReturnPeriodService.getPartialReturnPeriod(
+    val futureMaybePartialReturnPeriod = partialReturnPeriodService.getPartialReturnPeriod(
       request.registrationWrapper,
       request.userAnswers.period
     )
 
-    val summaryListFuture = maybePartialReturnPeriod.map { maybePartialReturnPeriod =>
+    val summaryListFuture = futureMaybePartialReturnPeriod.map { maybePartialReturnPeriod =>
       val period = maybePartialReturnPeriod.getOrElse(request.userAnswers.period)
       val rows = Seq(
         BusinessNameSummary.row(request.registrationWrapper),
@@ -223,7 +214,6 @@ class CheckYourAnswersController @Inject()(
           case Left(e) =>
             logger.error(s"Unexpected result on submit: $e")
             Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
-
         }
     }
 }

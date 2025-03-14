@@ -21,7 +21,7 @@ import connectors.ReturnStatusConnector
 import models.core.{Match, MatchType}
 import models.etmp.EtmpExclusion
 import models.etmp.EtmpExclusionReason.*
-import models.{PartialReturnPeriod, PeriodWithStatus, RegistrationWrapper, SubmissionStatus}
+import models.{PartialReturnPeriod, Period, PeriodWithStatus, RegistrationWrapper, StandardPeriod, SubmissionStatus}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.mockito.Mockito.when
@@ -198,9 +198,105 @@ class PartialReturnPeriodServiceSpec extends SpecBase with BeforeAndAfterEach {
 
       result mustBe None
     }
-
   }
 
+  ".isFinalReturn" - {
 
+    val today: LocalDate = LocalDate.now(stubClockAtArbitraryDate)
+    val period = StandardPeriod(today.getYear, today.getMonth)
+    val etmpExclusion: EtmpExclusion = EtmpExclusion(
+      exclusionReason = TransferringMSID,
+      effectiveDate = today,
+      decisionDate = today,
+      quarantine = false
+    )
 
+    "must return false when there is no exclusion present" in {
+
+      val service = new PartialReturnPeriodService(mockReturnStatusConnector, mockCoreRegValidationService)
+
+      val result = service.isFinalReturn(None, period)
+
+      result mustBe false
+    }
+
+    "when an exclusion is present" - {
+
+      "and the exclusion reason is code 6" - {
+
+        "must return true when the effective date is within the current period" in {
+
+          val service = new PartialReturnPeriodService(mockReturnStatusConnector, mockCoreRegValidationService)
+
+          val result = service.isFinalReturn(Some(etmpExclusion), period)
+
+          result mustBe true
+        }
+
+        "must return false when the effective date is outside the current period" in {
+
+          val nextPeriod: Period = period.getNext
+          val service = new PartialReturnPeriodService(mockReturnStatusConnector, mockCoreRegValidationService)
+
+          val result = service.isFinalReturn(Some(etmpExclusion), nextPeriod)
+
+          result mustBe false
+        }
+      }
+
+      "and the exclusion reason is not code -1" - {
+
+        Seq(NoLongerSupplies, CeasedTrade, NoLongerMeetsConditions, FailsToComply, VoluntarilyLeaves).foreach { exclusionReason =>
+
+          s"must return true when the last day of the next period is after the effective date for code $exclusionReason" in {
+
+            val nextPeriod: LocalDate = period.getNext.lastDay
+
+            val etmpExclusionNotReversal: EtmpExclusion = etmpExclusion.copy(
+              exclusionReason = exclusionReason,
+              effectiveDate = nextPeriod.minusDays(1)
+            )
+
+            val service = new PartialReturnPeriodService(mockReturnStatusConnector, mockCoreRegValidationService)
+
+            val result = service.isFinalReturn(Some(etmpExclusionNotReversal), period)
+
+            result mustBe true
+          }
+
+          s"must return false when the last day of the next period is on or before the effective date for code $exclusionReason" in {
+
+            val lastDayOfNextPeriod: LocalDate = period.getNext.lastDay
+
+            val etmpExclusionNotReversal: EtmpExclusion = etmpExclusion.copy(
+              exclusionReason = exclusionReason,
+              effectiveDate = lastDayOfNextPeriod
+            )
+
+            val service = new PartialReturnPeriodService(mockReturnStatusConnector, mockCoreRegValidationService)
+
+            val result = service.isFinalReturn(Some(etmpExclusionNotReversal), period)
+
+            result mustBe false
+          }
+        }
+      }
+
+      "and the exclusion reason is code -1" - {
+
+        "must return false" in {
+
+          val etmpExclusionReversal: EtmpExclusion = etmpExclusion.copy(
+            exclusionReason = Reversal
+          )
+
+          val service = new PartialReturnPeriodService(mockReturnStatusConnector, mockCoreRegValidationService)
+
+          val result = service.isFinalReturn(Some(etmpExclusionReversal), period)
+
+          result mustBe false
+        }
+      }
+    }
+  }
 }
