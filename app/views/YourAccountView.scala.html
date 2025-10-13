@@ -41,7 +41,8 @@
         hasSubmittedFinalReturn: Boolean,
         returnsViewModel: ReturnsViewModel,
         previousRegistrationPrepareData: List[PrepareData],
-        hasDeregisteredFromVat: Boolean
+        hasDeregisteredFromVat: Boolean,
+        userResearchUrl: String
 )(implicit request: Request[_], messages: Messages)
 
     @layout(
@@ -340,6 +341,12 @@
                     }
                 </div>
             </div>
+                <div>
+                    <h2 class="govuk-heading-m">@messages("userResearch.heading")</h2>
+                         <p class="govuk-body">
+                            <a href="@userResearchUrl" class="govuk-link" target="_blank">@messages("userResearch.link.text")</a>
+                        </p>
+                </div>
         </div>
 
     }

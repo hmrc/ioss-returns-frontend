@@ -71,7 +71,8 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
             nilReturn = nilReturn,
             period = period,
             owedAmount = totalOwed,
-            externalUrl = None
+            externalUrl = None,
+            "https://test-url.com"
           )(request, messages(application)).toString
         }
       }
@@ -85,6 +86,7 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
         .success.value
 
       applicationBuilder(userAnswers = Some(completedAnswers))
+        .configure("urls.userResearch2" -> "https://test-url.com")
         .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
         .build()
     }
@@ -119,7 +121,8 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
               nilReturn = nilReturn,
               period = period,
               owedAmount = totalOwed,
-              externalUrl = maybeExternalUrl
+              externalUrl = maybeExternalUrl,
+              "https://test-url.com"
             )(request, messages(application)).toString
           }
         }
@@ -147,7 +150,8 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
           nilReturn = true,
           period = period,
           owedAmount = totalOwed,
-          externalUrl = None
+          externalUrl = None,
+          "https://test-url.com"
         )(request, messages(application)).toString
       }
     }

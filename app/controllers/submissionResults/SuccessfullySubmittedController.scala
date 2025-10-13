@@ -16,8 +16,9 @@
 
 package controllers.submissionResults
 
+import config.FrontendAppConfig
 import connectors.VatReturnConnector
-import controllers.actions._
+import controllers.actions.*
 import pages.SoldGoodsPage
 import pages.corrections.CorrectPreviousReturnPage
 import play.api.i18n.{I18nSupport, MessagesApi}
@@ -34,6 +35,7 @@ class SuccessfullySubmittedController @Inject()(
                                                  override val messagesApi: MessagesApi,
                                                  cc: AuthenticatedControllerComponents,
                                                  vatReturnConnector: VatReturnConnector,
+                                                 frontendAppConfig: FrontendAppConfig,
                                                  view: SuccessfullySubmittedView
                                                )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
@@ -41,6 +43,8 @@ class SuccessfullySubmittedController @Inject()(
 
   def onPageLoad: Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
+      val userResearchUrl = frontendAppConfig.userResearchUrl2
+      
       val returnReference = generateVatReturnReference(request.iossNumber, request.userAnswers.period)
       val hasSoldGoodsPage = request.userAnswers.get(SoldGoodsPage)
       val hasCorrectedPreviousReturn = request.userAnswers.get(CorrectPreviousReturnPage(0))
@@ -65,7 +69,8 @@ class SuccessfullySubmittedController @Inject()(
           nilReturn = nilReturn,
           period = request.userAnswers.period,
           owedAmount = totalOwed,
-          externalUrl = maybeExternalUrl
+          externalUrl = maybeExternalUrl,
+          userResearchUrl
         ))
       }
   }

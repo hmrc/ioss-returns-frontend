@@ -176,6 +176,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         )).toFuture
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWrapperEmptyExclusions)
+        .configure("urls.userResearch1" -> "https://test-url.com")
         .overrides(
           bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector),
           bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
@@ -217,7 +218,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             stubClockAtArbitraryDate
           )(messages(application)),
           List.empty,
-          hasDeregisteredFromVat = false
+          hasDeregisteredFromVat = false,
+          "https://test-url.com"
         )(request, messages(application)).toString
       }
     }
@@ -246,6 +248,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         userAnswers = Some(emptyUserAnswers),
         registration = registrationWrapperWithExclusion,
         clock = Some(Clock.systemUTC()))
+        .configure("urls.userResearch1" -> "https://test-url.com")
         .overrides(
           bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector),
           bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
@@ -287,7 +290,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             stubClockAtArbitraryDate
           )(messages(application)),
           List.empty,
-          hasDeregisteredFromVat = true
+          hasDeregisteredFromVat = true,
+          "https://test-url.com"
         )(request, messages(application)).toString
       }
     }
@@ -316,6 +320,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         userAnswers = Some(emptyUserAnswers),
         registration = registrationWrapperWithExclusion,
         clock = Some(Clock.systemUTC()))
+        .configure("urls.userResearch1" -> "https://test-url.com")
         .overrides(
           bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector),
           bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
@@ -357,7 +362,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             stubClockAtArbitraryDate
           )(messages(application)),
           List.empty,
-          hasDeregisteredFromVat = true
+          hasDeregisteredFromVat = true,
+          "https://test-url.com"
         )(request, messages(application)).toString
       }
     }
@@ -394,6 +400,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         )).toFuture
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWrapperEmptyExclusions)
+        .configure("urls.userResearch1" -> "https://test-url.com")
         .overrides(
           bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector),
           bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
@@ -435,7 +442,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             stubClockAtArbitraryDate
           )(messages(application)),
           List.empty,
-          hasDeregisteredFromVat = true
+          hasDeregisteredFromVat = true,
+          "https://test-url.com"
         )(request, messages(application)).toString
       }
     }
@@ -493,6 +501,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         clock = Some(Clock.systemUTC()),
         getRegistrationAction = Some(fakeMultipleEnrolmentsGetRegistrationAction)
       )
+        .configure("urls.userResearch1" -> "https://test-url.com")
         .overrides(
           bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector),
           bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
@@ -533,7 +542,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             stubClockAtArbitraryDate
           )(messages(application)),
           List(previousRegistrationPrepareData),
-          hasDeregisteredFromVat = false
+          hasDeregisteredFromVat = false,
+          "https://test-url.com"
         )(request, messages(application)).toString
 
         contentAsString(result).contains(messages(application).messages("yourAccount.previousRegistrations.payLink"))
@@ -598,6 +608,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         clock = Some(Clock.systemUTC()),
         getRegistrationAction = Some(fakeMultipleEnrolmentsGetRegistrationAction)
       )
+        .configure("urls.userResearch1" -> "https://test-url.com")
         .overrides(
           bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector),
           bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
@@ -638,7 +649,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             stubClockAtArbitraryDate
           )(messages(application)),
           List(previousRegistrationPrepareData),
-          hasDeregisteredFromVat = false
+          hasDeregisteredFromVat = false,
+          "https://test-url.com"
         )(request, messages(application)).toString
 
         contentAsString(result).contains(messages(application).messages("yourAccount.previousRegistrations.payLink"))
@@ -673,6 +685,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           )).toFuture
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWrapperEmptyExclusions)
+          .configure("urls.userResearch1" -> "https://test-url.com")
           .overrides(
             bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector),
             bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
@@ -714,7 +727,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               stubClockAtArbitraryDate
             )(messages(application)),
             List.empty,
-            hasDeregisteredFromVat = false
+            hasDeregisteredFromVat = false,
+            "https://test-url.com"
           )(request, messages(application)).toString
         }
       }
@@ -735,6 +749,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           )).toFuture
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWrapperEmptyExclusions)
+          .configure("urls.userResearch1" -> "https://test-url.com")
           .overrides(
             bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector),
             bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
@@ -777,7 +792,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               stubClockAtArbitraryDate
             )(messages(application)),
             List.empty,
-            hasDeregisteredFromVat = false
+            hasDeregisteredFromVat = false,
+            "https://test-url.com"
           )(request, messages(application)).toString
         }
       }
@@ -803,6 +819,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           )).toFuture
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWrapperEmptyExclusions)
+          .configure("urls.userResearch1" -> "https://test-url.com")
           .overrides(
             bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector),
             bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
@@ -845,7 +862,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               stubClockAtArbitraryDate
             )(messages(application)),
             List.empty,
-            hasDeregisteredFromVat = false
+            hasDeregisteredFromVat = false,
+            "https://test-url.com"
           )(request, messages(application)).toString
         }
       }
@@ -869,6 +887,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           )).toFuture
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWrapperEmptyExclusions)
+          .configure("urls.userResearch1" -> "https://test-url.com")
           .overrides(
             bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector),
             bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
@@ -910,7 +929,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               stubClockAtArbitraryDate
             )(messages(application)),
             List.empty,
-            hasDeregisteredFromVat = false
+            hasDeregisteredFromVat = false,
+            "https://test-url.com"
           )(request, messages(application)).toString
         }
       }
@@ -936,6 +956,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           )).toFuture
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWrapperEmptyExclusions)
+          .configure("urls.userResearch1" -> "https://test-url.com")
           .overrides(
             bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector),
             bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
@@ -978,7 +999,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               stubClockAtArbitraryDate
             )(messages(application)),
             List.empty,
-            hasDeregisteredFromVat = false
+            hasDeregisteredFromVat = false,
+            "https://test-url.com"
           )(request, messages(application)).toString
         }
       }
@@ -1007,6 +1029,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           )).toFuture
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWrapperEmptyExclusions)
+          .configure("urls.userResearch1" -> "https://test-url.com")
           .overrides(
             bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector),
             bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
@@ -1050,7 +1073,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               stubClockAtArbitraryDate
             )(messages(application)),
             List.empty,
-            hasDeregisteredFromVat = false
+            hasDeregisteredFromVat = false,
+            "https://test-url.com"
           )(request, messages(application)).toString
         }
       }
@@ -1084,6 +1108,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           )).toFuture
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWrapperEmptyExclusions)
+          .configure("urls.userResearch1" -> "https://test-url.com")
           .overrides(
             bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector),
             bind[FinancialDataConnector].toInstance(mockFinancialDataConnector),
@@ -1127,7 +1152,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
               stubClockAtArbitraryDate
             )(messages(application)),
             List.empty,
-            hasDeregisteredFromVat = false
+            hasDeregisteredFromVat = false,
+            "https://test-url.com"
           )(request, messages(application)).toString
         }
       }

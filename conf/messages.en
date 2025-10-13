@@ -555,3 +555,6 @@ ivTechnicalIssue.p = Try again later.
 noLongerAbleToViewReturn.title = You can no longer view this IOSS return
 noLongerAbleToViewReturn.heading = You can no longer view this IOSS return
 noLongerAbleToViewReturn.p = You cannot view returns that are over 6 years old.
+
+userResearch.heading = Help us improve the service
+userResearch.link.text = Sign up to take part in research about the One Stop Shop service.

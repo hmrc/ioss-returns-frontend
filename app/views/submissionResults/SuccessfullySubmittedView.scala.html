@@ -30,7 +30,8 @@
         nilReturn: Boolean,
         period: Period,
         owedAmount: BigDecimal,
-        externalUrl: Option[String]
+        externalUrl: Option[String],
+        userResearchUrl: String
 )(implicit request: Request[_], messages: Messages)
 
     @layout(pageTitle = titleNoForm(messages("successfullySubmitted.title")), showBackLink =false) {
@@ -68,4 +69,9 @@
             @messages("successfullySubmitted.next.info.returnToAccount")
             </a>
         </p>
+
+        <h2 class="govuk-heading-m">@messages("userResearch.heading")</h2>
+            <p class="govuk-body">
+                <a href="@userResearchUrl" class="govuk-link" target="_blank">@messages("userResearch.link.text")</a>
+            </p>
     }
