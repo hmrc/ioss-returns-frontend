@@ -19,7 +19,6 @@ package repositories
 import config.FrontendAppConfig
 import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.model._
-import org.mongodb.scala.ObservableFuture
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import viewmodels.payments.SelectedIossNumber

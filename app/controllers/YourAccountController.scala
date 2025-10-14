@@ -59,25 +59,29 @@ class YourAccountController @Inject()(
 
   def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetRegistration.async {
     implicit request =>
+
+      val userResearchUrl = appConfig.userResearchUrl1
+      
       val results: Future[(CurrentReturnsResponse, PrepareDataResponse, Option[UserAnswers])] = getCurrentReturns()
 
       if (request.enrolments.enrolments.count(_.key == appConfig.iossEnrolment) > 1) {
         previousRegistrationService.getPreviousRegistrationPrepareFinancialData().flatMap { prepareDataList =>
-          prepareView(results, prepareDataList, waypoints)
+          prepareView(results, prepareDataList, waypoints, userResearchUrl)
         }
       } else {
-        prepareView(results, List.empty, waypoints)
+        prepareView(results, List.empty, waypoints, userResearchUrl)
       }
   }
 
   private def prepareView(
                            results: Future[(CurrentReturnsResponse, PrepareDataResponse, Option[UserAnswers])],
                            previousRegistrationPrepareData: List[PrepareData],
-                           waypoints: Waypoints
+                           waypoints: Waypoints,
+                           userResearchUrl: String
                          )(implicit request: RegistrationRequest[AnyContent]): Future[Result] = {
     results.map {
       case (Right(availableReturns), Right(vatReturnsWithFinancialData), answers) =>
-        preparedViewWithFinancialData(availableReturns, vatReturnsWithFinancialData, previousRegistrationPrepareData, waypoints, answers.map(_.period))
+        preparedViewWithFinancialData(availableReturns, vatReturnsWithFinancialData, previousRegistrationPrepareData, waypoints, answers.map(_.period), userResearchUrl)
       case (Left(error), error2, _) =>
         logger.error(s"there was an error with period with status $error and getting periods with outstanding amounts $error2")
         throw new Exception(error.toString)
@@ -123,7 +127,8 @@ class YourAccountController @Inject()(
                                              currentPayments: PrepareData,
                                              previousRegistrationPrepareData: List[PrepareData],
                                              waypoints: Waypoints,
-                                             periodInProgress: Option[Period]
+                                             periodInProgress: Option[Period],
+                                             userResearchUrl: String
                                            )(implicit request: RegistrationRequest[AnyContent]): Result = {
 
     val maybeExclusion: Option[EtmpExclusion] = request.registrationWrapper.registration.exclusions.lastOption
@@ -163,7 +168,8 @@ class YourAccountController @Inject()(
       hasSubmittedFinalReturn = currentReturns.finalReturnsCompleted,
       returnsViewModel = returnsViewModel,
       previousRegistrationPrepareData = previousRegistrationPrepareData,
-      hasDeregisteredFromVat = hasDeregistered
+      hasDeregisteredFromVat = hasDeregistered,
+      userResearchUrl
     ))
   }
 
