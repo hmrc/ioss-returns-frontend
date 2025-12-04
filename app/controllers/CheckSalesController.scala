@@ -49,6 +49,7 @@ class CheckSalesController @Inject()(
 
   def onPageLoad(waypoints: Waypoints, countryIndex: Index): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
+      println("???")
       getCountry(waypoints, countryIndex) { country =>
         getAllVatRatesFromCountry(waypoints, countryIndex) { vatRates =>
 
