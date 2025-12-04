@@ -500,7 +500,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         userAnswers = Some(emptyUserAnswers),
         registration = registrationWrapper,
         clock = Some(Clock.systemUTC()),
-        getRegistrationAction = Some(fakeMultipleEnrolmentsGetRegistrationActionProvider)
+        getRegistrationAction = Some(fakeMultipleEnrolmentsGetRegistrationAction)
       )
         .configure("urls.userResearch1" -> "https://test-url.com")
         .overrides(
