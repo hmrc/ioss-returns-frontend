@@ -17,7 +17,7 @@
 package connectors
 
 import base.SpecBase
-import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.client.WireMock.*
 import generators.Generators
 import models.RegistrationWrapper
 import models.enrolments.EACDEnrolments
@@ -28,7 +28,7 @@ import play.api.libs.json.Json
 import play.api.test.Helpers.running
 import uk.gov.hmrc.http.HeaderCarrier
 
-class RegistrationConnectorSpec
+class IntermediaryRegistrationConnectorSpec
   extends SpecBase
     with WireMockHelper
     with ScalaCheckPropertyChecks
@@ -38,26 +38,26 @@ class RegistrationConnectorSpec
 
   private def application: Application = {
     applicationBuilder()
-      .configure("microservice.services.ioss-registration.port" -> server.port)
+      .configure("microservice.services.ioss-intermediary-registration.port" -> server.port)
       .build()
   }
 
   ".get" - {
-    def url(iossNumber: String) = s"/ioss-registration/registration/$iossNumber"
+    def url(intermediaryNumber: String) = s"/ioss-intermediary-registration/registration/$intermediaryNumber"
 
     "must return a registration when the server provides one" in {
 
       val app = application
 
       running(app) {
-        val connector = app.injector.instanceOf[RegistrationConnector]
-        val registration = arbitrary[RegistrationWrapper].sample.value
+        val connector = app.injector.instanceOf[IntermediaryRegistrationConnector]
+        val registration = arbitrary[IntermediaryRegistrationWrapper].sample.value
 
         val responseBody = Json.toJson(registration).toString
 
-        server.stubFor(get(urlEqualTo(url(iossNumber))).willReturn(ok().withBody(responseBody)))
+        server.stubFor(get(urlEqualTo(url(intermediaryNumber))).willReturn(ok().withBody(responseBody)))
 
-        val result = connector.get(iossNumber).futureValue
+        val result = connector.get(intermediaryNumber).futureValue
 
         result mustEqual registration
       }
@@ -66,14 +66,14 @@ class RegistrationConnectorSpec
   }
 
   ".getAccounts" - {
-    val url = s"/ioss-registration/accounts"
+    val url = s"/ioss-intermediary-registration/accounts"
 
     "must return a registration when the server provides one" in {
 
       val app = application
 
       running(app) {
-        val connector = app.injector.instanceOf[RegistrationConnector]
+        val connector = app.injector.instanceOf[IntermediaryRegistrationConnector]
         val eACDEnrolments = arbitrary[EACDEnrolments].sample.value
 
         val responseBody = Json.toJson(eACDEnrolments).toString

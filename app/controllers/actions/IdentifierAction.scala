@@ -40,7 +40,6 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class IdentifierAction @Inject()(
                                   override val authConnector: AuthConnector,
-                                  accountService: AccountService,
                                   config: FrontendAppConfig,
                                   urlBuilderService: UrlBuilderService,
                                 )
@@ -67,28 +66,28 @@ class IdentifierAction @Inject()(
     ) {
 
       case Some(credentials) ~ enrolments ~ Some(Organisation) ~ _ =>
-        findIossFromEnrolments(enrolments).map { maybeIossNumber =>
-          (findVrnFromEnrolments(enrolments), maybeIossNumber) match {
-            case (Some(vrn), Some(iossNumber)) =>
-              getSuccessfulResponse(request, credentials, vrn, iossNumber, enrolments)
-            case _ => throw InsufficientEnrolments()
-          }
+        findVrnFromEnrolments(enrolments) match {
+          case Some(vrn) if hasIossEnrolment(enrolments) =>
+            getSuccessfulResponse(request, credentials, vrn, enrolments).toFuture
+          case Some(vrn) if hasIntermediaryEnrolment(enrolments) =>
+            getSuccessfulResponse(request, credentials, vrn, enrolments).toFuture
+          case _ => throw InsufficientEnrolments()
         }
 
       case Some(credentials) ~ enrolments ~ Some(Individual) ~ confidence =>
-        findIossFromEnrolments(enrolments).map { maybeIossNumber =>
-          (findVrnFromEnrolments(enrolments), maybeIossNumber) match {
-            case (Some(vrn), Some(iossNumber)) =>
-              checkConfidenceAndGetResponse(request, credentials, vrn, iossNumber, confidence, enrolments)
-            case _ =>
-              throw InsufficientEnrolments()
-          }
+        findVrnFromEnrolments(enrolments) match {
+          case Some(vrn) if hasIossEnrolment(enrolments) =>
+            checkConfidenceAndGetResponse(request, credentials, vrn, confidence, enrolments).toFuture
+          case Some(vrn) if hasIntermediaryEnrolment(enrolments) =>
+            checkConfidenceAndGetResponse(request, credentials, vrn, confidence, enrolments).toFuture
+          case _ =>
+            throw InsufficientEnrolments()
         }
 
       case _ =>
         throw new UnauthorizedException("Unable to retrieve authorisation data")
 
-    } recoverWith {
+    }.recoverWith {
       case _: NoActiveSession =>
         Left(Redirect(config.loginUrl, Map("continue" ->
           Seq(urlBuilderService.loginContinueUrl(request).get(redirectPolicy).url)))).toFuture
@@ -105,10 +104,9 @@ class IdentifierAction @Inject()(
                                         request: Request[A],
                                         credentials: Credentials,
                                         vrn: Vrn,
-                                        iossNumber: String,
                                         enrolments: Enrolments
                                       ): Either[Result, IdentifierRequest[A]] = {
-    val identifierRequest = IdentifierRequest(request, credentials, vrn, iossNumber, enrolments)
+    val identifierRequest = IdentifierRequest(request, credentials, vrn, enrolments)
     Right(identifierRequest)
   }
 
@@ -116,30 +114,27 @@ class IdentifierAction @Inject()(
                                                 request: Request[A],
                                                 credentials: Credentials,
                                                 vrn: Vrn,
-                                                iossNumber: String,
                                                 confidence: ConfidenceLevel,
                                                 enrolments: Enrolments
                                               ): Either[Result, IdentifierRequest[A]] = {
     if (confidence >= ConfidenceLevel.L250) {
-      getSuccessfulResponse(request, credentials, vrn, iossNumber, enrolments)
+      getSuccessfulResponse(request, credentials, vrn, enrolments)
     } else {
       throw InsufficientConfidenceLevel()
     }
   }
 
-  private def findIossFromEnrolments(enrolments: Enrolments)(implicit hc: HeaderCarrier): Future[Option[String]] = {
-    val filteredIossNumbers = enrolments
+  private def hasIossEnrolment(enrolments: Enrolments): Boolean = {
+    enrolments
       .enrolments
-      .filter(_.key == config.iossEnrolment)
-      .flatMap(_.identifiers.filter(_.key == "IOSSNumber").map(_.value))
-      .toSeq
+      .exists(_.key == config.iossEnrolment)
+  }
 
-    filteredIossNumbers match {
-      case firstEnrolment :: Nil => Some(firstEnrolment).toFuture
-      case multipleEnrolments if multipleEnrolments.nonEmpty =>
-        accountService.getLatestAccount().map(x => Some(x))
-      case _ => None.toFuture
-    }
+  private def hasIntermediaryEnrolment(enrolments: Enrolments): Boolean = {
+    config.intermediaryEnabled &&
+      enrolments
+        .enrolments
+        .exists(_.key == config.intermediaryEnrolment)
   }
 
   private def findVrnFromEnrolments(enrolments: Enrolments): Option[Vrn] =

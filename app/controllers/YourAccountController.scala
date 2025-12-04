@@ -57,7 +57,7 @@ class YourAccountController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetRegistration.async {
+  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced.async {
     implicit request =>
 
       val userResearchUrl = appConfig.userResearchUrl1
@@ -112,7 +112,7 @@ class YourAccountController @Inject()(
     } yield {
       val answers = if (answersInSession.isEmpty) {
         savedForLater match {
-          case Right(Some(answers)) => Some(UserAnswers(request.userId, answers.period, answers.data, answers.lastUpdated))
+          case Right(Some(answers)) => Some(UserAnswers(request.userId, request.iossNumber, answers.period, answers.data, answers.lastUpdated))
           case _ => None
         }
       } else {

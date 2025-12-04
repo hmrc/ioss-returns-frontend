@@ -27,10 +27,12 @@ case class OptionalDataRequest[A] (
                                     vrn: Vrn,
                                     iossNumber: String,
                                     registrationWrapper: RegistrationWrapper,
+                                    intermediaryNumber: Option[String],
                                     userAnswers: Option[UserAnswers]
                                   ) extends WrappedRequest[A](request) {
 
   val userId: String = credentials.providerId
+  val isIntermediary: Boolean = intermediaryNumber.nonEmpty
 }
 
 case class DataRequest[A] (
@@ -39,8 +41,10 @@ case class DataRequest[A] (
                             vrn: Vrn,
                             iossNumber: String,
                             registrationWrapper: RegistrationWrapper,
+                            intermediaryNumber: Option[String],
                             userAnswers: UserAnswers
                           ) extends WrappedRequest[A](request) {
 
   val userId: String = credentials.providerId
+  val isIntermediary: Boolean = intermediaryNumber.nonEmpty
 }

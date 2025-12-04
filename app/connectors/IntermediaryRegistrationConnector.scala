@@ -19,21 +19,22 @@ package connectors
 import config.Service
 import models.RegistrationWrapper
 import models.enrolments.EACDEnrolments
+import models.etmp.intermediary.IntermediaryRegistrationWrapper
 import play.api.Configuration
-import uk.gov.hmrc.http.HttpReads.Implicits._
-import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpErrorFunctions, StringContextOps}
+import uk.gov.hmrc.http.HttpReads.Implicits.*
+import uk.gov.hmrc.http.client.HttpClientV2
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class RegistrationConnector @Inject()(config: Configuration, httpClientV2: HttpClientV2)
-                                     (implicit ec: ExecutionContext) extends HttpErrorFunctions {
+class IntermediaryRegistrationConnector @Inject()(config: Configuration, httpClientV2: HttpClientV2)
+                                                 (implicit ec: ExecutionContext) extends HttpErrorFunctions {
 
-  private val baseUrl = config.get[Service]("microservice.services.ioss-registration")
+  private val baseUrl = config.get[Service]("microservice.services.ioss-intermediary-registration")
 
-  def get(iossNumber: String)(implicit hc: HeaderCarrier): Future[RegistrationWrapper] =
-    httpClientV2.get(url"$baseUrl/registration/$iossNumber").execute[RegistrationWrapper]
+  def get(intermediaryNumber: String)(implicit hc: HeaderCarrier): Future[IntermediaryRegistrationWrapper] =
+    httpClientV2.get(url"$baseUrl/get-registration/$intermediaryNumber").execute[IntermediaryRegistrationWrapper]
 
   def getAccounts()(implicit hc: HeaderCarrier): Future[EACDEnrolments] =
     httpClientV2.get(url"$baseUrl/accounts").execute[EACDEnrolments]

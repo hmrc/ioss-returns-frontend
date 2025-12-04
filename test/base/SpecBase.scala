@@ -57,6 +57,7 @@ trait SpecBase
   val testCredentials: Credentials = Credentials(userAnswersId, "GGW")
   val vrn: Vrn = Vrn("123456789")
   val iossNumber: String = "IM9001234567"
+  val intermediaryNumber: String = "IN9007654321"
   val period: StandardPeriod = StandardPeriod(2024, Month.MARCH)
   val waypoints: Waypoints = EmptyWaypoints
   val index: Index = Index(0)

@@ -17,12 +17,13 @@
 package controllers
 
 import connectors.ReturnStatusConnector
-import controllers.actions._
+import controllers.actions.*
 import logging.Logging
 import models.SubmissionStatus
 import pages.EmptyWaypoints
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import services.VatReturnService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import javax.inject.Inject
@@ -30,30 +31,18 @@ import scala.concurrent.ExecutionContext
 
 class StartOutstandingReturnController @Inject()(
                                        cc: AuthenticatedControllerComponents,
-                                       returnStatusConnector: ReturnStatusConnector
+                                       vatReturnService: VatReturnService
                                      )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad: Action[AnyContent] = cc.authAndGetRegistration.async {
+  def onPageLoad: Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced.async {
     implicit request =>
-      returnStatusConnector.getCurrentReturns(request.iossNumber).map{
-        case Right(currentReturns) =>
-          val dueOrOverdueReturns = currentReturns
-            .returns
-            .filter(r => r.submissionStatus == SubmissionStatus.Due || r.submissionStatus == SubmissionStatus.Overdue)
-            .sortBy(_.dueDate)
-          dueOrOverdueReturns.size match {
-            case x if x > 0 =>
-              Redirect(routes.StartReturnController.onPageLoad(EmptyWaypoints, dueOrOverdueReturns.head.period))
-            case _ =>
-              Redirect(routes.NoReturnsDueController.onPageLoad())
-          }
-        case Left(error) =>
-          val message = s"Error when getting current returns ${error.body}"
-          logger.error(message)
-          throw new Exception(message)
+      vatReturnService.getOldestDueReturn(request.iossNumber).map {
+        case Some(oldestReturn) =>
+          Redirect(routes.StartReturnController.onPageLoad(EmptyWaypoints, oldestReturn.period))
+        case _ =>
+          Redirect(routes.NoReturnsDueController.onPageLoad())
       }
-
   }
 }

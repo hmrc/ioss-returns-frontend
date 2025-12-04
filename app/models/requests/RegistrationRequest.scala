@@ -28,8 +28,10 @@ case class RegistrationRequest[A](
                                    vrn: Vrn,
                                    iossNumber: String,
                                    registrationWrapper: RegistrationWrapper,
+                                   intermediaryNumber: Option[String],
                                    enrolments: Enrolments
                                  ) extends WrappedRequest[A](request) {
 
   val userId: String = credentials.providerId
+  val isIntermediary: Boolean = intermediaryNumber.nonEmpty
 }

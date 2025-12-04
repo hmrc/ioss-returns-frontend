@@ -29,7 +29,15 @@ class DataRetrievalAction(sessionRepository: SessionRepository)
 
   override protected def transform[A](request: RegistrationRequest[A]): Future[OptionalDataRequest[A]] =
     sessionRepository.get(request.userId).map { maybeUserAnswers =>
-      OptionalDataRequest(request.request, request.credentials, request.vrn, request.iossNumber, request.registrationWrapper, maybeUserAnswers)
+      OptionalDataRequest(
+        request.request,
+        request.credentials,
+        request.vrn,
+        request.iossNumber,
+        request.registrationWrapper,
+        request.intermediaryNumber,
+        maybeUserAnswers
+      )
     }
 }
 

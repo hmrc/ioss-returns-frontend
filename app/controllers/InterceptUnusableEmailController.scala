@@ -34,7 +34,7 @@ class InterceptUnusableEmailController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad: Action[AnyContent] = cc.authAndGetRegistrationWithoutCheckBouncedEmail {
+  def onPageLoad: Action[AnyContent] = cc.authAndGetRegistration() {
     implicit request =>
 
       Ok(view(request.registrationWrapper.registration.schemeDetails.businessEmailId, appConfig.amendRegistrationUrl))
