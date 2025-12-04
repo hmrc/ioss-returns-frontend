@@ -113,14 +113,14 @@ trait SpecBase
                                     userAnswers: Option[UserAnswers] = None,
                                     clock: Option[Clock] = None,
                                     registration: RegistrationWrapper = registrationWrapper,
-                                    getRegistrationAction: Option[GetRegistrationAction] = None
+                                    getRegistrationAction: Option[GetRegistrationActionProvider] = None
                                   ): GuiceApplicationBuilder = {
     val clockToBind = clock.getOrElse(stubClockAtArbitraryDate)
 
     val getRegistrationActionBind = if(getRegistrationAction.nonEmpty) {
-      bind[GetRegistrationAction].toInstance(getRegistrationAction.get)
+      bind[GetRegistrationActionProvider].toInstance(getRegistrationAction.get)
     } else {
-      bind[GetRegistrationAction].toInstance(new FakeGetRegistrationAction(registration))
+      bind[GetRegistrationActionProvider].toInstance(new FakeGetRegistrationActionProvider(registration))
     }
 
     new GuiceApplicationBuilder()

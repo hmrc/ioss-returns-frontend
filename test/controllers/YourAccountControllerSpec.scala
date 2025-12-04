@@ -19,7 +19,7 @@ package controllers
 import base.SpecBase
 import config.FrontendAppConfig
 import connectors.{FinancialDataConnector, IntermediaryRegistrationConnector, RegistrationConnector, ReturnStatusConnector, SaveForLaterConnector}
-import controllers.actions.GetRegistrationAction
+import controllers.actions.{GetRegistrationAction, GetRegistrationActionProvider}
 import generators.Generators
 import models.SubmissionStatus.*
 import models.etmp.EtmpExclusion
@@ -453,7 +453,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
       val enrolments: Enrolments = Enrolments(Set(enrolment1, enrolment2))
 
-      val fakeMultipleEnrolmentsGetRegistrationAction = new FakeMultipleEnrolmentsGetRegistrationAction(enrolments, registrationWrapper)
+      val fakeMultipleEnrolmentsGetRegistrationActionProvider = new FakeMultipleEnrolmentsGetRegistrationActionProvider(enrolments, registrationWrapper)
 
       val duePayment: Payment = Payment(
         period = nextPeriod,
@@ -500,7 +500,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         userAnswers = Some(emptyUserAnswers),
         registration = registrationWrapper,
         clock = Some(Clock.systemUTC()),
-        getRegistrationAction = Some(fakeMultipleEnrolmentsGetRegistrationAction)
+        getRegistrationAction = Some(fakeMultipleEnrolmentsGetRegistrationActionProvider)
       )
         .configure("urls.userResearch1" -> "https://test-url.com")
         .overrides(
@@ -560,7 +560,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
       val enrolment3: Enrolment = Enrolment(iossEnrolmentKey, Seq(EnrolmentIdentifier("IOSSNumber", additionalIossNumber)), "test", None)
       val enrolments: Enrolments = Enrolments(Set(enrolment1, enrolment2, enrolment3))
 
-      val fakeMultipleEnrolmentsGetRegistrationAction = new FakeMultipleEnrolmentsGetRegistrationAction(enrolments, registrationWrapper)
+      val fakeMultipleEnrolmentsGetRegistrationActionProvider = new FakeMultipleEnrolmentsGetRegistrationActionProvider(enrolments, registrationWrapper)
 
       val duePayment: Payment = Payment(
         period = nextPeriod,
@@ -607,7 +607,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         userAnswers = Some(emptyUserAnswers),
         registration = registrationWrapper,
         clock = Some(Clock.systemUTC()),
-        getRegistrationAction = Some(fakeMultipleEnrolmentsGetRegistrationAction)
+        getRegistrationAction = Some(fakeMultipleEnrolmentsGetRegistrationActionProvider)
       )
         .configure("urls.userResearch1" -> "https://test-url.com")
         .overrides(
@@ -1173,4 +1173,15 @@ class FakeMultipleEnrolmentsGetRegistrationAction(enrolments: Enrolments, regist
 
   override def refine[A](request: IdentifierRequest[A]): Future[Either[Result, RegistrationRequest[A]]] =
     Right(RegistrationRequest(request.request, request.credentials, request.vrn, "IM9001234567", registration, None, enrolments)).toFuture
+}
+
+class FakeMultipleEnrolmentsGetRegistrationActionProvider(enrolments: Enrolments, registrationWrapper: RegistrationWrapper) extends GetRegistrationActionProvider(
+  mock[AccountService],
+  mock[IntermediaryRegistrationConnector],
+  mock[RegistrationConnector],
+  mock[IntermediarySelectedIossNumberRepository],
+  mock[FrontendAppConfig]
+)(ExecutionContext.Implicits.global) {
+  override def apply(maybeIossNumber: Option[String] = None): GetRegistrationAction = new FakeMultipleEnrolmentsGetRegistrationAction(enrolments, registrationWrapper)
+
 }
