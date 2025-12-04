@@ -40,7 +40,7 @@ class SavedAnswersRetrievalAction (repository: SessionRepository, saveForLaterCo
       val answers = if (answersInSession.isEmpty) {
         savedForLater match {
           case Right(Some(answers)) =>
-            val newAnswers = UserAnswers(request.userId, answers.period, answers.data, answers.lastUpdated)
+            val newAnswers = UserAnswers(request.userId, request.iossNumber, answers.period, answers.data, answers.lastUpdated)
             repository.set(newAnswers)
             Some(newAnswers)
           case _ => None
@@ -52,7 +52,15 @@ class SavedAnswersRetrievalAction (repository: SessionRepository, saveForLaterCo
     }
 
     userAnswers.map {
-      OptionalDataRequest(request.request, request.credentials, request.vrn, request.iossNumber, request.registrationWrapper, _)
+      OptionalDataRequest(
+        request.request,
+        request.credentials,
+        request.vrn,
+        request.iossNumber,
+        request.registrationWrapper,
+        request.intermediaryNumber,
+        _
+      )
     }
   }
 }

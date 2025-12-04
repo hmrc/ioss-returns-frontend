@@ -352,6 +352,62 @@ class IdentifierActionSpec extends SpecBase with MockitoSugar with BeforeAndAfte
         }
       }
     }
+
+    "when the user is logged in as an Organisation Admin with a VAT enrolment and strong credentials" - {
+
+      "and the intermediaries toggle is enabled" - {
+
+      }
+      // TODO What if they register for both IOSS and as an intermediary?
+
+      "and the intermediaries toggle is disabled" - {
+
+        "when a user only has intermediary enrolment" - {}
+
+
+      }
+
+      "when user has ioss enrolment must succeed" in {
+
+        val application = applicationBuilder(None).build()
+
+        when(mockAuthConnector.authorise[RetrievalsType](any(), any())(any(), any()))
+          .thenReturn(Future.successful(Some(testCredentials) ~ vatEnrolmentWithIoss ~ Some(Organisation) ~ ConfidenceLevel.L50))
+        when(mockAccountService.getLatestAccount()(any())) thenReturn iossNumber.toFuture
+
+        running(application) {
+          val actionBuilder = application.injector.instanceOf[DefaultActionBuilder]
+          val appConfig = application.injector.instanceOf[FrontendAppConfig]
+
+          val authAction = new IdentifierAction(mockAuthConnector, mockAccountService, appConfig, urlBuilder(application))
+          val controller = new Harness(authAction, actionBuilder)
+          val result = controller.onPageLoad()(FakeRequest(GET, "/example"))
+
+          status(result) mustBe OK
+        }
+      }
+
+
+      "and no ioss enrolment must be redirected to the Not Registered page" in {
+
+        val application = applicationBuilder(None).build()
+
+        when(mockAuthConnector.authorise[RetrievalsType](any(), any())(any(), any()))
+          .thenReturn(Future.successful(Some(testCredentials) ~ vatEnrolmentWithNoIossEnrolment ~ Some(Organisation) ~ ConfidenceLevel.L50))
+
+        running(application) {
+          val actionBuilder = application.injector.instanceOf[DefaultActionBuilder]
+          val appConfig = application.injector.instanceOf[FrontendAppConfig]
+
+          val authAction = new IdentifierAction(mockAuthConnector, mockAccountService, appConfig, urlBuilder(application))
+          val controller = new Harness(authAction, actionBuilder)
+          val result = controller.onPageLoad()(FakeRequest(GET, "/example"))
+
+          status(result) mustBe SEE_OTHER
+          redirectLocation(result).value mustEqual routes.NotRegisteredController.onPageLoad().url
+        }
+      }
+    }
   }
 }
 

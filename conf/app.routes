@@ -28,6 +28,8 @@ GET         /your-account                                                       
 GET         /:period/start-return                                                     controllers.StartReturnController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, period: Period)
 POST        /:period/start-return                                                     controllers.StartReturnController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, period: Period)
 
+GET         /start-return-as-intermediary/:iossNumber                                 controllers.intermediary.StartReturnAsIntermediaryController.startReturnAsIntermediary(waypoints: Waypoints ?= EmptyWaypoints, iossNumber: String)
+
 GET         /sold-goods                                                               controllers.SoldGoodsController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
 POST        /sold-goods                                                               controllers.SoldGoodsController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints)
 

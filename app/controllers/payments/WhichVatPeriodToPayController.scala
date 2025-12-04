@@ -47,7 +47,7 @@ class WhichVatPeriodToPayController @Inject()(
 
   private val paymentsBaseUrl: Service = config.get[Service]("microservice.services.pay-api")
 
-  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetRegistration.async {
+  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced.async {
     implicit request =>
 
       val prepareFinancialData: Future[PrepareData] = paymentsService.prepareFinancialData()
@@ -70,7 +70,7 @@ class WhichVatPeriodToPayController @Inject()(
     }
   }
 
-  def onSubmit(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetRegistration.async {
+  def onSubmit(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced.async {
     implicit request => {
 
       val prepareFinancialData: Future[PrepareData] = paymentsService.prepareFinancialData()

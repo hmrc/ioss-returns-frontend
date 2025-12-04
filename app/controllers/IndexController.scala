@@ -30,7 +30,7 @@ class IndexController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad: Action[AnyContent] = cc.authAndGetRegistration { _ =>
+  def onPageLoad: Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced { _ =>
     Redirect(routes.YourAccountController.onPageLoad(waypoints = EmptyWaypoints))
   }
 }

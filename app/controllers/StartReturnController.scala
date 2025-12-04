@@ -96,7 +96,12 @@ class StartReturnController @Inject()(
 
         value => {
 
-          val defaultUserAnswers = UserAnswers(id = request.userId, period = period, lastUpdated = Instant.now(clock))
+          val defaultUserAnswers = UserAnswers(
+            id = request.userId,
+            iossNumber = request.iossNumber,
+            period = period,
+            lastUpdated = Instant.now(clock)
+          )
 
           val (clearSession: Boolean, userAnswers: UserAnswers) = request.userAnswers match {
             case Some(userAnswers) if userAnswers.period == period => (false, userAnswers)
