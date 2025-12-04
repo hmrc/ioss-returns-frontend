@@ -1183,5 +1183,4 @@ class FakeMultipleEnrolmentsGetRegistrationActionProvider(enrolments: Enrolments
   mock[FrontendAppConfig]
 )(ExecutionContext.Implicits.global) {
   override def apply(maybeIossNumber: Option[String] = None): GetRegistrationAction = new FakeMultipleEnrolmentsGetRegistrationAction(enrolments, registrationWrapper)
-
 }
