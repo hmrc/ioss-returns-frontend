@@ -21,6 +21,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.*
 import generators.Generators
 import models.RegistrationWrapper
 import models.enrolments.EACDEnrolments
+import models.etmp.intermediary.IntermediaryRegistrationWrapper
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.Application

@@ -46,7 +46,7 @@ class DataRetrievalActionSpec extends SpecBase with MockitoSugar {
       "must set userAnswers to `None` in the request" in {
 
         val repository = mock[SessionRepository]
-        val request    = RegistrationRequest(FakeRequest(), testCredentials, vrn, iossNumber, registrationWrapper, enrolments)
+        val request    = RegistrationRequest(FakeRequest(), testCredentials, vrn, iossNumber, registrationWrapper, None, enrolments)
 
         when(repository.get(any())) thenReturn Future.successful(None)
 
@@ -63,7 +63,7 @@ class DataRetrievalActionSpec extends SpecBase with MockitoSugar {
       "must add the userAnswers to the request" in {
 
         val repository = mock[SessionRepository]
-        val request    = RegistrationRequest(FakeRequest(), testCredentials, vrn, iossNumber, registrationWrapper, enrolments)
+        val request    = RegistrationRequest(FakeRequest(), testCredentials, vrn, iossNumber, registrationWrapper, None, enrolments)
 
         when(repository.get(any())) thenReturn Future.successful(Some(emptyUserAnswers))
 

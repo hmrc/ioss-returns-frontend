@@ -26,7 +26,7 @@ class StartReturnsJourneySpec extends AnyFreeSpec with JourneyHelpers with SpecB
   "when there are no other return periods available" - {
 
     "user can't complete any other returns other than the available return period" in {
-      startingFrom(YourAccountPage, answers = UserAnswers(userAnswersId, period))
+      startingFrom(YourAccountPage, answers = UserAnswers(userAnswersId, iossNumber, period))
         .run(
           goTo(StartReturnPage(period)),
           submitAnswer(StartReturnPage(period), false),
@@ -35,7 +35,7 @@ class StartReturnsJourneySpec extends AnyFreeSpec with JourneyHelpers with SpecB
     }
 
     "must ask user if they made eligible sales when they start the return for the available period" in {
-      startingFrom(YourAccountPage, answers = UserAnswers(userAnswersId, period))
+      startingFrom(YourAccountPage, answers = UserAnswers(userAnswersId, iossNumber, period))
         .run(
           goTo(StartReturnPage(period)),
           submitAnswer(StartReturnPage(period), true),

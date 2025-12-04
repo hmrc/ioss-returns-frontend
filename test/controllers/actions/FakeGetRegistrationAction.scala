@@ -16,23 +16,33 @@
 
 package controllers.actions
 
-import connectors.RegistrationConnector
+import config.FrontendAppConfig
+import connectors.{IntermediaryRegistrationConnector, RegistrationConnector}
 import models.RegistrationWrapper
 import models.requests.{IdentifierRequest, RegistrationRequest}
 import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.mvc.Result
+import repositories.IntermediarySelectedIossNumberRepository
+import services.AccountService
 import uk.gov.hmrc.auth.core.{Enrolment, Enrolments}
-import utils.FutureSyntax._
+import utils.FutureSyntax.*
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class FakeGetRegistrationAction(registration: RegistrationWrapper)
-  extends GetRegistrationAction(mock[RegistrationConnector]) {
+  extends GetRegistrationAction(
+    mock[AccountService],
+    mock[IntermediaryRegistrationConnector],
+    mock[RegistrationConnector],
+    mock[FrontendAppConfig],
+    None,
+    mock[IntermediarySelectedIossNumberRepository]
+  ) {
 
   private val iossEnrolmentKey = "HMRC-IOSS-ORG"
   private val enrolments: Enrolments = Enrolments(Set(Enrolment(iossEnrolmentKey, Seq.empty, "test", None)))
 
   override protected def refine[A](request: IdentifierRequest[A]): Future[Either[Result, RegistrationRequest[A]]] =
-    Right(RegistrationRequest(request.request, request.credentials, request.vrn, request.iossNumber, registration, enrolments)).toFuture
+    Right(RegistrationRequest(request.request, request.credentials, request.vrn, "IM9001234567", registration, None, enrolments)).toFuture
 }

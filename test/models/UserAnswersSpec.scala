@@ -83,6 +83,7 @@ class UserAnswersSpec extends SpecBase with Matchers {
     "must correctly transform UserAnswers to UserAnswersForAudit" in {
       val userAnswers = UserAnswers(
         id = "testId",
+        iossNumber = iossNumber,
         period = StandardPeriod(2023, Month.JUNE),
         data = Json.obj("key" -> "value"),
         lastUpdated = Instant.now
@@ -99,6 +100,7 @@ class UserAnswersSpec extends SpecBase with Matchers {
     "must handle empty data in UserAnswersForAudit" in {
       val userAnswers = UserAnswers(
         id = "testId",
+        iossNumber = iossNumber,
         period = StandardPeriod(2023, Month.JUNE),
         data = Json.obj(),
         lastUpdated = Instant.now
@@ -227,6 +229,7 @@ class UserAnswersSpec extends SpecBase with Matchers {
     "must handle lastUpdated field correctly" in {
       val userAnswers = UserAnswers(
         id = "testId",
+        iossNumber = iossNumber,
         period = StandardPeriod(2023, Month.JUNE),
         data = Json.obj("key" -> "value"),
         lastUpdated = Instant.parse("2023-06-15T00:00:00Z")
@@ -269,7 +272,7 @@ class UserAnswersSpec extends SpecBase with Matchers {
       when(page.path).thenReturn(JsPath \ "key")
       when(page.cleanup(any(), any())).thenReturn(Failure(new Exception("Cleanup failure")))
 
-      val userAnswers = UserAnswers("testId", StandardPeriod(2023, Month.JUNE), Json.obj())
+      val userAnswers = UserAnswers("testId", iossNumber, StandardPeriod(2023, Month.JUNE), Json.obj())
       val result = userAnswers.remove(page)
 
       result.isFailure mustBe true
@@ -306,7 +309,7 @@ class UserAnswersSpec extends SpecBase with Matchers {
         )
       )
 
-      val userAnswers = UserAnswers("testId", StandardPeriod(2023, Month.JUNE), nestedData)
+      val userAnswers = UserAnswers("testId", iossNumber, StandardPeriod(2023, Month.JUNE), nestedData)
       val userAnswersForAudit = userAnswers.toUserAnswersForAudit
 
       userAnswersForAudit.data mustBe nestedData

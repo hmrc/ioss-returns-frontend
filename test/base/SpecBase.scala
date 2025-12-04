@@ -80,7 +80,7 @@ trait SpecBase
   val arbitraryInstant: Instant = arbitraryDate.atStartOfDay(ZoneId.systemDefault).toInstant
   val stubClockAtArbitraryDate: Clock = Clock.fixed(arbitraryInstant, ZoneId.systemDefault)
 
-  def emptyUserAnswers: UserAnswers = UserAnswers(userAnswersId, period, lastUpdated = arbitraryInstant)
+  def emptyUserAnswers: UserAnswers = UserAnswers(userAnswersId, iossNumber, period, lastUpdated = arbitraryInstant)
 
   def completeUserAnswers: UserAnswers = emptyUserAnswers
     .set(SoldGoodsPage, true).success.value

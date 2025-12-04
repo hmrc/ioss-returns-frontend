@@ -46,6 +46,7 @@ class CoreVatReturnServiceSpec extends SpecBase with BeforeAndAfterEach {
     vrn,
     iossNumber,
     registrationWrapper,
+    None,
     completeUserAnswers
   )
 

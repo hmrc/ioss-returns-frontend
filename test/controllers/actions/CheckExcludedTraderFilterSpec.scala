@@ -52,7 +52,7 @@ class CheckExcludedTraderFilterSpec extends SpecBase with MockitoSugar with Befo
       when(mockConfig.exclusionsEnabled) thenReturn true
 
       running(application) {
-        val request = DataRequest(FakeRequest(), testCredentials, vrn, iossNumber, registrationWrapper, completeUserAnswers)
+        val request = DataRequest(FakeRequest(), testCredentials, vrn, iossNumber, registrationWrapper, None, completeUserAnswers)
         val controller = new Harness()
 
         val result = controller.callFilter(request).futureValue
@@ -82,7 +82,7 @@ class CheckExcludedTraderFilterSpec extends SpecBase with MockitoSugar with Befo
           )
         )
 
-        val request = DataRequest(FakeRequest(), testCredentials, vrn, iossNumber, excludedRegistration, completeUserAnswers)
+        val request = DataRequest(FakeRequest(), testCredentials, vrn, iossNumber, excludedRegistration, None, completeUserAnswers)
         val controller = new Harness()
 
         val result = controller.callFilter(request).futureValue
@@ -112,7 +112,7 @@ class CheckExcludedTraderFilterSpec extends SpecBase with MockitoSugar with Befo
           )
         )
 
-        val request = DataRequest(FakeRequest(), testCredentials, vrn, iossNumber, excludedRegistration, completeUserAnswers)
+        val request = DataRequest(FakeRequest(), testCredentials, vrn, iossNumber, excludedRegistration, None, completeUserAnswers)
         val controller = new Harness()
 
         val result = controller.callFilter(request).futureValue
@@ -143,7 +143,7 @@ class CheckExcludedTraderFilterSpec extends SpecBase with MockitoSugar with Befo
           )
         )
 
-        val request = DataRequest(FakeRequest(), testCredentials, vrn, iossNumber, excludedRegistration, completeUserAnswers)
+        val request = DataRequest(FakeRequest(), testCredentials, vrn, iossNumber, excludedRegistration, None, completeUserAnswers)
         val controller = new Harness()
 
         val result = controller.callFilter(request).futureValue
