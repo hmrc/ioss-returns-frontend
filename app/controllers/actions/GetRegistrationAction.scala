@@ -32,15 +32,10 @@ import utils.FutureSyntax.FutureOps
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class GetRegistrationAction(
-                             accountService: AccountService,
-                             intermediaryRegistrationConnector: IntermediaryRegistrationConnector,
-                             registrationConnector: RegistrationConnector,
-                             config: FrontendAppConfig,
-                             requestedMaybeIossNumber: Option[String],
-                             intermediarySelectedIossNumberRepository: IntermediarySelectedIossNumberRepository
-                           )(implicit val executionContext: ExecutionContext)
-  extends ActionRefiner[IdentifierRequest, RegistrationRequest] with Logging {
+class GetRegistrationAction @Inject()(
+                                       val registrationConnector: RegistrationConnector
+                                     )(implicit val executionContext: ExecutionContext)
+  extends ActionRefiner[IdentifierRequest, RegistrationRequest] {
 
   override protected def refine[A](request: IdentifierRequest[A]): Future[Either[Result, RegistrationRequest[A]]] = {
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request.request, request.request.session)
