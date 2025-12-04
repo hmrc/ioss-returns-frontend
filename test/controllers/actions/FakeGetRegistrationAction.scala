@@ -28,7 +28,7 @@ import uk.gov.hmrc.auth.core.{Enrolment, Enrolments}
 import utils.FutureSyntax.*
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class FakeGetRegistrationAction(registration: RegistrationWrapper)
   extends GetRegistrationAction(
@@ -45,4 +45,17 @@ class FakeGetRegistrationAction(registration: RegistrationWrapper)
 
   override protected def refine[A](request: IdentifierRequest[A]): Future[Either[Result, RegistrationRequest[A]]] =
     Right(RegistrationRequest(request.request, request.credentials, request.vrn, "IM9001234567", registration, None, enrolments)).toFuture
+}
+
+class FakeGetRegistrationActionProvider(registrationWrapper: RegistrationWrapper)
+extends GetRegistrationActionProvider(
+  mock[AccountService],
+  mock[IntermediaryRegistrationConnector],
+  mock[RegistrationConnector],
+  mock[IntermediarySelectedIossNumberRepository],
+  mock[FrontendAppConfig]
+)(ExecutionContext.Implicits.global) {
+
+  override def apply(maybeIossNumber: Option[String] = None): GetRegistrationAction = new FakeGetRegistrationAction(registrationWrapper)
+
 }
