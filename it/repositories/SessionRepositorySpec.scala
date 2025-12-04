@@ -29,7 +29,7 @@ class SessionRepositorySpec
   private val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
   private val period: Period = StandardPeriod(2024, Month.MARCH)
 
-  private val userAnswers = UserAnswers("id", period, Json.obj("foo" -> "bar"), Instant.ofEpochSecond(1))
+  private val userAnswers = UserAnswers("id", "IM9001234567", period, Json.obj("foo" -> "bar"), Instant.ofEpochSecond(1))
 
   private val mockAppConfig = mock[FrontendAppConfig]
   when(mockAppConfig.cacheTtl) thenReturn 1L

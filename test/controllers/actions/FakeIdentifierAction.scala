@@ -30,7 +30,6 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class FakeIdentifierAction extends IdentifierAction(
   mock[AuthConnector],
-  mock[AccountService],
   mock[FrontendAppConfig],
   mock[UrlBuilderService]
 )(ExecutionContext.Implicits.global) {
@@ -43,7 +42,6 @@ class FakeIdentifierAction extends IdentifierAction(
       request,
       Credentials("12345-credId", "GGW"),
       Vrn("123456789"),
-      "IM9001234567",
       enrolments
     )).toFuture
 }

@@ -18,7 +18,7 @@ package controllers
 
 import base.SpecBase
 import config.FrontendAppConfig
-import connectors.{FinancialDataConnector, RegistrationConnector, ReturnStatusConnector, SaveForLaterConnector}
+import connectors.{FinancialDataConnector, IntermediaryRegistrationConnector, RegistrationConnector, ReturnStatusConnector, SaveForLaterConnector}
 import controllers.actions.GetRegistrationAction
 import generators.Generators
 import models.SubmissionStatus.*
@@ -38,7 +38,8 @@ import play.api.inject.bind
 import play.api.mvc.*
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
-import services.PreviousRegistrationService
+import repositories.IntermediarySelectedIossNumberRepository
+import services.{AccountService, PreviousRegistrationService}
 import uk.gov.hmrc.auth.core.{Enrolment, EnrolmentIdentifier, Enrolments}
 import utils.FutureSyntax.FutureOps
 import viewmodels.PaymentsViewModel
@@ -1162,9 +1163,14 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 }
 
 class FakeMultipleEnrolmentsGetRegistrationAction(enrolments: Enrolments, registration: RegistrationWrapper) extends GetRegistrationAction(
-  mock[RegistrationConnector]
+  mock[AccountService],
+  mock[IntermediaryRegistrationConnector],
+  mock[RegistrationConnector],
+  mock[FrontendAppConfig],
+  None,
+  mock[IntermediarySelectedIossNumberRepository]
 )(ExecutionContext.Implicits.global) {
 
   override def refine[A](request: IdentifierRequest[A]): Future[Either[Result, RegistrationRequest[A]]] =
-    Right(RegistrationRequest(request.request, request.credentials, request.vrn, request.iossNumber, registration, enrolments)).toFuture
+    Right(RegistrationRequest(request.request, request.credentials, request.vrn, "IM9001234567", registration, None, enrolments)).toFuture
 }

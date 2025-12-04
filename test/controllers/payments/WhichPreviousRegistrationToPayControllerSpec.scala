@@ -17,7 +17,8 @@
 package controllers.payments
 
 import base.SpecBase
-import connectors.RegistrationConnector
+import config.FrontendAppConfig
+import connectors.{IntermediaryRegistrationConnector, RegistrationConnector}
 import controllers.actions.GetRegistrationAction
 import forms.payments.WhichPreviousRegistrationToPayFormProvider
 import models.payments.{Payment, PaymentResponse, PaymentStatus, PrepareData}
@@ -35,9 +36,9 @@ import play.api.data.Form
 import play.api.inject.bind
 import play.api.mvc.Result
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
-import repositories.SelectedIossNumberRepository
-import services.{PaymentsService, PreviousRegistrationService}
+import play.api.test.Helpers.*
+import repositories.{IntermediarySelectedIossNumberRepository, SelectedIossNumberRepository}
+import services.{AccountService, PaymentsService, PreviousRegistrationService}
 import uk.gov.hmrc.auth.core.{Enrolment, EnrolmentIdentifier, Enrolments}
 import utils.FutureSyntax.FutureOps
 import viewmodels.payments.SelectedIossNumber
@@ -375,9 +376,14 @@ class WhichPreviousRegistrationToPayControllerSpec extends SpecBase with Mockito
 }
 
 class FakeMultipleEnrolmentsGetRegistrationAction(enrolments: Enrolments, registration: RegistrationWrapper) extends GetRegistrationAction(
-  mock[RegistrationConnector]
+  mock[AccountService],
+  mock[IntermediaryRegistrationConnector],
+  mock[RegistrationConnector],
+  mock[FrontendAppConfig],
+  None,
+  mock[IntermediarySelectedIossNumberRepository]
 )(ExecutionContext.Implicits.global) {
 
   override def refine[A](request: IdentifierRequest[A]): Future[Either[Result, RegistrationRequest[A]]] =
-    Right(RegistrationRequest(request.request, request.credentials, request.vrn, request.iossNumber, registration, enrolments)).toFuture
+    Right(RegistrationRequest(request.request, request.credentials, request.vrn, "IM9001234567", registration, None, enrolments)).toFuture
 }
