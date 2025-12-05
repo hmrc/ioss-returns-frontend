@@ -30,6 +30,7 @@ import play.api.mvc.Result
 import play.api.test.FakeRequest
 import repositories.IntermediarySelectedIossNumberRepository
 import services.AccountService
+import uk.gov.hmrc.auth.core.{Enrolment, EnrolmentIdentifier, Enrolments}
 import utils.FutureSyntax.FutureOps
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -69,6 +70,19 @@ class GetRegistrationActionSpec extends SpecBase with MockitoSugar with EitherVa
         val registrationConnector = mock[RegistrationConnector]
         val appConfig = mock[FrontendAppConfig]
         val intermediarySelectedIossNumberRepository = mock[IntermediarySelectedIossNumberRepository]
+
+        when(appConfig.iossEnrolment).thenReturn("HMRC-IOSS-ORG")
+
+        val enrolments = Enrolments(
+          Set(
+            Enrolment(
+              "HMRC-IOSS-ORG",
+              Seq(EnrolmentIdentifier("IOSSNumber", iossNumber)),
+              "Activated"
+            )
+          )
+        )
+
         when(registrationConnector.get(any())(any())) thenReturn registrationWrapper.toFuture
 
         val action = new Harness(accountService, intermediaryRegistrationConnector, registrationConnector, appConfig, intermediarySelectedIossNumberRepository)
