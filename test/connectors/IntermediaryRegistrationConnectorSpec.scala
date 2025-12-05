@@ -44,7 +44,7 @@ class IntermediaryRegistrationConnectorSpec
   }
 
   ".get" - {
-    def url(intermediaryNumber: String) = s"/ioss-intermediary-registration/registration/$intermediaryNumber"
+    def url(intermediaryNumber: String) = s"/ioss-intermediary-registration/get-registration/$intermediaryNumber"
 
     "must return a registration when the server provides one" in {
 

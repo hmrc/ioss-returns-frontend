@@ -65,8 +65,7 @@ class EtmpPreviousEuRegistrationDetailsSpec extends SpecBase {
         val expectedResult = EtmpPreviousEuRegistrationDetails(
           issuedBy = etmpEuPreviousRegistrationDetails.issuedBy,
           registrationNumber = etmpEuPreviousRegistrationDetails.registrationNumber,
-          schemeType = etmpEuPreviousRegistrationDetails.schemeType,
-          intermediaryNumber = etmpEuPreviousRegistrationDetails.intermediaryNumber
+          schemeType = etmpEuPreviousRegistrationDetails.schemeType
         )
 
         Json.toJson(expectedResult) mustBe json

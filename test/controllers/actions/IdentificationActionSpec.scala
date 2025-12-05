@@ -344,7 +344,7 @@ class IdentifierActionSpec extends SpecBase with MockitoSugar with BeforeAndAfte
       }
     }
 
-    "when the user is logged in as an Organisation Admin with a VAT enrolment and strong credentials" - {
+    "when the intermediary is logged in as an Organisation Admin with a VAT enrolment and strong credentials" - {
 
       "and the intermediaries toggle is enabled" - {
 
