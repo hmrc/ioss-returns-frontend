@@ -47,14 +47,18 @@ class SuccessfullySubmittedController @Inject()(
       val userResearchUrl = frontendAppConfig.userResearchUrl2
       val isIntermediary = request.isIntermediary
       val intermediaryClientName =
-        request.intermediaryNumber match {
-          case Some(num) =>
-            intermediaryRegistrationConnector.get(num).map { registration =>
-              registration.etmpDisplayRegistration.clientDetails
-                .headOption.map(_.clientName).getOrElse("")
-            }
-          case None =>
-            Future.failed(new RuntimeException("No intermediary number in request"))
+        if (isIntermediary) {
+          request.intermediaryNumber match {
+            case Some(num) =>
+              intermediaryRegistrationConnector.get(num).map { registration =>
+                registration.etmpDisplayRegistration.clientDetails
+                  .headOption.map(_.clientName).getOrElse("")
+              }
+            case None =>
+              Future.failed(new RuntimeException("No intermediary number in request"))
+          }
+        } else {
+          Future.successful("")
         }
 
       val returnReference = generateVatReturnReference(request.iossNumber, request.userAnswers.period)
