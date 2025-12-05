@@ -31,13 +31,23 @@
         period: Period,
         owedAmount: BigDecimal,
         externalUrl: Option[String],
-        userResearchUrl: String
+        userResearchUrl: String,
+        isIntermediary: Boolean,
+        clientName: String,
+        intermediaryDashboardUrl: String
 )(implicit request: Request[_], messages: Messages)
 
-    @layout(pageTitle = titleNoForm(messages("successfullySubmitted.title")), showBackLink =false) {
+    @titleText = @{
+        if (isIntermediary)
+            messages("successfullySubmitted.intermediary.title", clientName)
+        else
+            messages("successfullySubmitted.title")
+    }
+
+    @layout(pageTitle = titleNoForm(titleText), showBackLink =false) {
 
         @govukPanel(Panel(
-            title = Text(messages("successfullySubmitted.title")),
+            title = Text(titleText),
             content = HtmlContent(messages("successfullySubmitted.heading", returnReference))
         ))
 
@@ -65,9 +75,13 @@
         }
 
         <p class="govuk-body">
-            <a href="@externalUrl.getOrElse(routes.YourAccountController.onPageLoad(EmptyWaypoints).url)" id="back-to-your-account" class="govuk-link govuk-link--no-visited-state">
-            @messages("successfullySubmitted.next.info.returnToAccount")
-            </a>
+            @if(isIntermediary) {
+                @Html(messages("successfullySubmitted.next.info.returnToIntermediaryAccount", intermediaryDashboardUrl))
+            } else {
+                <a href="@externalUrl.getOrElse(routes.YourAccountController.onPageLoad(EmptyWaypoints).url)" id="back-to-your-account" class="govuk-link govuk-link--no-visited-state">
+                    @messages("successfullySubmitted.next.info.returnToAccount")
+                </a>
+            }
         </p>
 
         <h2 class="govuk-heading-m">@messages("userResearch.heading")</h2>

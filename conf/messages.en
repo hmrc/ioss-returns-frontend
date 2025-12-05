@@ -391,6 +391,7 @@ vatPeriodCorrectionsList.addAnother = Add corrections to VAT for another return 
 vatPeriodCorrectionsList.error.required = Select yes if you want to add corrections to VAT for another return month
 
 successfullySubmitted.title = Return submitted
+successfullySubmitted.intermediary.title = Return submitted for {0}
 successfullySubmitted.heading = Your return reference is <strong style="word-break:break-word">{0}</strong>
 successfullySubmitted.noVatOwed = You do not owe any VAT for {0}.
 successfullySubmitted.payVatOwed = Pay VAT owed
@@ -400,6 +401,7 @@ successfullySubmitted.payNow =  Pay now
 successfullySubmitted.payDeadline = You need to pay by {0}.
 successfullySubmitted.euLatePaymentWarning = EU countries can charge you interest or penalties for late payments.
 successfullySubmitted.next.info.returnToAccount = Back to your account
+successfullySubmitted.next.info.returnToIntermediaryAccount = <a class="govuk-link" href={0}>Back to your account</a>
 
 returnSubmissionFailure.title = We have a problem with our service right now
 returnSubmissionFailure.heading = We have not received your return
