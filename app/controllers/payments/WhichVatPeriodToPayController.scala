@@ -50,7 +50,7 @@ class WhichVatPeriodToPayController @Inject()(
   def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced.async {
     implicit request =>
 
-      val prepareFinancialData: Future[PrepareData] = paymentsService.prepareFinancialData()
+      val prepareFinancialData: Future[PrepareData] = paymentsService.prepareFinancialDataWithIossNumber(request.iossNumber)
       prepareFinancialData.flatMap { pfd =>
         val payments = (pfd.duePayments ++ pfd.overduePayments).sortBy(p => (p.period.year, p.period.month)).reverse
         val paymentError = payments.exists(_.paymentStatus == PaymentStatus.Unknown)
@@ -73,7 +73,7 @@ class WhichVatPeriodToPayController @Inject()(
   def onSubmit(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced.async {
     implicit request => {
 
-      val prepareFinancialData: Future[PrepareData] = paymentsService.prepareFinancialData()
+      val prepareFinancialData: Future[PrepareData] = paymentsService.prepareFinancialDataWithIossNumber(request.iossNumber)
       prepareFinancialData.flatMap { pfd =>
         val payments = pfd.duePayments ++ pfd.overduePayments
         val paymentError = payments.exists(_.paymentStatus == PaymentStatus.Unknown)
