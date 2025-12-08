@@ -89,7 +89,7 @@ object RegistrationData extends SpecBase {
   val etmpDisplayRegistration: EtmpDisplayRegistration = EtmpDisplayRegistration(
     tradingNames = Gen.listOfN(maxTradingNames, arbitraryEtmpTradingName.arbitrary).sample.value,
     schemeDetails = etmpDisplaySchemeDetails,
-    bankDetails = genBankDetails,
+    bankDetails = Some(genBankDetails),
     exclusions = Gen.listOfN(3, arbitrary[EtmpExclusion]).sample.value,
     adminUse = etmpAdminUse
   )
