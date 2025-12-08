@@ -369,7 +369,7 @@ trait ModelGenerators {
     } yield EtmpDisplayRegistration(
       etmpTradingNames,
       schemeDetails,
-      bankDetails,
+      Some(bankDetails),
       exclusions,
       adminUse
     )

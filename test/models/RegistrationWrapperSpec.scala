@@ -29,7 +29,7 @@ class RegistrationWrapperSpec extends SpecBase {
 
   private val tradingNames: Seq[EtmpTradingName] = etmpDisplayRegistration.tradingNames
   private val displaySchemeDetails: EtmpSchemeDetails = etmpDisplayRegistration.schemeDetails
-  private val bankDetails: EtmpBankDetails = etmpDisplayRegistration.bankDetails
+  private val bankDetails: EtmpBankDetails = etmpDisplayRegistration.bankDetails.get
   private val exclusions: Seq[EtmpExclusion] = etmpDisplayRegistration.exclusions
   private val adminUse: EtmpAdminUse = etmpDisplayRegistration.adminUse
 
