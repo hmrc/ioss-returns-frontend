@@ -790,7 +790,8 @@ class CoreVatReturnSpec extends SpecBase with Matchers {
 
       val coreTraderId = CoreTraderId(
         IOSSNumber = "IM9001234567",
-        issuedBy = "XI"
+        issuedBy = "XI",
+        None
       )
 
       val expectedJson = Json.obj(
@@ -810,7 +811,8 @@ class CoreVatReturnSpec extends SpecBase with Matchers {
 
       val expectedCoreTraderId = CoreTraderId(
         IOSSNumber = "IM9001234567",
-        issuedBy = "XI"
+        issuedBy = "XI",
+        None
       )
 
       json.validate[CoreTraderId] mustBe JsSuccess(expectedCoreTraderId)

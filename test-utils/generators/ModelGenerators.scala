@@ -706,7 +706,7 @@ trait ModelGenerators {
     for {
       iossNumber <- arbitrary[String]
       issuedBy <- arbitrary[String]
-    } yield CoreTraderId(iossNumber, issuedBy)
+    } yield CoreTraderId(iossNumber, issuedBy, None)
   }
 
   implicit val arbitraryCorePeriod: Arbitrary[CorePeriod] = Arbitrary {
