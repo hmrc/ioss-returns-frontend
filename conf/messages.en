@@ -394,11 +394,13 @@ successfullySubmitted.title = Return submitted
 successfullySubmitted.intermediary.title = Return submitted for {0}
 successfullySubmitted.heading = Your return reference is <strong style="word-break:break-word">{0}</strong>
 successfullySubmitted.noVatOwed = You do not owe any VAT for {0}.
+successfullySubmitted.intermediary.noVatOwed = You do not need to pay any VAT for this return.
 successfullySubmitted.payVatOwed = Pay VAT owed
 successfullySubmitted.payPeriodAmount = For <span id="dateRange">{0}</span>, you owe <span class="govuk-!-font-weight-bold">{1}</span>
+successfullySubmitted.intermediary.payPeriodAmount = For <span id="dateRange">{0}</span>, you need to pay <span class="govuk-!-font-weight-bold">{1}</span>
 successfullySubmitted.howToPay = You can pay by corporate card or bank transfer.
 successfullySubmitted.payNow =  Pay now
-successfullySubmitted.payDeadline = You need to pay by {0}.
+successfullySubmitted.payDeadline = You must pay by {0}.
 successfullySubmitted.euLatePaymentWarning = EU countries can charge you interest or penalties for late payments.
 successfullySubmitted.next.info.returnToAccount = Back to your account
 successfullySubmitted.next.info.returnToIntermediaryAccount = <a class="govuk-link" href={0}>Back to your account</a>

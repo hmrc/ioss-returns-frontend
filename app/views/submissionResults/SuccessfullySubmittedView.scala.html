@@ -52,12 +52,23 @@
         ))
 
         @if(nilReturn) {
-            <p class="govuk-body">@messages("successfullySubmitted.noVatOwed", period.displayText)</p>
+            @if(isIntermediary) {
+                <p class="govuk-body">@messages("successfullySubmitted.intermediary.noVatOwed")</p>
+            } else {
+                <p class="govuk-body">@messages("successfullySubmitted.noVatOwed", period.displayText)</p>
+            }
         } else {
             <h2 class="govuk-heading-m govuk-!-margin-top-6" id="how-pay">@messages("successfullySubmitted.payVatOwed")</h2>
-            <p class="govuk-body">
-            @Html(messages("successfullySubmitted.payPeriodAmount", period.lastDay.format(DateTimeFormatter.ofPattern("d MMMM u")), currencyFormatWithAccuracy(owedAmount)))
-            </p>
+            @if(isIntermediary) {
+                <p class="govuk-body">
+                    @Html(messages("successfullySubmitted.intermediary.payPeriodAmount", period.lastDay.format(DateTimeFormatter.ofPattern("d MMMM u")), currencyFormatWithAccuracy(owedAmount)))
+                </p>
+            } else {
+                <p class="govuk-body">
+                    @Html(messages("successfullySubmitted.payPeriodAmount", period.lastDay.format(DateTimeFormatter.ofPattern("d MMMM u")), currencyFormatWithAccuracy(owedAmount)))
+                </p>
+            }
+
 
             <p class="govuk-body"> @messages("successfullySubmitted.howToPay")</p>
 
