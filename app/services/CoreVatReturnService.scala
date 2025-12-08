@@ -48,7 +48,7 @@ class CoreVatReturnService @Inject()(
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
 
     val totalAmountVatDueGBP = salesAtVatRateService.getTotalVatOwedAfterCorrections(userAnswers)
-    returnConnector.submit(buildCoreVatReturn(userAnswers, totalAmountVatDueGBP)).map {
+    returnConnector.submit(buildCoreVatReturn(userAnswers, totalAmountVatDueGBP), Some(request.iossNumber)).map {
       case response if response.status == CREATED =>
         logger.info("Successful core vat return submission")
         totalAmountVatDueGBP

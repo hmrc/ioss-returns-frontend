@@ -60,7 +60,7 @@ class CoreVatReturnServiceSpec extends SpecBase with BeforeAndAfterEach {
 
       val total = BigDecimal(734964.25)
 
-      when(mockReturnConnector.submit(any())(any())) thenReturn Future.successful(HttpResponse(CREATED, "Vat Return created"))
+      when(mockReturnConnector.submit(any(), any())(any())) thenReturn Future.successful(HttpResponse(CREATED, "Vat Return created"))
       when(mockSalesAtVatRateService.getTotalVatOwedAfterCorrections(any())) thenReturn total
       when(mockSalesAtVatRateService.getVatOwedToCountries(any())) thenReturn List(TotalVatToCountry(
         Country("HR", "Croatia"),
@@ -99,7 +99,7 @@ class CoreVatReturnServiceSpec extends SpecBase with BeforeAndAfterEach {
       )
 
       service.submitCoreVatReturn(completeUserAnswers).futureValue mustBe total
-      verify(mockReturnConnector, times(1)).submit(eqTo(expectedCoreVatReturn))(any())
+      verify(mockReturnConnector, times(1)).submit(eqTo(expectedCoreVatReturn), eqTo(Some(iossNumber)))(any())
 
     }
   }
