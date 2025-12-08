@@ -52,7 +52,9 @@ class SuccessfullySubmittedController @Inject()(
             case Some(num) =>
               intermediaryRegistrationConnector.get(num).map { registration =>
                 registration.etmpDisplayRegistration.clientDetails
-                  .headOption.map(_.clientName).getOrElse("")
+                  .find(_.clientIossID == request.iossNumber)
+                  .map(_.clientName)
+                  .getOrElse("")
               }
             case None =>
               Future.failed(new RuntimeException("No intermediary number in request"))

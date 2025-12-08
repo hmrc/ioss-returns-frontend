@@ -403,7 +403,7 @@ successfullySubmitted.payNow =  Pay now
 successfullySubmitted.payDeadline = You must pay by {0}.
 successfullySubmitted.euLatePaymentWarning = EU countries can charge you interest or penalties for late payments.
 successfullySubmitted.next.info.returnToAccount = Back to your account
-successfullySubmitted.next.info.returnToIntermediaryAccount = <a class="govuk-link" href={0}>Back to your account</a>
+successfullySubmitted.next.info.returnToIntermediaryAccount = <a class="govuk-link" href={0} id="back-to-your-account" class="govuk-link govuk-link--no-visited-state">Back to your account</a>
 
 returnSubmissionFailure.title = We have a problem with our service right now
 returnSubmissionFailure.heading = We have not received your return
