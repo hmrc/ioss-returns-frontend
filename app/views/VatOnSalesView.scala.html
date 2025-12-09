@@ -16,7 +16,6 @@
 
 @import viewmodels.InputWidth._
 @import components.ButtonGroup
- 
 
 @this(
         layout: templates.Layout,
@@ -39,7 +38,7 @@
         isIntermediary: Boolean,
         companyName: String
 )(implicit request: Request[_], messages: Messages)
-@caption = @{ 
+@caption = @{
     if(isIntermediary) {
         messages("vatOnSales.intermediary.caption", companyName, period.displayText, country.name)
     } else {

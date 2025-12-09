@@ -16,7 +16,6 @@
 
 @import viewmodels.InputWidth._
 @import pages.SalesToCountryPage
- 
 
 @this(
         layout: templates.Layout,
@@ -40,7 +39,6 @@
     form,
     messages("salesToCountry.title", vatRate.rateForDisplay),
     Some(caption)
-
 )) {
 
     @formHelper(action = routes.SalesToCountryController.onSubmit(waypoints, countryIndex, nextVatRateIndex), Symbol("autoComplete") -> "off") {

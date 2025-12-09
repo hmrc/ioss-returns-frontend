@@ -34,7 +34,6 @@ case class OptionalDataRequest[A] (
 
   val userId: String = credentials.providerId
   val isIntermediary: Boolean = intermediaryNumber.nonEmpty
-  
 }
 
 case class DataRequest[A] (
@@ -50,7 +49,7 @@ case class DataRequest[A] (
 
   val userId: String = credentials.providerId
   val isIntermediary: Boolean = intermediaryNumber.nonEmpty
-  
+
   lazy val vrnOrError: Vrn = vrn.getOrElse(
     throw new IllegalStateException("VRN required and not found")
   )
