@@ -147,7 +147,8 @@ class CorrectPreviousReturnControllerSpec extends SpecBase with MockitoSugar {
           period,
           maybeExclusion = None,
           isFinalReturn = false,
-          isIntermediary = false, companyName = "Company Name"
+          isIntermediary = false,
+          companyName = "Company Name"
         )(request, messages(application)).toString
       }
     }
@@ -234,7 +235,8 @@ class CorrectPreviousReturnControllerSpec extends SpecBase with MockitoSugar {
           period,
           maybeExclusion = None,
           isFinalReturn = false,
-          isIntermediary = false, companyName = "Company Name"
+          isIntermediary = false,
+          companyName = "Company Name"
         )(request, messages(application)).toString
       }
     }

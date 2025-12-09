@@ -87,7 +87,7 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
           val view = application.injector.instanceOf[CorrectionReturnSinglePeriodView]
 
           status(result) mustEqual OK
-          contentAsString(result) mustEqual view(form, waypoints, period, monthNames.head, index)(request, messages(application)).toString
+          contentAsString(result) mustEqual view(form, waypoints, period, monthNames.head, index, isIntermediary = false)(request, messages(application)).toString
         }
       }
     }
@@ -108,7 +108,7 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, waypoints, period, period, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, waypoints, period, period, index, isIntermediary = false)(request, messages(application)).toString
       }
     }
 
@@ -162,7 +162,7 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, waypoints, period, period, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, waypoints, period, period, index, isIntermediary = false)(request, messages(application)).toString
       }
     }
 

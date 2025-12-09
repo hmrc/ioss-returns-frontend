@@ -47,10 +47,11 @@ class CorrectionReturnSinglePeriodController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  val form: Form[Boolean] = formProvider()
-
   def onPageLoad(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible().async {
     implicit request =>
+
+      val isIntermediary = request.isIntermediary
+      val form: Form[Boolean] = formProvider(isIntermediary)
 
       val period = request.userAnswers.period
 
@@ -69,7 +70,7 @@ class CorrectionReturnSinglePeriodController @Inject()(
 
         uncompletedCorrectionPeriods.size match {
           case 0 => Redirect(controllers.routes.CheckYourAnswersController.onPageLoad(waypoints)).toFuture
-          case 1 => Ok(view(form, waypoints, period, uncompletedCorrectionPeriods.head, index)).toFuture
+          case 1 => Ok(view(form, waypoints, period, uncompletedCorrectionPeriods.head, index, isIntermediary)).toFuture
           case _ => Redirect(
             controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(waypoints, index)
           ).toFuture
@@ -79,6 +80,8 @@ class CorrectionReturnSinglePeriodController @Inject()(
 
   def onSubmit(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible().async {
     implicit request =>
+      val isIntermediary = request.isIntermediary
+      val form: Form[Boolean] = formProvider(isIntermediary)
 
       val period = request.userAnswers.period
 
@@ -100,7 +103,7 @@ class CorrectionReturnSinglePeriodController @Inject()(
           case 0 => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
           case 1 => form.bindFromRequest().fold(
             formWithErrors => {
-              Future.successful(BadRequest(view(formWithErrors, waypoints, period, uncompletedCorrectionPeriods.head, index)))
+              Future.successful(BadRequest(view(formWithErrors, waypoints, period, uncompletedCorrectionPeriods.head, index, isIntermediary)))
             },
             value =>
               for {
