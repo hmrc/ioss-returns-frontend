@@ -58,15 +58,15 @@ class SubmittedReturnForPeriodController @Inject()(
       Redirect(controllers.routes.NoLongerAbleToViewReturnController.onPageLoad()).toFuture
     } else {
       (for {
-        etmpVatReturnResponse <- vatReturnConnector.get(period)
-        chargeResponse <- financialDataConnector.getCharge(period)
+        etmpVatReturnResponse <- vatReturnConnector.getForIossNumber(period, request.iossNumber)
+        chargeResponse <- financialDataConnector.getChargeForIossNumber(period, request.iossNumber)
       } yield onPageLoad(waypoints, period, etmpVatReturnResponse, chargeResponse)).flatten
     }
   }
 
   def onPageLoadForIossNumber(waypoints: Waypoints, period: Period, iossNumber: String): Action[AnyContent] = cc.authAndGetOptionalData().async {
     implicit request =>
-      previousRegistrationService.getPreviousRegistrations().flatMap { previousRegistrations =>
+      previousRegistrationService.getPreviousRegistrations(request.isIntermediary).flatMap { previousRegistrations =>
         val validIossNumbers: Seq[String] = request.iossNumber :: previousRegistrations.map(_.iossNumber)
         if (validIossNumbers.contains(iossNumber)) {
           (for {

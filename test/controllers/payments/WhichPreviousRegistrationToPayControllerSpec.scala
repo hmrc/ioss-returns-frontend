@@ -102,7 +102,7 @@ class WhichPreviousRegistrationToPayControllerSpec extends SpecBase with Mockito
 
       val prepareDataList: List[PrepareData] = List(prepareData, prepareData.copy(iossNumber = additioanlIossNumber))
 
-      when(mockPreviousRegistrationService.getPreviousRegistrationPrepareFinancialData()(any())) thenReturn prepareDataList.toFuture
+      when(mockPreviousRegistrationService.getPreviousRegistrationPrepareFinancialData(any())(any())) thenReturn prepareDataList.toFuture
 
       val enrolments: Enrolments = Enrolments(Set(enrolment1, enrolment2, enrolment3))
       val fakeMultipleEnrolmentsGetRegistrationActionProvider = new FakeMultipleEnrolmentsGetRegistrationActionProvider(enrolments, registrationWrapper)
@@ -137,7 +137,7 @@ class WhichPreviousRegistrationToPayControllerSpec extends SpecBase with Mockito
         iossNumber = otherIossNumber
       )
 
-      when(mockPreviousRegistrationService.getPreviousRegistrationPrepareFinancialData()(any())) thenReturn List(nothingDuePrepareData).toFuture
+      when(mockPreviousRegistrationService.getPreviousRegistrationPrepareFinancialData(any())(any())) thenReturn List(nothingDuePrepareData).toFuture
 
       val enrolments: Enrolments = Enrolments(Set(enrolment1, enrolment2, enrolment3))
       val fakeMultipleEnrolmentsGetRegistrationActionProvider = new FakeMultipleEnrolmentsGetRegistrationActionProvider(enrolments, registrationWrapper)
@@ -165,7 +165,7 @@ class WhichPreviousRegistrationToPayControllerSpec extends SpecBase with Mockito
 
     "must redirect to makePayment for a GET when there is only one prepare data object with a single payment returned" in {
 
-      when(mockPreviousRegistrationService.getPreviousRegistrationPrepareFinancialData()(any())) thenReturn List(prepareData).toFuture
+      when(mockPreviousRegistrationService.getPreviousRegistrationPrepareFinancialData(any())(any())) thenReturn List(prepareData).toFuture
       when(mockPaymentsService.makePayment(any(), any(), any())(any())) thenReturn Right(paymentResponse).toFuture
 
       val enrolments: Enrolments = Enrolments(Set(enrolment1, enrolment2, enrolment3))
@@ -207,7 +207,7 @@ class WhichPreviousRegistrationToPayControllerSpec extends SpecBase with Mockito
       )
 
       when(mockSelectedIossNumberRepository.set(any())) thenReturn selectedIossNumber.toFuture
-      when(mockPreviousRegistrationService.getPreviousRegistrationPrepareFinancialData()(any())) thenReturn prepareDataList.toFuture
+      when(mockPreviousRegistrationService.getPreviousRegistrationPrepareFinancialData(any())(any())) thenReturn prepareDataList.toFuture
 
       val enrolments: Enrolments = Enrolments(Set(enrolment1, enrolment2, enrolment3))
       val fakeMultipleEnrolmentsGetRegistrationActionProvider = new FakeMultipleEnrolmentsGetRegistrationActionProvider(enrolments, registrationWrapper)
@@ -232,7 +232,7 @@ class WhichPreviousRegistrationToPayControllerSpec extends SpecBase with Mockito
 
     "must throw an Exception for a GET when there is no prepare financial data retrieved" in {
 
-      when(mockPreviousRegistrationService.getPreviousRegistrationPrepareFinancialData()(any())) thenReturn List.empty.toFuture
+      when(mockPreviousRegistrationService.getPreviousRegistrationPrepareFinancialData(any())(any())) thenReturn List.empty.toFuture
 
       val enrolments: Enrolments = Enrolments(Set(enrolment1, enrolment2, enrolment3))
       val fakeMultipleEnrolmentsGetRegistrationActionProvider = new FakeMultipleEnrolmentsGetRegistrationActionProvider(enrolments, registrationWrapper)
@@ -263,7 +263,7 @@ class WhichPreviousRegistrationToPayControllerSpec extends SpecBase with Mockito
 
       val selectedIossNumber: SelectedIossNumber = SelectedIossNumber(userAnswersId, otherIossNumber, lastUpdated = Instant.now(stubClockAtArbitraryDate))
 
-      when(mockPreviousRegistrationService.getPreviousRegistrationPrepareFinancialData()(any())) thenReturn List(prepareData).toFuture
+      when(mockPreviousRegistrationService.getPreviousRegistrationPrepareFinancialData(any())(any())) thenReturn List(prepareData).toFuture
       when(mockPaymentsService.makePayment(any(), any(), any())(any())) thenReturn Right(paymentResponse).toFuture
 
       val application =
@@ -301,7 +301,7 @@ class WhichPreviousRegistrationToPayControllerSpec extends SpecBase with Mockito
       )
 
       when(mockSelectedIossNumberRepository.set(any())) thenReturn selectedIossNumber.toFuture
-      when(mockPreviousRegistrationService.getPreviousRegistrationPrepareFinancialData()(any())) thenReturn prepareDataList.toFuture
+      when(mockPreviousRegistrationService.getPreviousRegistrationPrepareFinancialData(any())(any())) thenReturn prepareDataList.toFuture
 
       val application =
         applicationBuilder(userAnswers = Some(emptyUserAnswers))
@@ -329,7 +329,7 @@ class WhichPreviousRegistrationToPayControllerSpec extends SpecBase with Mockito
       val prepareDataList = List(prepareData)
 
       when(mockSelectedIossNumberRepository.set(any())) thenReturn selectedIossNumber.toFuture
-      when(mockPreviousRegistrationService.getPreviousRegistrationPrepareFinancialData()(any())) thenReturn prepareDataList.toFuture
+      when(mockPreviousRegistrationService.getPreviousRegistrationPrepareFinancialData(any())(any())) thenReturn prepareDataList.toFuture
 
       val application =
         applicationBuilder(userAnswers = Some(emptyUserAnswers))
@@ -351,7 +351,7 @@ class WhichPreviousRegistrationToPayControllerSpec extends SpecBase with Mockito
 
     "must return a Bad Request and errors when invalid data is submitted" in {
 
-      when(mockPreviousRegistrationService.getPreviousRegistrationPrepareFinancialData()(any())) thenReturn List(prepareData).toFuture
+      when(mockPreviousRegistrationService.getPreviousRegistrationPrepareFinancialData(any())(any())) thenReturn List(prepareData).toFuture
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
