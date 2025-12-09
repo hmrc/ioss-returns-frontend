@@ -316,7 +316,9 @@ remainingVatRateFromCountry.intermediary.caption = {0}{1} sales to {2}
 remainingVatRateFromCountry.error.required = Select yes if you sold goods at the {0} VAT rate
 
 correctPreviousReturn.title = Do you want to correct a previous return?
+correctPreviousReturn.intermediary.title = Do you want to correct one of their previous returns?
 correctPreviousReturn.heading = Do you want to correct a previous return?
+correctPreviousReturn.intermediary.heading = Do you want to correct one of their previous returns?
 correctPreviousReturn.checkYourAnswersLabel = Corrections
 correctPreviousReturn.error.required = Select yes if you want to correct a previous return
 correctPreviousReturn.change.hidden = if you want to correct a previous return
@@ -326,6 +328,12 @@ correctionReturnSinglePeriod.title = Do you want to correct the VAT amounts in y
 correctionReturnSinglePeriod.heading = Do you want to correct the VAT amounts in your {0} return?
 correctionReturnSinglePeriod.checkYourAnswersLabel = Do you want to correct the VAT amounts in your {0} return?
 correctionReturnSinglePeriod.error.required = Select yes if you want to correct the VAT amounts in your return
+
+correctionReturnSinglePeriod.intermediary.title = Do you want to correct their {0} return?
+correctionReturnSinglePeriod.intermediary.heading = Do you want to correct their {0} return?
+correctionReturnSinglePeriod.intermediary.checkYourAnswersLabel = Do you want to correct the VAT amounts in their {0} return?
+correctionReturnSinglePeriod.intermediary.error.required = Select yes if you want to correct the VAT amounts in their return
+
 
 correctionReturnPeriod.title = Which return do you want to correct?
 correctionReturnPeriod.heading = Which return do you want to correct?
@@ -367,6 +375,7 @@ vatPayableForCountry.heading = Is the total VAT payable for {0} {1}?
 vatPayableForCountry.caption = Correction month: {0}
 vatPayableForCountry.intermediary.caption = {0}Correction month: {1}
 vatPayableForCountry.hint = We''ve calculated this total based on your most recent declaration and the correction amount.
+vatPayableForCountry.intermediary.hint = We''ve calculated this total based on their most recent declaration and the correction amount.
 vatPayableForCountry.error.required = Select yes if the total VAT payable for {0} is {1}
 
 vatAmountCorrectionCountry.title = What is your correction for the VAT payable to {0}?
@@ -385,8 +394,18 @@ vatAmountCorrectionCountry.error.outOfRange.undeclared = Correction for the tota
 vatAmountCorrectionCountry.error.nonZero = Correction for the total VAT payable must not be zero
 vatAmountCorrectionCountry.change.hidden = Correction amount
 
+vatAmountCorrectionCountry.intermediary.title = What is your client''s correction for the total VAT payable to {0}?
+vatAmountCorrectionCountry.intermediary.heading = What is your client''s correction for the total VAT payable to {0}?
+vatAmountCorrectionCountry.intermediary.hint = Enter a minus value if too much was declared in the previous return.
+vatAmountCorrectionCountry.intermediary.error.required = Enter the correction for the total VAT payable to {0}
+vatAmountCorrectionCountry.intermediary.error.nonNumeric = Enter the correction for the total VAT payable to {0} using numbers
+vatAmountCorrectionCountry.intermediary.error.wholeNumber = Enter the correction for the total VAT payable to {0} using whole numbers
+vatAmountCorrectionCountry.intermediary.previous-amount.hint = Their most recent declaration for this month is {0}.
+
 undeclaredCountryCorrection.title = You did not declare any VAT to {0} in your original return
+undeclaredCountryCorrection.intermediary.title = They did not declare any VAT to {0} in the original return
 undeclaredCountryCorrection.heading = You did not declare any VAT to {0} in your original return
+undeclaredCountryCorrection.intermediary.heading = They did not declare any VAT to {0} in the original return
 undeclaredCountryCorrection.caption = Correction month: {0}
 undeclaredCountryCorrection.intermediary.caption = {0}Correction month: {1}
 undeclaredCountryCorrection.legend = Do you want to add a correction to this country?

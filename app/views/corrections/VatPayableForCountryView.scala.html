@@ -49,7 +49,11 @@
                     classes = "govuk-fieldset__legend--l"
                 )
 
-            ).withHint(HintViewModel(HtmlContent(Html(messages("vatPayableForCountry.hint")))))
+            ).withHint(HintViewModel(HtmlContent(Html(if(isIntermediary) {
+                messages("vatPayableForCountry.intermediary.hint")
+            } else {
+                messages("vatPayableForCountry.hint")
+            }))))
         )
 
         @button("site.continue", VatPayableForCountryPage(periodIndex, countryIndex).route(waypoints).url, period, waypoints)
