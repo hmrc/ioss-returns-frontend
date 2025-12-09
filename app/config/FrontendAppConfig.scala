@@ -43,6 +43,7 @@ class FrontendAppConfig @Inject() (configuration: Configuration) {
   val leaveThisServiceUrl: String = configuration.get[String]("urls.leaveThisServiceUrl")
   val rejoinThisServiceUrl: String = configuration.get[String]("urls.rejoinThisServiceUrl")
   val paymentsBaseUrl: Service = configuration.get[Service]("microservice.services.pay-api")
+  val intermediaryDashboardUrl: String = configuration.get[String]("urls.intermediaryDashboardUrl")
 
   private val exitSurveyBaseUrl: String = configuration.get[String]("microservice.services.feedback-frontend.host") +
     configuration.get[String]("microservice.services.feedback-frontend.basePath")

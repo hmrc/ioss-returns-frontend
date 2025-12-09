@@ -40,8 +40,9 @@ class VatReturnConnector @Inject()(config: Configuration, httpClientV2: HttpClie
   def getObligations(iossNumber: String)(implicit hc: HeaderCarrier): Future[EtmpObligations] =
     httpClientV2.get(url"$baseUrl/obligations/$iossNumber").execute[EtmpObligations]
 
-  def submit(coreVatReturn: CoreVatReturn)(implicit hc: HeaderCarrier): Future[HttpResponse] =
-    httpClientV2.post(url"$baseUrl/return").withBody(Json.toJson(coreVatReturn)).execute[HttpResponse]
+  def submit(coreVatReturn: CoreVatReturn, iossNumber: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+    httpClientV2.post(url"$baseUrl/return/$iossNumber").withBody(Json.toJson(coreVatReturn)).execute[HttpResponse]
+  }
 
   def get(period: Period)(implicit hc: HeaderCarrier): Future[EtmpVatReturnResponse] =
     httpClientV2.get(url"$baseUrl/return/$period").execute[EtmpVatReturnResponse]

@@ -138,7 +138,7 @@ trait SpecBase
   val coreVatReturn: CoreVatReturn = CoreVatReturn(
     vatReturnReferenceNumber = "XI/XI063407423/M11.2086",
     version = Instant.ofEpochSecond(1630670836),
-    traderId = CoreTraderId(vrn.vrn, "XI"),
+    traderId = CoreTraderId(vrn.vrn, "XI", None),
     period = CorePeriod(2021, "03"),
     startDate = LocalDate.now(stubClockAtArbitraryDate),
     endDate = LocalDate.now(stubClockAtArbitraryDate),
