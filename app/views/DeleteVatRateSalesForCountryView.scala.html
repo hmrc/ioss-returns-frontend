@@ -24,7 +24,11 @@
 
 @(form: Form[_], waypoints: Waypoints, period: Period, countryIndex: Index, nextVatRateIndex: Index, vatRate: String, country: Country, isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = title(form, messages("deleteVatRateSalesForCountry.title", vatRate, country.name))) {
+@layout(pageTitle = title(form, if(isIntermediary) {
+        messages("deleteVatRateSalesForCountry.intermediary.title", vatRate, country.name)
+    } else {
+        messages("deleteVatRateSalesForCountry.title", vatRate, country.name)
+    })) {
 
     @if(isIntermediary){<p class="govuk-caption-l hmrc-caption-l">@companyName</p>}
 
@@ -34,12 +38,16 @@
             @govukErrorSummary(ErrorSummaryViewModel(form))
         }
 
-        @govukRadios(
-            RadiosViewModel.yesNo(
-                field = form("value"),
-                legend = LegendViewModel(messages("deleteVatRateSalesForCountry.heading", vatRate, country.name)).asPageHeading()
-            )
+    @govukRadios(
+        RadiosViewModel.yesNo(
+        field = form("value"),
+        legend = LegendViewModel(if(isIntermediary) {
+            messages("deleteVatRateSalesForCountry.intermediary.heading", vatRate, country.name)
+        } else {
+            messages("deleteVatRateSalesForCountry.heading", vatRate, country.name)
+        }).asPageHeading()
         )
+    )
 
         @button("site.continue", controllers.routes.DeleteVatRateSalesForCountryController.onPageLoad(waypoints, countryIndex, nextVatRateIndex).url, period, waypoints)
     }

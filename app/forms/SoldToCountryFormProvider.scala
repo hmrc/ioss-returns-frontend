@@ -24,12 +24,14 @@ import play.api.data.Form
 
 class SoldToCountryFormProvider @Inject() extends Mappings {
 
-  def apply(index: Index, existingAnswers: Seq[Country]): Form[Country] = {
+  def apply(index: Index, existingAnswers: Seq[Country], isIntermediary: Boolean = false): Form[Country] = {
     val countries = euCountriesWithNI
 
+    val requiredKey = if(isIntermediary) "soldToCountry.intermediary.error.required" else "soldToCountry.error.required"
+
     Form(
-      "value" -> text("soldToCountry.error.required")
-        .verifying("soldToCountry.error.required", value => countries.exists(_.code == value))
+      "value" -> text(requiredKey)
+        .verifying(requiredKey, value => countries.exists(_.code == value))
         .transform[Country](value => countries.find(_.code == value).get, _.code)
         .verifying(notADuplicate(index, existingAnswers, "soldToCountry.error.duplicate"))
     )

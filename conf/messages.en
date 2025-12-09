@@ -40,6 +40,7 @@ error.required = Please enter a value
 error.summary.title = There is a problem
 
 error.missing_answers = Some of your information is missing. You must complete this before you can submit your changes.
+error.intermediary.missing_answers = Some of their information is missing. You must complete this before you can submit these changes.
 error.missing_answers_header = Some information is missing.
 error.missing_answers_prompt = You need to complete the missing information for {0} before you continue.
 error.missing_answers_prompt.general = You need to complete the missing information before you continue.
@@ -139,9 +140,11 @@ checkYourAnswers.noPaymentsDue.p1 = The tax authorities in countries where you d
 journeyRecovery.continue.title = Sorry, there is a problem with the service
 journeyRecovery.continue.heading = Sorry, there is a problem with the service
 journeyRecovery.continue.guidance = We have saved your answers and you can continue your return.
+journeyRecovery.intermediary.continue.guidance = We have saved your answers and you can continue this return.
 journeyRecovery.startAgain.title = Sorry, there is a problem with the service
 journeyRecovery.startAgain.heading = Sorry, there is a problem with the service
 journeyRecovery.startAgain.guidance = We have saved your answers and you can continue your return.
+journeyRecovery.intermediary.startAgain.guidance = We have saved your answers and you can continue this return.
 
 savedProgress.title = We have saved your progress
 savedProgress.subtitle = We''ll keep your information until <br>{0}
@@ -189,21 +192,34 @@ startReturn.partialFrom = Only include sales from {0}.
 startReturn.partialTo = Only include sales up to {0}.
 startReturn.shortTitle = Do you want to start your return?
 
+startReturn.intermediary.title = Do you want to start the {0} return for {1}?
+startReturn.intermediary.finalReturn = Do you want to start their final return?
+startReturn.intermediary.heading = Do you want to start the {0} return for {1}?
+startReturn.intermediary.error.required = Select yes if you want to start their return
+
 soldGoods.title = Did you make eligible sales into the EU or Northern Ireland in {0}?
 soldGoods.heading = Did you make eligible sales into the EU or Northern Ireland in {0}?
+soldGoods.intermediary.title = Did they make eligible sales into the EU or Northern Ireland in {0}?
+soldGoods.intermediary.heading = Did they make eligible sales into the EU or Northern Ireland in {0}?
 soldGoods.checkYourAnswersLabel = Sales made
 soldGoods.error.required = Select yes if you made eligible sales into the EU or Northern Ireland
+soldGoods.intermediary.error.required = Select yes if they made eligible sales into the EU or Northern Ireland
 soldGoods.change.hidden = Sold Goods
 
 soldToCountry.title = Which country did you sell to?
+soldToCountry.intermediary.title = Which country did they sell to?
 soldToCountry.heading = Which country did you sell to?
+soldToCountry.intermediary.heading = Which country did they sell to?
 soldToCountry.checkYourAnswersLabel = Country sold to
 soldToCountry.error.duplicate = You selected this country already. Select a different one.
 soldToCountry.error.required = Select a country you sold to
+soldToCountry.intermediary.error.required = Select a country they sold to
 soldToCountry.change.hidden = which country you sold to
 
 vatRatesFromCountry.title = Which VAT rates did you sell goods at?
+vatRatesFromCountry.intermediary.title = Which VAT rates did they sell goods at?
 vatRatesFromCountry.heading = Which VAT rates did you sell goods at?
+vatRatesFromCountry.intermediary.heading = Which VAT rates did they sell goods at?
 vatRatesFromCountry.caption = {0} sales to {1}
 vatRatesFromCountry.intermediary.caption = {0}{1} sales to {2}
 vatRatesFromCountry.hint = Select all that apply.
@@ -211,17 +227,24 @@ vatRatesFromCountry.twelvePercent = 12%
 vatRatesFromCountry.twentyPercent = 20%
 vatRatesFromCountry.checkYourAnswersLabel = VAT rate
 vatRatesFromCountry.error.required = Select which VAT rates you sold goods at
+vatRatesFromCountry.intermediary.error.required = Select which VAT rates they sold goods at
 vatRatesFromCountry.error.invalid = Select which VAT rates you sold goods at
+vatRatesFromCountry.intermediary.error.invalid = Select which VAT rates they sold goods at
 vatRatesFromCountry.change.hidden = VAT rates from country
 
 salesToCountry.title = What were your sales at the {0} rate excluding VAT?
+salesToCountry.intermediary.title = What were their sales at the {0} rate excluding VAT?
 salesToCountry.heading = What were your sales at the {0} rate excluding VAT?
+salesToCountry.intermediary.heading = What were their sales at the {0} rate excluding VAT?
 salesToCountry.caption = {0} sales to {1}
 salesToCountry.intermediary.caption = {0}{1} sales to {2}
 salesToCountry.checkYourAnswersLabel = Sales excluding VAT
 salesToCountry.error.nonNumeric = Enter your sales at the {0} rate excluding VAT using numbers
+salesToCountry.intermediary.error.nonNumeric = Enter their sales at the {0} rate excluding VAT using numbers
 salesToCountry.error.required = Enter your sales at the {0} rate excluding VAT
+salesToCountry.intermediary.error.required = Enter their sales at the {0} rate excluding VAT
 salesToCountry.error.wholeNumber = Enter your sales at the {0} rate excluding VAT using whole numbers
+salesToCountry.intermediary.error.wholeNumber = Enter their sales at the {0} rate excluding VAT using whole numbers
 salesToCountry.error.outOfRange = Sales excluding VAT must be between {0} and {1}
 salesToCountry.error.calculatedVatRateOutOfRange = Add a sales total above £0.02
 salesToCountry.change.hidden = sales excluding VAT at the {0} VAT rate
@@ -229,7 +252,9 @@ salesToCountry.remove.hidden = {0} VAT rate
 salesToCountry.hint = For example, £600 or £193.54
 
 vatOnSales.title = How much VAT did you charge on sales of {0} at {1} VAT rate?
+vatOnSales.intermediary.title = How much VAT did they charge on sales of {0} at {1} VAT rate?
 vatOnSales.heading = How much VAT did you charge on sales of {0} at {1} VAT rate?
+vatOnSales.intermediary.heading = How much VAT did they charge on sales of {0} at {1} VAT rate?
 vatOnSales.caption = {0} sales to {1}
 vatOnSales.intermediary.caption = {0}{1} sales to {2}
 vatOnSales.nonStandard = A different amount
@@ -244,7 +269,9 @@ vatOnSales.amount.error.calculatedVatRateOutOfRange = Add a sales total above £
 vatOnSales.amount.error.nonNumeric = Enter the amount of VAT charged using numbers
 
 noOtherPeriodsAvailable.title = You cannot start returns for other months yet
+noOtherPeriodsAvailable.intermediary.title = You cannot start any other returns for {0}
 noOtherPeriodsAvailable.heading = You cannot start returns for other months yet
+noOtherPeriodsAvailable.intermediary.heading = You cannot start any other returns for {0}
 noOtherPeriodsAvailable.p1 = You can only start returns for months that have ended.
 noOtherPeriodsAvailable.backToYourAccount = <a class="govuk-link" id="back-to-your-account" href={0}>Back to your account</a>
 
@@ -258,6 +285,7 @@ soldToCountryList.error.required = Select yes if you want to add sales to an add
 soldToCountryList.change.hidden = sales to {0}
 soldToCountryList.remove.hidden = sales to {0}
 soldToCountryList.addAnother.hint = You must tell us about all of your eligible sales.
+soldToCountryList.intermediary.addAnother.hint = You must tell us about all of their eligible sales.
 
 deleteSoldToCountry.title = Are you sure you want to remove all the sales information for {0}?
 deleteSoldToCountry.heading = Are you sure you want to remove all the sales information for {0}?
@@ -276,7 +304,9 @@ checkSales.vat.change.hidden = VAT charged for VAT rate {0}
 checkSales.vatRate.remove.hidden = VAT rate for {0}
 
 deleteVatRateSalesForCountry.title = Do you want to remove all your {0} VAT rate sales for {1}?
+deleteVatRateSalesForCountry.intermediary.title = Do you want to remove all their {0} VAT rate sales for {1}?
 deleteVatRateSalesForCountry.heading = Do you want to remove all your {0} VAT rate sales for {1}?
+deleteVatRateSalesForCountry.intermediary.heading = Do you want to remove all their {0} VAT rate sales for {1}?
 deleteVatRateSalesForCountry.error.required = Select yes if you want to remove all your {0} VAT rate sales for {1}
 
 remainingVatRateFromCountry.title = Did you sell goods at the {0} VAT rate?
@@ -322,6 +352,7 @@ correctionCountry.intermediary.caption = {0}Correction month: {1}
 correctionCountry.checkYourAnswersLabel = Country sold to
 correctionCountry.change.hidden = which country you sold to
 correctionCountry.hint = You can also add a new country that was not included in your previous return.
+correctionCountry.intermediary.hint = You can also add a new country that was not included in their previous return.
 correctionCountry.error.required = Select which country you would like to correct
 correctionCountry.error.duplicate = You selected this country already. Select a different one.
 
