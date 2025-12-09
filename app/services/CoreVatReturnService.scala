@@ -51,7 +51,7 @@ class CoreVatReturnService @Inject()(
 
     val totalAmountVatDueGBP = salesAtVatRateService.getTotalVatOwedAfterCorrections(userAnswers)
     buildCoreVatReturn(userAnswers, totalAmountVatDueGBP).flatMap { coreVatReturn =>
-      returnConnector.submit(coreVatReturn, Some(request.iossNumber)).map {
+      returnConnector.submit(coreVatReturn, request.iossNumber).map {
         case response if response.status == CREATED =>
           logger.info("Successful core vat return submission")
           totalAmountVatDueGBP

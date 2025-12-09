@@ -100,7 +100,7 @@ class CoreVatReturnServiceSpec extends SpecBase with BeforeAndAfterEach {
       )
 
       service.submitCoreVatReturn(completeUserAnswers).futureValue mustBe total
-      verify(mockReturnConnector, times(1)).submit(eqTo(expectedCoreVatReturn), eqTo(Some(iossNumber)))(any())
+      verify(mockReturnConnector, times(1)).submit(eqTo(expectedCoreVatReturn), eqTo(iossNumber))(any())
 
     }
   }

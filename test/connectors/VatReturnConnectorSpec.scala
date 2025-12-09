@@ -172,8 +172,7 @@ class VatReturnConnectorSpec extends SpecBase
 
     ".submit" - {
 
-      val submitUrl: String = "/ioss-returns/return"
-      val submitIntermediaryUrl: String = s"/ioss-returns/return/$iossNumber"
+      val submitUrl: String = s"/ioss-returns/return/$iossNumber"
       val coreVatReturn: CoreVatReturn = arbitraryCoreVatReturn.arbitrary.sample.value
 
       "must return OK when the submission is successful" in {
@@ -191,7 +190,7 @@ class VatReturnConnectorSpec extends SpecBase
               )
           )
 
-          val result = connector.submit(coreVatReturn, None).futureValue
+          val result = connector.submit(coreVatReturn, iossNumber).futureValue
 
           result.status mustBe OK
         }
@@ -212,7 +211,7 @@ class VatReturnConnectorSpec extends SpecBase
               )
           )
 
-          val result = connector.submit(coreVatReturn, None).futureValue
+          val result = connector.submit(coreVatReturn, iossNumber).futureValue
 
           result.status mustBe INTERNAL_SERVER_ERROR
         }
@@ -227,14 +226,14 @@ class VatReturnConnectorSpec extends SpecBase
           val responseBody = "{}"
 
           server.stubFor(
-            post(urlEqualTo(submitIntermediaryUrl))
+            post(urlEqualTo(submitUrl))
               .withRequestBody(equalToJson(Json.toJson(coreVatReturn).toString()))
               .willReturn(
                 aResponse().withStatus(OK).withBody(responseBody)
               )
           )
 
-          val result = connector.submit(coreVatReturn, Some(iossNumber)).futureValue
+          val result = connector.submit(coreVatReturn, iossNumber).futureValue
 
           result.status mustBe OK
         }
@@ -248,14 +247,14 @@ class VatReturnConnectorSpec extends SpecBase
           val connector = application.injector.instanceOf[VatReturnConnector]
 
           server.stubFor(
-            post(urlEqualTo(submitIntermediaryUrl))
+            post(urlEqualTo(submitUrl))
               .withRequestBody(equalToJson(Json.toJson(coreVatReturn).toString()))
               .willReturn(
                 aResponse().withStatus(INTERNAL_SERVER_ERROR).withBody("Error")
               )
           )
 
-          val result = connector.submit(coreVatReturn, Some(iossNumber)).futureValue
+          val result = connector.submit(coreVatReturn, iossNumber).futureValue
 
           result.status mustBe INTERNAL_SERVER_ERROR
         }
