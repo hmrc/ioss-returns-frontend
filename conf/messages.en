@@ -364,6 +364,7 @@ correctionListCountries.heading = You have not corrected the VAT amount for any 
 correctionListCountries.heading.singular = You have corrected the VAT amount for 1 country
 correctionListCountries.heading.plural = You have corrected the VAT amount for {0} countries
 correctionListCountries.section = Correction month: {0}
+correctionListCountries.intermediary.section = {0}Correction month: {1}
 correctionListCountries.addAnother = Add corrections to VAT for another country?
 correctionListCountries.error.required = Select yes if you want to add corrections to VAT for another country
 correctionListCountries.change.hidden = correction amount for {0}
