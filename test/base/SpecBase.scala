@@ -113,7 +113,8 @@ trait SpecBase
                                     userAnswers: Option[UserAnswers] = None,
                                     clock: Option[Clock] = None,
                                     registration: RegistrationWrapper = registrationWrapper,
-                                    getRegistrationAction: Option[GetRegistrationActionProvider] = None
+                                    getRegistrationAction: Option[GetRegistrationActionProvider] = None,
+                                    maybeIntermediaryNumber: Option[String] = None
                                   ): GuiceApplicationBuilder = {
     val clockToBind = clock.getOrElse(stubClockAtArbitraryDate)
 
@@ -128,10 +129,11 @@ trait SpecBase
         bind[DataRequiredAction].to[DataRequiredActionImpl],
         bind[IdentifierAction].to[FakeIdentifierAction],
         bind[Clock].toInstance(clockToBind),
-        bind[DataRetrievalActionProvider].toInstance(new FakeDataRetrievalActionProvider(userAnswers)),
+        bind[DataRetrievalActionProvider].toInstance(new FakeDataRetrievalActionProvider(userAnswers, maybeIntermediaryNumber)),
         getRegistrationActionBind,
         bind[CheckBouncedEmailFilterProvider].toInstance(new FakeCheckBouncedEmailFilterProvider()),
-        bind[CheckSubmittedReturnsFilterProvider].toInstance(new FakeCheckSubmittedReturnsFilterProvider())
+        bind[CheckSubmittedReturnsFilterProvider].toInstance(new FakeCheckSubmittedReturnsFilterProvider()),
+        bind[IntermediaryRequiredFilter].toInstance(new FakeIntermediaryRequiredFilter())
       )
   }
 
