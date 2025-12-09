@@ -22,7 +22,7 @@
         govukButton: GovukButton
 )
 
-@()(implicit request: Request[_], messages: Messages)
+@(isIntermediary: Boolean, intermediaryDashboardUrl: String)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(messages("cannotStartExcludedReturn.title"))) {
 
@@ -30,5 +30,11 @@
 
     <p class="govuk-body">@messages("cannotStartExcludedReturn.p1")</p>
 
-    <p class="govuk-body">@Html(messages("cannotStartExcludedReturn.backToYourAccount", YourAccountPage.route(EmptyWaypoints).url))</p>
+    <p class="govuk-body">
+        @if(isIntermediary) {
+            @Html(messages("cannotStartExcludedReturn.returnToIntermediaryAccount", intermediaryDashboardUrl))
+        } else {
+            @Html(messages("cannotStartExcludedReturn.backToYourAccount", YourAccountPage.route(EmptyWaypoints).url))
+        }
+    </p>
 }

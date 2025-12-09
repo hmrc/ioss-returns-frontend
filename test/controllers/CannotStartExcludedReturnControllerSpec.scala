@@ -17,6 +17,7 @@
 package controllers
 
 import base.SpecBase
+import config.FrontendAppConfig
 import connectors.VatReturnConnector
 import models.external.ExternalEntryUrl
 import org.mockito.ArgumentMatchers.any
@@ -44,12 +45,14 @@ class CannotStartExcludedReturnControllerSpec extends SpecBase {
       running(application) {
         val request = FakeRequest(GET, routes.CannotStartExcludedReturnController.onPageLoad().url)
 
+        val config = application.injector.instanceOf[FrontendAppConfig]
+
         val result = route(application, request).value
 
         val view = application.injector.instanceOf[CannotStartExcludedReturnView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view()(request, messages(application)).toString
+        contentAsString(result) mustEqual view(isIntermediary = false, config.intermediaryDashboardUrl)(request, messages(application)).toString
       }
     }
   }

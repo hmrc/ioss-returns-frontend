@@ -16,7 +16,8 @@
 
 package controllers
 
-import controllers.actions._
+import config.FrontendAppConfig
+import controllers.actions.*
 import logging.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -28,13 +29,18 @@ import scala.concurrent.Future
 
 class CannotStartExcludedReturnController @Inject()(
                                                      cc: AuthenticatedControllerComponents,
+                                                     frontendAppConfig: FrontendAppConfig,
                                                      view: CannotStartExcludedReturnView
                                                    ) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(): Action[AnyContent] = cc.auth.async {
+  def onPageLoad(): Action[AnyContent] = cc.authAndGetOptionalData().async {
     implicit request =>
-      Future.successful(Ok(view()))
+
+      val isIntermediary = request.isIntermediary
+      val intermediaryDashboardUrl = frontendAppConfig.intermediaryDashboardUrl
+      
+      Future.successful(Ok(view(isIntermediary, intermediaryDashboardUrl)))
   }
 }
