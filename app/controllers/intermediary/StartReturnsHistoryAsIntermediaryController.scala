@@ -27,7 +27,6 @@ import repositories.IntermediarySelectedIossNumberRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax.FutureOps
 
-import java.time.Clock
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
@@ -35,8 +34,7 @@ class StartReturnsHistoryAsIntermediaryController @Inject()(
                                                            override val messagesApi: MessagesApi,
                                                            cc: AuthenticatedControllerComponents,
                                                            intermediarySelectedIossNumberRepository: IntermediarySelectedIossNumberRepository,
-                                                           config: FrontendAppConfig,
-                                                           clock: Clock
+                                                           config: FrontendAppConfig
                                                            )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
@@ -46,18 +44,16 @@ class StartReturnsHistoryAsIntermediaryController @Inject()(
     
     if (config.intermediaryEnabled) {
 
-      val userAnswers = request.userAnswers.get
-      
       val intermediaryNumber = request.intermediaryNumber.get
 
       val intermediarySelectedIossNumber = IntermediarySelectedIossNumber(request.userId, intermediaryNumber, iossNumber)
-      
+
       for {
         _ <- intermediarySelectedIossNumberRepository.set(intermediarySelectedIossNumber)
-        _ <- cc.sessionRepository.set(userAnswers)
       } yield {
         Redirect(controllers.previousReturns.routes.SubmittedReturnsHistoryController.onPageLoad(waypoints).url)
       }
+
     } else {
       Redirect(routes.NotRegisteredController.onPageLoad()).toFuture
     }
