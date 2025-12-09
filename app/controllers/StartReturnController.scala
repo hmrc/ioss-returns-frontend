@@ -45,8 +45,6 @@ class StartReturnController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  val form: Form[Boolean] = formProvider()
-
   def onPageLoad(waypoints: Waypoints, period: Period): Action[AnyContent] = (
     cc.authAndGetOptionalData()
       andThen cc.checkExcludedTraderOptional(period)
@@ -55,6 +53,9 @@ class StartReturnController @Inject()(
 
     implicit request =>
       // TODO check for starting correct period
+      val isIntermediary = request.isIntermediary
+      val form: Form[Boolean] = formProvider(isIntermediary)
+      val netpBusinessName = request.registrationWrapper.registration.tradingNames.headOption.map(_.tradingName).getOrElse("")
 
       val maybeExclusion: Option[EtmpExclusion] = request.registrationWrapper.registration.exclusions.lastOption
 
@@ -65,7 +66,7 @@ class StartReturnController @Inject()(
       }
 
       partialReturnPeriodService.getPartialReturnPeriod(request.iossNumber, request.registrationWrapper, period).map { maybePartialReturnPeriod =>
-        Ok(view(form, waypoints, period, maybeExclusion, isFinalReturn, maybePartialReturnPeriod))
+        Ok(view(form, waypoints, period, maybeExclusion, isFinalReturn, maybePartialReturnPeriod, isIntermediary, netpBusinessName))
       }
 
   }
@@ -77,6 +78,9 @@ class StartReturnController @Inject()(
       andThen cc.checkIsCurrentReturnPeriodFilter(period)).async {
 
     implicit request =>
+      val isIntermediary = request.isIntermediary
+      val form: Form[Boolean] = formProvider(isIntermediary)
+      val netpBusinessName = request.registrationWrapper.registration.tradingNames.headOption.map(_.tradingName).getOrElse("")
 
       val maybeExclusion: Option[EtmpExclusion] = request.registrationWrapper.registration.exclusions.lastOption
 
@@ -90,7 +94,7 @@ class StartReturnController @Inject()(
         formWithErrors =>
 
           partialReturnPeriodService.getPartialReturnPeriod(request.iossNumber, request.registrationWrapper, period).map { maybePartialReturnPeriod =>
-            BadRequest(view(formWithErrors, waypoints, period, maybeExclusion, isFinalReturn, maybePartialReturnPeriod))
+            BadRequest(view(formWithErrors, waypoints, period, maybeExclusion, isFinalReturn, maybePartialReturnPeriod, isIntermediary, netpBusinessName))
 
           },
 

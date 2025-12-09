@@ -81,7 +81,11 @@
                         legend = LegendViewModel(
                             HtmlContent(Html("""<h2 class="govuk-fieldset__heading">""" + messages("soldToCountryList.addAnother") + "</h2>"))
                         ).withSize(LegendSize.Medium)
-                    ).withHint(HintViewModel(messages("soldToCountryList.addAnother.hint")))
+                    ).withHint(HintViewModel(if(isIntermediary) {
+                        messages("soldToCountryList.intermediary.addAnother.hint")
+                    } else {
+                        messages("soldToCountryList.addAnother.hint")
+                    }))
                 )
             } else {
                 <p class="govuk-body">@messages("soldToCountryList.maximumReached")</p>

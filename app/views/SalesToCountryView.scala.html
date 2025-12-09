@@ -51,7 +51,11 @@
             InputViewModel(
                 field = form("value"),
                 label = HmrcPageHeadingLabel(
-                    content = messages("salesToCountry.heading", vatRate.rateForDisplay),
+                    content =  if(isIntermediary) {
+                        messages("salesToCountry.intermediary.heading", vatRate.rateForDisplay)
+                    } else {
+                        messages("salesToCountry.heading", vatRate.rateForDisplay)
+                    },
                     caption =  caption,
                     classes = "govuk-label--l"
                 )

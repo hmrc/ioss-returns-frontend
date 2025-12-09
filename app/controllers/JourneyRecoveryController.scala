@@ -35,9 +35,10 @@ class JourneyRecoveryController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(continueUrl: Option[RedirectUrl] = None): Action[AnyContent] = cc.auth {
+  def onPageLoad(continueUrl: Option[RedirectUrl] = None): Action[AnyContent] = cc.authAndGetRegistration() {
     implicit request =>
-
+      val isIntermediary = request.isIntermediary
+      
       val safeUrl: Option[String] = continueUrl.flatMap {
         unsafeUrl =>
           unsafeUrl.getEither(OnlyRelative) match {
@@ -50,7 +51,7 @@ class JourneyRecoveryController @Inject()(
       }
 
       safeUrl
-        .map(url => Ok(continueView(url)))
-        .getOrElse(Ok(startAgainView()))
+        .map(url => Ok(continueView(url, isIntermediary)))
+        .getOrElse(Ok(startAgainView(isIntermediary)))
   }
 }

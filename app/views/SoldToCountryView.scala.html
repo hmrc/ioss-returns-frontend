@@ -28,7 +28,11 @@
 
 @(form: Form[_], waypoints: Waypoints, period: Period, index: Index, isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = title(form, messages("soldToCountry.title"))) {
+@layout(pageTitle = title(form, if(isIntermediary) {
+        messages("soldToCountry.intermediary.title", period.displayText)
+    } else {
+        messages("soldToCountry.title", period.displayText)
+    })) {
 
   @formHelper(action = routes.SoldToCountryController.onSubmit(waypoints, index)) {
 
@@ -41,7 +45,11 @@
         field = form("value"),
         items = Country.euCountryWithNISelectItems,
         label = HmrcPageHeadingLabel(
-          content = messages("soldToCountry.heading"),
+            content =  if(isIntermediary) {
+                messages("soldToCountry.intermediary.heading", period.displayText)
+            } else {
+                messages("soldToCountry.heading", period.displayText)
+            },
           caption =  if(isIntermediary) companyName + period.displayText else period.displayText,
           classes = "govuk-label--l"
         )

@@ -48,7 +48,11 @@
 
 @layout(pageTitle = title(
     form,
-    messages("vatOnSales.title", currencyFormat(netSales), vatRate.rateForDisplay),
+    if(isIntermediary) {
+        messages("vatOnSales.intermediary.title", currencyFormat(netSales), vatRate.rateForDisplay)
+    } else {
+        messages("vatOnSales.title", currencyFormat(netSales), vatRate.rateForDisplay)
+    },
     Some(caption)
 )) {
 
@@ -62,8 +66,12 @@
             RadiosViewModel(
                 field  = form("choice"),
                 legend = HmrcPageHeadingLegend(
-                    content = HtmlContent(messages("vatOnSales.heading", currencyFormat(netSales), vatRate.rateForDisplay)),
-                    caption =  caption,
+                    content = HtmlContent(if(isIntermediary) {
+                        messages("vatOnSales.intermediary.heading", currencyFormat(netSales), vatRate.rateForDisplay)
+                    } else {
+                        messages("vatOnSales.heading", currencyFormat(netSales), vatRate.rateForDisplay)
+                    }),
+                    caption = caption,
                     classes = "govuk-fieldset__legend--l"
                 ),
                 items = Seq(

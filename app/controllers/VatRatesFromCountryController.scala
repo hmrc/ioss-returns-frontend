@@ -56,7 +56,7 @@ class VatRatesFromCountryController @Inject()(
 
             val answers = request.userAnswers.get(VatRatesFromCountryPage(countryIndex, nextVatRateIndex))
 
-            val form: Form[List[VatRateFromCountry]] = formProvider(remainingVatRates.toList)
+            val form: Form[List[VatRateFromCountry]] = formProvider(remainingVatRates.toList, isIntermediary)
 
             val preparedForm = answers match {
               case None => form
@@ -91,7 +91,7 @@ class VatRatesFromCountryController @Inject()(
 
           vatRateService.getRemainingVatRatesForCountry(period, country, currentVatRatesAnswers).flatMap { remainingVatRates =>
 
-            val form = formProvider(remainingVatRates.toList)
+            val form = formProvider(remainingVatRates.toList, isIntermediary)
             form.bindFromRequest().fold(
               formWithErrors =>
                 BadRequest(view(formWithErrors, waypoints, period, countryIndex, country, utils.ItemsHelper.checkboxItems(remainingVatRates).toList, request.isIntermediary, request.companyName)).toFuture,
