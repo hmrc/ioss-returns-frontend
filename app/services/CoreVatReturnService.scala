@@ -16,9 +16,9 @@
 
 package services
 
-import connectors.VatReturnConnector
+import connectors.{IntermediaryRegistrationConnector, VatReturnConnector}
 import logging.Logging
-import models.core._
+import models.core.*
 import models.corrections.PeriodWithCorrections
 import models.requests.DataRequest
 import models.{Country, UserAnswers}
@@ -27,6 +27,7 @@ import queries.{AllCorrectionPeriodsQuery, AllSalesWithTotalAndVatQuery, SalesTo
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import utils.Formatters.generateVatReturnReference
+import utils.FutureSyntax.FutureOps
 
 import java.time.temporal.ChronoUnit
 import java.time.{Clock, Instant}
@@ -36,6 +37,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class CoreVatReturnService @Inject()(
                                       returnConnector: VatReturnConnector,
                                       salesAtVatRateService: SalesAtVatRateService,
+                                      intermediaryRegistrationConnector: IntermediaryRegistrationConnector,
                                       clock: Clock)(implicit ec: ExecutionContext) extends Logging {
 
   /**
@@ -48,38 +50,67 @@ class CoreVatReturnService @Inject()(
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
 
     val totalAmountVatDueGBP = salesAtVatRateService.getTotalVatOwedAfterCorrections(userAnswers)
-    returnConnector.submit(buildCoreVatReturn(userAnswers, totalAmountVatDueGBP)).map {
-      case response if response.status == CREATED =>
-        logger.info("Successful core vat return submission")
-        totalAmountVatDueGBP
-      case response => logger.error(s"Got error while submitting VAT return ${response.status} with body ${response.body}")
-        throw new Exception(s"Error while submitting VAT return ${response.status} with body ${response.body}")
+    buildCoreVatReturn(userAnswers, totalAmountVatDueGBP).flatMap { coreVatReturn =>
+      returnConnector.submit(coreVatReturn, request.iossNumber).map {
+        case response if response.status == CREATED =>
+          logger.info("Successful core vat return submission")
+          totalAmountVatDueGBP
+        case response => logger.error(s"Got error while submitting VAT return ${response.status} with body ${response.body}")
+          throw new Exception(s"Error while submitting VAT return ${response.status} with body ${response.body}")
+      }
     }
   }
 
-  private def buildCoreVatReturn(userAnswers: UserAnswers, totalAmountVatDueGBP: BigDecimal)(implicit request: DataRequest[_]): CoreVatReturn = {
+  private def buildCoreVatReturn(userAnswers: UserAnswers, totalAmountVatDueGBP: BigDecimal)
+                                (implicit request: DataRequest[_], hc: HeaderCarrier): Future[CoreVatReturn] = {
     val vatReturnReference = generateVatReturnReference(request.iossNumber, request.userAnswers.period)
 
     val instantNow = Instant.now(clock).truncatedTo(ChronoUnit.MILLIS)
 
-    CoreVatReturn(
-      vatReturnReferenceNumber = vatReturnReference,
-      version = instantNow,
-      traderId = CoreTraderId(
-        request.iossNumber,
-        "XI"
-      ),
-      period = CorePeriod(
-        userAnswers.period.year,
-        userAnswers.period.zeroPaddedMonth
-      ),
-      startDate = userAnswers.period.firstDay,
-      endDate = userAnswers.period.lastDay,
-      submissionDateTime = instantNow,
-      totalAmountVatDueGBP = totalAmountVatDueGBP,
-      msconSupplies = getAllMsconSupplies(userAnswers),
-      changeDate = request.registrationWrapper.registration.adminUse.changeDate
-    )
+    maybeIntermediary.map { maybeInt =>
+      CoreVatReturn(
+        vatReturnReferenceNumber = vatReturnReference,
+        version = instantNow,
+        traderId = CoreTraderId(
+          request.iossNumber,
+          "XI",
+          maybeInt
+
+        ),
+        period = CorePeriod(
+          userAnswers.period.year,
+          userAnswers.period.zeroPaddedMonth
+        ),
+        startDate = userAnswers.period.firstDay,
+        endDate = userAnswers.period.lastDay,
+        submissionDateTime = instantNow,
+        totalAmountVatDueGBP = totalAmountVatDueGBP,
+        msconSupplies = getAllMsconSupplies(userAnswers),
+        changeDate = request.registrationWrapper.registration.adminUse.changeDate
+      )
+    }
+  }
+
+  private def maybeIntermediary(implicit hc: HeaderCarrier, request: DataRequest[_]): Future[Option[CoreIntermediary]] = {
+    val isIntermediary = request.isIntermediary
+    val intermediaryNumber = request.intermediaryNumber
+
+    if (!isIntermediary) {
+      None.toFuture
+    } else {
+      intermediaryNumber match {
+        case Some(intNumber) =>
+          intermediaryRegistrationConnector.get(intNumber).map { intermediaryReg =>
+            Some(CoreIntermediary(
+              issuedBy = "XI",
+              intNumber = intNumber,
+              intChangeDate = intermediaryReg.etmpDisplayRegistration.adminUse.changeDate
+            ))
+          }
+        case None =>
+          None.toFuture
+      }
+    }
   }
 
   private def getAllMsconSupplies(userAnswers: UserAnswers): List[CoreMsconSupply] = {

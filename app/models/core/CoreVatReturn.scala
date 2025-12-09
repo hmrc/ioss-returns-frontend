@@ -16,13 +16,27 @@
 
 package models.core
 
-import play.api.libs.json.{JsString, Json, OFormat, Reads, Writes}
+import play.api.libs.json.{JsString, Json, OFormat, OWrites, Reads, Writes}
 import utils.Formatters.etmpDateTimeFormatter
 
 import java.time.{Instant, LocalDate, LocalDateTime, ZoneId}
 import java.util.UUID
 
-case class CoreTraderId(IOSSNumber: String, issuedBy: String)
+case class CoreIntermediary(
+                             issuedBy: String,
+                             intNumber: String,
+                             intChangeDate: Option[LocalDateTime]
+                           )
+
+object CoreIntermediary {
+  implicit val localDateTimeWrites: Writes[LocalDateTime] = Writes[LocalDateTime] { t =>
+    JsString(t.atZone(ZoneId.systemDefault()).withZoneSameInstant(ZoneId.of("Z")).format(etmpDateTimeFormatter))
+  }
+
+  implicit val format: OFormat[CoreIntermediary] = Json.format[CoreIntermediary]
+}
+
+case class CoreTraderId(IOSSNumber: String, issuedBy: String, intermediary: Option[CoreIntermediary])
 
 object CoreTraderId {
   implicit val format: OFormat[CoreTraderId] = Json.format[CoreTraderId]

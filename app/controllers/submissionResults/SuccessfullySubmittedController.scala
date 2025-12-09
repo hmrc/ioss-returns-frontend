@@ -17,7 +17,7 @@
 package controllers.submissionResults
 
 import config.FrontendAppConfig
-import connectors.VatReturnConnector
+import connectors.{IntermediaryRegistrationConnector, VatReturnConnector}
 import controllers.actions.*
 import pages.SoldGoodsPage
 import pages.corrections.CorrectPreviousReturnPage
@@ -29,13 +29,14 @@ import utils.Formatters.generateVatReturnReference
 import views.html.submissionResults.SuccessfullySubmittedView
 
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class SuccessfullySubmittedController @Inject()(
                                                  override val messagesApi: MessagesApi,
                                                  cc: AuthenticatedControllerComponents,
                                                  vatReturnConnector: VatReturnConnector,
                                                  frontendAppConfig: FrontendAppConfig,
+                                                 intermediaryRegistrationConnector: IntermediaryRegistrationConnector,
                                                  view: SuccessfullySubmittedView
                                                )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
@@ -44,7 +45,24 @@ class SuccessfullySubmittedController @Inject()(
   def onPageLoad: Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
       val userResearchUrl = frontendAppConfig.userResearchUrl2
-      
+      val isIntermediary = request.isIntermediary
+      val intermediaryClientName =
+        if (isIntermediary) {
+          request.intermediaryNumber match {
+            case Some(num) =>
+              intermediaryRegistrationConnector.get(num).map { registration =>
+                registration.etmpDisplayRegistration.clientDetails
+                  .find(_.clientIossID == request.iossNumber)
+                  .map(_.clientName)
+                  .getOrElse("")
+              }
+            case None =>
+              Future.failed(new RuntimeException("No intermediary number in request"))
+          }
+        } else {
+          Future.successful("")
+        }
+
       val returnReference = generateVatReturnReference(request.iossNumber, request.userAnswers.period)
       val hasSoldGoodsPage = request.userAnswers.get(SoldGoodsPage)
       val hasCorrectedPreviousReturn = request.userAnswers.get(CorrectPreviousReturnPage(0))
@@ -58,11 +76,16 @@ class SuccessfullySubmittedController @Inject()(
       val totalOwed = request.userAnswers.get(TotalAmountVatDueGBPQuery)
         .getOrElse(throw new RuntimeException("TotalAmountVatDueGBPQuery has not been set in answers"))
 
-      vatReturnConnector.getSavedExternalEntry().map { errorOrExternalUrl =>
+      for {
+        clientName <- intermediaryClientName
+        errorOrExternalUrl <- vatReturnConnector.getSavedExternalEntry()
+      } yield {
         val maybeExternalUrl = errorOrExternalUrl.fold(
           _ => None,
           _.url
         )
+
+        val intermediaryDashboardUrl = frontendAppConfig.intermediaryDashboardUrl
 
         Ok(view(
           returnReference,
@@ -70,7 +93,10 @@ class SuccessfullySubmittedController @Inject()(
           period = request.userAnswers.period,
           owedAmount = totalOwed,
           externalUrl = maybeExternalUrl,
-          userResearchUrl
+          userResearchUrl,
+          isIntermediary = isIntermediary,
+          clientName = clientName,
+          intermediaryDashboardUrl = intermediaryDashboardUrl
         ))
       }
   }

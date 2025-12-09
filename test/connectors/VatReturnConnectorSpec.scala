@@ -172,7 +172,7 @@ class VatReturnConnectorSpec extends SpecBase
 
     ".submit" - {
 
-      val submitUrl: String = "/ioss-returns/return"
+      val submitUrl: String = s"/ioss-returns/return/$iossNumber"
       val coreVatReturn: CoreVatReturn = arbitraryCoreVatReturn.arbitrary.sample.value
 
       "must return OK when the submission is successful" in {
@@ -190,7 +190,7 @@ class VatReturnConnectorSpec extends SpecBase
               )
           )
 
-          val result = connector.submit(coreVatReturn).futureValue
+          val result = connector.submit(coreVatReturn, iossNumber).futureValue
 
           result.status mustBe OK
         }
@@ -211,7 +211,50 @@ class VatReturnConnectorSpec extends SpecBase
               )
           )
 
-          val result = connector.submit(coreVatReturn).futureValue
+          val result = connector.submit(coreVatReturn, iossNumber).futureValue
+
+          result.status mustBe INTERNAL_SERVER_ERROR
+        }
+
+      }
+
+      "must return OK when the intermediary submission is successful" in {
+
+        running(application) {
+
+          val connector = application.injector.instanceOf[VatReturnConnector]
+          val responseBody = "{}"
+
+          server.stubFor(
+            post(urlEqualTo(submitUrl))
+              .withRequestBody(equalToJson(Json.toJson(coreVatReturn).toString()))
+              .willReturn(
+                aResponse().withStatus(OK).withBody(responseBody)
+              )
+          )
+
+          val result = connector.submit(coreVatReturn, iossNumber).futureValue
+
+          result.status mustBe OK
+        }
+
+      }
+
+      "must return InternalServerError when the intermediary submission fails" in {
+
+        running(application) {
+
+          val connector = application.injector.instanceOf[VatReturnConnector]
+
+          server.stubFor(
+            post(urlEqualTo(submitUrl))
+              .withRequestBody(equalToJson(Json.toJson(coreVatReturn).toString()))
+              .willReturn(
+                aResponse().withStatus(INTERNAL_SERVER_ERROR).withBody("Error")
+              )
+          )
+
+          val result = connector.submit(coreVatReturn, iossNumber).futureValue
 
           result.status mustBe INTERNAL_SERVER_ERROR
         }
