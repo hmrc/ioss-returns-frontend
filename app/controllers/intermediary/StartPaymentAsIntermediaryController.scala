@@ -38,8 +38,7 @@ class StartPaymentAsIntermediaryController @Inject()(
                                                      override val messagesApi: MessagesApi,
                                                      cc: AuthenticatedControllerComponents,
                                                      intermediarySelectedIossNumberRepository: IntermediarySelectedIossNumberRepository,
-                                                     config: FrontendAppConfig,
-                                                     clock: Clock
+                                                     config: FrontendAppConfig
                                                    )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
