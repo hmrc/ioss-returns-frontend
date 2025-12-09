@@ -23,8 +23,14 @@ import play.api.data.Form
 
 class StartReturnFormProvider @Inject() extends Mappings {
 
-  def apply(): Form[Boolean] =
+  def apply(isIntermediary: Boolean = false): Form[Boolean] =
     Form(
-      "value" -> boolean("startReturn.error.required")
+      "value" -> boolean(
+        if(isIntermediary) {
+          "startReturn.intermediary.error.required"
+        } else {
+          "startReturn.error.required"
+        }
+      )
     )
 }

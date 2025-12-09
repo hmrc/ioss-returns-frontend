@@ -60,6 +60,8 @@ class CheckYourAnswersController @Inject()(
   def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
 
+      val isIntermediary = request.isIntermediary
+
       val period = request.userAnswers.period
 
       val errors: List[ValidationError] = redirectService.validate(period)
@@ -93,13 +95,16 @@ class CheckYourAnswersController @Inject()(
           containsCorrections,
           errors.map(_.errorMessage),
           maybeExclusion,
-          isFinalReturn
+          isFinalReturn,
+          isIntermediary
         ))
       }
   }
 
   def onSubmit(waypoints: Waypoints, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
+
+      val isIntermediary = request.isIntermediary
       val userAnswers = request.userAnswers
 
       val preferredPeriod = userAnswers.period

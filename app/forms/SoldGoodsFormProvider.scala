@@ -23,8 +23,14 @@ import play.api.data.Form
 
 class SoldGoodsFormProvider @Inject() extends Mappings {
 
-  def apply(): Form[Boolean] =
+  def apply(isIntermediary: Boolean = false): Form[Boolean] =
     Form(
-      "value" -> boolean("soldGoods.error.required")
+      "value" -> boolean(
+        if (isIntermediary) {
+          "soldGoods.intermediary.error.required"
+        } else {
+          "soldGoods.error.required"
+        }
+      )
     )
 }

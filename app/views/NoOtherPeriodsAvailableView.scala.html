@@ -21,11 +21,19 @@
         govukButton: GovukButton
 )
 
-@(waypoints: Waypoints)(implicit request: Request[_], messages: Messages)
+@(waypoints: Waypoints, isIntermediary: Boolean, netpBusinessName: String)(implicit request: Request[_], messages: Messages)
 
-    @layout(pageTitle = titleNoForm(messages("noOtherPeriodsAvailable.title"))) {
+    @layout(pageTitle = titleNoForm(if(isIntermediary) {
+        messages("noOtherPeriodsAvailable.intermediary.title", netpBusinessName)
+    } else {
+        messages("noOtherPeriodsAvailable.title")
+    })) {
 
-        <h1 class="govuk-heading-l">@messages("noOtherPeriodsAvailable.heading")</h1>
+        <h1 class="govuk-heading-l">@if(isIntermediary) {
+            @messages("noOtherPeriodsAvailable.intermediary.heading", netpBusinessName)
+        } else {
+            @messages("noOtherPeriodsAvailable.heading")
+        }</h1>
 
         <p class="govuk-body">@messages("noOtherPeriodsAvailable.p1")</p>
 

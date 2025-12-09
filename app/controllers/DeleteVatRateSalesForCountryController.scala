@@ -45,6 +45,7 @@ class DeleteVatRateSalesForCountryController @Inject()(
 
   def onPageLoad(waypoints: Waypoints, countryIndex: Index, vatRateIndex: Index): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
+      val isIntermediary = request.isIntermediary
       getCountry(waypoints, countryIndex) {
         country =>
 
@@ -53,13 +54,14 @@ class DeleteVatRateSalesForCountryController @Inject()(
 
               val form: Form[Boolean] = formProvider(vatRate.rateForDisplay, country)
 
-              Ok(view(form, waypoints, request.userAnswers.period, countryIndex, vatRateIndex, vatRate.rateForDisplay, country)).toFuture
+              Ok(view(form, waypoints, request.userAnswers.period, countryIndex, vatRateIndex, vatRate.rateForDisplay, country, isIntermediary)).toFuture
           }
       }
   }
 
   def onSubmit(waypoints: Waypoints, countryIndex: Index, vatRateIndex: Index): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
+      val isIntermediary = request.isIntermediary
       getCountry(waypoints, countryIndex) {
         country =>
 
@@ -70,7 +72,7 @@ class DeleteVatRateSalesForCountryController @Inject()(
 
               form.bindFromRequest().fold(
                 formWithErrors =>
-                  Future.successful(BadRequest(view(formWithErrors, waypoints, request.userAnswers.period, countryIndex, vatRateIndex, vatRate.rateForDisplay, country))),
+                  Future.successful(BadRequest(view(formWithErrors, waypoints, request.userAnswers.period, countryIndex, vatRateIndex, vatRate.rateForDisplay, country, isIntermediary))),
 
                 value =>
                   if (value) {

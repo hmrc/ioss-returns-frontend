@@ -15,7 +15,7 @@
  *@
 
 @import components.ButtonGroup
- 
+
 
 @this(
     layout: templates.Layout,
@@ -27,7 +27,11 @@
 
 @(form: Form[_], waypoints: Waypoints, period: Period, index: Index, country: Country, checkboxItems: Seq[CheckboxItem], isIntermediary:Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = title(form, messages("vatRatesFromCountry.title"))) {
+@layout(pageTitle = title(form, if(isIntermediary) {
+    messages("vatRatesFromCountry.intermediary.title")
+} else {
+    messages("vatRatesFromCountry.title")
+})) {
 
     @formHelper(action = routes.VatRatesFromCountryController.onSubmit(waypoints, index), Symbol("autoComplete") -> "off") {
 
@@ -40,7 +44,11 @@
                 form   = form,
                 name   = "value",
                 legend = HmrcPageHeadingLegend(
-                    content = messages("vatRatesFromCountry.heading"),
+                    content = if(isIntermediary) {
+                        messages("vatRatesFromCountry.intermediary.heading")
+                    } else {
+                        messages("vatRatesFromCountry.heading")
+                    },
                     caption =  if(isIntermediary) {
                         messages("vatRatesFromCountry.intermediary.caption", companyName, period.displayText, country.name)
                     } else {

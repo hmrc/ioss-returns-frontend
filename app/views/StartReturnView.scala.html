@@ -29,14 +29,22 @@
     govukButton: GovukButton
 )
 
-@(form: Form[_], waypoints: Waypoints, period: Period, maybeExclusion: Option[EtmpExclusion], isFinalReturn: Boolean, maybePartialReturnPeriod: Option[PartialReturnPeriod])(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, period: Period, maybeExclusion: Option[EtmpExclusion], isFinalReturn: Boolean, maybePartialReturnPeriod: Option[PartialReturnPeriod], isIntermediary: Boolean, netpBusinessName: String)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(
     form,
     if(maybeExclusion.isDefined && isFinalReturn) {
-        messages("startReturn.finalReturn")
+        if(isIntermediary) {
+            messages("startReturn.intermediary.finalReturn")
+        } else {
+            messages("startReturn.finalReturn")
+        }
     } else {
-        messages("startReturn.title", period.displayText)
+        if(isIntermediary) {
+            messages("startReturn.intermediary.title", period.displayText, netpBusinessName)
+        } else {
+            messages("startReturn.title", period.displayText)
+        }
     }
 )) {
 
@@ -52,9 +60,17 @@
                     field = form("value"),
                     legend = LegendViewModel(
                         if(maybeExclusion.isDefined && isFinalReturn) {
-                            HtmlContent(Html("""<h1 class="govuk-fieldset__heading">""" + messages("startReturn.finalReturn") + "</h1>"))
+                            if(isIntermediary) {
+                                HtmlContent(Html("""<h1 class="govuk-fieldset__heading">""" + messages("startReturn.intermediary.finalReturn") + "</h1>"))
+                            } else {
+                                HtmlContent(Html("""<h1 class="govuk-fieldset__heading">""" + messages("startReturn.finalReturn") + "</h1>"))
+                            }
                         } else {
-                            HtmlContent(Html("""<h1 class="govuk-fieldset__heading">""" + messages("startReturn.heading", period.displayText) + "</h1>"))
+                            if(isIntermediary) {
+                                HtmlContent(Html("""<h1 class="govuk-fieldset__heading">""" + messages("startReturn.intermediary.heading", period.displayText, netpBusinessName) + "</h1>"))
+                            } else {
+                                HtmlContent(Html("""<h1 class="govuk-fieldset__heading">""" + messages("startReturn.heading", period.displayText) + "</h1>"))
+                            }
                         }
                 ).withSize(LegendSize.Large)
             )

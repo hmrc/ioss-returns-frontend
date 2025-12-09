@@ -49,7 +49,7 @@ class NoOtherPeriodsAvailableControllerSpec extends SpecBase {
         val view = application.injector.instanceOf[NoOtherPeriodsAvailableView]
 
         status(result) mustBe OK
-        contentAsString(result) mustBe view(waypoints)(request, messages(application)).toString
+        contentAsString(result) mustBe view(waypoints, isIntermediary = false, netpBusinessName = "")(request, messages(application)).toString
       }
     }
 

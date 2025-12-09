@@ -33,8 +33,11 @@ class NoOtherPeriodsAvailableController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = (cc.actionBuilder andThen cc.identify) {
+  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetRegistration() {
     implicit request =>
-      Ok(view(waypoints))
+      val isIntermediary = request.isIntermediary
+      val netpBusinessName = request.registrationWrapper.registration.tradingNames.headOption.map(_.tradingName).getOrElse("")
+
+      Ok(view(waypoints, isIntermediary, netpBusinessName))
   }
 }
