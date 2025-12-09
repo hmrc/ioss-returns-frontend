@@ -17,7 +17,7 @@
 package models.requests
 
 import play.api.mvc.{Request, WrappedRequest}
-import models.{RegistrationWrapper, UserAnswers}
+import models.{Period, RegistrationWrapper, UserAnswers}
 import uk.gov.hmrc.auth.core.retrieve.Credentials
 import uk.gov.hmrc.domain.Vrn
 
@@ -33,6 +33,13 @@ case class OptionalDataRequest[A] (
 
   val userId: String = credentials.providerId
   val isIntermediary: Boolean = intermediaryNumber.nonEmpty
+
+  def getCompanyName(): String = {
+    val clientName = registrationWrapper.vatInfo.organisationName.orElse(registrationWrapper.vatInfo.individualName).getOrElse(
+      throw new IllegalStateException("Unable to retrieve a required client Name from the vat information")
+    )
+    clientName + " "
+  }
 }
 
 case class DataRequest[A] (
@@ -47,4 +54,12 @@ case class DataRequest[A] (
 
   val userId: String = credentials.providerId
   val isIntermediary: Boolean = intermediaryNumber.nonEmpty
+  
+  def getCompanyName(): String = {
+    val clientName = registrationWrapper.vatInfo.organisationName.orElse(registrationWrapper.vatInfo.individualName).getOrElse(
+      throw new IllegalStateException("Unable to retrieve a required client Name from the vat information")
+    )
+    clientName + " "
+  }
+
 }

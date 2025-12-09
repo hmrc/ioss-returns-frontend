@@ -16,6 +16,7 @@
 
 @import viewmodels.InputWidth._
 @import components.ButtonGroup
+@import models.requests.DataRequest
 
 @this(
         layout: templates.Layout,
@@ -35,12 +36,16 @@
         vatRate: VatRateFromCountry,
         netSales: BigDecimal,
         standardVat: BigDecimal
-)(implicit request: Request[_], messages: Messages)
+)(implicit request: DataRequest[_], messages: Messages)
 
 @layout(pageTitle = title(
     form,
     messages("vatOnSales.title", currencyFormat(netSales), vatRate.rateForDisplay),
-    Some(messages("vatOnSales.caption", period.displayText, country.name))
+    if(request.isIntermediary) {
+        Some(messages("vatOnSales.intermediary.caption", request.getCompanyName(), period.displayText, country.name))
+    } else {
+        Some(messages("vatOnSales.caption", period.displayText, country.name))
+    }
 )) {
 
     @formHelper(action = routes.VatOnSalesController.onSubmit(waypoints, countryIndex, nextVatRateIndex), Symbol("autoComplete") -> "off") {
@@ -54,7 +59,11 @@
                 field  = form("choice"),
                 legend = HmrcPageHeadingLegend(
                     content = HtmlContent(messages("vatOnSales.heading", currencyFormat(netSales), vatRate.rateForDisplay)),
-                    caption = messages("vatOnSales.caption", period.displayText, country.name),
+                    caption =  if(request.isIntermediary) {
+                        messages("vatOnSales.intermediary.caption", request.getCompanyName(), period.displayText, country.name)
+                    } else {
+                        messages("vatOnSales.caption", period.displayText, country.name)
+                    },
                     classes = "govuk-fieldset__legend--l"
                 ),
                 items = Seq(

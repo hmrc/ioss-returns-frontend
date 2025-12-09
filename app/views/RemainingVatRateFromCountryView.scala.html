@@ -15,6 +15,7 @@
  *@
 
 @import viewmodels.LegendSize
+@import models.requests.DataRequest
 
 @this(
         layout: templates.Layout,
@@ -24,28 +25,32 @@
         button: ButtonGroup
 )
 
-@(form: Form[_], waypoints: Waypoints, period: Period, countryIndex: Index, nextVatRateIndex: Index, vatRate: String, country: Country)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, period: Period, countryIndex: Index, nextVatRateIndex: Index, vatRate: String, country: Country)(implicit request: DataRequest[_], messages: Messages)
 
-    @layout(pageTitle = title(form, messages("remainingVatRateFromCountry.title", vatRate))) {
+@layout(pageTitle = title(form, messages("remainingVatRateFromCountry.title", vatRate))) {
 
-        @formHelper(action = routes.RemainingVatRateFromCountryController.onSubmit(waypoints, countryIndex, nextVatRateIndex), Symbol("autoComplete") -> "off") {
+    @formHelper(action = routes.RemainingVatRateFromCountryController.onSubmit(waypoints, countryIndex, nextVatRateIndex), Symbol("autoComplete") -> "off") {
 
-            @if(form.errors.nonEmpty) {
-                @govukErrorSummary(ErrorSummaryViewModel(form))
-            }
-
-            @govukRadios(
-                RadiosViewModel.yesNo(
-                    field = form("value"),
-                    legend = HmrcPageHeadingLegend(
-                        content = messages("remainingVatRateFromCountry.heading", vatRate),
-                        caption = messages("remainingVatRateFromCountry.caption", period.displayText, country.name)
-                    ).withSize(LegendSize.Large)
-                )
-            )
-
-            @button(
-                "site.continue", routes.RemainingVatRateFromCountryController.onPageLoad(waypoints, countryIndex, nextVatRateIndex).url, period, waypoints
-            )
+        @if(form.errors.nonEmpty) {
+            @govukErrorSummary(ErrorSummaryViewModel(form))
         }
+
+        @govukRadios(
+            RadiosViewModel.yesNo(
+                field = form("value"),
+                legend = HmrcPageHeadingLegend(
+                    content = messages("remainingVatRateFromCountry.heading", vatRate),
+                    caption = if(request.isIntermediary) {
+                        messages("remainingVatRateFromCountry.intermediary.caption", request.getCompanyName(), period.displayText, country.name)
+                    } else {
+                        messages("remainingVatRateFromCountry.caption", period.displayText, country.name)
+                    }
+                ).withSize(LegendSize.Large)
+            )
+        )
+
+        @button(
+            "site.continue", routes.RemainingVatRateFromCountryController.onPageLoad(waypoints, countryIndex, nextVatRateIndex).url, period, waypoints
+        )
     }
+}

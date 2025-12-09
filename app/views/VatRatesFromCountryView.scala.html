@@ -15,6 +15,7 @@
  *@
 
 @import components.ButtonGroup
+@import models.requests.DataRequest
 
 @this(
     layout: templates.Layout,
@@ -24,7 +25,7 @@
     button: ButtonGroup
 )
 
-@(form: Form[_], waypoints: Waypoints, period: Period, index: Index, country: Country, checkboxItems: Seq[CheckboxItem])(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, period: Period, index: Index, country: Country, checkboxItems: Seq[CheckboxItem])(implicit request: DataRequest[_], messages: Messages)
 
 @layout(pageTitle = title(form, messages("vatRatesFromCountry.title"))) {
 
@@ -40,7 +41,11 @@
                 name   = "value",
                 legend = HmrcPageHeadingLegend(
                     content = messages("vatRatesFromCountry.heading"),
-                    caption = messages("vatRatesFromCountry.caption", period.displayText, country.name),
+                    caption =  if(request.isIntermediary) {
+                        messages("vatRatesFromCountry.intermediary.caption", request.getCompanyName(), period.displayText, country.name)
+                    } else {
+                        messages("vatRatesFromCountry.caption", period.displayText, country.name)
+                    },
                     classes = "govuk-fieldset__legend--l"
                 ),
                 items  = checkboxItems

@@ -14,6 +14,8 @@
  * limitations under the License.
  *@
 
+@import models.requests.DataRequest
+
 @this(
         layout: templates.Layout,
         govukSummaryList: GovukSummaryList,
@@ -22,6 +24,7 @@
         govukWarningText: GovukWarningText,
         button: ButtonGroup
 )
+
 
 @(
     waypoints: Waypoints,
@@ -32,12 +35,18 @@
     periodIndex: Index,
     countryIndex: Index,
     countryCorrectionComplete: Boolean
-)(implicit request: Request[_], messages: Messages)
+)(implicit request: DataRequest[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(messages("checkVatPayableAmount.title"))) {
 
     <header class="hmrc-page-heading">
-        <p class="govuk-caption-l hmrc-caption-l">@messages("checkVatPayableAmount.caption", correctionPeriod.displayText, country.name)</p>
+        <p class="govuk-caption-l hmrc-caption-l">@{
+         if(request.isIntermediary){
+             messages("checkVatPayableAmount.intermediary.caption", request.getCompanyName(), correctionPeriod.displayText, country.name)
+         } else {
+             messages("checkVatPayableAmount.caption", correctionPeriod.displayText, country.name)
+         }
+        }</p>
         <h1 class="govuk-heading-l">@messages("checkVatPayableAmount.heading")</h1>
     </header>
 

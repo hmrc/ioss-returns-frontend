@@ -19,7 +19,7 @@
 @import uk.gov.hmrc.hmrcfrontend.views.viewmodels.accessibleautocomplete.AccessibleAutocomplete
 @import viewmodels.LabelSize
 @import views.html.components.ButtonGroup
-
+@import models.requests.DataRequest
 @this(
         layout: templates.Layout,
         formHelper: FormWithCSRF,
@@ -28,7 +28,8 @@
         button: ButtonGroup
 )
 
-@(form: Form[_], waypoints: Waypoints, period: Period, periodIndex: Index, correctionPeriod: Period, index: Index)(implicit request: Request[_], messages: Messages)
+
+@(form: Form[_], waypoints: Waypoints, period: Period, periodIndex: Index, correctionPeriod: Period, index: Index)(implicit request: DataRequest[_], messages: Messages)
 
 @layout(pageTitle = title(form, messages("correctionCountry.title"))) {
 
@@ -43,7 +44,11 @@
         items = Country.euCountryWithNISelectItems,
         label = HmrcPageHeadingLabel(
           content = messages("correctionCountry.heading"),
-          caption = messages("correctionCountry.caption", correctionPeriod.displayText),
+          caption = if(request.isIntermediary)  {
+              messages("correctionCountry.intermediary.caption", request.getCompanyName(), correctionPeriod.displayText)
+          } else {
+              messages("correctionCountry.caption", correctionPeriod.displayText)
+          },
             classes = "govuk-label--l"
         )
       ).asAccessibleAutocomplete(Some(
