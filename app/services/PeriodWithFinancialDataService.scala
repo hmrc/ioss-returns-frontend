@@ -40,11 +40,11 @@ class PeriodWithFinancialDataService @Inject()(
       preparedFinancialData <- paymentsService.prepareFinancialDataWithIossNumber(iossNumber)
       periods = getPeriodsWithinSixYears(obligations.map(_.periodKey).map(Period.fromKey))
       allUnpaidPayments = preparedFinancialData.duePayments ++ preparedFinancialData.overduePayments ++ preparedFinancialData.excludedPayments
-      allPaymentsForPeriod <- getAllPaymentsForPeriods(periods, allUnpaidPayments)
+      allPaymentsForPeriod <- getAllPaymentsForPeriods(periods, allUnpaidPayments, iossNumber)
     } yield allPaymentsForPeriod.flatten.groupBy(_._1.year)
   }
 
-  private def getAllPaymentsForPeriods(periods: Seq[Period], allUnpaidPayments: List[Payment])
+  private def getAllPaymentsForPeriods(periods: Seq[Period], allUnpaidPayments: List[Payment], iossNumber: String)
                                       (implicit hc: HeaderCarrier): Future[Seq[Map[Period, Payment]]] = {
 
     Future.sequence(periods.map { period =>
@@ -52,7 +52,7 @@ class PeriodWithFinancialDataService @Inject()(
         case Some(payment) =>
           Future(Map(period -> payment))
         case _ =>
-          vatReturnConnector.get(period).map {
+          vatReturnConnector.getForIossNumber(period, iossNumber).map {
             case Right(vatReturn) =>
               val paymentStatus = if (vatReturn.correctionPreviousVATReturn.isEmpty && vatReturn.goodsSupplied.isEmpty) {
                 PaymentStatus.NilReturn

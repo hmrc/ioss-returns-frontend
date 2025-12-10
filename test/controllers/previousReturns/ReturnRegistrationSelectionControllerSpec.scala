@@ -60,7 +60,7 @@ class ReturnRegistrationSelectionControllerSpec extends SpecBase with BeforeAndA
           .build()
 
         running(application) {
-          when(mockPreviousRegistrationService.getPreviousRegistrations()(any())) thenReturn previousRegistrations.toFuture
+          when(mockPreviousRegistrationService.getPreviousRegistrations(any())(any())) thenReturn previousRegistrations.toFuture
 
           val request = FakeRequest(GET, routes.ReturnRegistrationSelectionController.onPageLoad(waypoints).url)
 
@@ -82,7 +82,7 @@ class ReturnRegistrationSelectionControllerSpec extends SpecBase with BeforeAndA
           .build()
 
         running(application) {
-          when(mockPreviousRegistrationService.getPreviousRegistrations()(any())) thenReturn previousRegistrations.toFuture
+          when(mockPreviousRegistrationService.getPreviousRegistrations(any())(any())) thenReturn previousRegistrations.toFuture
           when(mockSelectedPreviousRegistrationRepository.get(userAnswersId)) thenReturn Some(selectedPreviousRegistration).toFuture
 
           val request = FakeRequest(GET, routes.ReturnRegistrationSelectionController.onPageLoad(waypoints).url)
@@ -104,7 +104,7 @@ class ReturnRegistrationSelectionControllerSpec extends SpecBase with BeforeAndA
         .build()
 
       running(application) {
-        when(mockPreviousRegistrationService.getPreviousRegistrations()(any())) thenReturn previousRegistrations.take(1).toFuture
+        when(mockPreviousRegistrationService.getPreviousRegistrations(any())(any())) thenReturn previousRegistrations.take(1).toFuture
 
         val request = FakeRequest(GET, routes.ReturnRegistrationSelectionController.onPageLoad(waypoints).url)
 
@@ -121,7 +121,7 @@ class ReturnRegistrationSelectionControllerSpec extends SpecBase with BeforeAndA
         .build()
 
       running(application) {
-        when(mockPreviousRegistrationService.getPreviousRegistrations()(any())) thenReturn List.empty.toFuture
+        when(mockPreviousRegistrationService.getPreviousRegistrations(any())(any())) thenReturn List.empty.toFuture
 
         val request = FakeRequest(GET, routes.ReturnRegistrationSelectionController.onPageLoad(waypoints).url)
 
@@ -140,7 +140,7 @@ class ReturnRegistrationSelectionControllerSpec extends SpecBase with BeforeAndA
         .build()
 
       running(application) {
-        when(mockPreviousRegistrationService.getPreviousRegistrations()(any())) thenReturn previousRegistrations.toFuture
+        when(mockPreviousRegistrationService.getPreviousRegistrations(any())(any())) thenReturn previousRegistrations.toFuture
         when(mockSelectedPreviousRegistrationRepository.set(any())) thenReturn Future.successful(selectedPreviousRegistration)
 
         val request = FakeRequest(POST, routes.ReturnRegistrationSelectionController.onPageLoad(waypoints).url)
@@ -159,7 +159,7 @@ class ReturnRegistrationSelectionControllerSpec extends SpecBase with BeforeAndA
         .build()
 
       running(application) {
-        when(mockPreviousRegistrationService.getPreviousRegistrations()(any())) thenReturn previousRegistrations.toFuture
+        when(mockPreviousRegistrationService.getPreviousRegistrations(any())(any())) thenReturn previousRegistrations.toFuture
 
         val request = FakeRequest(POST, routes.ReturnRegistrationSelectionController.onPageLoad(waypoints).url)
           .withFormUrlEncodedBody(("value", ""))

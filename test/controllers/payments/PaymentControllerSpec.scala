@@ -131,7 +131,7 @@ class PaymentControllerSpec extends SpecBase with BeforeAndAfterEach {
 
         when(mockFinancialDataConnector.getChargeForIossNumber(any(), any())(any())) thenReturn chargeResponse.toFuture
         when(mockPaymentService.makePayment(any(), any(), any())(any())) thenReturn Right(paymentResponse).toFuture
-        when(mockPreviousRegistrationService.getPreviousRegistrations()(any())) thenReturn previousRegistrations.toFuture
+        when(mockPreviousRegistrationService.getPreviousRegistrations(any())(any())) thenReturn previousRegistrations.toFuture
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
           .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
@@ -154,7 +154,7 @@ class PaymentControllerSpec extends SpecBase with BeforeAndAfterEach {
         when(mockFinancialDataConnector.getChargeForIossNumber(any(), any())(any())) thenReturn errorChargeResponse.toFuture
         when(mockPaymentService.makePayment(any(), any(), any())(any())) thenReturn Right(paymentResponse).toFuture
         when(mockVatReturnConnector.getForIossNumber(any(), any())(any())) thenReturn Right(etmpVatReturn).toFuture
-        when(mockPreviousRegistrationService.getPreviousRegistrations()(any())) thenReturn previousRegistrations.toFuture
+        when(mockPreviousRegistrationService.getPreviousRegistrations(any())(any())) thenReturn previousRegistrations.toFuture
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
           .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
@@ -177,7 +177,7 @@ class PaymentControllerSpec extends SpecBase with BeforeAndAfterEach {
 
         when(mockFinancialDataConnector.getChargeForIossNumber(any(), any())(any())) thenReturn chargeResponse.toFuture
         when(mockPaymentService.makePayment(any(), any(), any())(any())) thenReturn Left(InvalidJson).toFuture
-        when(mockPreviousRegistrationService.getPreviousRegistrations()(any())) thenReturn previousRegistrations.toFuture
+        when(mockPreviousRegistrationService.getPreviousRegistrations(any())(any())) thenReturn previousRegistrations.toFuture
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
           .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
@@ -197,7 +197,7 @@ class PaymentControllerSpec extends SpecBase with BeforeAndAfterEach {
 
       "should redirect to Journey recovery when IOSS number is not part of previous registrations or request.iossNumber" in {
 
-        when(mockPreviousRegistrationService.getPreviousRegistrations()(any())) thenReturn previousRegistrations.toFuture
+        when(mockPreviousRegistrationService.getPreviousRegistrations(any())(any())) thenReturn previousRegistrations.toFuture
 
         val application = applicationBuilder()
           .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))

@@ -43,7 +43,7 @@ class ViewReturnsMultipleRegController @Inject()(
 
   def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetOptionalData().async {
     implicit request =>
-      previousRegistrationService.getPreviousRegistrations().flatMap {
+      previousRegistrationService.getPreviousRegistrations(request.isIntermediary).flatMap {
         case Nil =>
           Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
         case registration :: Nil =>

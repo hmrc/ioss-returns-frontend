@@ -57,5 +57,4 @@ extends GetRegistrationActionProvider(
 )(ExecutionContext.Implicits.global) {
 
   override def apply(maybeIossNumber: Option[String] = None): GetRegistrationAction = new FakeGetRegistrationAction(registrationWrapper)
-
 }

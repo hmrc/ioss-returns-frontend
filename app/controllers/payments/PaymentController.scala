@@ -50,7 +50,7 @@ class PaymentController @Inject()(
 
   def makePaymentForIossNumber(waypoints: Waypoints, period: Period, iossNumber: String): Action[AnyContent] = {
     cc.authAndGetOptionalData().async { implicit request =>
-      previousRegistrationService.getPreviousRegistrations().flatMap { previousRegistrations =>
+      previousRegistrationService.getPreviousRegistrations(request.isIntermediary).flatMap { previousRegistrations =>
         val validIossNumbers: Seq[String] = request.iossNumber :: previousRegistrations.map(_.iossNumber)
         if (validIossNumbers.contains(iossNumber)) {
           getAmountOwedAndRedirect(period, iossNumber)

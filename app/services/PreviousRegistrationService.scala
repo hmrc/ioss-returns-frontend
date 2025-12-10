@@ -20,8 +20,10 @@ import connectors.{FinancialDataConnector, RegistrationConnector}
 import logging.Logging
 import models.StandardPeriod
 import models.payments.PrepareData
+import models.requests.OptionalDataRequest
 import uk.gov.hmrc.http.HeaderCarrier
 import viewmodels.previousReturns.PreviousRegistration
+import utils.FutureSyntax.FutureOps
 
 import java.time.YearMonth
 import javax.inject.Inject
@@ -32,26 +34,30 @@ class PreviousRegistrationService @Inject()(
                                              financialDataConnector: FinancialDataConnector
                                            )(implicit ec: ExecutionContext) extends Logging {
 
-  def getPreviousRegistrations()(implicit hc: HeaderCarrier): Future[List[PreviousRegistration]] = {
-    registrationConnector.getAccounts().map { accounts =>
-      val accountDetails: Seq[(YearMonth, String)] = accounts
-        .enrolments.map(e => e.activationDate -> e.identifiers.find(_.key == "IOSSNumber").map(_.value))
-        .collect {
-          case (Some(activationDate), Some(iossNumber)) => YearMonth.from(activationDate) -> iossNumber
-        }.sortBy(_._1)
-
-      accountDetails.zip(accountDetails.drop(1)).map { case ((activationDate, iossNumber), (nextActivationDate, _)) =>
-        PreviousRegistration(
-          startPeriod = StandardPeriod(activationDate),
-          endPeriod = StandardPeriod(nextActivationDate.minusMonths(1)),
-          iossNumber = iossNumber
-        )
-      }.toList
+  def getPreviousRegistrations(isIntermediary: Boolean)(implicit hc: HeaderCarrier): Future[List[PreviousRegistration]] = {
+    if (isIntermediary) {
+      List.empty.toFuture
+    } else {
+      registrationConnector.getAccounts().map { accounts =>
+        val accountDetails: Seq[(YearMonth, String)] = accounts
+          .enrolments.map(e => e.activationDate -> e.identifiers.find(_.key == "IOSSNumber").map(_.value))
+          .collect {
+            case (Some(activationDate), Some(iossNumber)) => YearMonth.from(activationDate) -> iossNumber
+          }.sortBy(_._1)
+  
+        accountDetails.zip(accountDetails.drop(1)).map { case ((activationDate, iossNumber), (nextActivationDate, _)) =>
+          PreviousRegistration(
+            startPeriod = StandardPeriod(activationDate),
+            endPeriod = StandardPeriod(nextActivationDate.minusMonths(1)),
+            iossNumber = iossNumber
+          )
+        }.toList
+      }
     }
   }
 
-  def getPreviousRegistrationPrepareFinancialData()(implicit hc: HeaderCarrier): Future[List[PrepareData]] = {
-    getPreviousRegistrations().flatMap { previousRegistrations =>
+  def getPreviousRegistrationPrepareFinancialData(isIntermediary: Boolean)(implicit hc: HeaderCarrier): Future[List[PrepareData]] = {
+    getPreviousRegistrations(isIntermediary).flatMap { previousRegistrations =>
       Future.sequence(
         previousRegistrations.map { previousRegistration =>
           financialDataConnector.prepareFinancialDataWithIossNumber(previousRegistration.iossNumber).map {

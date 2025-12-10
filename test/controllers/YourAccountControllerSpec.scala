@@ -479,7 +479,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
       )
 
       when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-      when(mockPreviousRegistrationService.getPreviousRegistrationPrepareFinancialData()(any())) thenReturn List(previousRegistrationPrepareData).toFuture
+      when(mockPreviousRegistrationService.getPreviousRegistrationPrepareFinancialData(any())(any())) thenReturn List(previousRegistrationPrepareData).toFuture
       when(mockFinancialDataConnector.prepareFinancialData()(any())) thenReturn
         Right(PrepareData(List.empty, List.empty, List.empty, 0, 0, iossNumber)).toFuture
       when(mockReturnStatusConnector.getCurrentReturns(any())(any())) thenReturn
@@ -586,7 +586,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
       )
 
       when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
-      when(mockPreviousRegistrationService.getPreviousRegistrationPrepareFinancialData()(any())) thenReturn List(previousRegistrationPrepareData).toFuture
+      when(mockPreviousRegistrationService.getPreviousRegistrationPrepareFinancialData(any())(any())) thenReturn List(previousRegistrationPrepareData).toFuture
       when(mockFinancialDataConnector.prepareFinancialData()(any())) thenReturn
         Right(PrepareData(List.empty, List.empty, List.empty, 0, 0, iossNumber)).toFuture
       when(mockReturnStatusConnector.getCurrentReturns(any())(any())) thenReturn
@@ -1183,5 +1183,4 @@ class FakeMultipleEnrolmentsGetRegistrationActionProvider(enrolments: Enrolments
   mock[FrontendAppConfig]
 )(ExecutionContext.Implicits.global) {
   override def apply(maybeIossNumber: Option[String] = None): GetRegistrationAction = new FakeMultipleEnrolmentsGetRegistrationAction(enrolments, registrationWrapper)
-
 }

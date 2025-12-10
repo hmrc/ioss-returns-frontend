@@ -59,7 +59,7 @@ class WhichPreviousRegistrationToPayController @Inject()(
   def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced.async {
     implicit request =>
 
-      previousRegistrationService.getPreviousRegistrationPrepareFinancialData().flatMap { preparedDataList =>
+      previousRegistrationService.getPreviousRegistrationPrepareFinancialData(request.isIntermediary).flatMap { preparedDataList =>
         determineRedirectOnLoad(waypoints, preparedDataList)
       }
   }
@@ -67,7 +67,7 @@ class WhichPreviousRegistrationToPayController @Inject()(
   def onSubmit(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced.async {
     implicit request =>
 
-      previousRegistrationService.getPreviousRegistrationPrepareFinancialData().flatMap { preparedDataList =>
+      previousRegistrationService.getPreviousRegistrationPrepareFinancialData(request.isIntermediary).flatMap { preparedDataList =>
 
         form.bindFromRequest().fold(
           formWithErrors =>

@@ -46,7 +46,7 @@ class ReturnRegistrationSelectionController @Inject()(
   def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetOptionalData().async {
     implicit request =>
       for {
-        previousRegistrations <- previousRegistrationService.getPreviousRegistrations()
+        previousRegistrations <- previousRegistrationService.getPreviousRegistrations(request.isIntermediary)
         selectedPreviousRegistration <- selectedPreviousRegistrationRepository.get(request.userId)
       } yield {
         val form: Form[PreviousRegistration] = formProvider(previousRegistrations)
@@ -66,7 +66,7 @@ class ReturnRegistrationSelectionController @Inject()(
 
   def onSubmit(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetOptionalData().async {
     implicit request =>
-      previousRegistrationService.getPreviousRegistrations().flatMap { previousRegistrations =>
+      previousRegistrationService.getPreviousRegistrations(request.isIntermediary).flatMap { previousRegistrations =>
         val form: Form[PreviousRegistration] = formProvider(previousRegistrations)
 
         form.bindFromRequest().fold(
