@@ -146,7 +146,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
         when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn obligationDetails.toFuture
         when(mockPaymentsService.prepareFinancialDataWithIossNumber(any())(any(), any())) thenReturn prepareData.toFuture
         when(mockPreviousRegistrationService.getPreviousRegistrations(any())(any())) thenReturn previousRegistrations.toFuture
-        when(mockVatReturnConnector.get(any())(any())) thenReturn Right(etmpVatReturn).toFuture
+        when(mockVatReturnConnector.getForIossNumber(any(), any())(any())) thenReturn Right(etmpVatReturn).toFuture
 
         val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
 
@@ -204,7 +204,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
         when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn obligationDetails.toFuture
         when(mockPaymentsService.prepareFinancialDataWithIossNumber(any())(any(), any())) thenReturn prepareData.toFuture
         when(mockPreviousRegistrationService.getPreviousRegistrations(any())(any())) thenReturn previousRegistrations.toFuture
-        when(mockVatReturnConnector.get(any())(any())) thenReturn Right(emptyCorrectionsAndGoodsSuppliedVatReturn).toFuture
+        when(mockVatReturnConnector.getForIossNumber(any(), any())(any())) thenReturn Right(emptyCorrectionsAndGoodsSuppliedVatReturn).toFuture
 
         val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
 
@@ -304,7 +304,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
         when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn obligationDetails.toFuture
         when(mockPaymentsService.prepareFinancialDataWithIossNumber(any())(any(), any())) thenReturn emptyPrepareData.toFuture
         when(mockPreviousRegistrationService.getPreviousRegistrations(any())(any())) thenReturn previousRegistrations.toFuture
-        when(mockVatReturnConnector.get(any())(any())) thenReturn Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "error")).toFuture
+        when(mockVatReturnConnector.getForIossNumber(any(), any())(any())) thenReturn Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "error")).toFuture
 
         val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
 

@@ -96,8 +96,8 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             .build()
 
           running(application) {
-            when(mockVatReturnConnector.get(any())(any())) thenReturn Right(vatReturn).toFuture
-            when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Right(Some(charge)).toFuture
+            when(mockVatReturnConnector.getForIossNumber(any(), any())(any())) thenReturn Right(vatReturn).toFuture
+            when(mockFinancialDataConnector.getChargeForIossNumber(any(), any())(any())) thenReturn Right(Some(charge)).toFuture
 
             implicit val msgs: Messages = messages(application)
 
@@ -174,8 +174,8 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             .build()
 
           running(application) {
-            when(mockVatReturnConnector.get(any())(any())) thenReturn Right(vatReturnNoCorrections).toFuture
-            when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Right(Some(charge)).toFuture
+            when(mockVatReturnConnector.getForIossNumber(any(), any())(any())) thenReturn Right(vatReturnNoCorrections).toFuture
+            when(mockFinancialDataConnector.getChargeForIossNumber(any(), any())(any())) thenReturn Right(Some(charge)).toFuture
 
             implicit val msgs: Messages = messages(application)
 
@@ -261,8 +261,8 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             .build()
 
           running(application) {
-            when(mockVatReturnConnector.get(any())(any())) thenReturn Right(vatReturnPositiveCorrections).toFuture
-            when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Right(Some(charge)).toFuture
+            when(mockVatReturnConnector.getForIossNumber(any(), any())(any())) thenReturn Right(vatReturnPositiveCorrections).toFuture
+            when(mockFinancialDataConnector.getChargeForIossNumber(any(), any())(any())) thenReturn Right(Some(charge)).toFuture
 
             implicit val msgs: Messages = messages(application)
 
@@ -357,8 +357,8 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             .build()
 
           running(application) {
-            when(mockVatReturnConnector.get(any())(any())) thenReturn Right(nilEtmpVatReturn).toFuture
-            when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Right(None).toFuture
+            when(mockVatReturnConnector.getForIossNumber(any(), any())(any())) thenReturn Right(nilEtmpVatReturn).toFuture
+            when(mockFinancialDataConnector.getChargeForIossNumber(any(), any())(any())) thenReturn Right(None).toFuture
 
             implicit val msgs: Messages = messages(application)
 
@@ -435,8 +435,8 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             .build()
 
           running(application) {
-            when(mockVatReturnConnector.get(any())(any())) thenReturn Right(vatReturn).toFuture
-            when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "")).toFuture
+            when(mockVatReturnConnector.getForIossNumber(any(), any())(any())) thenReturn Right(vatReturn).toFuture
+            when(mockFinancialDataConnector.getChargeForIossNumber(any(), any())(any())) thenReturn Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "")).toFuture
 
             implicit val msgs: Messages = messages(application)
 
@@ -540,8 +540,8 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
               .build()
 
             running(application) {
-              when(mockVatReturnConnector.get(any())(any())) thenReturn Right(vatReturnNoCorrections).toFuture
-              when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Right(Some(charge)).toFuture
+              when(mockVatReturnConnector.getForIossNumber(any(), any())(any())) thenReturn Right(vatReturnNoCorrections).toFuture
+              when(mockFinancialDataConnector.getChargeForIossNumber(any(), any())(any())) thenReturn Right(Some(charge)).toFuture
 
               implicit val msgs: Messages = messages(application)
 
@@ -653,8 +653,8 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
               .build()
 
             running(application) {
-              when(mockVatReturnConnector.get(any())(any())) thenReturn Right(vatReturnNoCorrections).toFuture
-              when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Right(Some(charge)).toFuture
+              when(mockVatReturnConnector.getForIossNumber(any(), any())(any())) thenReturn Right(vatReturnNoCorrections).toFuture
+              when(mockFinancialDataConnector.getChargeForIossNumber(any(), any())(any())) thenReturn Right(Some(charge)).toFuture
 
               implicit val msgs: Messages = messages(application)
 
@@ -740,8 +740,8 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
           .build()
 
         running(application) {
-          when(mockVatReturnConnector.get(any())(any())) thenReturn Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "")).toFuture
-          when(mockFinancialDataConnector.getCharge(any())(any())) thenReturn Right(Some(charge)).toFuture
+          when(mockVatReturnConnector.getForIossNumber(any(), any())(any())) thenReturn Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "")).toFuture
+          when(mockFinancialDataConnector.getChargeForIossNumber(any(), any())(any())) thenReturn Right(Some(charge)).toFuture
 
           val request = FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoad(waypoints, period).url)
 
