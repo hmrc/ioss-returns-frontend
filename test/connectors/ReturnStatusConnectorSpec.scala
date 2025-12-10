@@ -113,7 +113,7 @@ class ReturnStatusConnectorSpec extends SpecBase
     val periodWithStatus = arbitrary[PeriodWithStatus].sample.value
     val responseJson = Json.toJson(Seq(periodWithStatus))
     val commencementDate = LocalDate.now()
-    val listStatusUrl: String = s"/ioss-returns/vat-returns/statuses/${Format.dateTimeFormatter.format(commencementDate)}"
+    val listStatusUrl: String = s"/ioss-returns/vat-returns/statuses/$iossNumber/${Format.dateTimeFormatter.format(commencementDate)}"
 
     "return a list of statuses for a single period" in {
 
@@ -127,7 +127,7 @@ class ReturnStatusConnectorSpec extends SpecBase
             )
         )
 
-        connector.listStatuses(commencementDate).futureValue mustBe Right(Seq(periodWithStatus))
+        connector.listStatuses(iossNumber, commencementDate).futureValue mustBe Right(Seq(periodWithStatus))
 
       }
     }
@@ -145,7 +145,7 @@ class ReturnStatusConnectorSpec extends SpecBase
             )
         )
 
-        connector.listStatuses(commencementDate).futureValue mustBe Left(InvalidJson)
+        connector.listStatuses(iossNumber, commencementDate).futureValue mustBe Left(InvalidJson)
       }
     }
 
@@ -161,7 +161,7 @@ class ReturnStatusConnectorSpec extends SpecBase
             )
         )
 
-        val result = connector.listStatuses(commencementDate).futureValue
+        val result = connector.listStatuses(iossNumber, commencementDate).futureValue
         result mustBe Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "Unexpected response, status 500 returned"))
       }
     }

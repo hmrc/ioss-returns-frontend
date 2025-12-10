@@ -178,6 +178,7 @@ class CheckYourAnswersController @Inject()(
   private def getBusinessSummaryList(request: DataRequest[AnyContent], waypoints: Waypoints)(implicit hc: HeaderCarrier, messages: Messages) = {
 
     val futureMaybePartialReturnPeriod = partialReturnPeriodService.getPartialReturnPeriod(
+      request.iossNumber,
       request.registrationWrapper,
       request.userAnswers.period
     )

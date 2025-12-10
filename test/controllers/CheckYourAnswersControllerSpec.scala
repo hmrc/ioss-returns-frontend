@@ -78,6 +78,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         "must return OK and the correct view for a GET" in {
 
           when(mockPartialReturnPeriodService.getPartialReturnPeriod(
+            ArgumentMatchers.eq(iossNumber),
             ArgumentMatchers.eq(registrationWrapper),
             ArgumentMatchers.eq(period)
           )(any()))
@@ -108,6 +109,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         "must return OK and the correct view for a GET when the correction choice was NO " in {
 
           when(mockPartialReturnPeriodService.getPartialReturnPeriod(
+            ArgumentMatchers.eq(iossNumber),
             ArgumentMatchers.eq(registrationWrapper),
             ArgumentMatchers.eq(period)
           )(any()))
@@ -148,7 +150,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
           val updatedRegistrationWrapper: RegistrationWrapper = registrationWrapper.copy(registration = registration)
 
-          when(mockPartialReturnPeriodService.getPartialReturnPeriod(eqTo(updatedRegistrationWrapper), eqTo(period))(any())) thenReturn None.toFuture
+          when(mockPartialReturnPeriodService.getPartialReturnPeriod(eqTo(iossNumber), eqTo(updatedRegistrationWrapper), eqTo(period))(any())) thenReturn None.toFuture
           when(mockPartialReturnPeriodService.isFinalReturn(any(), any())) thenReturn true
 
           when(mockSalesAtVatRateService.getTotalNetSales(any())) thenReturn None
@@ -236,6 +238,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         "must contain VAT declared to EU countries after corrections heading if there were corrections and all totals are positive" in {
 
           when(mockPartialReturnPeriodService.getPartialReturnPeriod(
+            ArgumentMatchers.eq(iossNumber),
             ArgumentMatchers.eq(registrationWrapper),
             ArgumentMatchers.eq(period)
           )(any()))
@@ -290,6 +293,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           when(mockSalesAtVatRateService.getTotalVatOwedAfterCorrections(any())) thenReturn BigDecimal(0)
           when(mockSalesAtVatRateService.getVatOwedToCountries(eqTo(userAnswersWithCorrections))) thenReturn (noPaymentsDue ++ totalVatToCountries)
           when(mockPartialReturnPeriodService.getPartialReturnPeriod(
+            ArgumentMatchers.eq(iossNumber),
             ArgumentMatchers.eq(registrationWrapper),
             ArgumentMatchers.eq(period)
           )(any()))

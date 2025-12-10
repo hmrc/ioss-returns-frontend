@@ -64,7 +64,7 @@ class StartReturnController @Inject()(
         exclusion.exclusionReason != Reversal && nextPeriod.isAfter(exclusion.effectiveDate)
       }
 
-      partialReturnPeriodService.getPartialReturnPeriod(request.registrationWrapper, period).map { maybePartialReturnPeriod =>
+      partialReturnPeriodService.getPartialReturnPeriod(request.iossNumber, request.registrationWrapper, period).map { maybePartialReturnPeriod =>
         Ok(view(form, waypoints, period, maybeExclusion, isFinalReturn, maybePartialReturnPeriod))
       }
 
@@ -89,7 +89,7 @@ class StartReturnController @Inject()(
       form.bindFromRequest().fold(
         formWithErrors =>
 
-          partialReturnPeriodService.getPartialReturnPeriod(request.registrationWrapper, period).map { maybePartialReturnPeriod =>
+          partialReturnPeriodService.getPartialReturnPeriod(request.iossNumber, request.registrationWrapper, period).map { maybePartialReturnPeriod =>
             BadRequest(view(formWithErrors, waypoints, period, maybeExclusion, isFinalReturn, maybePartialReturnPeriod))
 
           },
