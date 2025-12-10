@@ -16,8 +16,10 @@
 
 package models.core
 
-import play.api.libs.json.{Json, OFormat}
+import models.exclusions.ExclusionReason
+import play.api.libs.json.*
 
+import java.time.{Clock, LocalDate}
 import java.time.format.DateTimeFormatter
 
 case class CoreRegistrationValidationResult(
@@ -35,8 +37,7 @@ object CoreRegistrationValidationResult {
 }
 
 case class Match(
-                  matchType: MatchType,
-                  traderId: String,
+                  traderId: TraderId,
                   intermediary: Option[String],
                   memberState: String,
                   exclusionStatusCode: Option[Int],
@@ -44,7 +45,28 @@ case class Match(
                   exclusionEffectiveDate: Option[String],
                   nonCompliantReturns: Option[Int],
                   nonCompliantPayments: Option[Int]
-                )
+                ) {
+  def isActiveTrader: Boolean = {
+    traderId.isAnIOSSNetp &&
+      exclusionStatusCode.isEmpty || exclusionStatusCode.contains(-1)
+  }
+
+  def isQuarantinedTrader(clock: Clock): Boolean = {
+    (traderId.isAnIOSSNetp || traderId.isAnOSSTrader) &&
+      exclusionStatusCode.contains(ExclusionReason.FailsToComply.numberValue) &&
+      isEffectiveDateLessThan2YearsAgo(clock)
+  }
+
+  private def isEffectiveDateLessThan2YearsAgo(clock: Clock): Boolean = {
+    exclusionEffectiveDate.map(LocalDate.parse) match {
+      case Some(effectiveDate) =>
+        val twoYearsAfterEffective = effectiveDate.plusYears(2)
+        val today = LocalDate.now(clock)
+        twoYearsAfterEffective.isAfter(today)
+      case _ => true
+    }
+  }
+}
 
 object Match {
 
@@ -52,4 +74,43 @@ object Match {
 
   implicit val format: OFormat[Match] = Json.format[Match]
 
+}
+
+case class TraderId(traderId: String) {
+  private val traderIdScheme = TraderIdScheme(this)
+
+  def isAnIOSSNetp: Boolean = traderIdScheme == TraderIdScheme.ImportOneStopShopNetp
+
+  def isAnOSSTrader: Boolean = traderIdScheme == TraderIdScheme.OneStopShop
+}
+
+object TraderId {
+  implicit val traderIdReads: Reads[TraderId] = Reads {
+    case JsString(value) => JsSuccess(TraderId(value))
+    case _ => JsError("Expected string for TraderId")
+  }
+
+  implicit val traderIdWrites: Writes[TraderId] = Writes { traderId =>
+    JsString(traderId.traderId)
+  }
+
+  implicit val traderIdFormat: Format[TraderId] = Format(traderIdReads, traderIdWrites)
+}
+
+sealed trait TraderIdScheme
+
+object TraderIdScheme {
+  case object OneStopShop extends TraderIdScheme
+
+  case object ImportOneStopShopNetp extends TraderIdScheme
+
+  case object ImportOneStopShopIntermediary extends TraderIdScheme
+
+  def apply(traderId: TraderId): TraderIdScheme = {
+    traderId.traderId.toUpperCase match {
+      case id if id.startsWith("IN") => ImportOneStopShopIntermediary
+      case id if id.startsWith("IM") => ImportOneStopShopNetp
+      case _ => OneStopShop
+    }
+  }
 }
