@@ -18,7 +18,7 @@ package services
 
 import base.SpecBase
 import connectors.ReturnStatusConnector
-import models.core.{Match, MatchType}
+import models.core.{Match, TraderId}
 import models.etmp.EtmpExclusion
 import models.etmp.EtmpExclusionReason.*
 import models.{PartialReturnPeriod, Period, PeriodWithStatus, RegistrationWrapper, StandardPeriod, SubmissionStatus}
@@ -42,8 +42,7 @@ class PartialReturnPeriodServiceSpec extends SpecBase with BeforeAndAfterEach {
   private val mockCoreRegValidationService = mock[CoreRegistrationValidationService]
 
   private val genericMatch = Match(
-    MatchType.TransferringMSID,
-    "333333333",
+    TraderId("333333333"),
     None,
     "DE",
     None,
@@ -80,7 +79,7 @@ class PartialReturnPeriodServiceSpec extends SpecBase with BeforeAndAfterEach {
 
       when(mockPeriodService.getNextPeriod(any())).thenReturn(period)
       when(mockCoreRegValidationService.searchIossScheme(any(), any(), any(), any())(any())) thenReturn
-        Some(genericMatch.copy(exclusionEffectiveDate = Some(startDate.toString))).toFuture
+        Some(genericMatch.copy(exclusionEffectiveDate = Some(startDate.toString), exclusionStatusCode = Some(6))).toFuture
       when(mockReturnStatusConnector.listStatuses(any())(any())) thenReturn
         Right(Seq(PeriodWithStatus(period, SubmissionStatus.Due))).toFuture
 

@@ -18,11 +18,11 @@ package services
 
 
 import connectors.ReturnStatusConnector
-import models.core.MatchType
 import models.etmp.EtmpExclusionReason.TransferringMSID
 import models.etmp.SchemeType.{IOSSWithIntermediary, IOSSWithoutIntermediary}
 import models.etmp.{EtmpExclusion, EtmpExclusionReason, EtmpPreviousEuRegistrationDetails}
 import models.{PartialReturnPeriod, Period, PeriodWithStatus, RegistrationWrapper, StandardPeriod, SubmissionStatus}
+import models.exclusions.ExclusionReason
 import services.core.CoreRegistrationValidationService
 import uk.gov.hmrc.http.HeaderCarrier
 import utils.FutureSyntax.FutureOps
@@ -81,7 +81,7 @@ class PartialReturnPeriodService @Inject()(
           intermediaryNumber = previousIossReg.intermediaryNumber,
           countryCode = previousIossReg.issuedBy
         ).flatMap {
-          case Some(coreRegistrationMatch) if coreRegistrationMatch.matchType == MatchType.TransferringMSID =>
+          case Some(coreRegistrationMatch) if coreRegistrationMatch.exclusionStatusCode.contains(ExclusionReason.TransferringMSID.numberValue) =>
             coreRegistrationMatch.exclusionEffectiveDate match {
               case Some(transferringMsidEffectiveFromDate) =>
                 val transferringMsidEffectiveLocalDate = LocalDate.parse(transferringMsidEffectiveFromDate)

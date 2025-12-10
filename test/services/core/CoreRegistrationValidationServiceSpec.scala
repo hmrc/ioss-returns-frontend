@@ -19,7 +19,7 @@ package services.core
 import base.SpecBase
 import connectors.core.ValidateCoreRegistrationConnector
 import models.UnexpectedResponseStatus
-import models.core.{CoreRegistrationValidationResult, Match, MatchType}
+import models.core.{CoreRegistrationValidationResult, Match, TraderId}
 import models.etmp.SchemeType
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
@@ -38,8 +38,7 @@ class CoreRegistrationValidationServiceSpec extends SpecBase with MockitoSugar w
 
 
   private val genericMatch = Match(
-    MatchType.TransferringMSID,
-    "333333333",
+    TraderId("333333333"),
     None,
     "EE",
     Some(2),
