@@ -49,7 +49,7 @@ object ReturnsAuditModel {
     ReturnsAuditModel(
       userId = request.credentials.providerId,
       userAgent = request.headers.get("user-agent").getOrElse(""),
-      vrn = request.vrn.vrn,
+      vrn = request.vrnOrError.vrn,
       userAnswers = userAnswers.toUserAnswersForAudit,
       submissionResult = submissionResult
     )

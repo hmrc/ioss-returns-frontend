@@ -16,7 +16,6 @@
 
 @import viewmodels.LegendSize
 @import queries.VatRateWithOptionalSalesFromCountry
-@import models.requests.DataRequest
 
 @this(
         layout: templates.Layout,
@@ -37,16 +36,19 @@
     countryIndex: Index,
     country: Country,
     canAddAnotherVatRate: Boolean,
-    incompleteSales: Seq[VatRateWithOptionalSalesFromCountry] = List.empty
-)(implicit request: DataRequest[_], messages: Messages)
+    incompleteSales: Seq[VatRateWithOptionalSalesFromCountry] = List.empty,
+    companyName: String,
+    isIntermediary: Boolean
+)(implicit request: Request[_], messages: Messages)
 
-    @layout(pageTitle = title(form, messages("checkSales.title"),
-    if(request.isIntermediary) {
-        Some(messages("checkSales.intermediary.caption", request.getCompanyName(), period.displayText, country.name))
+@caption = @{
+    if(isIntermediary) {
+        messages("checkSales.intermediary.caption", companyName, period.displayText, country.name)
     } else {
-        Some(messages("checkSales.caption", period.displayText, country.name))
+        messages("checkSales.caption", period.displayText, country.name)
     }
-    )) {
+}
+@layout(pageTitle = title(form, messages("checkSales.title"), Some(caption))) {
 
 
         @if(form.errors.nonEmpty) {
@@ -54,13 +56,7 @@
         }
 
         <header class="hmrc-page-heading">
-            <p class="govuk-caption-l hmrc-caption-l">@{
-                if(request.isIntermediary) {
-                    messages("checkSales.intermediary.caption", request.getCompanyName(), period.displayText, country.name)
-                } else {
-                    messages("checkSales.caption", period.displayText, country.name)
-                }
-            }</p>
+            <p class="govuk-caption-l hmrc-caption-l">@caption</p>
             <h1 class="govuk-heading-l">@messages("checkSales.heading")</h1>
         </header>
 

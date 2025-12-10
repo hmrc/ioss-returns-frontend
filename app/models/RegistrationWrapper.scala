@@ -16,10 +16,27 @@
 
 package models
 
+import models.etmp.intermediary.EtmpIdType
 import models.etmp.{EtmpDisplayRegistration, VatCustomerInfo}
 import play.api.libs.json.{Json, OFormat}
+import uk.gov.hmrc.domain.Vrn
 
-case class RegistrationWrapper(vatInfo: VatCustomerInfo, registration: EtmpDisplayRegistration)
+
+case class RegistrationWrapper(vatInfo: Option[VatCustomerInfo], registration: EtmpDisplayRegistration) {
+  
+  val maybeVrn: Option[Vrn] = if (registration.customerIdentification.idType == EtmpIdType.VRN) Some(Vrn(registration.customerIdentification.idValue)) else None
+  
+  def getCompanyName(): String = {
+    
+    val clientCompanyName: String =
+      vatInfo
+      .flatMap(nonOptVat => nonOptVat.organisationName orElse nonOptVat.individualName)
+      .orElse(registration.otherAddress.flatMap(_.tradingName))
+      .getOrElse(throw new IllegalStateException("Unable to retrieve a required client Name from the vat information"))
+    
+    clientCompanyName + " "
+  }
+}
 
 object RegistrationWrapper {
   implicit val format: OFormat[RegistrationWrapper] = Json.format[RegistrationWrapper]

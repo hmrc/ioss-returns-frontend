@@ -24,7 +24,7 @@ import uk.gov.hmrc.domain.Vrn
 case class OptionalDataRequest[A] (
                                     request: Request[A],
                                     credentials: Credentials,
-                                    vrn: Vrn,
+                                    vrn: Option[Vrn],
                                     iossNumber: String,
                                     registrationWrapper: RegistrationWrapper,
                                     intermediaryNumber: Option[String],
@@ -33,19 +33,16 @@ case class OptionalDataRequest[A] (
 
   val userId: String = credentials.providerId
   val isIntermediary: Boolean = intermediaryNumber.nonEmpty
-
-  def getCompanyName(): String = {
-    val clientName = registrationWrapper.vatInfo.organisationName.orElse(registrationWrapper.vatInfo.individualName).getOrElse(
-      throw new IllegalStateException("Unable to retrieve a required client Name from the vat information")
-    )
-    clientName + " "
-  }
+  
+  val vrnOrError: Vrn = vrn.getOrElse(
+    throw new IllegalStateException("VRN required and not found")
+  )
 }
 
 case class DataRequest[A] (
                             request: Request[A],
                             credentials: Credentials,
-                            vrn: Vrn,
+                            vrn: Option[Vrn],
                             iossNumber: String,
                             registrationWrapper: RegistrationWrapper,
                             intermediaryNumber: Option[String],
@@ -55,11 +52,7 @@ case class DataRequest[A] (
   val userId: String = credentials.providerId
   val isIntermediary: Boolean = intermediaryNumber.nonEmpty
   
-  def getCompanyName(): String = {
-    val clientName = registrationWrapper.vatInfo.organisationName.orElse(registrationWrapper.vatInfo.individualName).getOrElse(
-      throw new IllegalStateException("Unable to retrieve a required client Name from the vat information")
-    )
-    clientName + " "
-  }
-
+  val vrnOrError: Vrn = vrn.getOrElse(
+    throw new IllegalStateException("VRN required and not found")
+  )
 }

@@ -14,7 +14,7 @@
  * limitations under the License.
  *@
 
-@import models.requests.DataRequest
+ 
 
 @this(
         layout: templates.Layout,
@@ -34,15 +34,17 @@
     correctionPeriod: Period,
     periodIndex: Index,
     countryIndex: Index,
-    countryCorrectionComplete: Boolean
-)(implicit request: DataRequest[_], messages: Messages)
+    countryCorrectionComplete: Boolean,
+    isIntermediary:Boolean,
+    companyName: String
+)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(messages("checkVatPayableAmount.title"))) {
 
     <header class="hmrc-page-heading">
         <p class="govuk-caption-l hmrc-caption-l">@{
-         if(request.isIntermediary){
-             messages("checkVatPayableAmount.intermediary.caption", request.getCompanyName(), correctionPeriod.displayText, country.name)
+         if(isIntermediary){
+             messages("checkVatPayableAmount.intermediary.caption", companyName, correctionPeriod.displayText, country.name)
          } else {
              messages("checkVatPayableAmount.caption", correctionPeriod.displayText, country.name)
          }

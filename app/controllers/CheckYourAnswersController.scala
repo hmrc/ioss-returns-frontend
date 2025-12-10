@@ -187,7 +187,7 @@ class CheckYourAnswersController @Inject()(
       val period = maybePartialReturnPeriod.getOrElse(request.userAnswers.period)
       val rows = Seq(
         BusinessNameSummary.row(request.registrationWrapper),
-        BusinessVRNSummary.row(request.vrn),
+        BusinessVRNSummary.row(request.vrn.get), //TODO SCG -> Use the VRN from the request as this matches the old logic. Protect the get
         ReturnPeriodSummary.row(request.userAnswers, waypoints, Some(period))
       ).flatten
       SummaryListViewModel(rows).withCssClass("govuk-summary-card govuk-summary-card__content govuk-!-display-block width-auto")

@@ -52,7 +52,7 @@ class UndeclaredCountryCorrectionController @Inject()(
             case None => form
             case Some(value) => form.fill(value)
           }
-          Ok(view(preparedForm, waypoints, period, country, correctionReturnPeriod, periodIndex, countryIndex)).toFuture
+          Ok(view(preparedForm, waypoints, period, country, correctionReturnPeriod, periodIndex, countryIndex, request.isIntermediary, request.registrationWrapper.getCompanyName())).toFuture
         }
       }
   }
@@ -68,7 +68,7 @@ class UndeclaredCountryCorrectionController @Inject()(
 
           form.bindFromRequest().fold(
             formWithErrors =>
-              BadRequest(view(formWithErrors, waypoints, period, country, correctionReturnPeriod, periodIndex, countryIndex)).toFuture,
+              BadRequest(view(formWithErrors, waypoints, period, country, correctionReturnPeriod, periodIndex, countryIndex, request.isIntermediary, request.registrationWrapper.getCompanyName())).toFuture,
             value =>
 
               for {

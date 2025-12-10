@@ -17,7 +17,7 @@
 @import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.{ListItem, Long}
 @import viewmodels.LegendSize
 @import components.ButtonGroup
-@import models.requests.DataRequest
+
 
 @this(
         layout: templates.Layout,
@@ -36,8 +36,10 @@
     period: Period,
     salesList: Seq[ListItem],
     canAddSales: Boolean,
-    incompleteCountries: Seq[Country] = List.empty
-)(implicit request: DataRequest[_], messages: Messages)
+    incompleteCountries: Seq[Country] = List.empty,
+    isIntermediary: Boolean,
+    companyName: String
+)(implicit request: Request[_], messages: Messages)
 
 @titleText = @{
     salesList.size match {
@@ -55,7 +57,7 @@
 
 @layout(pageTitle = title(form, titleText)) {
 
-    @if(request.isIntermediary){<p class="govuk-caption-l hmrc-caption-l">@{request.getCompanyName() + period.displayText}</p>}
+    @if(isIntermediary){<p class="govuk-caption-l hmrc-caption-l">@{companyName + period.displayText}</p>}
     @if(form.errors.nonEmpty) {
         @govukErrorSummary(ErrorSummaryViewModel(form))
     }

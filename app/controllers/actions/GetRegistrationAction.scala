@@ -47,7 +47,7 @@ class GetRegistrationAction(
     findIossFromEnrolments(request.enrolments).flatMap {
       case Some(iossNumber) =>
         registrationConnector.get(iossNumber).map { registration =>
-          Right(RegistrationRequest(request.request, request.credentials, request.vrn, iossNumber, registration, None, request.enrolments))
+          Right(RegistrationRequest(request.request, request.credentials, Some(request.vrn), registration.getCompanyName(),iossNumber, registration, None, request.enrolments))
         }
       case None if isIntermediary(request.enrolments) =>
         findIntermediaryFromEnrolments(request.enrolments).flatMap { maybeIntermediaryNumber =>
@@ -83,15 +83,16 @@ class GetRegistrationAction(
     intermediaryRegistrationConnector.get(intermediaryNumber).flatMap { intermediaryRegistrationWrapper =>
       val availableIossNumbers = intermediaryRegistrationWrapper.etmpDisplayRegistration.clientDetails.map(_.clientIossID)
       if (availableIossNumbers.contains(iossNumber)) {
-        registrationConnector.get(iossNumber).map { registrationWrapper =>
+        registrationConnector.get(iossNumber).map { registrationWrapper => //TODO SCG follow .get to backend to change vatInfo
           Right(RegistrationRequest(
-            request.request,
-            request.credentials,
-            request.vrn,
-            iossNumber,
-            registrationWrapper,
-            Some(intermediaryNumber),
-            request.enrolments
+            request = request.request,
+            credentials =request.credentials,
+            vrn = registrationWrapper.maybeVrn,
+            companyName = registrationWrapper.getCompanyName(),
+            iossNumber = iossNumber,
+            registrationWrapper = registrationWrapper,
+            intermediaryNumber = Some(intermediaryNumber),
+            enrolments = request.enrolments
           ))
         }
       } else {

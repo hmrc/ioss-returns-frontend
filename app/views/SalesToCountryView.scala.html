@@ -16,7 +16,7 @@
 
 @import viewmodels.InputWidth._
 @import pages.SalesToCountryPage
-@import models.requests.DataRequest
+ 
 
 @this(
         layout: templates.Layout,
@@ -26,16 +26,20 @@
         button: ButtonGroup
 )
 
-@(form: Form[_], waypoints: Waypoints, period: Period, countryIndex: Index, nextVatRateIndex: Index, vatRate: VatRateFromCountry, country: Country)(implicit request: DataRequest[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, period: Period, countryIndex: Index, nextVatRateIndex: Index, vatRate: VatRateFromCountry, country: Country, isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
+
+@caption = @{
+    if(isIntermediary) {
+        messages("salesToCountry.intermediary.caption", companyName, period.displayText, country.name)
+    } else {
+        messages("salesToCountry.caption", period.displayText, country.name)
+    }
+}
 
 @layout(pageTitle = title(
     form,
     messages("salesToCountry.title", vatRate.rateForDisplay),
-    if(request.isIntermediary){
-        Some(messages("salesToCountry.intermediary.caption", request.getCompanyName(),period.displayText, country.name))
-    } else {
-        Some(messages("salesToCountry.caption", period.displayText, country.name))
-    }
+    Some(caption)
 
 )) {
 
@@ -50,11 +54,7 @@
                 field = form("value"),
                 label = HmrcPageHeadingLabel(
                     content = messages("salesToCountry.heading", vatRate.rateForDisplay),
-                    caption =  if(request.isIntermediary) {
-                        messages("salesToCountry.intermediary.caption", request.getCompanyName(), period.displayText, country.name)
-                    }else {
-                        messages("salesToCountry.caption", period.displayText, country.name)
-                    },
+                    caption =  caption,
                     classes = "govuk-label--l"
                 )
             )

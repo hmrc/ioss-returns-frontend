@@ -16,7 +16,7 @@
 
 @import components.ButtonGroup
 @import viewmodels.LegendSize
-@import models.requests.DataRequest
+ 
 
 @this(
     layout: templates.Layout,
@@ -30,7 +30,7 @@
 )
 
 
-@(form: Form[_], waypoints: Waypoints, list: Seq[SummaryList], period: Period, correctionPeriod: Period, periodIndex: Index, canAddCountries: Boolean, incompleteCountries: Seq[String])(implicit request: DataRequest[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, list: Seq[SummaryList], period: Period, correctionPeriod: Period, periodIndex: Index, canAddCountries: Boolean, incompleteCountries: Seq[String], isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
 
 @titleText = @{
     list.size match {
@@ -66,8 +66,8 @@
 
         <header class="hmrc-page-heading">
             <p class="govuk-caption-l hmrc-caption-l">@{
-                if(request.isIntermediary){
-                    messages("correctionListCountries.intermediary.section", request.getCompanyName(), correctionPeriod.displayText)
+                if(isIntermediary){
+                    messages("correctionListCountries.intermediary.section", companyName, correctionPeriod.displayText)
                 } else {
                     messages("correctionListCountries.section", correctionPeriod.displayText)
                 }

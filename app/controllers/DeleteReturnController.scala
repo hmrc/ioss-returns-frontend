@@ -40,14 +40,14 @@ class DeleteReturnController @Inject()(
 
   def onPageLoad(period: Period): Action[AnyContent] = cc.authAndRequireData() {
     implicit request =>
-      Ok(view(form, request.userAnswers.period))
+      Ok(view(form, request.userAnswers.period, request.isIntermediary, request.registrationWrapper.getCompanyName()))
   }
 
   def onSubmit(period: Period): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
       form.bindFromRequest().fold(
         formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, request.userAnswers.period))),
+          Future.successful(BadRequest(view(formWithErrors, request.userAnswers.period, request.isIntermediary, request.registrationWrapper.getCompanyName()))),
         value =>
           if (value) {
             for {

@@ -18,7 +18,6 @@
 @import controllers.previousReturns.{routes => prevRoutes}
 @import models.payments.{Payment, PaymentStatus}
 @import viewmodels.previousReturns.PreviousRegistration
-@import models.requests.OptionalDataRequest
 
 
 @this(
@@ -26,11 +25,11 @@
         govukButton: GovukButton
 )
 
-@(waypoints: Waypoints, periodsWithFinancialData: Map[Int, Seq[(Period, Payment)]], previousRegistrations: Seq[PreviousRegistration])(implicit request: OptionalDataRequest[_], messages: Messages)
+@(waypoints: Waypoints, periodsWithFinancialData: Map[Int, Seq[(Period, Payment)]], previousRegistrations: Seq[PreviousRegistration], isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(messages("submittedReturnsHistory.title"))) {
 
-  @if(request.isIntermediary){<p class="govuk-caption-l hmrc-caption-l">@request.getCompanyName()</p>}
+  @if(isIntermediary){<p class="govuk-caption-l hmrc-caption-l">@companyName</p>}
   <h1 class="govuk-heading-l">@messages("submittedReturnsHistory.heading")</h1>
 
   <p class="govuk-body">@messages("submittedReturnsHistory.p1")</p>

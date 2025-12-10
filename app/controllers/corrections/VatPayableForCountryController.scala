@@ -69,7 +69,9 @@ class VatPayableForCountryController @Inject()(
                 countryIndex,
                 country,
                 correctionReturnPeriod,
-                calculatedCorrectionAmount
+                calculatedCorrectionAmount,
+                request.isIntermediary,
+                request.registrationWrapper.getCompanyName()
               )
             ).toFuture
           }
@@ -105,7 +107,9 @@ class VatPayableForCountryController @Inject()(
                     countryIndex,
                     country,
                     correctionReturnPeriod,
-                    calculatedCorrectionAmount
+                    calculatedCorrectionAmount,
+                    request.isIntermediary,
+                    request.registrationWrapper.getCompanyName()
                   )
                 ).toFuture,
               value =>

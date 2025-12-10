@@ -15,7 +15,7 @@
  *@
 
 @import viewmodels.LegendSize
-@import models.requests.DataRequest
+ 
 
 @this(
         layout: templates.Layout,
@@ -25,7 +25,7 @@
         button: ButtonGroup
 )
 
-@(form: Form[_], waypoints: Waypoints, period: Period, countryIndex: Index, nextVatRateIndex: Index, vatRate: String, country: Country)(implicit request: DataRequest[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, period: Period, countryIndex: Index, nextVatRateIndex: Index, vatRate: String, country: Country, isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, messages("remainingVatRateFromCountry.title", vatRate))) {
 
@@ -40,8 +40,8 @@
                 field = form("value"),
                 legend = HmrcPageHeadingLegend(
                     content = messages("remainingVatRateFromCountry.heading", vatRate),
-                    caption = if(request.isIntermediary) {
-                        messages("remainingVatRateFromCountry.intermediary.caption", request.getCompanyName(), period.displayText, country.name)
+                    caption = if(isIntermediary) {
+                        messages("remainingVatRateFromCountry.intermediary.caption", companyName, period.displayText, country.name)
                     } else {
                         messages("remainingVatRateFromCountry.caption", period.displayText, country.name)
                     }
