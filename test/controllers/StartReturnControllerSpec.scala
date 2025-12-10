@@ -111,6 +111,7 @@ class StartReturnControllerSpec
             .thenReturn(Future.successful(Right(emptyCurrentReturns.copy(returns = List(createReturn(submissionStatus, period))))))
 
           when(mockPartialReturnPeriodService.getPartialReturnPeriod(
+            ArgumentMatchers.eq(iossNumber),
             ArgumentMatchers.eq(registrationWrapper),
             ArgumentMatchers.eq(period)
           )(any()))
@@ -147,6 +148,7 @@ class StartReturnControllerSpec
             .thenReturn(Future.successful(Right(emptyCurrentReturns.copy(returns = List(createReturn(submissionStatus, period))))))
 
           when(mockPartialReturnPeriodService.getPartialReturnPeriod(
+            ArgumentMatchers.eq(iossNumber),
             ArgumentMatchers.eq(registrationWrapper),
             ArgumentMatchers.eq(period)
           )(any()))
@@ -246,6 +248,7 @@ class StartReturnControllerSpec
           ))
 
         when(mockPartialReturnPeriodService.getPartialReturnPeriod(
+          ArgumentMatchers.eq(iossNumber),
           ArgumentMatchers.eq(registrationWrapperWithExclusion),
           ArgumentMatchers.eq(period)
         )(any()))
@@ -296,6 +299,7 @@ class StartReturnControllerSpec
           ))
 
         when(mockPartialReturnPeriodService.getPartialReturnPeriod(
+          ArgumentMatchers.eq(iossNumber),
           ArgumentMatchers.eq(registrationWrapperWithExclusion),
           ArgumentMatchers.eq(period)
         )(any()))
@@ -482,6 +486,7 @@ class StartReturnControllerSpec
             ))
 
           when(mockPartialReturnPeriodService.getPartialReturnPeriod(
+            ArgumentMatchers.eq(iossNumber),
             ArgumentMatchers.eq(registrationWrapper),
             ArgumentMatchers.eq(period)
           )(any()))

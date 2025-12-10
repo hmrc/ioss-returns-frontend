@@ -41,8 +41,8 @@ class ReturnStatusConnector @Inject()(config: Configuration, httpClientV2: HttpC
   def getCurrentReturns(iossNumber: String)(implicit hc: HeaderCarrier): Future[CurrentReturnsResponse] =
     httpClientV2.get(url"$baseUrl/vat-returns/current-returns/$iossNumber").execute[CurrentReturnsResponse]
 
-  def listStatuses(commencementDate: LocalDate)(implicit hc: HeaderCarrier): Future[ReturnStatusesResponse] = {
-    val url: URL = url"$baseUrl/vat-returns/statuses/${dateTimeFormatter.format(commencementDate)}"
+  def listStatuses(iossNumber: String, commencementDate: LocalDate)(implicit hc: HeaderCarrier): Future[ReturnStatusesResponse] = {
+    val url: URL = url"$baseUrl/vat-returns/statuses/$iossNumber/${dateTimeFormatter.format(commencementDate)}"
     httpClientV2.get(url).execute[ReturnStatusesResponse]
   }
 }

@@ -57,6 +57,7 @@ trait SpecBase
   val testCredentials: Credentials = Credentials(userAnswersId, "GGW")
   val vrn: Vrn = Vrn("123456789")
   val iossNumber: String = "IM9001234567"
+  val intermediaryNumber: String = "IN9007654321"
   val period: StandardPeriod = StandardPeriod(2024, Month.MARCH)
   val waypoints: Waypoints = EmptyWaypoints
   val index: Index = Index(0)
@@ -79,7 +80,7 @@ trait SpecBase
   val arbitraryInstant: Instant = arbitraryDate.atStartOfDay(ZoneId.systemDefault).toInstant
   val stubClockAtArbitraryDate: Clock = Clock.fixed(arbitraryInstant, ZoneId.systemDefault)
 
-  def emptyUserAnswers: UserAnswers = UserAnswers(userAnswersId, period, lastUpdated = arbitraryInstant)
+  def emptyUserAnswers: UserAnswers = UserAnswers(userAnswersId, iossNumber, period, lastUpdated = arbitraryInstant)
 
   def completeUserAnswers: UserAnswers = emptyUserAnswers
     .set(SoldGoodsPage, true).success.value
@@ -112,14 +113,15 @@ trait SpecBase
                                     userAnswers: Option[UserAnswers] = None,
                                     clock: Option[Clock] = None,
                                     registration: RegistrationWrapper = registrationWrapper,
-                                    getRegistrationAction: Option[GetRegistrationAction] = None
+                                    getRegistrationAction: Option[GetRegistrationActionProvider] = None,
+                                    maybeIntermediaryNumber: Option[String] = None
                                   ): GuiceApplicationBuilder = {
     val clockToBind = clock.getOrElse(stubClockAtArbitraryDate)
 
     val getRegistrationActionBind = if(getRegistrationAction.nonEmpty) {
-      bind[GetRegistrationAction].toInstance(getRegistrationAction.get)
+      bind[GetRegistrationActionProvider].toInstance(getRegistrationAction.get)
     } else {
-      bind[GetRegistrationAction].toInstance(new FakeGetRegistrationAction(registration))
+      bind[GetRegistrationActionProvider].toInstance(new FakeGetRegistrationActionProvider(registration))
     }
 
     new GuiceApplicationBuilder()
@@ -127,17 +129,18 @@ trait SpecBase
         bind[DataRequiredAction].to[DataRequiredActionImpl],
         bind[IdentifierAction].to[FakeIdentifierAction],
         bind[Clock].toInstance(clockToBind),
-        bind[DataRetrievalActionProvider].toInstance(new FakeDataRetrievalActionProvider(userAnswers)),
+        bind[DataRetrievalActionProvider].toInstance(new FakeDataRetrievalActionProvider(userAnswers, maybeIntermediaryNumber)),
         getRegistrationActionBind,
         bind[CheckBouncedEmailFilterProvider].toInstance(new FakeCheckBouncedEmailFilterProvider()),
-        bind[CheckSubmittedReturnsFilterProvider].toInstance(new FakeCheckSubmittedReturnsFilterProvider())
+        bind[CheckSubmittedReturnsFilterProvider].toInstance(new FakeCheckSubmittedReturnsFilterProvider()),
+        bind[IntermediaryRequiredFilter].toInstance(new FakeIntermediaryRequiredFilter())
       )
   }
 
   val coreVatReturn: CoreVatReturn = CoreVatReturn(
     vatReturnReferenceNumber = "XI/XI063407423/M11.2086",
     version = Instant.ofEpochSecond(1630670836),
-    traderId = CoreTraderId(vrn.vrn, "XI"),
+    traderId = CoreTraderId(vrn.vrn, "XI", None),
     period = CorePeriod(2021, "03"),
     startDate = LocalDate.now(stubClockAtArbitraryDate),
     endDate = LocalDate.now(stubClockAtArbitraryDate),

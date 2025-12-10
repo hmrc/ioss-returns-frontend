@@ -38,7 +38,7 @@ class EligibleSalesJourneySpec extends AnyFreeSpec with JourneyHelpers with Spec
   private val vatRateFromCountry3: VatRateFromCountry = arbitraryVatRateFromCountry.arbitrary.sample.value
   private val salesValue: BigDecimal = Gen.chooseNum(minSalesValue,maxSalesValue).sample.value
 
-  private val initialAnswers = UserAnswers(userAnswersId, period)
+  private val initialAnswers = UserAnswers(userAnswersId, iossNumber, period)
 
   private val initialise = journeyOf(
     submitAnswer(SoldGoodsPage, true),

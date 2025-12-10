@@ -58,8 +58,8 @@ class SaveForLaterRequestSpec extends SpecBase {
 
     "handle UserAnswers correctly in the apply method" in {
 
-      val answers = UserAnswers(id = "some-id", period = period, data = Json.obj("anotherKey" -> "anotherValue"))
       val iossNumber = "IM9001234569"
+      val answers = UserAnswers(id = "some-id", iossNumber = iossNumber, period = period, data = Json.obj("anotherKey" -> "anotherValue"))
 
       val saveForLaterRequest = SaveForLaterRequest(answers, iossNumber, period)
 

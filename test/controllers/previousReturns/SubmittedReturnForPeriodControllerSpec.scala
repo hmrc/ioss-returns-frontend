@@ -552,6 +552,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                   vrn,
                   iossNumber,
                   registrationWrapper,
+                  None,
                   None
                 )
 
@@ -664,6 +665,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                   vrn,
                   iossNumber,
                   registrationWrapper,
+                  None,
                   None
                 )
 
@@ -1230,6 +1232,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                   vrn,
                   iossNumber,
                   registrationWrapper,
+                  None,
                   None
                 )
 
@@ -1344,6 +1347,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                   vrn,
                   iossNumber,
                   registrationWrapper,
+                  None,
                   None
                 )
 

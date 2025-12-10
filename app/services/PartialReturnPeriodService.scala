@@ -38,6 +38,7 @@ class PartialReturnPeriodService @Inject()(
                                           )(implicit ec: ExecutionContext) {
 
   def getPartialReturnPeriod(
+                              iossNumber: String,
                               registrationWrapper: RegistrationWrapper,
                               period: Period
                             )(implicit hc: HeaderCarrier): Future[Option[PartialReturnPeriod]] = {
@@ -46,7 +47,7 @@ class PartialReturnPeriodService @Inject()(
 
     maybeExclusion match {
       case None =>
-        getMaybeFirstPartialReturnPeriod(registrationWrapper)
+        getMaybeFirstPartialReturnPeriod(iossNumber, registrationWrapper)
       case Some(excludedTrader) =>
         excludedTrader.exclusionReason match {
           case TransferringMSID =>
@@ -66,11 +67,10 @@ class PartialReturnPeriodService @Inject()(
   }
 
   private def getMaybeFirstPartialReturnPeriod(
+                                                iossNumber: String,
                                                 registrationWrapper: RegistrationWrapper
                                               )(implicit hc: HeaderCarrier): Future[Option[PartialReturnPeriod]] = {
 
-    val commencementDateString = registrationWrapper.registration.schemeDetails.commencementDate
-    val commencementDate = LocalDate.parse(commencementDateString.toString)
     val filteredDetails = getFilteredDetails(registrationWrapper)
 
     Future.sequence(
@@ -85,10 +85,13 @@ class PartialReturnPeriodService @Inject()(
             coreRegistrationMatch.exclusionEffectiveDate match {
               case Some(transferringMsidEffectiveFromDate) =>
                 val transferringMsidEffectiveLocalDate = LocalDate.parse(transferringMsidEffectiveFromDate)
-                returnStatusConnector.listStatuses(commencementDate).map {
-                  case Right(returnsPeriod) if isFirstPeriod(returnsPeriod, commencementDate) =>
+                returnStatusConnector.listStatuses(
+                  iossNumber,
+                  registrationWrapper.registration.schemeDetails.commencementDate
+                ).map {
+                  case Right(returnsPeriod) if isFirstPeriod(returnsPeriod, registrationWrapper.registration.schemeDetails.commencementDate) =>
                     val firstReturnPeriod = returnsPeriod.head.period
-                    if (isWithinPeriod(firstReturnPeriod, commencementDate)) {
+                    if (isWithinPeriod(firstReturnPeriod, registrationWrapper.registration.schemeDetails.commencementDate)) {
                       Some(PartialReturnPeriod(
                         transferringMsidEffectiveLocalDate,
                         firstReturnPeriod.lastDay,

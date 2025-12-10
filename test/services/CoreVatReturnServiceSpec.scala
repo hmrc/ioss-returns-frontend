@@ -17,11 +17,11 @@
 package services
 
 import base.SpecBase
-import connectors.VatReturnConnector
+import connectors.{IntermediaryRegistrationConnector, VatReturnConnector}
 import models.{Country, TotalVatToCountry}
-import models.core._
+import models.core.*
 import models.requests.DataRequest
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.{reset, times, verify, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar.mock
@@ -39,6 +39,7 @@ class CoreVatReturnServiceSpec extends SpecBase with BeforeAndAfterEach {
 
   private val mockReturnConnector = mock[VatReturnConnector]
   private val mockSalesAtVatRateService = mock[SalesAtVatRateService]
+  private val mockIntermediaryRegistrationConnector = mock[IntermediaryRegistrationConnector]
 
   implicit private lazy val request: DataRequest[AnyContent] = DataRequest(
     FakeRequest(),
@@ -46,6 +47,7 @@ class CoreVatReturnServiceSpec extends SpecBase with BeforeAndAfterEach {
     vrn,
     iossNumber,
     registrationWrapper,
+    None,
     completeUserAnswers
   )
 
@@ -59,20 +61,20 @@ class CoreVatReturnServiceSpec extends SpecBase with BeforeAndAfterEach {
 
       val total = BigDecimal(734964.25)
 
-      when(mockReturnConnector.submit(any())(any())) thenReturn Future.successful(HttpResponse(CREATED, "Vat Return created"))
+      when(mockReturnConnector.submit(any(), any())(any())) thenReturn Future.successful(HttpResponse(CREATED, "Vat Return created"))
       when(mockSalesAtVatRateService.getTotalVatOwedAfterCorrections(any())) thenReturn total
       when(mockSalesAtVatRateService.getVatOwedToCountries(any())) thenReturn List(TotalVatToCountry(
         Country("HR", "Croatia"),
         BigDecimal(20)
       ))
 
-      val service = new CoreVatReturnService(mockReturnConnector, mockSalesAtVatRateService, stubClockAtArbitraryDate)
+      val service = new CoreVatReturnService(mockReturnConnector, mockSalesAtVatRateService, mockIntermediaryRegistrationConnector, stubClockAtArbitraryDate)
 
       val expectedVatReturnReference = s"XI/$iossNumber/M0${period.month.getValue}.${period.year}"
       val expectedCoreVatReturn = CoreVatReturn(
         vatReturnReferenceNumber = expectedVatReturnReference,
         version = Instant.now(stubClockAtArbitraryDate),
-        traderId = CoreTraderId(iossNumber, "XI"),
+        traderId = CoreTraderId(iossNumber, "XI", None),
         period = CorePeriod(period.year, s"0${period.month.getValue}"),
         startDate = period.firstDay,
         endDate = period.lastDay,
@@ -98,7 +100,7 @@ class CoreVatReturnServiceSpec extends SpecBase with BeforeAndAfterEach {
       )
 
       service.submitCoreVatReturn(completeUserAnswers).futureValue mustBe total
-      verify(mockReturnConnector, times(1)).submit(eqTo(expectedCoreVatReturn))(any())
+      verify(mockReturnConnector, times(1)).submit(eqTo(expectedCoreVatReturn), eqTo(iossNumber))(any())
 
     }
   }

@@ -32,8 +32,8 @@ class RegistrationConnector @Inject()(config: Configuration, httpClientV2: HttpC
 
   private val baseUrl = config.get[Service]("microservice.services.ioss-registration")
 
-  def get()(implicit hc: HeaderCarrier): Future[RegistrationWrapper] =
-    httpClientV2.get(url"$baseUrl/registration").execute[RegistrationWrapper]
+  def get(iossNumber: String)(implicit hc: HeaderCarrier): Future[RegistrationWrapper] =
+    httpClientV2.get(url"$baseUrl/registration/$iossNumber").execute[RegistrationWrapper]
 
   def getAccounts()(implicit hc: HeaderCarrier): Future[EACDEnrolments] =
     httpClientV2.get(url"$baseUrl/accounts").execute[EACDEnrolments]

@@ -43,7 +43,7 @@ class RegistrationConnectorSpec
   }
 
   ".get" - {
-    val url = s"/ioss-registration/registration"
+    def url(iossNumber: String) = s"/ioss-registration/registration/$iossNumber"
 
     "must return a registration when the server provides one" in {
 
@@ -55,9 +55,9 @@ class RegistrationConnectorSpec
 
         val responseBody = Json.toJson(registration).toString
 
-        server.stubFor(get(urlEqualTo(url)).willReturn(ok().withBody(responseBody)))
+        server.stubFor(get(urlEqualTo(url(iossNumber))).willReturn(ok().withBody(responseBody)))
 
-        val result = connector.get().futureValue
+        val result = connector.get(iossNumber).futureValue
 
         result mustEqual registration
       }

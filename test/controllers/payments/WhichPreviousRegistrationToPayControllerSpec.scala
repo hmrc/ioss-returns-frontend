@@ -17,8 +17,9 @@
 package controllers.payments
 
 import base.SpecBase
-import connectors.RegistrationConnector
-import controllers.actions.GetRegistrationAction
+import config.FrontendAppConfig
+import connectors.{IntermediaryRegistrationConnector, RegistrationConnector}
+import controllers.actions.{GetRegistrationAction, GetRegistrationActionProvider}
 import forms.payments.WhichPreviousRegistrationToPayFormProvider
 import models.payments.{Payment, PaymentResponse, PaymentStatus, PrepareData}
 import models.requests.{IdentifierRequest, RegistrationRequest}
@@ -35,9 +36,9 @@ import play.api.data.Form
 import play.api.inject.bind
 import play.api.mvc.Result
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
-import repositories.SelectedIossNumberRepository
-import services.{PaymentsService, PreviousRegistrationService}
+import play.api.test.Helpers.*
+import repositories.{IntermediarySelectedIossNumberRepository, SelectedIossNumberRepository}
+import services.{AccountService, PaymentsService, PreviousRegistrationService}
 import uk.gov.hmrc.auth.core.{Enrolment, EnrolmentIdentifier, Enrolments}
 import utils.FutureSyntax.FutureOps
 import viewmodels.payments.SelectedIossNumber
@@ -104,11 +105,11 @@ class WhichPreviousRegistrationToPayControllerSpec extends SpecBase with Mockito
       when(mockPreviousRegistrationService.getPreviousRegistrationPrepareFinancialData()(any())) thenReturn prepareDataList.toFuture
 
       val enrolments: Enrolments = Enrolments(Set(enrolment1, enrolment2, enrolment3))
-      val fakeMultipleEnrolmentsGetRegistrationAction = new FakeMultipleEnrolmentsGetRegistrationAction(enrolments, registrationWrapper)
+      val fakeMultipleEnrolmentsGetRegistrationActionProvider = new FakeMultipleEnrolmentsGetRegistrationActionProvider(enrolments, registrationWrapper)
 
       val application = applicationBuilder(
         userAnswers = Some(emptyUserAnswers),
-        getRegistrationAction = Some(fakeMultipleEnrolmentsGetRegistrationAction)
+        getRegistrationAction = Some(fakeMultipleEnrolmentsGetRegistrationActionProvider)
       )
         .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
         .build()
@@ -139,11 +140,11 @@ class WhichPreviousRegistrationToPayControllerSpec extends SpecBase with Mockito
       when(mockPreviousRegistrationService.getPreviousRegistrationPrepareFinancialData()(any())) thenReturn List(nothingDuePrepareData).toFuture
 
       val enrolments: Enrolments = Enrolments(Set(enrolment1, enrolment2, enrolment3))
-      val fakeMultipleEnrolmentsGetRegistrationAction = new FakeMultipleEnrolmentsGetRegistrationAction(enrolments, registrationWrapper)
+      val fakeMultipleEnrolmentsGetRegistrationActionProvider = new FakeMultipleEnrolmentsGetRegistrationActionProvider(enrolments, registrationWrapper)
 
       val application = applicationBuilder(
         userAnswers = Some(emptyUserAnswers),
-        getRegistrationAction = Some(fakeMultipleEnrolmentsGetRegistrationAction)
+        getRegistrationAction = Some(fakeMultipleEnrolmentsGetRegistrationActionProvider)
       )
         .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
         .build()
@@ -168,11 +169,11 @@ class WhichPreviousRegistrationToPayControllerSpec extends SpecBase with Mockito
       when(mockPaymentsService.makePayment(any(), any(), any())(any())) thenReturn Right(paymentResponse).toFuture
 
       val enrolments: Enrolments = Enrolments(Set(enrolment1, enrolment2, enrolment3))
-      val fakeMultipleEnrolmentsGetRegistrationAction = new FakeMultipleEnrolmentsGetRegistrationAction(enrolments, registrationWrapper)
+      val fakeMultipleEnrolmentsGetRegistrationActionProvider = new FakeMultipleEnrolmentsGetRegistrationActionProvider(enrolments, registrationWrapper)
 
       val application = applicationBuilder(
         userAnswers = Some(emptyUserAnswers),
-        getRegistrationAction = Some(fakeMultipleEnrolmentsGetRegistrationAction)
+        getRegistrationAction = Some(fakeMultipleEnrolmentsGetRegistrationActionProvider)
       )
         .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
         .overrides(bind[PaymentsService].toInstance(mockPaymentsService))
@@ -209,11 +210,11 @@ class WhichPreviousRegistrationToPayControllerSpec extends SpecBase with Mockito
       when(mockPreviousRegistrationService.getPreviousRegistrationPrepareFinancialData()(any())) thenReturn prepareDataList.toFuture
 
       val enrolments: Enrolments = Enrolments(Set(enrolment1, enrolment2, enrolment3))
-      val fakeMultipleEnrolmentsGetRegistrationAction = new FakeMultipleEnrolmentsGetRegistrationAction(enrolments, registrationWrapper)
+      val fakeMultipleEnrolmentsGetRegistrationActionProvider = new FakeMultipleEnrolmentsGetRegistrationActionProvider(enrolments, registrationWrapper)
 
       val application = applicationBuilder(
         userAnswers = Some(emptyUserAnswers),
-        getRegistrationAction = Some(fakeMultipleEnrolmentsGetRegistrationAction)
+        getRegistrationAction = Some(fakeMultipleEnrolmentsGetRegistrationActionProvider)
       )
         .overrides(bind[SelectedIossNumberRepository].toInstance(mockSelectedIossNumberRepository))
         .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
@@ -234,11 +235,11 @@ class WhichPreviousRegistrationToPayControllerSpec extends SpecBase with Mockito
       when(mockPreviousRegistrationService.getPreviousRegistrationPrepareFinancialData()(any())) thenReturn List.empty.toFuture
 
       val enrolments: Enrolments = Enrolments(Set(enrolment1, enrolment2, enrolment3))
-      val fakeMultipleEnrolmentsGetRegistrationAction = new FakeMultipleEnrolmentsGetRegistrationAction(enrolments, registrationWrapper)
+      val fakeMultipleEnrolmentsGetRegistrationActionProvider = new FakeMultipleEnrolmentsGetRegistrationActionProvider(enrolments, registrationWrapper)
 
       val application = applicationBuilder(
         userAnswers = Some(emptyUserAnswers),
-        getRegistrationAction = Some(fakeMultipleEnrolmentsGetRegistrationAction)
+        getRegistrationAction = Some(fakeMultipleEnrolmentsGetRegistrationActionProvider)
       )
         .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
         .build()
@@ -375,9 +376,25 @@ class WhichPreviousRegistrationToPayControllerSpec extends SpecBase with Mockito
 }
 
 class FakeMultipleEnrolmentsGetRegistrationAction(enrolments: Enrolments, registration: RegistrationWrapper) extends GetRegistrationAction(
-  mock[RegistrationConnector]
+  mock[AccountService],
+  mock[IntermediaryRegistrationConnector],
+  mock[RegistrationConnector],
+  mock[FrontendAppConfig],
+  None,
+  mock[IntermediarySelectedIossNumberRepository]
 )(ExecutionContext.Implicits.global) {
 
   override def refine[A](request: IdentifierRequest[A]): Future[Either[Result, RegistrationRequest[A]]] =
-    Right(RegistrationRequest(request.request, request.credentials, request.vrn, request.iossNumber, registration, enrolments)).toFuture
+    Right(RegistrationRequest(request.request, request.credentials, request.vrn, "IM9001234567", registration, None, enrolments)).toFuture
+}
+
+class FakeMultipleEnrolmentsGetRegistrationActionProvider(enrolments: Enrolments, registrationWrapper: RegistrationWrapper) extends GetRegistrationActionProvider(
+  mock[AccountService],
+  mock[IntermediaryRegistrationConnector],
+  mock[RegistrationConnector],
+  mock[IntermediarySelectedIossNumberRepository],
+  mock[FrontendAppConfig]
+)(ExecutionContext.Implicits.global) {
+  override def apply(maybeIossNumber: Option[String] = None): GetRegistrationAction = new FakeMultipleEnrolmentsGetRegistrationAction(enrolments, registrationWrapper)
+
 }

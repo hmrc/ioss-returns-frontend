@@ -17,7 +17,8 @@
 package controllers.actions
 
 import base.SpecBase
-import connectors.RegistrationConnector
+import config.FrontendAppConfig
+import connectors.{IntermediaryRegistrationConnector, RegistrationConnector}
 import models.RegistrationWrapper
 import models.requests.{IdentifierRequest, RegistrationRequest}
 import org.mockito.ArgumentMatchers.any
@@ -27,6 +28,9 @@ import org.scalatest.EitherValues
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.mvc.Result
 import play.api.test.FakeRequest
+import repositories.IntermediarySelectedIossNumberRepository
+import services.AccountService
+import uk.gov.hmrc.auth.core.{Enrolment, EnrolmentIdentifier, Enrolments}
 import utils.FutureSyntax.FutureOps
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -35,8 +39,19 @@ import scala.concurrent.Future
 class GetRegistrationActionSpec extends SpecBase with MockitoSugar with EitherValues {
 
   class Harness(
-                 connector: RegistrationConnector
-               ) extends GetRegistrationAction(connector) {
+                 accountService: AccountService,
+                 intermediaryRegistrationConnector: IntermediaryRegistrationConnector,
+                 registrationConnector: RegistrationConnector,
+                 appConfig: FrontendAppConfig,
+                 intermediarySelectedIossNumberRepository: IntermediarySelectedIossNumberRepository
+               ) extends GetRegistrationAction(
+    accountService,
+    intermediaryRegistrationConnector,
+    registrationConnector,
+    appConfig,
+    None,
+    intermediarySelectedIossNumberRepository
+  ) {
     def callRefine[A](request: IdentifierRequest[A]): Future[Either[Result, RegistrationRequest[A]]] =
       refine(request)
   }
@@ -50,12 +65,29 @@ class GetRegistrationActionSpec extends SpecBase with MockitoSugar with EitherVa
         val registrationWrapper = Arbitrary.arbitrary[RegistrationWrapper].sample.value
 
         val request = FakeRequest()
-        val connector = mock[RegistrationConnector]
-        when(connector.get()(any())) thenReturn registrationWrapper.toFuture
+        val accountService = mock[AccountService]
+        val intermediaryRegistrationConnector = mock[IntermediaryRegistrationConnector]
+        val registrationConnector = mock[RegistrationConnector]
+        val appConfig = mock[FrontendAppConfig]
+        val intermediarySelectedIossNumberRepository = mock[IntermediarySelectedIossNumberRepository]
 
-        val action = new Harness(connector)
+        when(appConfig.iossEnrolment).thenReturn("HMRC-IOSS-ORG")
 
-        val result = action.callRefine(IdentifierRequest(request, testCredentials, vrn, iossNumber, enrolments)).futureValue
+        val enrolments = Enrolments(
+          Set(
+            Enrolment(
+              "HMRC-IOSS-ORG",
+              Seq(EnrolmentIdentifier("IOSSNumber", iossNumber)),
+              "Activated"
+            )
+          )
+        )
+
+        when(registrationConnector.get(any())(any())) thenReturn registrationWrapper.toFuture
+
+        val action = new Harness(accountService, intermediaryRegistrationConnector, registrationConnector, appConfig, intermediarySelectedIossNumberRepository)
+
+        val result = action.callRefine(IdentifierRequest(request, testCredentials, vrn, enrolments)).futureValue
 
         result.isRight mustEqual true
       }

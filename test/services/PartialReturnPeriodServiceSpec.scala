@@ -80,12 +80,12 @@ class PartialReturnPeriodServiceSpec extends SpecBase with BeforeAndAfterEach {
       when(mockPeriodService.getNextPeriod(any())).thenReturn(period)
       when(mockCoreRegValidationService.searchIossScheme(any(), any(), any(), any())(any())) thenReturn
         Some(genericMatch.copy(exclusionEffectiveDate = Some(startDate.toString), exclusionStatusCode = Some(6))).toFuture
-      when(mockReturnStatusConnector.listStatuses(any())(any())) thenReturn
+      when(mockReturnStatusConnector.listStatuses(any(), any())(any())) thenReturn
         Right(Seq(PeriodWithStatus(period, SubmissionStatus.Due))).toFuture
 
       val service = new PartialReturnPeriodService(mockReturnStatusConnector, mockCoreRegValidationService)
 
-      val result = service.getPartialReturnPeriod(registrationWrapperWithExclusions, period).futureValue
+      val result = service.getPartialReturnPeriod(iossNumber, registrationWrapperWithExclusions, period).futureValue
 
       val expectedPartialReturnPeriod = Some(PartialReturnPeriod(startDate, period.lastDay, period.year, period.month))
 
@@ -120,12 +120,12 @@ class PartialReturnPeriodServiceSpec extends SpecBase with BeforeAndAfterEach {
 
       when(mockPeriodService.getNextPeriod(any())).thenReturn(period)
       when(mockCoreRegValidationService.searchIossScheme(any(), any(), any(), any())(any())) thenReturn None.toFuture
-      when(mockReturnStatusConnector.listStatuses(any())(any())) thenReturn
+      when(mockReturnStatusConnector.listStatuses(any(), any())(any())) thenReturn
         Right(Seq(PeriodWithStatus(period, SubmissionStatus.Due))).toFuture
 
       val service = new PartialReturnPeriodService(mockReturnStatusConnector, mockCoreRegValidationService)
 
-      val result = service.getPartialReturnPeriod(registrationWrapperWithExclusions, period).futureValue
+      val result = service.getPartialReturnPeriod(iossNumber, registrationWrapperWithExclusions, period).futureValue
 
       val expectedPartialReturnPeriod = Some(PartialReturnPeriod(period.firstDay, endDate.minusDays(1), period.year, period.month))
 
@@ -151,12 +151,12 @@ class PartialReturnPeriodServiceSpec extends SpecBase with BeforeAndAfterEach {
 
       when(mockPeriodService.getNextPeriod(any())).thenReturn(period)
       when(mockCoreRegValidationService.searchIossScheme(any(), any(), any(), any())(any())) thenReturn Some(genericMatch).toFuture
-      when(mockReturnStatusConnector.listStatuses(any())(any())) thenReturn
+      when(mockReturnStatusConnector.listStatuses(any(), any())(any())) thenReturn
         Right(Seq(PeriodWithStatus(period, SubmissionStatus.Due))).toFuture
 
       val service = new PartialReturnPeriodService(mockReturnStatusConnector, mockCoreRegValidationService)
 
-      val result = service.getPartialReturnPeriod(registrationWrapperWithoutExclusions, period).futureValue
+      val result = service.getPartialReturnPeriod(iossNumber, registrationWrapperWithoutExclusions, period).futureValue
 
       result mustBe None
     }
@@ -188,12 +188,12 @@ class PartialReturnPeriodServiceSpec extends SpecBase with BeforeAndAfterEach {
 
       when(mockPeriodService.getNextPeriod(any())).thenReturn(period)
       when(mockCoreRegValidationService.searchIossScheme(any(), any(), any(), any())(any())) thenReturn None.toFuture
-      when(mockReturnStatusConnector.listStatuses(any())(any())) thenReturn
+      when(mockReturnStatusConnector.listStatuses(any(), any())(any())) thenReturn
         Right(Seq(PeriodWithStatus(period, SubmissionStatus.Due))).toFuture
 
       val service = new PartialReturnPeriodService(mockReturnStatusConnector, mockCoreRegValidationService)
 
-      val result = service.getPartialReturnPeriod(registrationWrapperWithOtherExclusion, period).futureValue
+      val result = service.getPartialReturnPeriod(iossNumber, registrationWrapperWithOtherExclusion, period).futureValue
 
       result mustBe None
     }

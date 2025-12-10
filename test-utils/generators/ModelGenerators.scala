@@ -23,6 +23,7 @@ import models.core.{CoreCorrection, CoreMsconSupply, CorePeriod, CoreSupply, Cor
 import models.corrections.ReturnCorrectionValue
 import models.enrolments.{EACDEnrolment, EACDEnrolments, EACDIdentifiers}
 import models.etmp.*
+import models.etmp.intermediary.{EtmpClientDetails, EtmpCustomerIdentification, EtmpIdType, EtmpIntermediaryDetails, EtmpIntermediaryDisplayRegistration, EtmpIntermediaryDisplaySchemeDetails, IntermediaryRegistrationWrapper, IntermediaryVatCustomerInfo}
 import models.financialdata.Charge
 import models.payments.{Payment, PaymentStatus, PrepareData}
 import org.scalacheck.Arbitrary.arbitrary
@@ -210,6 +211,29 @@ trait ModelGenerators {
     )
   }
 
+  implicit val arbitraryIntermediaryVatInfo: Arbitrary[IntermediaryVatCustomerInfo] = Arbitrary {
+    for {
+      address <- arbitrary[DesAddress]
+      registrationDate <- arbitrary[LocalDate]
+      organisationName <- Gen.option(arbitrary[String])
+      individualName <- arbitrary[String]
+      singleMarketIndicator <- arbitrary[Boolean]
+      deregistrationDecisionDate <- Gen.option(arbitrary[LocalDate])
+
+    } yield IntermediaryVatCustomerInfo(
+      address,
+      Some(registrationDate),
+      organisationName,
+      if (organisationName.isEmpty) {
+        Some(individualName)
+      } else {
+        None
+      },
+      singleMarketIndicator,
+      deregistrationDecisionDate
+    )
+  }
+
   implicit lazy val arbitraryEtmpTradingName: Arbitrary[EtmpTradingName] =
     Arbitrary {
       for {
@@ -345,8 +369,72 @@ trait ModelGenerators {
     } yield EtmpDisplayRegistration(
       etmpTradingNames,
       schemeDetails,
-      bankDetails,
+      Some(bankDetails),
       exclusions,
+      adminUse
+    )
+  }
+
+  implicit lazy val arbitraryEtmpCustomerIdentification: Arbitrary[EtmpCustomerIdentification] =
+    Arbitrary {
+      for {
+        etmpIdType <- Gen.oneOf(EtmpIdType.values)
+        idValue <- Gen.alphaStr
+      } yield EtmpCustomerIdentification(etmpIdType, idValue)
+    }
+
+  implicit lazy val arbitraryEtmpClientDetails: Arbitrary[EtmpClientDetails] =
+    Arbitrary {
+      for {
+        clientName <- Gen.alphaStr
+        clientIossID <- Gen.alphaStr
+        clientExcluded <- arbitrary[Boolean]
+      } yield EtmpClientDetails(clientName, clientIossID, false)
+    }
+
+  implicit lazy val arbitraryEtmpIntermediaryDisplaySchemeDetails: Arbitrary[EtmpIntermediaryDisplaySchemeDetails] = {
+    Arbitrary {
+      for {
+        commencementDate <- arbitrary[LocalDate]
+        euRegistrationDetails <- Gen.listOfN(5, arbitraryEtmpEuRegistrationDetails.arbitrary)
+        contactName <- arbitrary[String]
+        businessTelephoneNumber <- arbitrary[String]
+        businessEmailId <- arbitrary[String]
+        nonCompliantReturns <- Gen.option(arbitrary[Int].toString)
+        nonCompliantPayments <- Gen.option(arbitrary[Int].toString)
+      } yield
+        EtmpIntermediaryDisplaySchemeDetails(
+          commencementDate.toString,
+          euRegistrationDetails,
+          contactName,
+          businessTelephoneNumber,
+          businessEmailId,
+          unusableStatus = false,
+          nonCompliantReturns,
+          nonCompliantPayments
+        )
+    }
+  }
+
+  implicit val arbitraryEtmpIntermediaryDisplayRegistration: Arbitrary[EtmpIntermediaryDisplayRegistration] = Arbitrary {
+    for {
+      etmpCustomerIdentification <- arbitrary[EtmpCustomerIdentification]
+      etmpTradingNames <- Gen.listOfN(2, arbitraryEtmpTradingName.arbitrary)
+      numberOfClients <- Gen.choose(1, 10)
+      etmpClientDetails <- Gen.listOfN(numberOfClients, arbitrary[EtmpClientDetails])
+      schemeDetails <- arbitrary[EtmpIntermediaryDisplaySchemeDetails]
+      exclusions <- Gen.listOfN(1, arbitraryEtmpExclusion.arbitrary)
+      bankDetails <- arbitrary[EtmpBankDetails]
+      adminUse <- arbitrary[EtmpAdminUse]
+    } yield EtmpIntermediaryDisplayRegistration(
+      etmpCustomerIdentification,
+      etmpTradingNames,
+      etmpClientDetails,
+      None,
+      None,
+      schemeDetails,
+      exclusions,
+      bankDetails,
       adminUse
     )
   }
@@ -356,6 +444,13 @@ trait ModelGenerators {
       vatInfo <- arbitrary[VatCustomerInfo]
       registration <- arbitrary[EtmpDisplayRegistration]
     } yield RegistrationWrapper(vatInfo, registration)
+  }
+
+  implicit val arbitraryIntermediaryRegistrationWrapper: Arbitrary[IntermediaryRegistrationWrapper] = Arbitrary {
+    for {
+      vatInfo <- arbitrary[IntermediaryVatCustomerInfo]
+      registration <- arbitrary[EtmpIntermediaryDisplayRegistration]
+    } yield IntermediaryRegistrationWrapper(vatInfo, registration)
   }
 
   implicit val arbitraryObligationDetails: Arbitrary[EtmpObligationDetails] =
@@ -611,7 +706,7 @@ trait ModelGenerators {
     for {
       iossNumber <- arbitrary[String]
       issuedBy <- arbitrary[String]
-    } yield CoreTraderId(iossNumber, issuedBy)
+    } yield CoreTraderId(iossNumber, issuedBy, None)
   }
 
   implicit val arbitraryCorePeriod: Arbitrary[CorePeriod] = Arbitrary {

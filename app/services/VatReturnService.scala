@@ -17,21 +17,43 @@
 package services
 
 import cats.implicits.{catsSyntaxValidatedIdBinCompat0, toTraverseOps}
-import models.requests.VatReturnRequest
-import models.{DataMissingError, Index, Period, StandardPeriod, UserAnswers, ValidationResult, VatRateFromCountry, VatRateType}
-import models.domain.{VatRate => DomainVatRate, VatRateType => DomainVatRateType}
+import connectors.ReturnStatusConnector
+import logging.Logging
+import models.requests.{RegistrationRequest, VatReturnRequest}
+import models.{DataMissingError, Index, Period, StandardPeriod, SubmissionStatus, UserAnswers, ValidationResult, VatRateFromCountry, VatRateType}
+import models.domain.{VatRate as DomainVatRate, VatRateType as DomainVatRateType}
 import pages.{SoldGoodsPage, VatRatesFromCountryPage}
 import queries.{AllSalesQuery, OptionalSalesAtVatRate, SalesAtVatRateQuery, SalesDetails, SalesToCountry, VatOnSalesFromQuery}
 import uk.gov.hmrc.domain.Vrn
+import uk.gov.hmrc.http.HeaderCarrier
+import viewmodels.yourAccount.Return
 
 import javax.inject.Inject
+import scala.concurrent.{ExecutionContext, Future}
 
-class VatReturnService @Inject() {
+class VatReturnService @Inject()(
+                                  returnStatusConnector: ReturnStatusConnector
+                                )(implicit ec: ExecutionContext) extends Logging {
 
   def fromUserAnswers(answers: UserAnswers, vrn: Vrn, period: Period): ValidationResult[VatReturnRequest] = {
     getSales(answers).map(sales =>
       VatReturnRequest(vrn, StandardPeriod.fromPeriod(period), Some(period.firstDay), Some(period.lastDay), sales)
     )
+  }
+
+  def getOldestDueReturn(iossNumber: String)(implicit hc: HeaderCarrier): Future[Option[Return]] = {
+    returnStatusConnector.getCurrentReturns(iossNumber).map {
+      case Right(currentReturns) =>
+        currentReturns
+          .returns
+          .filter(r => r.submissionStatus == SubmissionStatus.Due || r.submissionStatus == SubmissionStatus.Overdue)
+          .sortBy(_.dueDate)
+          .headOption
+      case Left(error) =>
+        val message = s"Error when getting current returns ${error.body}"
+        logger.error(message)
+        throw new Exception(message)
+    }
   }
 
   private def getSales(answers: UserAnswers): ValidationResult[List[SalesToCountry]] =
@@ -82,9 +104,9 @@ class VatReturnService @Inject() {
     answers.get(SalesAtVatRateQuery(countryIndex, vatRateIndex)) match {
       case Some(OptionalSalesAtVatRate(netValueOfSales, Some(vatOnSales))) =>
         SalesDetails(
-          vatRate         = toDomainVatRate(vatRate),
+          vatRate = toDomainVatRate(vatRate),
           netValueOfSales = netValueOfSales,
-          vatOnSales      = vatOnSales
+          vatOnSales = vatOnSales
         ).validNec
       case Some(OptionalSalesAtVatRate(_, None)) =>
         DataMissingError(VatOnSalesFromQuery(countryIndex, vatRateIndex)).invalidNec
@@ -95,7 +117,7 @@ class VatReturnService @Inject() {
   private def toDomainVatRate(vatRate: VatRateFromCountry): DomainVatRate = {
     DomainVatRate(
       vatRate.rate,
-      if(vatRate.rateType == VatRateType.Reduced) {
+      if (vatRate.rateType == VatRateType.Reduced) {
         DomainVatRateType.Reduced
       } else {
         DomainVatRateType.Standard

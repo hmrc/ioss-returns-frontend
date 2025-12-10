@@ -17,6 +17,7 @@
 package controllers.submissionResults
 
 import base.SpecBase
+import config.FrontendAppConfig
 import connectors.VatReturnConnector
 import models.NotFound
 import models.external.ExternalEntryUrl
@@ -60,6 +61,7 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
 
         running(application) {
           val request = FakeRequest(GET, routes.SuccessfullySubmittedController.onPageLoad().url)
+          val config = application.injector.instanceOf[FrontendAppConfig]
           val result = route(application, request).value
           val view = application.injector.instanceOf[SuccessfullySubmittedView]
 
@@ -72,7 +74,10 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
             period = period,
             owedAmount = totalOwed,
             externalUrl = None,
-            "https://test-url.com"
+            "https://test-url.com",
+            isIntermediary = false,
+            clientName = "Mr Tufftys Tuffs",
+            intermediaryDashboardUrl = config.intermediaryDashboardUrl
           )(request, messages(application)).toString
         }
       }
@@ -110,6 +115,7 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
 
           running(application) {
             val request = FakeRequest(GET, routes.SuccessfullySubmittedController.onPageLoad().url)
+            val config = application.injector.instanceOf[FrontendAppConfig]
             val result = route(application, request).value
             val view = application.injector.instanceOf[SuccessfullySubmittedView]
 
@@ -122,7 +128,10 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
               period = period,
               owedAmount = totalOwed,
               externalUrl = maybeExternalUrl,
-              "https://test-url.com"
+              "https://test-url.com",
+              isIntermediary = false,
+              clientName = "Mr Tufftys Tuffs",
+              intermediaryDashboardUrl = config.intermediaryDashboardUrl
             )(request, messages(application)).toString
           }
         }
@@ -139,6 +148,7 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
 
       running(application) {
         val request = FakeRequest(GET, routes.SuccessfullySubmittedController.onPageLoad().url)
+        val config = application.injector.instanceOf[FrontendAppConfig]
         val result = route(application, request).value
         val view = application.injector.instanceOf[SuccessfullySubmittedView]
 
@@ -151,7 +161,10 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
           period = period,
           owedAmount = totalOwed,
           externalUrl = None,
-          "https://test-url.com"
+          "https://test-url.com",
+          isIntermediary = false,
+          clientName = "Mr Tufftys Tuffs",
+          intermediaryDashboardUrl = config.intermediaryDashboardUrl
         )(request, messages(application)).toString
       }
     }

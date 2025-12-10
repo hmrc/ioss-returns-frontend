@@ -64,7 +64,7 @@ class StartReturnController @Inject()(
         exclusion.exclusionReason != Reversal && nextPeriod.isAfter(exclusion.effectiveDate)
       }
 
-      partialReturnPeriodService.getPartialReturnPeriod(request.registrationWrapper, period).map { maybePartialReturnPeriod =>
+      partialReturnPeriodService.getPartialReturnPeriod(request.iossNumber, request.registrationWrapper, period).map { maybePartialReturnPeriod =>
         Ok(view(form, waypoints, period, maybeExclusion, isFinalReturn, maybePartialReturnPeriod))
       }
 
@@ -89,14 +89,19 @@ class StartReturnController @Inject()(
       form.bindFromRequest().fold(
         formWithErrors =>
 
-          partialReturnPeriodService.getPartialReturnPeriod(request.registrationWrapper, period).map { maybePartialReturnPeriod =>
+          partialReturnPeriodService.getPartialReturnPeriod(request.iossNumber, request.registrationWrapper, period).map { maybePartialReturnPeriod =>
             BadRequest(view(formWithErrors, waypoints, period, maybeExclusion, isFinalReturn, maybePartialReturnPeriod))
 
           },
 
         value => {
 
-          val defaultUserAnswers = UserAnswers(id = request.userId, period = period, lastUpdated = Instant.now(clock))
+          val defaultUserAnswers = UserAnswers(
+            id = request.userId,
+            iossNumber = request.iossNumber,
+            period = period,
+            lastUpdated = Instant.now(clock)
+          )
 
           val (clearSession: Boolean, userAnswers: UserAnswers) = request.userAnswers match {
             case Some(userAnswers) if userAnswers.period == period => (false, userAnswers)

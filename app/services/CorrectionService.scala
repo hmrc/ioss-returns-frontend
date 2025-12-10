@@ -41,7 +41,7 @@ class CorrectionService @Inject()(
                                              )(implicit hc: HeaderCarrier): Future[(Boolean, BigDecimal)] = {
     for {
       returnCorrectionValue <- vatReturnConnector.getReturnCorrectionValue(iossNumber, country.code, correctionPeriod)
-      correctionReturn <- vatReturnConnector.get(correctionPeriod)
+      correctionReturn <- vatReturnConnector.getForIossNumber(correctionPeriod, iossNumber)
     } yield {
       val isPreviouslyDeclaredCountry = correctionReturn match {
         case Right(vatReturn) =>

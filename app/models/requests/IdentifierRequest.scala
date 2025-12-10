@@ -21,12 +21,11 @@ import uk.gov.hmrc.auth.core.Enrolments
 import uk.gov.hmrc.auth.core.retrieve.Credentials
 import uk.gov.hmrc.domain.Vrn
 
-case class IdentifierRequest[A] (
-                                  request: Request[A],
-                                  credentials: Credentials,
-                                  vrn: Vrn,
-                                  iossNumber: String, //this is optional in registration
-                                  enrolments: Enrolments
-                                ) extends WrappedRequest[A](request) {
+case class IdentifierRequest[A](
+                                 request: Request[A],
+                                 credentials: Credentials,
+                                 vrn: Vrn,
+                                 enrolments: Enrolments
+                               ) extends WrappedRequest[A](request) {
   val userId: String = credentials.providerId
 }

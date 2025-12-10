@@ -33,7 +33,7 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
 
   def identify: IdentifierAction
 
-  def getRegistration: GetRegistrationAction
+  def getRegistration: GetRegistrationActionProvider
 
   def getData: DataRetrievalActionProvider
 
@@ -55,21 +55,23 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
 
   def checkIsCurrentReturnPeriodFilter: CheckIsCurrentReturnPeriodFilter
 
+  def intermediaryRequired: IntermediaryRequiredFilter
+
   def auth: ActionBuilder[IdentifierRequest, AnyContent] =
     actionBuilder andThen identify
 
-  def authAndGetRegistrationWithoutCheckBouncedEmail: ActionBuilder[RegistrationRequest, AnyContent] = {
+  def authAndGetRegistration(iossNumber: Option[String] = None): ActionBuilder[RegistrationRequest, AnyContent] = {
     auth andThen
-      getRegistration
+      getRegistration(iossNumber)
   }
 
-  def authAndGetRegistration: ActionBuilder[RegistrationRequest, AnyContent] = {
-    authAndGetRegistrationWithoutCheckBouncedEmail andThen
+  def authAndGetRegistrationAndCheckBounced: ActionBuilder[RegistrationRequest, AnyContent] = {
+    authAndGetRegistration() andThen
       checkBouncedEmail()
   }
 
   def authAndGetOptionalData(): ActionBuilder[OptionalDataRequest, AnyContent] = {
-    authAndGetRegistration andThen getData()
+    authAndGetRegistrationAndCheckBounced andThen getData()
   }
 
   def authAndRequireData(): ActionBuilder[DataRequest, AnyContent] = {
@@ -79,6 +81,11 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
   def authAndGetDataAndCorrectionEligible(): ActionBuilder[DataRequest, AnyContent] = {
     authAndRequireData() andThen
       requirePreviousReturns()
+  }
+
+  def authAndIntermediaryRequired(iossNumber: String): ActionBuilder[RegistrationRequest, AnyContent] = {
+    authAndGetRegistration(Some(iossNumber)) andThen
+      intermediaryRequired()
   }
 
 }
@@ -93,7 +100,7 @@ case class DefaultAuthenticatedControllerComponents @Inject()(
                                                                executionContext: ExecutionContext,
                                                                sessionRepository: SessionRepository,
                                                                identify: IdentifierAction,
-                                                               getRegistration: GetRegistrationAction,
+                                                               getRegistration: GetRegistrationActionProvider,
                                                                getData: DataRetrievalActionProvider,
                                                                requireData: DataRequiredAction,
                                                                checkBouncedEmail: CheckBouncedEmailFilterProvider,
@@ -103,5 +110,6 @@ case class DefaultAuthenticatedControllerComponents @Inject()(
                                                                checkExcludedTraderOptional: CheckExcludedTraderOptionalFilter,
                                                                checkCommencementDate: CheckCommencementDateFilter,
                                                                checkCommencementDateOptional: CheckCommencementDateOptionalFilter,
-                                                               checkIsCurrentReturnPeriodFilter: CheckIsCurrentReturnPeriodFilter
+                                                               checkIsCurrentReturnPeriodFilter: CheckIsCurrentReturnPeriodFilter,
+                                                               intermediaryRequired: IntermediaryRequiredFilter
                                                              ) extends AuthenticatedControllerComponents

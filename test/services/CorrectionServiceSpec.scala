@@ -78,7 +78,7 @@ class CorrectionServiceSpec extends SpecBase with PrivateMethodTester with Befor
 
         val isPreviouslyDeclaredCountry: Boolean = true
 
-        when(mockVatReturnConnector.get(eqTo(period1))(any())) thenReturn Right(vatReturn1).toFuture
+        when(mockVatReturnConnector.getForIossNumber(eqTo(period1), eqTo(iossNumber))(any())) thenReturn Right(vatReturn1).toFuture
         when(mockVatReturnConnector.getReturnCorrectionValue(any(), any(), eqTo(period1))(any())) thenReturn returnCorrectionValue.toFuture
 
         val service = new CorrectionService(mockVatReturnConnector)
@@ -86,7 +86,7 @@ class CorrectionServiceSpec extends SpecBase with PrivateMethodTester with Befor
         val result = service.getAccumulativeVatForCountryTotalAmount(iossNumber, country1, period1).futureValue
 
         result `mustBe`(isPreviouslyDeclaredCountry, returnCorrectionValue.maximumCorrectionValue)
-        verify(mockVatReturnConnector, times(1)).get(eqTo(period1))(any())
+        verify(mockVatReturnConnector, times(1)).getForIossNumber(eqTo(period1), eqTo(iossNumber))(any())
       }
 
       "must throw an exception when there ia an error in trying to retrieve a vat return" in {
