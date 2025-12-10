@@ -83,7 +83,7 @@ class GetRegistrationAction(
     intermediaryRegistrationConnector.get(intermediaryNumber).flatMap { intermediaryRegistrationWrapper =>
       val availableIossNumbers = intermediaryRegistrationWrapper.etmpDisplayRegistration.clientDetails.map(_.clientIossID)
       if (availableIossNumbers.contains(iossNumber)) {
-        registrationConnector.get(iossNumber).map { registrationWrapper =>
+        registrationConnector.get(iossNumber).map { registrationWrapper => //TODO SCG follow .get to backend to change vatInfo
           Right(RegistrationRequest(
             request = request.request,
             credentials =request.credentials,
