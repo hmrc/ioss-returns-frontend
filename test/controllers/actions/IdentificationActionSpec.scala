@@ -347,13 +347,56 @@ class IdentifierActionSpec extends SpecBase with MockitoSugar with BeforeAndAfte
     "when the intermediary is logged in as an Organisation Admin with a VAT enrolment and strong credentials" - {
 
       "and the intermediaries toggle is enabled" - {
+        "when a user has an intermediary enrolment" in {
+          val application = applicationBuilder(None)
+            .configure("features.intermediary.enabled" -> true)
+            .build()
 
+          val vrnEnrolment = Enrolment("HMRC-MTD-VAT", Seq(EnrolmentIdentifier("VRN", "123456789")), "Activated")
+          val intermediaryEnrolment = Enrolment("HMRC-IOSS-INT", Seq(EnrolmentIdentifier("IntNumber", "IN9001234567")), "Activated")
+
+          running(application) {
+            val appConfig = application.injector.instanceOf[FrontendAppConfig]
+            val actionBuilder = application.injector.instanceOf[DefaultActionBuilder]
+
+            when(mockAuthConnector.authorise[RetrievalsType](any(), any())(any(), any()))
+              .thenReturn(Future.successful(Some(testCredentials) ~ Enrolments(Set(vrnEnrolment, intermediaryEnrolment)) ~ Some(Organisation) ~ ConfidenceLevel.L50))
+
+            val action = new IdentifierAction(mockAuthConnector, appConfig, urlBuilder(application))
+            val controller = new Harness(action, actionBuilder)
+            val result = controller.onPageLoad()(FakeRequest(GET, "/example"))
+
+            status(result) mustBe OK
+          }
+        }
       }
-      // TODO What if they register for both IOSS and as an intermediary?
 
       "and the intermediaries toggle is disabled" - {
 
-        "when a user only has intermediary enrolment" - {}
+        "when a user only has intermediary enrolment" in {
+          val application = applicationBuilder(None)
+            .configure("features.intermediary.enabled" -> false)
+            .build()
+
+          val vrnEnrolment = Enrolment("HMRC-MTD-VAT", Seq(EnrolmentIdentifier("VRN", "123456789")), "Activated")
+          val intermediaryEnrolment = Enrolment("HMRC-IOSS-INT", Seq(EnrolmentIdentifier("IntNumber", "IN9001234567")), "Activated")
+
+          running(application) {
+            val appConfig = application.injector.instanceOf[FrontendAppConfig]
+            val actionBuilder = application.injector.instanceOf[DefaultActionBuilder]
+
+            when(mockAuthConnector.authorise[RetrievalsType](any(), any())(any(), any()))
+              .thenReturn(Future.successful(Some(testCredentials) ~ Enrolments(Set(vrnEnrolment, intermediaryEnrolment)) ~ Some(Organisation) ~ ConfidenceLevel.L50))
+
+            val action = new IdentifierAction(mockAuthConnector, appConfig, urlBuilder(application))
+            val controller = new Harness(action, actionBuilder)
+            val result = controller.onPageLoad()(FakeRequest())
+
+            status(result) mustBe SEE_OTHER
+
+            redirectLocation(result).value mustEqual routes.NotRegisteredController.onPageLoad().url
+          }
+        }
 
 
       }

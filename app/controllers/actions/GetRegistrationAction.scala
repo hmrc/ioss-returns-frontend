@@ -57,8 +57,9 @@ class GetRegistrationAction(
             case (Some(intermediaryNumber), None) =>
               intermediarySelectedIossNumberRepository.get(request.userId).flatMap {
                 case Some(intermediarySelectedIossNumber) =>
-                  intermediarySelectedIossNumberRepository.keepAlive(request.userId) // TODO verify this is similar to how session repo would normally gets called
-                  checkIntermediaryAccessAndFormRequest(intermediaryNumber, intermediarySelectedIossNumber.iossNumber, request)
+                  intermediarySelectedIossNumberRepository.keepAlive(request.userId).flatMap { _ =>
+                    checkIntermediaryAccessAndFormRequest(intermediaryNumber, intermediarySelectedIossNumber.iossNumber, request)
+                  }
                 case _ =>
                   logger.warn(
                     s"Intermediary $maybeIntermediaryNumber did not have a request iossNumber, nor one found in selector repository"
@@ -102,7 +103,6 @@ class GetRegistrationAction(
     }
   }
 
-  // TODO might be a duplicate - refactor
   private def findIossFromEnrolments(enrolments: Enrolments)(implicit hc: HeaderCarrier): Future[Option[String]] = {
     val filteredIossNumbers = enrolments
       .enrolments
