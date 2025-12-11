@@ -16,7 +16,7 @@
 
 package models
 
-import models.etmp.intermediary.EtmpIdType
+import models.etmp.intermediary.{EtmpCustomerIdentificationLegacy, EtmpCustomerIdentificationNew, EtmpIdType}
 import models.etmp.{EtmpDisplayRegistration, VatCustomerInfo}
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.domain.Vrn
@@ -24,7 +24,13 @@ import uk.gov.hmrc.domain.Vrn
 
 case class RegistrationWrapper(vatInfo: Option[VatCustomerInfo], registration: EtmpDisplayRegistration) {
   
-  val maybeVrn: Option[Vrn] = if (registration.customerIdentification.idType == EtmpIdType.VRN) Some(Vrn(registration.customerIdentification.idValue)) else None
+  val maybeVrn: Option[Vrn] = {
+    registration.customerIdentification match
+      case EtmpCustomerIdentificationLegacy(vrn) => Some(vrn)
+      case EtmpCustomerIdentificationNew(idType, idValue) => 
+        if (idType == EtmpIdType.VRN) Some(Vrn(idValue)) else None
+      case _ => None
+  }
   
   def getCompanyName(): String = {
     

@@ -24,7 +24,7 @@ import play.api.libs.json.{Json, OFormat}
 import java.time.LocalDate
 
 case class EtmpDisplayRegistration(
-                                    customerIdentification: EtmpCustomerIdentification, // TODO SCG ---> Switch this to the trait that has Legacy
+                                    customerIdentification: EtmpCustomerIdentification,
                                     tradingNames: Seq[EtmpTradingName],
                                     schemeDetails: EtmpSchemeDetails,
                                     bankDetails: Option[EtmpBankDetails],
