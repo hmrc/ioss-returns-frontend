@@ -46,7 +46,7 @@ class ContinueReturnControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[ContinueReturnView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, period, true, "CompanyName")(request, messages(application)).toString
       }
     }
 
@@ -97,7 +97,7 @@ class ContinueReturnControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, period)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, period, true, "CompanyName")(request, messages(application)).toString
       }
     }
 

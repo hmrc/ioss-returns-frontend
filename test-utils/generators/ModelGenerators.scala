@@ -17,6 +17,7 @@
 package generators
 
 import connectors.SavedUserAnswers
+import org.scalacheck.Gen.const
 import config.Constants.{maxCurrencyAmount, minCurrencyAmount}
 import models.*
 import models.core.{CoreCorrection, CoreMsconSupply, CorePeriod, CoreSupply, CoreTraderId, CoreVatReturn}
@@ -361,15 +362,20 @@ trait ModelGenerators {
 
   implicit val arbitraryEtmpDisplayRegistration: Arbitrary[EtmpDisplayRegistration] = Arbitrary {
     for {
+      etmpIdType <- Gen.oneOf(EtmpIdType.values)
+      idValue <- Gen.alphaStr
+      customerIdentification <- EtmpCustomerIdentification(etmpIdType, idValue)
       etmpTradingNames <- Gen.listOfN(2, arbitraryEtmpTradingName.arbitrary)
       schemeDetails <- arbitrary[EtmpSchemeDetails]
       bankDetails <- arbitrary[EtmpBankDetails]
       exclusions <- Gen.listOfN(1, arbitraryEtmpExclusion.arbitrary)
       adminUse <- arbitrary[EtmpAdminUse]
     } yield EtmpDisplayRegistration(
+      customerIdentification,
       etmpTradingNames,
       schemeDetails,
       Some(bankDetails),
+      otherAddress = None, // TODO SCG check if should be a some
       exclusions,
       adminUse
     )
@@ -443,7 +449,7 @@ trait ModelGenerators {
     for {
       vatInfo <- arbitrary[VatCustomerInfo]
       registration <- arbitrary[EtmpDisplayRegistration]
-    } yield RegistrationWrapper(vatInfo, registration)
+    } yield RegistrationWrapper(Some(vatInfo), registration)
   }
 
   implicit val arbitraryIntermediaryRegistrationWrapper: Arbitrary[IntermediaryRegistrationWrapper] = Arbitrary {

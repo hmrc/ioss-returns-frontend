@@ -86,7 +86,7 @@ class VatAmountCorrectionCountryControllerSpec extends SpecBase with MockitoSuga
         val view = application.injector.instanceOf[VatAmountCorrectionCountryView]
 
         status(result) mustBe OK
-        contentAsString(result) mustBe view(form, waypoints, period, index, period, index, selectedCountry, isCountryPreviouslyDeclared = false, validAnswer)(request, messages(application)).toString
+        contentAsString(result) mustBe view(form, waypoints, period, index, period, index, selectedCountry, isCountryPreviouslyDeclared = false, validAnswer, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -102,7 +102,7 @@ class VatAmountCorrectionCountryControllerSpec extends SpecBase with MockitoSuga
         val view = application.injector.instanceOf[VatAmountCorrectionCountryView]
 
         status(result) mustBe OK
-        contentAsString(result) mustBe view(form, waypoints, period, index, period, index, selectedCountry, isCountryPreviouslyDeclared = true, minimumCorrection)(request, messages(application)).toString
+        contentAsString(result) mustBe view(form, waypoints, period, index, period, index, selectedCountry, isCountryPreviouslyDeclared = true, minimumCorrection, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -122,7 +122,7 @@ class VatAmountCorrectionCountryControllerSpec extends SpecBase with MockitoSuga
         val view = application.injector.instanceOf[VatAmountCorrectionCountryView]
 
         status(result) mustBe OK
-        contentAsString(result) mustBe view(form, waypoints, period, index, period, index, selectedCountry, isCountryPreviouslyDeclared = true, validAnswerZero)(request, messages(application)).toString
+        contentAsString(result) mustBe view(form, waypoints, period, index, period, index, selectedCountry, isCountryPreviouslyDeclared = true, validAnswerZero, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -142,7 +142,7 @@ class VatAmountCorrectionCountryControllerSpec extends SpecBase with MockitoSuga
 
         status(result) mustBe OK
         contentAsString(result) mustBe view(
-          form.fill(validAnswer), waypoints, period, index, period, index, selectedCountry, isCountryPreviouslyDeclared = false, minimumCorrection)(request, messages(application)).toString
+          form.fill(validAnswer), waypoints, period, index, period, index, selectedCountry, isCountryPreviouslyDeclared = false, minimumCorrection, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -187,7 +187,7 @@ class VatAmountCorrectionCountryControllerSpec extends SpecBase with MockitoSuga
 
         status(result) mustBe BAD_REQUEST
         contentAsString(result) mustBe view(
-          boundForm, waypoints, period, index, period, index, selectedCountry, isCountryPreviouslyDeclared = false, minimumCorrection)(request, messages(application)).toString
+          boundForm, waypoints, period, index, period, index, selectedCountry, isCountryPreviouslyDeclared = false, minimumCorrection, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 

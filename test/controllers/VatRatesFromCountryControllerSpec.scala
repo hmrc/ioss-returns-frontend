@@ -128,7 +128,7 @@ class VatRatesFromCountryControllerSpec extends SpecBase with MockitoSugar with 
         status(result) mustBe OK
 
         contentAsString(result) mustBe
-          view(form, waypoints, period, index, country, utils.ItemsHelper.checkboxItems(remainingVatRates))(request, messages(application)).toString
+          view(form, waypoints, period, index, country, utils.ItemsHelper.checkboxItems(remainingVatRates), isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -157,7 +157,9 @@ class VatRatesFromCountryControllerSpec extends SpecBase with MockitoSugar with 
             period,
             index,
             country,
-            utils.ItemsHelper.checkboxItems(vatRatesFromCountry)
+            utils.ItemsHelper.checkboxItems(vatRatesFromCountry),
+            isIntermediary = false,
+            companyName = "Company Name"
           )(request, messages(application)).toString
       }
     }
@@ -221,7 +223,7 @@ class VatRatesFromCountryControllerSpec extends SpecBase with MockitoSugar with 
 
         status(result) mustBe BAD_REQUEST
         contentAsString(result) mustBe
-          view(boundForm, waypoints, period, index, country, utils.ItemsHelper.checkboxItems(vatRatesFromCountry))(request, messages(application)).toString
+          view(boundForm, waypoints, period, index, country, utils.ItemsHelper.checkboxItems(vatRatesFromCountry), isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 

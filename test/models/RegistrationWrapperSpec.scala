@@ -37,7 +37,7 @@ class RegistrationWrapperSpec extends SpecBase {
 
     "must serialise/deserialise to and from RegistrationWrapper" in {
 
-      val registrationWrapper: RegistrationWrapper = RegistrationWrapper(vatInfo, etmpDisplayRegistration)
+      val registrationWrapper: RegistrationWrapper = RegistrationWrapper(Some(vatInfo), etmpDisplayRegistration)
 
       val expectedJson = Json.obj(
         "vatInfo" -> Json.obj(

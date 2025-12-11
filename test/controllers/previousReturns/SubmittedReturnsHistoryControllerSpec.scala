@@ -76,7 +76,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
         val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
 
         status(result) mustBe OK
-        contentAsString(result) mustBe view(waypoints, periodsWithFinancialData, previousRegistrations)(request, messages(application)).toString
+        contentAsString(result) mustBe view(waypoints, periodsWithFinancialData, previousRegistrations, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -103,7 +103,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
         val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
 
         status(result) mustBe OK
-        contentAsString(result) mustBe view(waypoints, periodsWithFinancialData, previousRegistrations)(request, messages(application)).toString
+        contentAsString(result) mustBe view(waypoints, periodsWithFinancialData, previousRegistrations, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -155,7 +155,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
         val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
 
         status(result) mustBe OK
-        contentAsString(result) mustBe view(waypoints, periodsWithFinancialData, previousRegistrations)(request, messages(application)).toString
+        contentAsString(result) mustBe view(waypoints, periodsWithFinancialData, previousRegistrations, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -213,7 +213,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
         val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
 
         status(result) mustBe OK
-        contentAsString(result) mustBe view(waypoints, periodsWithFinancialData, previousRegistrations)(request, messages(application)).toString
+        contentAsString(result) mustBe view(waypoints, periodsWithFinancialData, previousRegistrations, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -264,7 +264,7 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
         val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
 
         status(result) mustBe OK
-        contentAsString(result) mustBe view(waypoints, periodsWithFinancialData, previousRegistrations)(request, messages(application)).toString
+        contentAsString(result) mustBe view(waypoints, periodsWithFinancialData, previousRegistrations, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 

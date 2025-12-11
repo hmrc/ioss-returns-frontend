@@ -108,7 +108,7 @@ class RemainingVatRateFromCountryControllerSpec extends SpecBase with MockitoSug
         status(result) mustBe OK
 
         contentAsString(result) mustBe
-          view(form, waypoints, period, index, index, remainingVatRate.rateForDisplay, country)(request, messages(application)).toString
+          view(form, waypoints, period, index, index, remainingVatRate.rateForDisplay, country, true, "CompanyName")(request, messages(application)).toString
       }
     }
 
@@ -132,7 +132,7 @@ class RemainingVatRateFromCountryControllerSpec extends SpecBase with MockitoSug
         status(result) mustBe OK
 
         contentAsString(result) mustBe
-          view(form.fill(true), waypoints, period, index, index, remainingVatRate.rateForDisplay, country)(request, messages(application)).toString
+          view(form.fill(true), waypoints, period, index, index, remainingVatRate.rateForDisplay, country, false, "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -189,7 +189,7 @@ class RemainingVatRateFromCountryControllerSpec extends SpecBase with MockitoSug
         status(result) mustBe BAD_REQUEST
 
         contentAsString(result) mustBe
-          view(boundForm, waypoints, period, index, index, remainingVatRate.rateForDisplay, country)(request, messages(application)).toString
+          view(boundForm, waypoints, period, index, index, remainingVatRate.rateForDisplay, country, false, "Company Name")(request, messages(application)).toString
       }
     }
 

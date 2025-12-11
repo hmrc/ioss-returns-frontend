@@ -66,7 +66,7 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar with Be
         val view = application.injector.instanceOf[CorrectionCountryView]
 
         status(result) mustBe OK
-        contentAsString(result) mustBe view(form, waypoints, period, index, period, index)(request, messages(application)).toString
+        contentAsString(result) mustBe view(form, waypoints, period, index, period, index, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -86,7 +86,7 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar with Be
         val result = route(application, request).value
 
         status(result) mustBe OK
-        contentAsString(result) mustBe view(form.fill(country), waypoints, period, index, period, index)(request, messages(application)).toString
+        contentAsString(result) mustBe view(form.fill(country), waypoints, period, index, period, index, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -143,7 +143,7 @@ class CorrectionCountryControllerSpec extends SpecBase with MockitoSugar with Be
         val result = route(application, request).value
 
         status(result) mustBe BAD_REQUEST
-        contentAsString(result) mustBe view(boundForm, waypoints, period, index, period, index)(request, messages(application)).toString
+        contentAsString(result) mustBe view(boundForm, waypoints, period, index, period, index, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 

@@ -40,7 +40,7 @@ class RedirectServiceSpec extends SpecBase with BeforeAndAfterEach {
   private val mockVatReturnService: VatReturnService = mock[VatReturnService]
   private val mockCorrectionService: CorrectionService = mock[CorrectionService]
 
-  private implicit val dataRequest: DataRequest[AnyContent] = DataRequest[AnyContent](FakeRequest(), testCredentials, vrn, iossNumber, registrationWrapper, None, completedUserAnswersWithCorrections)
+  private implicit val dataRequest: DataRequest[AnyContent] = DataRequest[AnyContent](FakeRequest(), testCredentials, Some(vrn), iossNumber, registrationWrapper, None, completedUserAnswersWithCorrections)
 
   override def beforeEach(): Unit = {
     reset(mockVatReturnService)
