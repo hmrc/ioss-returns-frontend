@@ -33,7 +33,6 @@ case class RegistrationWrapper(vatInfo: Option[VatCustomerInfo], registration: E
   }
   
   def getCompanyName(): String = {
-    
     val clientCompanyName: String =
       vatInfo
       .flatMap(nonOptVat => nonOptVat.organisationName orElse nonOptVat.individualName)

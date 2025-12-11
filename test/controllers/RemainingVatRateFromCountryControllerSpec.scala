@@ -108,7 +108,7 @@ class RemainingVatRateFromCountryControllerSpec extends SpecBase with MockitoSug
         status(result) mustBe OK
 
         contentAsString(result) mustBe
-          view(form, waypoints, period, index, index, remainingVatRate.rateForDisplay, country, true, "CompanyName")(request, messages(application)).toString
+          view(form, waypoints, period, index, index, remainingVatRate.rateForDisplay, country, false, "CompanyName")(request, messages(application)).toString
       }
     }
 

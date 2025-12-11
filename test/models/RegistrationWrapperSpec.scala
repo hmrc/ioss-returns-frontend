@@ -18,6 +18,7 @@ package models
 
 import base.SpecBase
 import models.etmp.*
+import models.etmp.intermediary.EtmpCustomerIdentificationLegacy
 import play.api.libs.json.{JsError, JsSuccess, Json}
 import testUtils.RegistrationData.etmpDisplayRegistration
 
@@ -27,17 +28,22 @@ class RegistrationWrapperSpec extends SpecBase {
 
   private val vatInfo: VatCustomerInfo = vatCustomerInfo.copy(desAddress = desAddress)
 
+  private val customerIdentificationLegacy: EtmpCustomerIdentificationLegacy = arbitraryEtmpCustomerIdentificationLegacy.arbitrary.sample.value
+  private val schemeDetails = etmpDisplayRegistration.schemeDetails
+  private val otherAddress: EtmpOtherAddress = etmpDisplayRegistration.otherAddress.get
   private val tradingNames: Seq[EtmpTradingName] = etmpDisplayRegistration.tradingNames
   private val displaySchemeDetails: EtmpSchemeDetails = etmpDisplayRegistration.schemeDetails
   private val bankDetails: EtmpBankDetails = etmpDisplayRegistration.bankDetails.get
   private val exclusions: Seq[EtmpExclusion] = etmpDisplayRegistration.exclusions
   private val adminUse: EtmpAdminUse = etmpDisplayRegistration.adminUse
+  private val testEtmpDisplayReg: EtmpDisplayRegistration = etmpDisplayRegistration
+    .copy(customerIdentification = customerIdentificationLegacy)
 
   "RegistrationWrapper" - {
 
-    "must serialise/deserialise to and from RegistrationWrapper" in {
+    "must serialise/deserialise to and from RegistrationWrapper with optional vat information" in {
 
-      val registrationWrapper: RegistrationWrapper = RegistrationWrapper(Some(vatInfo), etmpDisplayRegistration)
+      val registrationWrapper: RegistrationWrapper = RegistrationWrapper(Some(vatInfo), testEtmpDisplayReg)
 
       val expectedJson = Json.obj(
         "vatInfo" -> Json.obj(
@@ -50,11 +56,13 @@ class RegistrationWrapperSpec extends SpecBase {
           "overseasIndicator" -> vatInfo.overseasIndicator
         ),
         "registration" -> Json.obj(
+          "customerIdentification" -> customerIdentificationLegacy,
           "tradingNames" -> tradingNames,
-          "adminUse" -> adminUse,
-          "schemeDetails" -> displaySchemeDetails,
-          "exclusions" -> exclusions,
+          "schemeDetails" -> schemeDetails,
           "bankDetails" -> bankDetails,
+          "otherAddress" -> otherAddress,
+          "exclusions" -> exclusions,
+          "adminUse" -> adminUse
         )
       )
 

@@ -425,7 +425,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         status(result) mustBe OK
         contentAsString(result) mustBe view(
           waypoints,
-          registrationWrapper.getCompanyName(),
+          registrationWrapperEmptyExclusions.getCompanyName(),
           iossNumber,
           paymentsViewModel,
           appConfig.amendRegistrationUrl,
