@@ -393,7 +393,7 @@ trait ModelGenerators {
       etmpTradingNames,
       schemeDetails,
       Some(bankDetails),
-      otherAddress = None, // TODO SCG check if should be a some
+      otherAddress = None,
       exclusions,
       adminUse
     )
@@ -413,7 +413,7 @@ trait ModelGenerators {
       etmpTradingNames,
       schemeDetails,
       Some(bankDetails),
-      otherAddress = None, // TODO SCG check if should be a some
+      otherAddress = None,
       exclusions,
       adminUse
     )
