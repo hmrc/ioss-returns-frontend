@@ -16,7 +16,10 @@
 
 package controllers.submissionResults
 
-import controllers.actions._
+import config.FrontendAppConfig
+import controllers.actions.*
+import controllers.routes
+import pages.EmptyWaypoints
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -25,15 +28,23 @@ import views.html.submissionResults.ReturnSubmissionFailureView
 import javax.inject.Inject
 
 class ReturnSubmissionFailureController @Inject()(
-                                       override val messagesApi: MessagesApi,
-                                       cc: AuthenticatedControllerComponents,
-                                       view: ReturnSubmissionFailureView
-                                     ) extends FrontendBaseController with I18nSupport {
+                                                   override val messagesApi: MessagesApi,
+                                                   cc: AuthenticatedControllerComponents,
+                                                   view: ReturnSubmissionFailureView,
+                                                   frontendAppConfig: FrontendAppConfig
+                                                 ) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
   def onPageLoad: Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced {
     implicit request =>
-      Ok(view())
+      
+      val determineRedirect: String = if (request.isIntermediary) {
+        frontendAppConfig.intermediaryDashboardUrl
+      } else {
+        routes.YourAccountController.onPageLoad(EmptyWaypoints).url
+      }
+
+      Ok(view(determineRedirect))
   }
 }

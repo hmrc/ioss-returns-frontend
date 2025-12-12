@@ -476,8 +476,8 @@ successfullySubmitted.next.info.returnToAccount = Back to your account
 successfullySubmitted.next.info.returnToIntermediaryAccount = <a class="govuk-link" href={0} id="back-to-your-account" class="govuk-link govuk-link--no-visited-state">Back to your account</a>
 
 returnSubmissionFailure.title = We have a problem with our service right now
-returnSubmissionFailure.heading = We have not received your return
-returnSubmissionFailure.savedAnswers = We have saved your answers and you can submit it from your account later.
+returnSubmissionFailure.heading = We have not received this return
+returnSubmissionFailure.savedAnswers = We have saved the answers and you can submit it from this account later.
 returnSubmissionFailure.knownIssues = Check our <a class="govuk-link" href="https://www.gov.uk/government/publications/vat-import-one-stop-shop-scheme-service-availability-and-issues/vat-import-one-stop-shop-scheme-service-availability-and-issues">service page</a> for any known system issues.
 returnSubmissionFailure.contactUs = If the problem continues, you can email us at <a class="govuk-link" href="mailto:vatoss.contact@hmrc.gov.uk">vatoss.contact@hmrc.gov.uk</a>
 returnSubmissionFailure.next.info.returnToAccount = Back to your account

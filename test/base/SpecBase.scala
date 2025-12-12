@@ -129,7 +129,7 @@ trait SpecBase
     val getRegistrationActionBind = if(getRegistrationAction.nonEmpty) {
       bind[GetRegistrationActionProvider].toInstance(getRegistrationAction.get)
     } else {
-      bind[GetRegistrationActionProvider].toInstance(new FakeGetRegistrationActionProvider(registration))
+      bind[GetRegistrationActionProvider].toInstance(new FakeGetRegistrationActionProvider(registration, maybeIntermediaryNumber))
     }
 
     new GuiceApplicationBuilder()
