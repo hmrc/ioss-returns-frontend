@@ -14,6 +14,8 @@
  * limitations under the License.
  *@
 
+ 
+
 @this(
         layout: templates.Layout,
         govukSummaryList: GovukSummaryList,
@@ -23,6 +25,7 @@
         button: ButtonGroup
 )
 
+
 @(
     waypoints: Waypoints,
     period: Period,
@@ -31,13 +34,21 @@
     correctionPeriod: Period,
     periodIndex: Index,
     countryIndex: Index,
-    countryCorrectionComplete: Boolean
+    countryCorrectionComplete: Boolean,
+    isIntermediary:Boolean,
+    companyName: String
 )(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(messages("checkVatPayableAmount.title"))) {
 
     <header class="hmrc-page-heading">
-        <p class="govuk-caption-l hmrc-caption-l">@messages("checkVatPayableAmount.caption", correctionPeriod.displayText, country.name)</p>
+        <p class="govuk-caption-l hmrc-caption-l">@{
+         if(isIntermediary){
+             messages("checkVatPayableAmount.intermediary.caption", companyName, correctionPeriod.displayText, country.name)
+         } else {
+             messages("checkVatPayableAmount.caption", correctionPeriod.displayText, country.name)
+         }
+        }</p>
         <h1 class="govuk-heading-l">@messages("checkVatPayableAmount.heading")</h1>
     </header>
 

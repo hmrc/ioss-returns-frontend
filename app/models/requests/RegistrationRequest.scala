@@ -25,7 +25,8 @@ import uk.gov.hmrc.domain.Vrn
 case class RegistrationRequest[A](
                                    request: Request[A],
                                    credentials: Credentials,
-                                   vrn: Vrn,
+                                   vrn: Option[Vrn],
+                                   companyName: String,
                                    iossNumber: String,
                                    registrationWrapper: RegistrationWrapper,
                                    intermediaryNumber: Option[String],

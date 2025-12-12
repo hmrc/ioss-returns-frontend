@@ -530,7 +530,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             )
 
             val registrationWrapper = RegistrationWrapper(
-              vatInfo = arbitraryVatInfo.arbitrary.sample.value,
+              vatInfo = Some(arbitraryVatInfo.arbitrary.sample.value),
               registration = etmpDisplayRegistration.copy(exclusions = Seq(etmpExclusion))
             )
 
@@ -549,7 +549,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 OptionalDataRequest(
                   FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoad(waypoints, exceededPeriod).url),
                   testCredentials,
-                  vrn,
+                  Some(vrn),
                   iossNumber,
                   registrationWrapper,
                   None,
@@ -643,7 +643,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             )
 
             val registrationWrapper = RegistrationWrapper(
-              vatInfo = arbitraryVatInfo.arbitrary.sample.value,
+              vatInfo = Some(arbitraryVatInfo.arbitrary.sample.value),
               registration = etmpDisplayRegistration.copy(exclusions = Seq(etmpExclusion))
             )
 
@@ -662,7 +662,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 OptionalDataRequest(
                   FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoad(waypoints, exceededPeriod).url),
                   testCredentials,
-                  vrn,
+                  Some(vrn),
                   iossNumber,
                   registrationWrapper,
                   None,
@@ -1208,7 +1208,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             )
 
             val registrationWrapper = RegistrationWrapper(
-              vatInfo = arbitraryVatInfo.arbitrary.sample.value,
+              vatInfo = Some(arbitraryVatInfo.arbitrary.sample.value),
               registration = etmpDisplayRegistration.copy(exclusions = Seq(etmpExclusion))
             )
 
@@ -1229,7 +1229,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 OptionalDataRequest(
                   FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoadForIossNumber(waypoints, exceededPeriod, iossNumber).url),
                   testCredentials,
-                  vrn,
+                  Some(vrn),
                   iossNumber,
                   registrationWrapper,
                   None,
@@ -1323,7 +1323,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             )
 
             val registrationWrapper = RegistrationWrapper(
-              vatInfo = arbitraryVatInfo.arbitrary.sample.value,
+              vatInfo = Some(arbitraryVatInfo.arbitrary.sample.value),
               registration = etmpDisplayRegistration.copy(exclusions = Seq(etmpExclusion))
             )
 
@@ -1344,7 +1344,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 OptionalDataRequest(
                   FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoadForIossNumber(waypoints, exceededPeriod, iossNumber).url),
                   testCredentials,
-                  vrn,
+                  Some(vrn),
                   iossNumber,
                   registrationWrapper,
                   None,

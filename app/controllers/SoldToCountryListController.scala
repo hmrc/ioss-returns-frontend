@@ -60,9 +60,9 @@ class SoldToCountryListController @Inject()(
           withCompleteDataAsync[Country](
             data = getCountriesWithIncompleteSales _,
             onFailure = (incomplete: Seq[Country]) => {
-              Ok(view(form, waypoints, period, salesSummary, canAddSales, incomplete)).toFuture
+              Ok(view(form = form, waypoints = waypoints, period = period, salesList = salesSummary, canAddSales = canAddSales, incompleteCountries = incomplete, isIntermediary = request.isIntermediary, companyName = request.registrationWrapper.getCompanyName())).toFuture
             }) {
-            Ok(view(form, waypoints, period, salesSummary, canAddSales)).toFuture
+            Ok(view(form = form, waypoints = waypoints, period = period, salesList = salesSummary, canAddSales = canAddSales, isIntermediary = request.isIntermediary, companyName = request.registrationWrapper.getCompanyName() )).toFuture
           }
 
       }
@@ -99,7 +99,7 @@ class SoldToCountryListController @Inject()(
 
           form.bindFromRequest().fold(
             formWithErrors =>
-              BadRequest(view(formWithErrors, waypoints, period, salesSummary, canAddSales)).toFuture,
+              BadRequest(view(form = formWithErrors, waypoints = waypoints, period = period, salesList = salesSummary, canAddSales = canAddSales, isIntermediary = request.isIntermediary, companyName = request.registrationWrapper.getCompanyName())).toFuture,
 
             value =>
               for {

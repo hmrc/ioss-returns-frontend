@@ -16,6 +16,7 @@
 
 @import viewmodels.InputWidth._
 @import pages.SalesToCountryPage
+ 
 
 @this(
         layout: templates.Layout,
@@ -25,12 +26,21 @@
         button: ButtonGroup
 )
 
-@(form: Form[_], waypoints: Waypoints, period: Period, countryIndex: Index, nextVatRateIndex: Index, vatRate: VatRateFromCountry, country: Country)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, period: Period, countryIndex: Index, nextVatRateIndex: Index, vatRate: VatRateFromCountry, country: Country, isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
+
+@caption = @{
+    if(isIntermediary) {
+        messages("salesToCountry.intermediary.caption", companyName, period.displayText, country.name)
+    } else {
+        messages("salesToCountry.caption", period.displayText, country.name)
+    }
+}
 
 @layout(pageTitle = title(
     form,
     messages("salesToCountry.title", vatRate.rateForDisplay),
-    Some(messages("salesToCountry.caption", period.displayText, country.name))
+    Some(caption)
+
 )) {
 
     @formHelper(action = routes.SalesToCountryController.onSubmit(waypoints, countryIndex, nextVatRateIndex), Symbol("autoComplete") -> "off") {
@@ -44,7 +54,7 @@
                 field = form("value"),
                 label = HmrcPageHeadingLabel(
                     content = messages("salesToCountry.heading", vatRate.rateForDisplay),
-                    caption = messages("salesToCountry.caption", period.displayText, country.name),
+                    caption =  caption,
                     classes = "govuk-label--l"
                 )
             )

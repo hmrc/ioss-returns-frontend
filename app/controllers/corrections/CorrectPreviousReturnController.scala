@@ -64,7 +64,7 @@ class CorrectPreviousReturnController @Inject()(
           case Some(value) => form.fill(value)
         }
 
-        Future.successful(Ok(view(preparedForm, waypoints, period, maybeExclusion, isFinalReturn)))
+        Future.successful(Ok(view(preparedForm, waypoints, period, maybeExclusion, isFinalReturn, request.isIntermediary, request.registrationWrapper.getCompanyName())))
       }
   }
 
@@ -85,7 +85,7 @@ class CorrectPreviousReturnController @Inject()(
 
         form.bindFromRequest().fold(
           formWithErrors =>
-            Future.successful(BadRequest(view(formWithErrors, waypoints, period, maybeExclusion, isFinalReturn))),
+            Future.successful(BadRequest(view(formWithErrors, waypoints, period, maybeExclusion, isFinalReturn, request.isIntermediary, request.registrationWrapper.getCompanyName()))),
 
           value =>
             for {

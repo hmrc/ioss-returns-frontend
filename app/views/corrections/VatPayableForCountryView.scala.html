@@ -17,6 +17,7 @@
 @import utils.CurrencyFormatter.currencyFormat
 @import components.ButtonGroup
 @import pages.corrections.VatPayableForCountryPage
+ 
 
 @this(
     layout: templates.Layout,
@@ -26,7 +27,7 @@
     button: ButtonGroup,
 )
 
-@(form: Form[_], waypoints: Waypoints, period: Period, periodIndex:Index, countryIndex: Index, selectedCountry: Country, correctionPeriod: Period, newAmount: BigDecimal)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, period: Period, periodIndex:Index, countryIndex: Index, selectedCountry: Country, correctionPeriod: Period, newAmount: BigDecimal, isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, messages("vatPayableForCountry.title", selectedCountry.name, currencyFormat(newAmount)))) {
 
@@ -41,7 +42,11 @@
                 field = form("value"),
                 legend = HmrcPageHeadingLegend(
                     content = HtmlContent(Html(messages("vatPayableForCountry.heading", selectedCountry.name, currencyFormat(newAmount)))),
-                    caption = messages("vatPayableForCountry.caption", correctionPeriod.displayText),
+                    caption = if(isIntermediary){
+                        messages("vatPayableForCountry.intermediary.caption", companyName, correctionPeriod.displayText)
+                    } else {
+                        messages("vatPayableForCountry.caption", correctionPeriod.displayText)
+                    },
                     classes = "govuk-fieldset__legend--l"
                 )
 

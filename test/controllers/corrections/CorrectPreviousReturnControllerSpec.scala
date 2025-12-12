@@ -86,7 +86,7 @@ class CorrectPreviousReturnControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[CorrectPreviousReturnView]
 
         status(result) `mustBe` OK
-        contentAsString(result) `mustBe` view(form, waypoints, period, maybeExclusion = None, isFinalReturn = false)(request, messages(application)).toString
+        contentAsString(result) `mustBe` view(form, waypoints, period, maybeExclusion = None, isFinalReturn = false, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -119,7 +119,7 @@ class CorrectPreviousReturnControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[CorrectPreviousReturnView]
 
         status(result) `mustBe` OK
-        contentAsString(result) `mustBe` view(form, waypoints, period, maybeExclusion = Some(etmpExclusion), isFinalReturn = true)(request, messages(application)).toString
+        contentAsString(result) `mustBe` view(form, waypoints, period, maybeExclusion = Some(etmpExclusion), isFinalReturn = true, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -146,7 +146,8 @@ class CorrectPreviousReturnControllerSpec extends SpecBase with MockitoSugar {
           waypoints,
           period,
           maybeExclusion = None,
-          isFinalReturn = false
+          isFinalReturn = false,
+          isIntermediary = false, companyName = "Company Name"
         )(request, messages(application)).toString
       }
     }
@@ -232,7 +233,8 @@ class CorrectPreviousReturnControllerSpec extends SpecBase with MockitoSugar {
           waypoints,
           period,
           maybeExclusion = None,
-          isFinalReturn = false
+          isFinalReturn = false,
+          isIntermediary = false, companyName = "Company Name"
         )(request, messages(application)).toString
       }
     }
