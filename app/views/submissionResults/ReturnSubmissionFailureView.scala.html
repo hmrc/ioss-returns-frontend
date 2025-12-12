@@ -22,7 +22,7 @@
         govukPanel: GovukPanel
 )
 
-@()(implicit request: Request[_], messages: Messages)
+@(redirectUrl: String)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(messages("returnSubmissionFailure.title")), showBackLink = false) {
 
@@ -39,7 +39,7 @@
     <p class="govuk-body">@Html(messages("returnSubmissionFailure.contactUs"))</p>
 
     <p class="govuk-body">
-        <a id="back-to-your-account" href="@routes.YourAccountController.onPageLoad(EmptyWaypoints).url" class="govuk-link govuk-link--no-visited-state">
+        <a id="back-to-your-account" href="@redirectUrl" class="govuk-link govuk-link--no-visited-state">
         @messages("returnSubmissionFailure.next.info.returnToAccount")
         </a>
     </p>
