@@ -193,9 +193,11 @@ startReturn.partialTo = Only include sales up to {0}.
 startReturn.shortTitle = Do you want to start your return?
 
 startReturn.intermediary.title = Do you want to start the {0} return for {1}?
-startReturn.intermediary.finalReturn = Do you want to start their final return?
+startReturn.intermediary.finalReturn = Do you want to start the final return for {0}?
 startReturn.intermediary.heading = Do you want to start the {0} return for {1}?
 startReturn.intermediary.error.required = Select yes if you want to start their return
+startReturn.intermediary.partialFrom = Only include their sales from {0}.
+startReturn.intermediary.partialTo = Only include their sales up to {0}.
 
 soldGoods.title = Did you make eligible sales into the EU or Northern Ireland in {0}?
 soldGoods.heading = Did you make eligible sales into the EU or Northern Ireland in {0}?
@@ -308,6 +310,7 @@ deleteVatRateSalesForCountry.intermediary.title = Do you want to remove all thei
 deleteVatRateSalesForCountry.heading = Do you want to remove all your {0} VAT rate sales for {1}?
 deleteVatRateSalesForCountry.intermediary.heading = Do you want to remove all their {0} VAT rate sales for {1}?
 deleteVatRateSalesForCountry.error.required = Select yes if you want to remove all your {0} VAT rate sales for {1}
+deleteVatRateSalesForCountry.intermediary.error.required = Select yes if you want to remove all their {0} VAT rate sales for {1}
 
 remainingVatRateFromCountry.title = Did you sell goods at the {0} VAT rate?
 remainingVatRateFromCountry.heading = Did you sell goods at the {0} VAT rate?

@@ -55,7 +55,7 @@ class StartReturnController @Inject()(
       // TODO check for starting correct period
       val isIntermediary = request.isIntermediary
       val form: Form[Boolean] = formProvider(isIntermediary)
-      val netpBusinessName = request.registrationWrapper.registration.tradingNames.headOption.map(_.tradingName).getOrElse("")
+      val companyName = request.registrationWrapper.getCompanyName()
 
       val maybeExclusion: Option[EtmpExclusion] = request.registrationWrapper.registration.exclusions.lastOption
 
@@ -66,7 +66,7 @@ class StartReturnController @Inject()(
       }
 
       partialReturnPeriodService.getPartialReturnPeriod(request.iossNumber, request.registrationWrapper, period).map { maybePartialReturnPeriod =>
-        Ok(view(form, waypoints, period, maybeExclusion, isFinalReturn, maybePartialReturnPeriod, isIntermediary, netpBusinessName))
+        Ok(view(form, waypoints, period, maybeExclusion, isFinalReturn, maybePartialReturnPeriod, isIntermediary, companyName))
       }
 
   }
@@ -80,7 +80,7 @@ class StartReturnController @Inject()(
     implicit request =>
       val isIntermediary = request.isIntermediary
       val form: Form[Boolean] = formProvider(isIntermediary)
-      val netpBusinessName = request.registrationWrapper.registration.tradingNames.headOption.map(_.tradingName).getOrElse("")
+      val companyName = request.registrationWrapper.getCompanyName()
 
       val maybeExclusion: Option[EtmpExclusion] = request.registrationWrapper.registration.exclusions.lastOption
 
@@ -94,7 +94,7 @@ class StartReturnController @Inject()(
         formWithErrors =>
 
           partialReturnPeriodService.getPartialReturnPeriod(request.iossNumber, request.registrationWrapper, period).map { maybePartialReturnPeriod =>
-            BadRequest(view(formWithErrors, waypoints, period, maybeExclusion, isFinalReturn, maybePartialReturnPeriod, isIntermediary, netpBusinessName))
+            BadRequest(view(formWithErrors, waypoints, period, maybeExclusion, isFinalReturn, maybePartialReturnPeriod, isIntermediary, companyName))
 
           },
 
