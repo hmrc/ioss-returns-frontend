@@ -16,10 +16,8 @@
 
 package controllers
 
-import connectors.ReturnStatusConnector
 import controllers.actions.*
 import logging.Logging
-import models.SubmissionStatus
 import pages.EmptyWaypoints
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}

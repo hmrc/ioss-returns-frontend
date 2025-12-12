@@ -16,6 +16,7 @@
 
 package controllers
 
+import config.FrontendAppConfig
 import controllers.actions._
 import pages.Waypoints
 import play.api.i18n.{I18nSupport, MessagesApi}
@@ -28,6 +29,7 @@ import javax.inject.Inject
 class NoOtherPeriodsAvailableController @Inject()(
                                                    override val messagesApi: MessagesApi,
                                                    cc: AuthenticatedControllerComponents,
+                                                   frontendAppConfig: FrontendAppConfig,
                                                    view: NoOtherPeriodsAvailableView
                                                  ) extends FrontendBaseController with I18nSupport {
 
@@ -36,8 +38,8 @@ class NoOtherPeriodsAvailableController @Inject()(
   def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetRegistration() {
     implicit request =>
       val isIntermediary = request.isIntermediary
-      val netpBusinessName = request.registrationWrapper.registration.tradingNames.headOption.map(_.tradingName).getOrElse("")
-
-      Ok(view(waypoints, isIntermediary, netpBusinessName))
+      val companyName = request.registrationWrapper.getCompanyName()
+      val intermediaryDashboardUrl = frontendAppConfig.intermediaryDashboardUrl
+      Ok(view(waypoints, isIntermediary, companyName, intermediaryDashboardUrl))
   }
 }

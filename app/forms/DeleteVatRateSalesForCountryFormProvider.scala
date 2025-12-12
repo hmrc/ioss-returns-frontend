@@ -23,8 +23,15 @@ import play.api.data.Form
 
 class DeleteVatRateSalesForCountryFormProvider @Inject() extends Mappings {
 
-  def apply(vatRate: String, country: Country): Form[Boolean] =
+  def apply(vatRate: String, country: Country, isIntermediary: Boolean = false): Form[Boolean] = {
+    val requiredKey = if(isIntermediary) {
+      "deleteVatRateSalesForCountry.intermediary.error.required"
+    } else {
+      "deleteVatRateSalesForCountry.error.required"
+    }
+
     Form(
-      "value" -> boolean("deleteVatRateSalesForCountry.error.required", args = Seq(vatRate, country.name))
+      "value" -> boolean(requiredKey, args = Seq(vatRate, country.name))
     )
+  }
 }
