@@ -100,7 +100,7 @@ class CheckSalesControllerSpec extends SpecBase with MockitoSugar with SummaryLi
 
         status(result) mustBe OK
         contentAsString(result) mustBe
-          view(form, waypoints, period, list, index, country, canAddAnotherVatRate = true, Seq.empty, "CompanyName", false)(request, messages(application)).toString
+          view(form, waypoints, period, list, index, country, canAddAnotherVatRate = true, companyName = "CompanyName", isIntermediary = false)(request, messages(application)).toString
       }
     }
 

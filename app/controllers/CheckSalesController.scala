@@ -65,28 +65,27 @@ class CheckSalesController @Inject()(
               data = getIncompleteVatRateAndSales _,
               onFailure = (incomplete: Seq[VatRateWithOptionalSalesFromCountry]) => {
                 Ok(view(
-                  form,
-                  waypoints,
-                  period,
-                  checkSalesSummary,
-                  countryIndex,
-                  country,
-                  canAddAnotherVatRate,
-                  incomplete,
-                  request.registrationWrapper.getCompanyName(),
-                  request.isIntermediary)).toFuture
+                  form = form,
+                  waypoints = waypoints,
+                  period = period,
+                  checkSalesSummaryLists = checkSalesSummary,
+                  countryIndex = countryIndex,
+                  country = country,
+                  canAddAnotherVatRate = canAddAnotherVatRate,
+                  incompleteSales = incomplete,
+                  companyName = request.registrationWrapper.getCompanyName(),
+                  isIntermediary = request.isIntermediary)).toFuture
               }) {
               Ok(view(
-                form,
-                waypoints,
-                period,
-                checkSalesSummary,
-                countryIndex,
-                country,
-                canAddAnotherVatRate,
-                Seq.empty,
-                request.registrationWrapper.getCompanyName(),
-                request.isIntermediary)).toFuture
+                form = form,
+                waypoints = waypoints,
+                period = period,
+                checkSalesSummaryLists = checkSalesSummary,
+                countryIndex = countryIndex,
+                country = country,
+                canAddAnotherVatRate = canAddAnotherVatRate,
+                companyName = request.registrationWrapper.getCompanyName(),
+                isIntermediary = request.isIntermediary)).toFuture
             }
           }
         }
