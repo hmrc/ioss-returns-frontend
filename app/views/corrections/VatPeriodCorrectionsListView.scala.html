@@ -30,7 +30,7 @@
         govukWarningText: GovukWarningText
 )
 
-@(waypoints: Waypoints, period: Period, periodList: Seq[ListItem], incompletePeriods: Seq[Period])(implicit request: Request[_], messages: Messages)
+@(waypoints: Waypoints, period: Period, periodList: Seq[ListItem], incompletePeriods: Seq[Period], isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
 
 @defining(if(periodList.size == 0) {
     messages("vatPeriodCorrectionsList.title.empty")
@@ -42,6 +42,8 @@ else {
 }) { dynamicTitle =>
 
     @layout(pageTitle = dynamicTitle) {
+
+        @if(isIntermediary){<p class="govuk-caption-l hmrc-caption-l">@companyName</p>}
 
         <header class="hmrc-page-heading">
             <h1 class="govuk-heading-l">@dynamicTitle</h1>
