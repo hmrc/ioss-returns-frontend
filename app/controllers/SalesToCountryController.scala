@@ -48,7 +48,7 @@ class SalesToCountryController @Inject()(
 
       getCountryAndVatRate(waypoints, countryIndex, vatRateIndex) {
         case (country, vatRate) =>
-          val form: Form[BigDecimal] = formProvider(vatRate, isIntermediary)
+          val form: Form[BigDecimal] = formProvider(vatRate, request.isIntermediary)
 
           val preparedForm = request.userAnswers.get(SalesToCountryPage(countryIndex, vatRateIndex)) match {
             case None => form
@@ -64,7 +64,7 @@ class SalesToCountryController @Inject()(
         case (country, vatRate) =>
 
           val period = request.userAnswers.period
-          val form: Form[BigDecimal] = formProvider(vatRate, isIntermediary)
+          val form: Form[BigDecimal] = formProvider(vatRate, request.isIntermediary)
 
           form.bindFromRequest().fold(
             formWithErrors =>

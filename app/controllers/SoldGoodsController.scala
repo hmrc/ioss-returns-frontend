@@ -43,7 +43,7 @@ class SoldGoodsController @Inject()(
   def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndRequireData() {
     implicit request =>
 
-      val form: Form[Boolean] = formProvider(isIntermediary)
+      val form: Form[Boolean] = formProvider(request.isIntermediary)
       val period = request.userAnswers.period
 
       val preparedForm = request.userAnswers.get(SoldGoodsPage) match {
@@ -57,7 +57,7 @@ class SoldGoodsController @Inject()(
   def onSubmit(waypoints: Waypoints): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
 
-      val form: Form[Boolean] = formProvider(isIntermediary)
+      val form: Form[Boolean] = formProvider(request.isIntermediary)
       val period = request.userAnswers.period
 
       form.bindFromRequest().fold(

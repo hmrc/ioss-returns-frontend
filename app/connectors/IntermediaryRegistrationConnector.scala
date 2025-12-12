@@ -17,7 +17,6 @@
 package connectors
 
 import config.Service
-import models.RegistrationWrapper
 import models.enrolments.EACDEnrolments
 import models.etmp.intermediary.IntermediaryRegistrationWrapper
 import play.api.Configuration

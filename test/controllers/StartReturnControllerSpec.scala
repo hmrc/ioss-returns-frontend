@@ -129,7 +129,7 @@ class StartReturnControllerSpec
             val view = application.injector.instanceOf[StartReturnView]
 
             status(result) mustBe OK
-            contentAsString(result) mustBe view(form, waypoints, period, None, isFinalReturn = false, None, isIntermediary = false, netpBusinessName = "" )(request, messages(application)).toString
+            contentAsString(result) mustBe view(form, waypoints, period, None, isFinalReturn = false, None, isIntermediary = false, companyName = "" )(request, messages(application)).toString
           }
         }
       }
@@ -174,7 +174,7 @@ class StartReturnControllerSpec
               isFinalReturn = false,
               maybePartialReturn,
               isIntermediary = false,
-              netpBusinessName = ""
+              companyName = ""
             )(request, messages(application)).toString
           }
         }
@@ -279,7 +279,7 @@ class StartReturnControllerSpec
             isFinalReturn = false,
             None,
             isIntermediary = false,
-            netpBusinessName = ""
+            companyName = ""
           )(request, messages(application)).toString
         }
       }
@@ -332,7 +332,7 @@ class StartReturnControllerSpec
             isFinalReturn = false,
             None,
             isIntermediary = false,
-            netpBusinessName = ""
+            companyName = ""
           )(request, messages(application)).toString
         }
       }
@@ -516,7 +516,7 @@ class StartReturnControllerSpec
 
             status(result) mustBe BAD_REQUEST
             contentAsString(result) mustBe view(boundForm, waypoints, period, None, isFinalReturn = false, None, isIntermediary = false,
-              netpBusinessName = "")(request, messages(application)).toString
+              companyName = "")(request, messages(application)).toString
           }
         }
       }

@@ -49,7 +49,7 @@ class SoldToCountryController @Inject()(
         request.userAnswers.get(AllSalesQuery)
           .getOrElse(Seq.empty)
           .map(_.country),
-        isIntermediary
+        request.isIntermediary
       )
 
       val preparedForm = request.userAnswers.get(SoldToCountryPage(index)) match {
@@ -70,7 +70,7 @@ class SoldToCountryController @Inject()(
         request.userAnswers.get(AllSalesQuery)
           .getOrElse(Seq.empty)
           .map(_.country),
-        isIntermediary
+        request.isIntermediary
       )
 
       form.bindFromRequest().fold(
