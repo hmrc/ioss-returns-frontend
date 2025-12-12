@@ -25,9 +25,11 @@
     button: ButtonGroup
 )
 
-@(form: Form[_], waypoints: Waypoints, period: Period, obligationMonths: Seq[Period], periodIndex: Index)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, period: Period, obligationMonths: Seq[Period], periodIndex: Index, isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, messages("correctionReturnPeriod.title"))) {
+
+    @if(isIntermediary){<p class="govuk-caption-l hmrc-caption-l">@companyName</p>}
 
     @formHelper(action = controllers.corrections.routes.CorrectionReturnPeriodController.onSubmit(waypoints, periodIndex), Symbol("autoComplete") -> "off") {
 

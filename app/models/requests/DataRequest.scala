@@ -17,14 +17,14 @@
 package models.requests
 
 import play.api.mvc.{Request, WrappedRequest}
-import models.{RegistrationWrapper, UserAnswers}
+import models.{Period, RegistrationWrapper, UserAnswers}
 import uk.gov.hmrc.auth.core.retrieve.Credentials
 import uk.gov.hmrc.domain.Vrn
 
 case class OptionalDataRequest[A] (
                                     request: Request[A],
                                     credentials: Credentials,
-                                    vrn: Vrn,
+                                    vrn: Option[Vrn],
                                     iossNumber: String,
                                     registrationWrapper: RegistrationWrapper,
                                     intermediaryNumber: Option[String],
@@ -33,12 +33,16 @@ case class OptionalDataRequest[A] (
 
   val userId: String = credentials.providerId
   val isIntermediary: Boolean = intermediaryNumber.nonEmpty
+  
+  val vrnOrError: Vrn = vrn.getOrElse(
+    throw new IllegalStateException("VRN required and not found")
+  )
 }
 
 case class DataRequest[A] (
                             request: Request[A],
                             credentials: Credentials,
-                            vrn: Vrn,
+                            vrn: Option[Vrn],
                             iossNumber: String,
                             registrationWrapper: RegistrationWrapper,
                             intermediaryNumber: Option[String],
@@ -47,4 +51,8 @@ case class DataRequest[A] (
 
   val userId: String = credentials.providerId
   val isIntermediary: Boolean = intermediaryNumber.nonEmpty
+  
+  val vrnOrError: Vrn = vrn.getOrElse(
+    throw new IllegalStateException("VRN required and not found")
+  )
 }

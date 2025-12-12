@@ -40,11 +40,10 @@ class SoldGoodsController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  val form: Form[Boolean] = formProvider()
-
   def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndRequireData() {
     implicit request =>
 
+      val form: Form[Boolean] = formProvider(request.isIntermediary)
       val period = request.userAnswers.period
 
       val preparedForm = request.userAnswers.get(SoldGoodsPage) match {
@@ -52,17 +51,18 @@ class SoldGoodsController @Inject()(
         case Some(value) => form.fill(value)
       }
 
-      Ok(view(preparedForm, waypoints, period))
+      Ok(view(preparedForm, waypoints, period, request.isIntermediary, request.registrationWrapper.getCompanyName()))
   }
 
   def onSubmit(waypoints: Waypoints): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
 
+      val form: Form[Boolean] = formProvider(request.isIntermediary)
       val period = request.userAnswers.period
 
       form.bindFromRequest().fold(
         formWithErrors =>
-          BadRequest(view(formWithErrors, waypoints, period)).toFuture,
+          BadRequest(view(formWithErrors, waypoints, period, request.isIntermediary, request.registrationWrapper.getCompanyName())).toFuture,
 
         success = value =>
           for {

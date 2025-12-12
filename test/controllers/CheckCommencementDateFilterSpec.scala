@@ -42,7 +42,7 @@ class CheckCommencementDateFilterSpec extends SpecBase with MockitoSugar with Be
       val application = applicationBuilder(None).build()
 
       running(application) {
-        val request = DataRequest(FakeRequest(), testCredentials, vrn, iossNumber, registrationWrapper, None, completeUserAnswers)
+        val request = DataRequest(FakeRequest(), testCredentials, Some(vrn), iossNumber, registrationWrapper, None, completeUserAnswers)
         val controller = new Harness()
 
         val result = controller.callFilter(request).futureValue
@@ -61,7 +61,7 @@ class CheckCommencementDateFilterSpec extends SpecBase with MockitoSugar with Be
           registrationWrapper.registration.schemeDetails.copy(commencementDate = period.lastDay.plusDays(1))))
 
       running(application) {
-        val request = DataRequest(FakeRequest(), testCredentials, vrn, iossNumber, registration, None, completeUserAnswers)
+        val request = DataRequest(FakeRequest(), testCredentials, Some(vrn), iossNumber, registration, None, completeUserAnswers)
         val controller = new Harness()
 
         val result = controller.callFilter(request).futureValue

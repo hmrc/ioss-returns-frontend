@@ -56,7 +56,7 @@ class VatRatesFromCountryController @Inject()(
 
             val answers = request.userAnswers.get(VatRatesFromCountryPage(countryIndex, nextVatRateIndex))
 
-            val form: Form[List[VatRateFromCountry]] = formProvider(remainingVatRates.toList)
+            val form: Form[List[VatRateFromCountry]] = formProvider(remainingVatRates.toList, request.isIntermediary)
 
             val preparedForm = answers match {
               case None => form
@@ -74,7 +74,7 @@ class VatRatesFromCountryController @Inject()(
                     addVatRateAndRedirect(currentVatRatesAnswers, remainingVatRates.toList, countryIndex, nextVatRateIndex, waypoints)
                 }
               case _ =>
-                Ok(view(preparedForm, waypoints, period, countryIndex, country, utils.ItemsHelper.checkboxItems(remainingVatRates))).toFuture
+                Ok(view(preparedForm, waypoints, period, countryIndex, country, utils.ItemsHelper.checkboxItems(remainingVatRates), request.isIntermediary, request.registrationWrapper.getCompanyName())).toFuture
             }
           }
         }
@@ -91,10 +91,10 @@ class VatRatesFromCountryController @Inject()(
 
           vatRateService.getRemainingVatRatesForCountry(period, country, currentVatRatesAnswers).flatMap { remainingVatRates =>
 
-            val form = formProvider(remainingVatRates.toList)
+            val form = formProvider(remainingVatRates.toList, request.isIntermediary)
             form.bindFromRequest().fold(
               formWithErrors =>
-                BadRequest(view(formWithErrors, waypoints, period, countryIndex, country, utils.ItemsHelper.checkboxItems(remainingVatRates).toList)).toFuture,
+                BadRequest(view(formWithErrors, waypoints, period, countryIndex, country, utils.ItemsHelper.checkboxItems(remainingVatRates).toList, request.isIntermediary, request.registrationWrapper.getCompanyName())).toFuture,
 
               value => {
                 val nextVatRateIndex = Index(currentVatRatesAnswers.vatRatesFromCountry.map(_.size).getOrElse(0))

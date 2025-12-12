@@ -48,7 +48,8 @@ class SoldToCountryController @Inject()(
         index,
         request.userAnswers.get(AllSalesQuery)
           .getOrElse(Seq.empty)
-          .map(_.country)
+          .map(_.country),
+        request.isIntermediary
       )
 
       val preparedForm = request.userAnswers.get(SoldToCountryPage(index)) match {
@@ -56,7 +57,7 @@ class SoldToCountryController @Inject()(
         case Some(value) => form.fill(value)
       }
 
-      Ok(view(preparedForm, waypoints, period, index))
+      Ok(view(preparedForm, waypoints, period, index, request.isIntermediary, request.registrationWrapper.getCompanyName()))
   }
 
   def onSubmit(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndRequireData().async {
@@ -68,12 +69,13 @@ class SoldToCountryController @Inject()(
         index,
         request.userAnswers.get(AllSalesQuery)
           .getOrElse(Seq.empty)
-          .map(_.country)
+          .map(_.country),
+        request.isIntermediary
       )
 
       form.bindFromRequest().fold(
         formWithErrors =>
-          BadRequest(view(formWithErrors, waypoints, period, index)).toFuture,
+          BadRequest(view(formWithErrors, waypoints, period, index, request.isIntermediary, request.registrationWrapper.getCompanyName())).toFuture,
 
         value =>
           for {

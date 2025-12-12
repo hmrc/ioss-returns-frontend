@@ -74,7 +74,7 @@ class CorrectionReturnYearController @Inject()(
             case Some(value) => form.fill(value)
           }
 
-          Ok(view(preparedForm, waypoints, period, utils.ItemsHelper.radioButtonItems(periodKeys), index))
+          Ok(view(preparedForm, waypoints, period, utils.ItemsHelper.radioButtonItems(periodKeys), index, request.isIntermediary, request.registrationWrapper.getCompanyName()))
         }
       }
   }
@@ -100,7 +100,7 @@ class CorrectionReturnYearController @Inject()(
             if (obligations.size < 2) {
               Redirect(controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(waypoints, index)).toFuture
             } else {
-              BadRequest(view(formWithErrors, waypoints, period, utils.ItemsHelper.radioButtonItems(periodKeys), index)).toFuture
+              BadRequest(view(formWithErrors, waypoints, period, utils.ItemsHelper.radioButtonItems(periodKeys), index, request.isIntermediary, request.registrationWrapper.getCompanyName())).toFuture
             },
 
           value =>

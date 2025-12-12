@@ -55,7 +55,7 @@ class VatAmountCorrectionCountryController @Inject()(
 
             val isCountryPreviouslyDeclared: Boolean = previouslyDeclaredCorrectionAnswers.previouslyDeclared
 
-            val form: Form[BigDecimal] = formProvider(country.name, previouslyDeclaredAmount)
+            val form: Form[BigDecimal] = formProvider(country.name, previouslyDeclaredAmount, request.isIntermediary)
 
             val preparedForm = request.userAnswers.get(VatAmountCorrectionCountryPage(periodIndex, countryIndex)) match {
               case None => form
@@ -70,7 +70,9 @@ class VatAmountCorrectionCountryController @Inject()(
               countryIndex,
               country,
               isCountryPreviouslyDeclared,
-              previouslyDeclaredAmount
+              previouslyDeclaredAmount,
+              request.isIntermediary,
+              request.registrationWrapper.getCompanyName()
             )).toFuture
           }
         }
@@ -90,7 +92,7 @@ class VatAmountCorrectionCountryController @Inject()(
 
             val isCountryPreviouslyDeclared: Boolean = previouslyDeclaredCorrectionAnswers.previouslyDeclared
 
-            val form: Form[BigDecimal] = formProvider(country.name, previouslyDeclaredAmount)
+            val form: Form[BigDecimal] = formProvider(country.name, previouslyDeclaredAmount, request.isIntermediary)
 
             form.bindFromRequest().fold(
               formWithErrors =>
@@ -103,7 +105,9 @@ class VatAmountCorrectionCountryController @Inject()(
                   countryIndex,
                   country,
                   isCountryPreviouslyDeclared,
-                  previouslyDeclaredAmount
+                  previouslyDeclaredAmount,
+                  request.isIntermediary,
+                  request.registrationWrapper.getCompanyName()
                 )).toFuture,
               value =>
 

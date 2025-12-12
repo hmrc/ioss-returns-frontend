@@ -79,7 +79,6 @@ object RegistrationData extends SpecBase {
     iban = arbitrary[Iban].sample.value
   )
 
-
   val etmpAdminUse: EtmpAdminUse = EtmpAdminUse(
     changeDate = Some(LocalDateTime.now())
   )
@@ -87,9 +86,11 @@ object RegistrationData extends SpecBase {
   val maxTradingNames: Int = 10
 
   val etmpDisplayRegistration: EtmpDisplayRegistration = EtmpDisplayRegistration(
+    customerIdentification = arbitraryEtmpCustomerIdentificationLegacy.arbitrary.sample.value,
     tradingNames = Gen.listOfN(maxTradingNames, arbitraryEtmpTradingName.arbitrary).sample.value,
     schemeDetails = etmpDisplaySchemeDetails,
     bankDetails = Some(genBankDetails),
+    otherAddress = Some(arbitraryEtmpOtherAddress.arbitrary.sample.value),
     exclusions = Gen.listOfN(3, arbitrary[EtmpExclusion]).sample.value,
     adminUse = etmpAdminUse
   )

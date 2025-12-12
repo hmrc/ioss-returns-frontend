@@ -18,6 +18,7 @@
 @import viewmodels.LegendSize
 @import components.ButtonGroup
 
+
 @this(
         layout: templates.Layout,
         formHelper: FormWithCSRF,
@@ -35,7 +36,9 @@
     period: Period,
     salesList: Seq[ListItem],
     canAddSales: Boolean,
-    incompleteCountries: Seq[Country] = List.empty
+    incompleteCountries: Seq[Country] = List.empty,
+    isIntermediary: Boolean,
+    companyName: String
 )(implicit request: Request[_], messages: Messages)
 
 @titleText = @{
@@ -54,7 +57,7 @@
 
 @layout(pageTitle = title(form, titleText)) {
 
-
+    @if(isIntermediary){<p class="govuk-caption-l hmrc-caption-l">@{companyName + period.displayText}</p>}
     @if(form.errors.nonEmpty) {
         @govukErrorSummary(ErrorSummaryViewModel(form))
     }
@@ -79,7 +82,11 @@
                         legend = LegendViewModel(
                             HtmlContent(Html("""<h2 class="govuk-fieldset__heading">""" + messages("soldToCountryList.addAnother") + "</h2>"))
                         ).withSize(LegendSize.Medium)
-                    ).withHint(HintViewModel(messages("soldToCountryList.addAnother.hint")))
+                    ).withHint(HintViewModel(if(isIntermediary) {
+                        messages("soldToCountryList.intermediary.addAnother.hint")
+                    } else {
+                        messages("soldToCountryList.addAnother.hint")
+                    }))
                 )
             } else {
                 <p class="govuk-body">@messages("soldToCountryList.maximumReached")</p>

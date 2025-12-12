@@ -24,14 +24,17 @@ import javax.inject.Inject
 
 class VatRatesFromCountryFormProvider @Inject() extends Mappings {
 
-  def apply(vatRates: Seq[VatRateFromCountry]): Form[List[VatRateFromCountry]] =
+  def apply(vatRates: Seq[VatRateFromCountry], isIntermediary: Boolean = false): Form[List[VatRateFromCountry]] =
+    val requiredKey = if(isIntermediary) "vatRatesFromCountry.intermediary.error.required" else "vatRatesFromCountry.error.required"
+    val invalidKey = if(isIntermediary) "vatRatesFromCountry.intermediary.error.invalid" else "vatRatesFromCountry.error.invalid"
+
     Form(
       "value" ->
-        list(text("vatRatesFromCountry.error.required"))
+        list(text(requiredKey))
           .verifying(
             firstError(
-              nonEmptySeq("vatRatesFromCountry.error.required"),
-              validVatRates(vatRates, "vatRatesFromCountry.error.invalid")
+              nonEmptySeq(requiredKey),
+              validVatRates(vatRates, invalidKey)
             )
           )
           .transform[List[VatRateFromCountry]](

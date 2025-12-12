@@ -60,6 +60,8 @@ class CheckYourAnswersController @Inject()(
   def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
 
+      val isIntermediary = request.isIntermediary
+
       val period = request.userAnswers.period
 
       val errors: List[ValidationError] = redirectService.validate(period)
@@ -93,13 +95,16 @@ class CheckYourAnswersController @Inject()(
           containsCorrections,
           errors.map(_.errorMessage),
           maybeExclusion,
-          isFinalReturn
+          isFinalReturn,
+          isIntermediary
         ))
       }
   }
 
   def onSubmit(waypoints: Waypoints, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
+
+      val isIntermediary = request.isIntermediary
       val userAnswers = request.userAnswers
 
       val preferredPeriod = userAnswers.period
@@ -187,7 +192,7 @@ class CheckYourAnswersController @Inject()(
       val period = maybePartialReturnPeriod.getOrElse(request.userAnswers.period)
       val rows = Seq(
         BusinessNameSummary.row(request.registrationWrapper),
-        BusinessVRNSummary.row(request.vrn),
+        BusinessVRNSummary.row(request.vrnOrError),
         ReturnPeriodSummary.row(request.userAnswers, waypoints, Some(period))
       ).flatten
       SummaryListViewModel(rows).withCssClass("govuk-summary-card govuk-summary-card__content govuk-!-display-block width-auto")

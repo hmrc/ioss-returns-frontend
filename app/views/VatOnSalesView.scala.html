@@ -17,6 +17,7 @@
 @import viewmodels.InputWidth._
 @import components.ButtonGroup
 
+
 @this(
         layout: templates.Layout,
         formHelper: FormWithCSRF,
@@ -34,13 +35,26 @@
         country: Country,
         vatRate: VatRateFromCountry,
         netSales: BigDecimal,
-        standardVat: BigDecimal
+        standardVat: BigDecimal,
+        isIntermediary: Boolean,
+        companyName: String
 )(implicit request: Request[_], messages: Messages)
+@caption = @{
+    if(isIntermediary) {
+        messages("vatOnSales.intermediary.caption", companyName, period.displayText, country.name)
+    } else {
+        messages("vatOnSales.caption", period.displayText, country.name)
+    }
+}
 
 @layout(pageTitle = title(
     form,
-    messages("vatOnSales.title", currencyFormat(netSales), vatRate.rateForDisplay),
-    Some(messages("vatOnSales.caption", period.displayText, country.name))
+    if(isIntermediary) {
+        messages("vatOnSales.intermediary.title", currencyFormat(netSales), vatRate.rateForDisplay)
+    } else {
+        messages("vatOnSales.title", currencyFormat(netSales), vatRate.rateForDisplay)
+    },
+    Some(caption)
 )) {
 
     @formHelper(action = routes.VatOnSalesController.onSubmit(waypoints, countryIndex, nextVatRateIndex), Symbol("autoComplete") -> "off") {
@@ -53,8 +67,12 @@
             RadiosViewModel(
                 field  = form("choice"),
                 legend = HmrcPageHeadingLegend(
-                    content = HtmlContent(messages("vatOnSales.heading", currencyFormat(netSales), vatRate.rateForDisplay)),
-                    caption = messages("vatOnSales.caption", period.displayText, country.name),
+                    content = HtmlContent(if(isIntermediary) {
+                        messages("vatOnSales.intermediary.heading", currencyFormat(netSales), vatRate.rateForDisplay)
+                    } else {
+                        messages("vatOnSales.heading", currencyFormat(netSales), vatRate.rateForDisplay)
+                    }),
+                    caption = caption,
                     classes = "govuk-fieldset__legend--l"
                 ),
                 items = Seq(

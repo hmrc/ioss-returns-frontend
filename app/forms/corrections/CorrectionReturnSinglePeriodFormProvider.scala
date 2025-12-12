@@ -23,8 +23,15 @@ import javax.inject.Inject
 
 class CorrectionReturnSinglePeriodFormProvider @Inject() extends Mappings {
 
-  def apply(): Form[Boolean] =
+  def apply(isIntermediary: Boolean = false): Form[Boolean] = {
+    val requiredKey = if(isIntermediary) {
+      "correctionReturnSinglePeriod.intermediary.error.required"
+    } else {
+      "correctionReturnSinglePeriod.error.required"
+    }
+
     Form(
-      "value" -> boolean("correctionReturnSinglePeriod.error.required")
+      "value" -> boolean(requiredKey)
     )
+  }
 }

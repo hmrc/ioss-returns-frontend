@@ -129,7 +129,7 @@ class StartReturnControllerSpec
             val view = application.injector.instanceOf[StartReturnView]
 
             status(result) mustBe OK
-            contentAsString(result) mustBe view(form, waypoints, period, None, isFinalReturn = false, None)(request, messages(application)).toString
+            contentAsString(result) mustBe view(form, waypoints, period, None, isFinalReturn = false, None, isIntermediary = false, companyName = "" )(request, messages(application)).toString
           }
         }
       }
@@ -172,7 +172,9 @@ class StartReturnControllerSpec
               period,
               None,
               isFinalReturn = false,
-              maybePartialReturn
+              maybePartialReturn,
+              isIntermediary = false,
+              companyName = ""
             )(request, messages(application)).toString
           }
         }
@@ -275,7 +277,9 @@ class StartReturnControllerSpec
             period,
             Some(noLongerSuppliesExclusion),
             isFinalReturn = false,
-            None
+            None,
+            isIntermediary = false,
+            companyName = ""
           )(request, messages(application)).toString
         }
       }
@@ -326,7 +330,9 @@ class StartReturnControllerSpec
             period,
             Some(reversalExclusion),
             isFinalReturn = false,
-            None
+            None,
+            isIntermediary = false,
+            companyName = ""
           )(request, messages(application)).toString
         }
       }
@@ -509,7 +515,8 @@ class StartReturnControllerSpec
             val result = route(application, request).value
 
             status(result) mustBe BAD_REQUEST
-            contentAsString(result) mustBe view(boundForm, waypoints, period, None, isFinalReturn = false, None)(request, messages(application)).toString
+            contentAsString(result) mustBe view(boundForm, waypoints, period, None, isFinalReturn = false, None, isIntermediary = false,
+              companyName = "")(request, messages(application)).toString
           }
         }
       }

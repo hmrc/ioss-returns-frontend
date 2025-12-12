@@ -42,10 +42,10 @@ class RedirectService @Inject()(
 
   def validate(period: Period)(implicit request: DataRequest[AnyContent]): List[ValidationError] = {
 
-    val validateVatReturnRequest = vatReturnService.fromUserAnswers(request.userAnswers, request.vrn, period)
+    val validateVatReturnRequest = vatReturnService.fromUserAnswers(request.userAnswers, request.vrnOrError, period)
 
     val validateCorrectionRequest = request.userAnswers.get(CorrectPreviousReturnPage(0)).map(_ =>
-      correctionService.fromUserAnswers(request.userAnswers, request.vrn, period))
+      correctionService.fromUserAnswers(request.userAnswers, request.vrnOrError, period))
 
     (validateVatReturnRequest, validateCorrectionRequest) match {
       case (Invalid(vatReturnErrors), Some(Invalid(correctionErrors))) =>

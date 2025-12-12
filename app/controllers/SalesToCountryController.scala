@@ -48,13 +48,13 @@ class SalesToCountryController @Inject()(
 
       getCountryAndVatRate(waypoints, countryIndex, vatRateIndex) {
         case (country, vatRate) =>
-          val form: Form[BigDecimal] = formProvider(vatRate)
+          val form: Form[BigDecimal] = formProvider(vatRate, request.isIntermediary)
 
           val preparedForm = request.userAnswers.get(SalesToCountryPage(countryIndex, vatRateIndex)) match {
             case None => form
             case Some(value) => form.fill(value)
           }
-          Ok(view(preparedForm, waypoints, period, countryIndex, vatRateIndex, vatRate, country))
+          Ok(view(preparedForm, waypoints, period, countryIndex, vatRateIndex, vatRate, country, request.isIntermediary, request.registrationWrapper.getCompanyName()))
       }
   }
 
@@ -64,11 +64,11 @@ class SalesToCountryController @Inject()(
         case (country, vatRate) =>
 
           val period = request.userAnswers.period
-          val form: Form[BigDecimal] = formProvider(vatRate)
+          val form: Form[BigDecimal] = formProvider(vatRate, request.isIntermediary)
 
           form.bindFromRequest().fold(
             formWithErrors =>
-              BadRequest(view(formWithErrors, waypoints, period, countryIndex, vatRateIndex, vatRate, country)).toFuture,
+              BadRequest(view(formWithErrors, waypoints, period, countryIndex, vatRateIndex, vatRate, country, request.isIntermediary, request.registrationWrapper.getCompanyName())).toFuture,
 
             value =>
               for {

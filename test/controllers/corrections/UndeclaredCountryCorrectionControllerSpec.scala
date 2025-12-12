@@ -50,7 +50,7 @@ class UndeclaredCountryCorrectionControllerSpec extends SpecBase with MockitoSug
         val view = application.injector.instanceOf[UndeclaredCountryCorrectionView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, waypoints, period, selectedCountry, period, index, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, waypoints, period, selectedCountry, period, index, index, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -70,7 +70,7 @@ class UndeclaredCountryCorrectionControllerSpec extends SpecBase with MockitoSug
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(
-          form.fill(true), waypoints, period, selectedCountry, period, index, index)(request, messages(application)).toString
+          form.fill(true), waypoints, period, selectedCountry, period, index, index, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -110,7 +110,7 @@ class UndeclaredCountryCorrectionControllerSpec extends SpecBase with MockitoSug
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, waypoints, period, selectedCountry, period, index, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, waypoints, period, selectedCountry, period, index, index, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 

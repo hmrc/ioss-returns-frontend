@@ -108,7 +108,7 @@ class CorrectionReturnYearControllerSpec extends SpecBase with MockitoSugar with
         status(result) mustEqual OK
 
         contentAsString(result) mustEqual view(
-            form, waypoints, period, utils.ItemsHelper.radioButtonItems(distinctPeriodYears), index)(request, messages(application)).toString
+            form, waypoints, period, utils.ItemsHelper.radioButtonItems(distinctPeriodYears), index, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -131,7 +131,7 @@ class CorrectionReturnYearControllerSpec extends SpecBase with MockitoSugar with
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(
-          form, waypoints, period, utils.ItemsHelper.radioButtonItems(distinctPeriodYears), index)(request, messages(application)).toString
+          form, waypoints, period, utils.ItemsHelper.radioButtonItems(distinctPeriodYears), index, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -190,7 +190,7 @@ class CorrectionReturnYearControllerSpec extends SpecBase with MockitoSugar with
 
         status(result) mustEqual BAD_REQUEST
         contentAsString(result) mustEqual view(
-          boundForm, waypoints, period, utils.ItemsHelper.radioButtonItems(distinctPeriodYears), index)(request, messages(application)).toString
+          boundForm, waypoints, period, utils.ItemsHelper.radioButtonItems(distinctPeriodYears), index, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 

@@ -37,6 +37,7 @@
         missingData: List[String],
         maybeExclusion: Option[EtmpExclusion],
         isFinalReturn: Boolean,
+        isIntermediary: Boolean
 )(implicit request: Request[_], messages: Messages)
 
     @layout(pageTitle = titleNoForm(messages("checkYourAnswers.title"))) {
@@ -44,12 +45,16 @@
 
         <h1 class="govuk-heading-l">@messages("checkYourAnswers.heading")</h1>
 
-        @if(missingData.nonEmpty) {
-            @govukWarningText(WarningText(
-                iconFallbackText = Option(messages("site.warning")),
-                content = Text(messages("error.missing_answers"))
-            ))
-        }
+            @if(missingData.nonEmpty) {
+                @govukWarningText(WarningText(
+                    iconFallbackText = Option(messages("site.warning")),
+                    content = Text(if(isIntermediary) {
+                        messages("error.intermediary.missing_answers")
+                    } else {
+                        messages("error.missing_answers")
+                    })
+                ))
+            }
 
         @summaryLists.map { case (heading, summaryList) =>
             @if(heading.isDefined) {
