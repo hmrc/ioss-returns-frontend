@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,12 @@
 package connectors
 
 import config.Service
-import models.RegistrationWrapper
 import models.enrolments.EACDEnrolments
 import models.etmp.intermediary.IntermediaryRegistrationWrapper
 import play.api.Configuration
-import uk.gov.hmrc.http.{HeaderCarrier, HttpErrorFunctions, StringContextOps}
 import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HttpErrorFunctions, StringContextOps}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
