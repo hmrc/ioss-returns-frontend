@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,18 +17,12 @@
 package controllers.actions
 
 import config.FrontendAppConfig
-import connectors.{IntermediaryRegistrationConnector, RegistrationConnector}
-import models.RegistrationWrapper
-import models.requests.{IdentifierRequest, RegistrationRequest}
+import models.requests.RegistrationRequest
 import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.mvc.Result
-import repositories.IntermediarySelectedIossNumberRepository
-import services.AccountService
-import uk.gov.hmrc.auth.core.{Enrolment, Enrolments}
-import utils.FutureSyntax.*
 
-import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.{ExecutionContext, Future}
 
 class FakeIntermediaryRequiredFilterImpl()
   extends IntermediaryRequiredFilterImpl(

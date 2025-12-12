@@ -11,10 +11,9 @@ import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.mockito.MockitoSugar
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
-import viewmodels.payments.SelectedIossNumber
 
-import java.time.{Clock, Instant, ZoneId}
 import java.time.temporal.ChronoUnit
+import java.time.{Clock, Instant, ZoneId}
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class IntermediarySelectedIossNumberRepositorySpec extends AnyFreeSpec

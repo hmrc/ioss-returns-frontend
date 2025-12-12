@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,23 +16,23 @@
 
 package generators
 
-import connectors.SavedUserAnswers
-import org.scalacheck.Gen.const
 import config.Constants.{maxCurrencyAmount, minCurrencyAmount}
+import connectors.SavedUserAnswers
 import models.*
-import models.core.{CoreCorrection, CoreMsconSupply, CorePeriod, CoreSupply, CoreTraderId, CoreVatReturn}
+import models.core.*
 import models.corrections.ReturnCorrectionValue
 import models.enrolments.{EACDEnrolment, EACDEnrolments, EACDIdentifiers}
 import models.etmp.*
-import models.etmp.intermediary.{EtmpClientDetails, EtmpCustomerIdentification, EtmpCustomerIdentificationLegacy, EtmpCustomerIdentificationNew, EtmpIdType, EtmpIntermediaryDetails, EtmpIntermediaryDisplayRegistration, EtmpIntermediaryDisplaySchemeDetails, IntermediaryRegistrationWrapper, IntermediaryVatCustomerInfo}
+import models.etmp.intermediary.*
 import models.financialdata.Charge
 import models.payments.{Payment, PaymentStatus, PrepareData}
 import org.scalacheck.Arbitrary.arbitrary
+import org.scalacheck.Gen.const
 import org.scalacheck.{Arbitrary, Gen}
 import play.api.libs.json.{JsObject, Json}
 import queries.{OptionalSalesAtVatRate, SalesToCountryWithOptionalSales, VatRateWithOptionalSalesFromCountry}
-import viewmodels.previousReturns.PreviousRegistration
 import uk.gov.hmrc.domain.Vrn
+import viewmodels.previousReturns.PreviousRegistration
 
 import java.time.temporal.ChronoUnit
 import java.time.{Instant, LocalDate, LocalDateTime, Month}
@@ -380,6 +380,7 @@ trait ModelGenerators {
       postcode = Some(postcode)
     )
   }
+
   implicit val arbitraryEtmpDisplayRegistrationLegacy: Arbitrary[EtmpDisplayRegistration] = Arbitrary {
     for {
       vrn <- Gen.alphaStr

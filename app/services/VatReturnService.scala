@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,11 @@ package services
 import cats.implicits.{catsSyntaxValidatedIdBinCompat0, toTraverseOps}
 import connectors.ReturnStatusConnector
 import logging.Logging
+import models.domain.{VatRate as DomainVatRate, VatRateType as DomainVatRateType}
 import models.requests.VatReturnRequest
 import models.{DataMissingError, Index, Period, StandardPeriod, SubmissionStatus, UserAnswers, ValidationResult, VatRateFromCountry, VatRateType}
-import models.domain.{VatRate as DomainVatRate, VatRateType as DomainVatRateType}
 import pages.{SoldGoodsPage, VatRatesFromCountryPage}
-import queries.{AllSalesQuery, OptionalSalesAtVatRate, SalesAtVatRateQuery, SalesDetails, SalesToCountry, VatOnSalesFromQuery}
+import queries.*
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.http.HeaderCarrier
 import viewmodels.yourAccount.Return

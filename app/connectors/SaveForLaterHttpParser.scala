@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,12 @@
 package connectors
 
 import logging.Logging
-import models._
-import play.api.http.Status._
-import play.api.libs.json._
+import models.*
+import play.api.http.Status.*
+import play.api.libs.json.*
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 
 import java.time.Instant
-
 
 object SaveForLaterHttpParser extends Logging {
 
@@ -35,7 +34,9 @@ object SaveForLaterHttpParser extends Logging {
       response.status match {
         case OK | CREATED =>
           response.json.validate[SavedUserAnswers] match {
-            case JsSuccess(answers, _) => Right(Some(answers))
+            case JsSuccess(answers, _) =>
+              Right(Some(answers))
+
             case JsError(errors) =>
               logger.warn(s"Failed trying to parse JSON $errors. Json was ${response.json}", errors)
               Left(InvalidJson)
@@ -43,10 +44,12 @@ object SaveForLaterHttpParser extends Logging {
         case NOT_FOUND =>
           logger.warn("Received NotFound for saved user answers")
           Right(None)
+
         case CONFLICT =>
           logger.warn("Received Conflict found for saved user answers")
           Left(ConflictFound)
-        case status   =>
+
+        case status =>
           logger.warn("Received unexpected error from saved user answers")
           Left(UnexpectedResponseStatus(response.status, s"Unexpected response, status $status returned"))
       }
@@ -69,7 +72,7 @@ object SaveForLaterHttpParser extends Logging {
         case CONFLICT =>
           logger.warn("Received Conflict found for saved user answers")
           Left(ConflictFound)
-        case status   =>
+        case status =>
           logger.warn("Received unexpected error from saved user answers")
           Left(UnexpectedResponseStatus(response.status, s"Unexpected response, status $status returned"))
       }

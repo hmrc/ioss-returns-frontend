@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,9 @@
 package controllers
 
 import com.google.inject.Inject
+import config.FrontendAppConfig
 import connectors.SaveForLaterConnector
+import connectors.SaveForLaterHttpParser.SaveForLaterResponse
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
 import models.audit.{ReturnsAuditModel, SubmissionResult}
@@ -54,7 +56,8 @@ class CheckYourAnswersController @Inject()(
                                             partialReturnPeriodService: PartialReturnPeriodService,
                                             view: CheckYourAnswersView,
                                             saveForLaterConnector: SaveForLaterConnector,
-                                            redirectService: RedirectService
+                                            redirectService: RedirectService,
+                                            frontendAppConfig: FrontendAppConfig
                                           )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
@@ -78,9 +81,9 @@ class CheckYourAnswersController @Inject()(
       } yield {
 
         val containsCorrections = request.userAnswers.get(AllCorrectionPeriodsQuery).isDefined
-        
+
         val (noPaymentDueCountries, totalVatToCountries) = salesAtVatRateService.getVatOwedToCountries(request.userAnswers).partition(vat => vat.totalVat <= 0)
-        
+
         val totalVatOnSales = salesAtVatRateService.getTotalVatOwedAfterCorrections(request.userAnswers)
 
         val maybeExclusion: Option[EtmpExclusion] = request.registrationWrapper.registration.exclusions.lastOption
@@ -203,12 +206,12 @@ class CheckYourAnswersController @Inject()(
     summaryListFuture
   }
 
-  private def saveUserAnswersOnCoreError(redirectLocation: Call)(implicit request: DataRequest[AnyContent]): Future[Result] =
+  private def saveUserAnswersOnCoreError(redirectLocation: Call)(implicit request: DataRequest[AnyContent]): Future[Result] = {
     Future.fromTry(request.userAnswers.set(SavedProgressPage, routes.CheckYourAnswersController.onPageLoad().url)).flatMap {
       updatedAnswers =>
         val saveForLateRequest = SaveForLaterRequest(updatedAnswers, request.iossNumber, request.userAnswers.period)
-
-        saveForLaterConnector.submit(saveForLateRequest).flatMap {
+        
+        callConnector(saveForLateRequest).flatMap {
           case Right(Some(_)) =>
             for {
               _ <- cc.sessionRepository.set(updatedAnswers)
@@ -217,12 +220,28 @@ class CheckYourAnswersController @Inject()(
             }
           case Right(None) =>
             logger.error("Unexpected result on submit")
-            Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
+            Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
+            
+          case Left(ConflictFound) if request.isIntermediary =>
+            Redirect(frontendAppConfig.intermediaryDashboardUrl).toFuture
+
           case Left(ConflictFound) =>
-            Future.successful(Redirect(routes.YourAccountController.onPageLoad()))
+            Redirect(routes.YourAccountController.onPageLoad()).toFuture
+
           case Left(e) =>
             logger.error(s"Unexpected result on submit: $e")
-            Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
+            Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
         }
     }
+  }
+
+  private def callConnector(
+                             saveForLaterRequest: SaveForLaterRequest
+                           )(implicit request: DataRequest[AnyContent]): Future[SaveForLaterResponse] = {
+    if (request.isIntermediary) {
+      saveForLaterConnector.submitForIntermediary(saveForLaterRequest)
+    } else {
+      saveForLaterConnector.submit(saveForLaterRequest)
+    }
+  }
 }
