@@ -19,6 +19,7 @@
 @import uk.gov.hmrc.govukfrontend.views.html.components.Radios
 @import uk.gov.hmrc.govukfrontend.views.viewmodels.radios.RadioItem
 @import uk.gov.hmrc.govukfrontend.views.viewmodels.radios.Radios
+@import uk.gov.hmrc.govukfrontend.views.viewmodels.warningtext.WarningText
 @import viewmodels.LegendSize
 
 @this(
@@ -26,27 +27,28 @@
     formHelper: FormWithCSRF,
     govukErrorSummary: GovukErrorSummary,
     govukRadios: GovukRadios,
-    govukButton: GovukButton
+    govukButton: GovukButton,
+    govukWarningText: GovukWarningText
 )
 
 @(form: Form[_], waypoints: Waypoints, period: Period, maybeExclusion: Option[EtmpExclusion], isFinalReturn: Boolean, maybePartialReturnPeriod: Option[PartialReturnPeriod], isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = title(
-    form,
-    if(maybeExclusion.isDefined && isFinalReturn) {
-        if(isIntermediary) {
-            messages("startReturn.intermediary.finalReturn", companyName)
+    @layout(pageTitle = title(
+        form,
+        if(maybeExclusion.isDefined && isFinalReturn) {
+            if(isIntermediary) {
+                messages("startReturn.intermediary.finalReturn", companyName)
+            } else {
+                messages("startReturn.finalReturn")
+            }
         } else {
-            messages("startReturn.finalReturn")
+            if(isIntermediary) {
+                messages("startReturn.intermediary.title", period.displayText, companyName)
+            } else {
+                messages("startReturn.title", period.displayText)
+            }
         }
-    } else {
-        if(isIntermediary) {
-            messages("startReturn.intermediary.title", period.displayText, companyName)
-        } else {
-            messages("startReturn.title", period.displayText)
-        }
-    }
-)) {
+    )) {
 
     @formHelper(action = routes.StartReturnController.onSubmit(waypoints, period), Symbol("autoComplete") -> "off") {
 
@@ -54,56 +56,50 @@
             @govukErrorSummary(ErrorSummaryViewModel(form))
         }
 
-        @{
-            val radioYesNo =
-                RadiosViewModel.yesNo(
-                    field = form("value"),
-                    legend = LegendViewModel(
-                        if(maybeExclusion.isDefined && isFinalReturn) {
-                            if(isIntermediary) {
-                                HtmlContent(Html("""<h1 class="govuk-fieldset__heading">""" + messages("startReturn.intermediary.finalReturn", companyName) + "</h1>"))
-                            } else {
-                                HtmlContent(Html("""<h1 class="govuk-fieldset__heading">""" + messages("startReturn.finalReturn") + "</h1>"))
-                            }
+        @govukRadios(
+            RadiosViewModel.yesNo(
+                field = form("value"),
+                legend = LegendViewModel(
+                    if(maybeExclusion.isDefined && isFinalReturn) {
+                        if(isIntermediary) {
+                            HtmlContent(Html("""<h1 class="govuk-fieldset__heading">""" + messages("startReturn.intermediary.finalReturn", companyName) + "</h1>"))
                         } else {
-                            if(isIntermediary) {
-                                HtmlContent(Html("""<h1 class="govuk-fieldset__heading">""" + messages("startReturn.intermediary.heading", period.displayText, companyName) + "</h1>"))
-                            } else {
-                                HtmlContent(Html("""<h1 class="govuk-fieldset__heading">""" + messages("startReturn.heading", period.displayText) + "</h1>"))
-                            }
+                            HtmlContent(Html("""<h1 class="govuk-fieldset__heading">""" + messages("startReturn.finalReturn") + "</h1>"))
                         }
+                    } else {
+                        if(isIntermediary) {
+                            HtmlContent(Html("""<h1 class="govuk-fieldset__heading">""" + messages("startReturn.intermediary.heading", period.displayText, companyName) + "</h1>"))
+                        } else {
+                            HtmlContent(Html("""<h1 class="govuk-fieldset__heading">""" + messages("startReturn.heading", period.displayText) + "</h1>"))
+                        }
+                    }
                 ).withSize(LegendSize.Large)
             )
+        )
 
-            maybePartialReturnPeriod match {
-                case Some(partialReturnPeriod) =>
-                    govukRadios(
-                        radioYesNo
-                        .withHint(HintViewModel(
-                            if(isFinalReturn) {
-                                if(isIntermediary) {
-                                    messages("startReturn.intermediary.partialTo", partialReturnPeriod.displayPartialPeriodLastDayText)
-                                } else {
-                                    messages("startReturn.partialTo", partialReturnPeriod.displayPartialPeriodLastDayText)
-                                }
-                            } else {
-                                if(isIntermediary) {
-                                    messages("startReturn.intermediary.partialFrom", partialReturnPeriod.displayPartialPeriodStartDayText)
-                                } else {
-                                    messages("startReturn.partialFrom", partialReturnPeriod.displayPartialPeriodStartDayText)
-                                }
-                            }
-                        ))
-                    )
-                case _ =>
-                    govukRadios(
-                        radioYesNo
-                    )
-            }
+        @maybePartialReturnPeriod.map { partialReturnPeriod =>
+            @govukWarningText(WarningText(
+                iconFallbackText = Some("Warning"),
+                content = Text(
+                    if(isFinalReturn) {
+                        if(isIntermediary) {
+                            messages("startReturn.intermediary.partialTo", partialReturnPeriod.displayPartialPeriodLastDayText)
+                        } else {
+                            messages("startReturn.partialTo", partialReturnPeriod.displayPartialPeriodLastDayText)
+                        }
+                    } else {
+                        if(isIntermediary) {
+                            messages("startReturn.intermediary.partialFrom", partialReturnPeriod.displayPartialPeriodStartDayText)
+                        } else {
+                            messages("startReturn.partialFrom", partialReturnPeriod.displayPartialPeriodStartDayText)
+                        }
+                    }
+                )
+            ))
         }
 
         @govukButton(
-          ButtonViewModel(messages("site.continue")).withAttribute(("id", "continue"))
+            ButtonViewModel(messages("site.continue")).withAttribute(("id", "continue"))
         )
     }
 }
