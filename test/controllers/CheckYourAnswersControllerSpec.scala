@@ -21,6 +21,8 @@ import config.Constants.{maxCurrencyAmount, minCurrencyAmount}
 import connectors.{SaveForLaterConnector, SavedUserAnswers}
 import models.audit.{ReturnsAuditModel, SubmissionResult}
 import models.etmp.EtmpExclusionReason.TransferringMSID
+import models.etmp.intermediary.EtmpIdType.{FTR, NINO, UTR}
+import models.etmp.intermediary.{EtmpCustomerIdentificationLegacy, EtmpCustomerIdentificationNew}
 import models.etmp.{EtmpDisplayRegistration, EtmpExclusion}
 import models.requests.DataRequest
 import models.{Country, RegistrationWrapper, TotalVatToCountry, UserAnswers, VatRateFromCountry}
@@ -59,6 +61,14 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
   private val mockSaveForLaterConnector = mock[SaveForLaterConnector]
   private val vatRateFromCountry: VatRateFromCountry = arbitraryVatRateFromCountry.arbitrary.sample.value
   private val salesValue: BigDecimal = Gen.chooseNum(minCurrencyAmount, maxCurrencyAmount).sample.value
+  private def createDummyDataRequest(request: FakeRequest[_]) = DataRequest(
+    request = request,
+    credentials = testCredentials,
+    vrn = Some(vrn),
+    iossNumber = iossNumber,
+    registrationWrapper = registrationWrapper,
+    intermediaryNumber = Some(intermediaryNumber),
+    userAnswers = completeUserAnswers)
 
   override def beforeEach(): Unit = {
     Mockito.reset(mockSalesAtVatRateService)
@@ -93,9 +103,14 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
             val result = route(application, request).value
 
+            val expectedVatString = registrationWrapper.registration.customerIdentification match
+              case EtmpCustomerIdentificationNew(idType, idValue) if idType == UTR || idType == FTR=> "Tax reference"
+              case EtmpCustomerIdentificationNew(idType, idValue) if idType == NINO=> "National Insurance number"
+              case _ => "UK VAT registration number"
+
             status(result) `mustBe` OK
             contentAsString(result).contains("Business name") `mustBe` true
-            contentAsString(result).contains("UK VAT registration number") `mustBe` true
+            contentAsString(result).contains(expectedVatString) `mustBe` true
             contentAsString(result).contains("Return month") `mustBe` true
             contentAsString(result).contains("Sales to EU countries, Northern Ireland or both") `mustBe` true
             contentAsString(result).contains("Sales made") `mustBe` true
@@ -124,9 +139,14 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
             val result = route(application, request).value
 
+            val expectedVatString = registrationWrapper.registration.customerIdentification match
+              case EtmpCustomerIdentificationNew(idType, idValue) if idType == UTR || idType == FTR => "Tax reference"
+              case EtmpCustomerIdentificationNew(idType, idValue) if idType == NINO => "National Insurance number"
+              case _ => "UK VAT registration number"
+
             status(result) `mustBe` OK
             contentAsString(result).contains("Business name") `mustBe` true
-            contentAsString(result).contains("UK VAT registration number") `mustBe` true
+            contentAsString(result).contains(expectedVatString) `mustBe` true
             contentAsString(result).contains("Return month") `mustBe` true
             contentAsString(result).contains("Sales to EU countries, Northern Ireland or both") `mustBe` true
             contentAsString(result).contains("Sales made") `mustBe` true
@@ -179,7 +199,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
             val businessSummaryList: SummaryList = SummaryListViewModel(
               rows = Seq(
                 BusinessNameSummary.row(registrationWrapper),
-                BusinessVRNSummary.row(vrn),
+                BusinessVRNSummary.vrnRow(createDummyDataRequest(request)),
                 ReturnPeriodSummary.row(answers, waypoints, Some(period))
               ).flatten
             ).withCssClass("govuk-summary-card govuk-summary-card__content govuk-!-display-block width-auto")
@@ -253,9 +273,14 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
             val result = route(application, request).value
 
+            val expectedVatString = registrationWrapper.registration.customerIdentification match
+              case EtmpCustomerIdentificationNew(idType, idValue) if idType == UTR || idType == FTR => "Tax reference"
+              case EtmpCustomerIdentificationNew(idType, idValue) if idType == NINO => "National Insurance number"
+              case _ => "UK VAT registration number"
+
             status(result) `mustBe` OK
             contentAsString(result).contains("Business name") `mustBe` true
-            contentAsString(result).contains("UK VAT registration number") `mustBe` true
+            contentAsString(result).contains(expectedVatString) `mustBe` true
             contentAsString(result).contains("Return month") `mustBe` true
             contentAsString(result).contains("Sales to EU countries, Northern Ireland or both") `mustBe` true
             contentAsString(result).contains("Sales made") `mustBe` true
@@ -317,7 +342,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
             val businessSummaryList: SummaryList = SummaryListViewModel(
               rows = Seq(
                 BusinessNameSummary.row(registrationWrapper),
-                BusinessVRNSummary.row(vrn),
+                BusinessVRNSummary.vrnRow(createDummyDataRequest(request)),
                 ReturnPeriodSummary.row(userAnswersWithCorrections, waypoints, Some(period))
               ).flatten
             ).withCssClass("govuk-summary-card govuk-summary-card__content govuk-!-display-block width-auto")
