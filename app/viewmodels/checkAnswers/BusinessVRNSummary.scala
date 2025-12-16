@@ -16,22 +16,47 @@
 
 package viewmodels.checkAnswers
 
+import models.RegistrationWrapper
+import models.etmp.intermediary.{EtmpCustomerIdentificationLegacy, EtmpCustomerIdentificationNew, EtmpIdType}
+import models.requests.DataRequest
 import play.api.i18n.Messages
 import play.twirl.api.HtmlFormat
 import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.govukfrontend.views.Aliases.Key
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
-import viewmodels.govuk.summarylist._
-import viewmodels.implicits._
+import viewmodels.govuk.summarylist.*
+import viewmodels.implicits.*
 
 object BusinessVRNSummary {
 
-  val name = "checkYourAnswers.label.businessVrn"
-  def row(vrn: Vrn)(implicit messages: Messages): Option[SummaryListRow] = {
-    Some(SummaryListRowViewModel(
-      key = Key(name).withCssClass("govuk-!-width-one-third"),
-      value = ValueViewModel(HtmlFormat.escape(vrn.vrn).toString).withCssClass("govuk-table__cell--numeric"),
-      actions = Seq.empty
-    ))
+  def vrnRow(request: DataRequest[_])(implicit messages: Messages): Option[SummaryListRow] = {
+
+    request.registrationWrapper.registration.customerIdentification match
+      case EtmpCustomerIdentificationLegacy(vrn) =>
+        Some(SummaryListRowViewModel(
+          key = Key("checkYourAnswers.label.businessVrn").withCssClass("govuk-!-width-one-third"),
+          value = ValueViewModel(HtmlFormat.escape(request.vrnOrError.vrn).toString).withCssClass("govuk-table__cell--numeric"),
+          actions = Seq.empty
+        ))
+      case EtmpCustomerIdentificationNew(idType, idValue) =>
+        idType match
+          case EtmpIdType.VRN =>
+            Some(SummaryListRowViewModel(
+              key = Key("checkYourAnswers.label.businessVrn").withCssClass("govuk-!-width-one-third"),
+              value = ValueViewModel(HtmlFormat.escape(idValue).toString).withCssClass("govuk-table__cell--numeric"),
+              actions = Seq.empty
+            ))
+          case EtmpIdType.UTR | EtmpIdType.FTR =>
+            Some(SummaryListRowViewModel(
+              key = Key("checkYourAnswers.label.businessUtrFtr").withCssClass("govuk-!-width-one-third"),
+              value = ValueViewModel(HtmlFormat.escape(idValue).toString).withCssClass("govuk-table__cell--numeric"),
+              actions = Seq.empty
+            ))
+          case EtmpIdType.NINO =>
+            Some(SummaryListRowViewModel(
+              key = Key("checkYourAnswers.label.businessNino").withCssClass("govuk-!-width-one-third"),
+              value = ValueViewModel(HtmlFormat.escape(idValue).toString).withCssClass("govuk-table__cell--numeric"),
+              actions = Seq.empty
+            ))
   }
 }
