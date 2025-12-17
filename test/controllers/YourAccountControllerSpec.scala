@@ -166,7 +166,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
       val registrationWrapper: RegistrationWrapper = createArbRegistrationWrapperWithValidCompanyName()
 
       val registrationWrapperEmptyExclusions: RegistrationWrapper =
-        registrationWrapper.copy(vatInfo= Some(ukBasedVatInfo), registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
+        registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
 
       when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
 
