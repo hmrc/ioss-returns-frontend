@@ -18,9 +18,10 @@ package controllers
 
 import base.SpecBase
 import config.FrontendAppConfig
-import connectors.{SaveForLaterConnector, SavedUserAnswers, VatReturnConnector}
+import connectors.{SaveForLaterConnector, VatReturnConnector}
 import models.external.ExternalEntryUrl
-import models.{ConflictFound, UnexpectedResponseStatus}
+import models.responses.{ConflictFound, UnexpectedResponseStatus}
+import models.saveForLater.SavedUserAnswers
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.mockito.Mockito.when

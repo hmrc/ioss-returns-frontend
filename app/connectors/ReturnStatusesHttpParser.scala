@@ -17,7 +17,8 @@
 package connectors
 
 import logging.Logging
-import models.{ErrorResponse, InvalidJson, PeriodWithStatus, UnexpectedResponseStatus}
+import models.responses.{ErrorResponse, InvalidJson, UnexpectedResponseStatus}
+import models.PeriodWithStatus
 import play.api.http.Status.OK
 import play.api.libs.json.{JsError, JsSuccess}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}

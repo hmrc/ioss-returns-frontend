@@ -25,7 +25,8 @@ import logging.Logging
 import models.audit.{ReturnsAuditModel, SubmissionResult}
 import models.etmp.EtmpExclusion
 import models.requests.{DataRequest, SaveForLaterRequest}
-import models.{ConflictFound, ValidationError}
+import models.ValidationError
+import models.responses.ConflictFound
 import pages.corrections.CorrectPreviousReturnPage
 import pages.{CheckYourAnswersPage, SavedProgressPage, Waypoints}
 import play.api.i18n.{I18nSupport, Messages}

@@ -17,8 +17,8 @@
 package models.financialdata
 
 import base.SpecBase
-import models.InvalidJson
 import models.payments.PrepareData
+import models.responses.InvalidJson
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.http.Status.CREATED

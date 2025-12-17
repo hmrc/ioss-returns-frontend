@@ -30,8 +30,10 @@ import java.net.URL
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class SaveForLaterConnector @Inject()(config: Configuration, httpClientV2: HttpClientV2)
-                                     (implicit ec: ExecutionContext) extends HttpErrorFunctions {
+class SaveForLaterConnector @Inject()(
+                                       httpClientV2: HttpClientV2,
+                                       config: Configuration
+                                     )(implicit ec: ExecutionContext) extends HttpErrorFunctions {
 
   private val baseUrl = config.get[Service]("microservice.services.ioss-returns")
 
@@ -48,6 +50,10 @@ class SaveForLaterConnector @Inject()(config: Configuration, httpClientV2: HttpC
 
   def submitForIntermediary(s4lRequest: SaveForLaterRequest)(implicit hc: HeaderCarrier): Future[SaveForLaterResponse] = {
     httpClientV2.post(intermediaryUrl).withBody(Json.toJson(s4lRequest)).execute[SaveForLaterResponse]
+  }
+
+  def getForIntermediary()(implicit hc: HeaderCarrier): Future[IntermediarySaveForLaterResponse] = {
+    httpClientV2.get(intermediaryUrl).execute[IntermediarySaveForLaterResponse]
   }
 
   def delete(period: Period)(implicit hc: HeaderCarrier): Future[DeleteSaveForLaterResponse] = {

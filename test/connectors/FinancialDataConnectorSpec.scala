@@ -20,7 +20,8 @@ import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock.*
 import models.financialdata.{Charge, FinancialData, FinancialTransaction, Item}
 import models.payments.{Payment, PaymentStatus, PrepareData}
-import models.{InvalidJson, StandardPeriod, UnexpectedResponseStatus}
+import models.responses.{InvalidJson, UnexpectedResponseStatus}
+import models.StandardPeriod
 import play.api.Application
 import play.api.http.Status.{INTERNAL_SERVER_ERROR, OK}
 import play.api.libs.json.Json

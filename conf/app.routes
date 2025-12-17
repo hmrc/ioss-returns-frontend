@@ -169,3 +169,5 @@ GET         /iv/failed-matching                                                 
 GET         /iv/failed-identity-verification                                          controllers.auth.IvReturnController.failed(continueUrl: RedirectUrl)
 
 GET         /no-longer-able-to-view-return                                            controllers.NoLongerAbleToViewReturnController.onPageLoad()
+
+GET         /start-intermediary-save-for-later-return/:iossNumber/:period             controllers.intermediary.StartIntermediarySaveForLaterReturnController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, iossNumber: String, period: Period)

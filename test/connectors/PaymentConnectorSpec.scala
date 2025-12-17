@@ -20,7 +20,7 @@ import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock.*
 import generators.Generators
 import models.payments.{PaymentPeriod, PaymentRequest, PaymentResponse}
-import models.{InvalidJson, UnexpectedResponseStatus}
+import models.responses.{InvalidJson, UnexpectedResponseStatus}
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.Application
 import play.api.http.Status.{CREATED, INTERNAL_SERVER_ERROR}

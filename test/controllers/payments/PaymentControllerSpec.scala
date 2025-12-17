@@ -21,7 +21,7 @@ import connectors.FinancialDataHttpParser.ChargeResponse
 import connectors.{FinancialDataConnector, VatReturnConnector}
 import models.financialdata.Charge
 import models.payments.PaymentResponse
-import models.{InvalidJson, UnexpectedResponseStatus}
+import models.responses.{InvalidJson, UnexpectedResponseStatus}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.mockito.Mockito.when

@@ -1,4 +1,4 @@
-@*
+/*
  * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,22 +12,23 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *@
+ */
 
-@import pages.YourAccountPage
+package models.saveForLater
 
-@this(
-        layout: templates.Layout,
-        govukButton: GovukButton
-)
+import models.Period
+import play.api.libs.json.{JsObject, Json, OFormat}
 
-@(waypoints: Waypoints, redirectUrl: String)(implicit request: Request[_], messages: Messages)
+import java.time.Instant
 
-    @layout(pageTitle = titleNoForm(messages("noOtherPeriodsAvailable.title"))) {
+case class SavedUserAnswers(
+                             iossNumber: String,
+                             period: Period,
+                             data: JsObject,
+                             lastUpdated: Instant
+                           )
 
-        <h1 class="govuk-heading-l">@messages("noOtherPeriodsAvailable.heading")</h1>
+object SavedUserAnswers {
 
-        <p class="govuk-body">@messages("noOtherPeriodsAvailable.p1")</p>
-
-        <p class="govuk-body">@Html(messages("noOtherPeriodsAvailable.backToYourAccount", redirectUrl))</p>
-    }
+  implicit val format: OFormat[SavedUserAnswers] = Json.format[SavedUserAnswers]
+}

@@ -17,17 +17,20 @@
 package controllers
 
 import config.FrontendAppConfig
-import connectors.{SaveForLaterConnector, SavedUserAnswers, VatReturnConnector}
+import connectors.{SaveForLaterConnector, VatReturnConnector}
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
+import models.Period
 import models.requests.SaveForLaterRequest
-import models.{ConflictFound, Period}
+import models.responses.ConflictFound
+import models.saveForLater.SavedUserAnswers
 import pages.SavedProgressPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl.*
 import uk.gov.hmrc.play.bootstrap.binders.{OnlyRelative, RedirectUrl}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.FutureSyntax.FutureOps
 import views.html.SavedProgressView
 
 import java.time.ZoneId
@@ -35,7 +38,6 @@ import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
-import utils.FutureSyntax.FutureOps
 
 class SavedProgressController @Inject()(
                                          cc: AuthenticatedControllerComponents,

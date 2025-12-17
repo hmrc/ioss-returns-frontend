@@ -20,7 +20,8 @@ import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock.*
 import formats.Format
 import models.SubmissionStatus.Due
-import models.{InvalidJson, Period, PeriodWithStatus, UnexpectedResponseStatus}
+import models.responses.{InvalidJson, UnexpectedResponseStatus}
+import models.{Period, PeriodWithStatus}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.EitherValues
 import play.api.Application

@@ -19,8 +19,8 @@ package connectors
 import config.Service
 import connectors.PaymentHttpParser.{ReturnPaymentReads, ReturnPaymentResponse}
 import logging.Logging
-import models.UnexpectedResponseStatus
 import models.payments.PaymentRequest
+import models.responses.UnexpectedResponseStatus
 import play.api.Configuration
 import play.api.libs.json.Json
 import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue

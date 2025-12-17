@@ -17,8 +17,8 @@
 package connectors.core
 
 import logging.Logging
-import models.{EisError, ErrorResponse, InvalidJson, UnexpectedResponseStatus}
 import models.core.{CoreRegistrationValidationResult, EisErrorResponse}
+import models.responses.{EisError, ErrorResponse, InvalidJson, UnexpectedResponseStatus}
 import play.api.http.Status.OK
 import play.api.libs.json.{JsError, JsSuccess}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
