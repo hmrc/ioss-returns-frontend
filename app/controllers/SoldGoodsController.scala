@@ -52,7 +52,7 @@ class SoldGoodsController @Inject()(
         case Some(value) => form.fill(value)
       }
 
-      Ok(view(preparedForm, waypoints, period, request.isIntermediary, request.registrationWrapper.getCompanyName()))
+      Ok(view(preparedForm, waypoints, period, request.isIntermediary, request.companyName))
   }
 
   def onSubmit(waypoints: Waypoints): Action[AnyContent] = cc.authAndRequireData().async {
@@ -62,7 +62,7 @@ class SoldGoodsController @Inject()(
 
       form.bindFromRequest().fold(
         formWithErrors =>
-          BadRequest(view(formWithErrors, waypoints, period, request.isIntermediary, request.registrationWrapper.getCompanyName())).toFuture,
+          BadRequest(view(formWithErrors, waypoints, period, request.isIntermediary, request.companyName)).toFuture,
 
         success = value =>
           for {

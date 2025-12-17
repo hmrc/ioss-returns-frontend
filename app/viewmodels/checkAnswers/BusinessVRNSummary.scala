@@ -16,12 +16,10 @@
 
 package viewmodels.checkAnswers
 
-import models.RegistrationWrapper
 import models.etmp.intermediary.{EtmpCustomerIdentificationLegacy, EtmpCustomerIdentificationNew, EtmpIdType}
 import models.requests.DataRequest
 import play.api.i18n.Messages
 import play.twirl.api.HtmlFormat
-import uk.gov.hmrc.domain.Vrn
 import uk.gov.hmrc.govukfrontend.views.Aliases.Key
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
 import viewmodels.govuk.summarylist.*

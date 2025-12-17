@@ -73,7 +73,7 @@ class CheckSalesController @Inject()(
                   country = country,
                   canAddAnotherVatRate = canAddAnotherVatRate,
                   incompleteSales = incomplete,
-                  companyName = request.registrationWrapper.getCompanyName(),
+                  companyName = request.companyName,
                   isIntermediary = request.isIntermediary)).toFuture
               }) {
               Ok(view(
@@ -84,7 +84,7 @@ class CheckSalesController @Inject()(
                 countryIndex = countryIndex,
                 country = country,
                 canAddAnotherVatRate = canAddAnotherVatRate,
-                companyName = request.registrationWrapper.getCompanyName(),
+                companyName = request.companyName,
                 isIntermediary = request.isIntermediary)).toFuture
             }
           }
@@ -125,7 +125,7 @@ class CheckSalesController @Inject()(
               }) {
               form.bindFromRequest().fold(
                 formWithErrors =>
-                  BadRequest(view(formWithErrors, waypoints, period, checkSalesSummary, countryIndex, country, canAddAnotherVatRate, Seq.empty, request.registrationWrapper.getCompanyName(), request.isIntermediary)).toFuture,
+                  BadRequest(view(formWithErrors, waypoints, period, checkSalesSummary, countryIndex, country, canAddAnotherVatRate, Seq.empty, request.companyName, request.isIntermediary)).toFuture,
 
                 value =>
                   for {

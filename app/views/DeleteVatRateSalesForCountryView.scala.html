@@ -22,9 +22,11 @@
     button: ButtonGroup
 )
 
-@(form: Form[_], waypoints: Waypoints, period: Period, countryIndex: Index, nextVatRateIndex: Index, vatRate: String, country: Country)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, period: Period, countryIndex: Index, nextVatRateIndex: Index, vatRate: String, country: Country, isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, messages("deleteVatRateSalesForCountry.title", vatRate, country.name))) {
+
+    @if(isIntermediary){<p class="govuk-caption-l hmrc-caption-l">@companyName</p>}
 
     @formHelper(action = routes.DeleteVatRateSalesForCountryController.onSubmit(waypoints, countryIndex, nextVatRateIndex), Symbol("autoComplete") -> "off") {
 

@@ -551,6 +551,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                   testCredentials,
                   Some(vrn),
                   iossNumber,
+                  companyName,
                   registrationWrapper,
                   None,
                   None
@@ -664,6 +665,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                   testCredentials,
                   Some(vrn),
                   iossNumber,
+                  companyName,
                   registrationWrapper,
                   None,
                   None
@@ -1231,6 +1233,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                   testCredentials,
                   Some(vrn),
                   iossNumber,
+                  companyName,
                   registrationWrapper,
                   None,
                   None
@@ -1346,6 +1349,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                   testCredentials,
                   Some(vrn),
                   iossNumber,
+                  companyName,
                   registrationWrapper,
                   None,
                   None

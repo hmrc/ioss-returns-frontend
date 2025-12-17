@@ -58,7 +58,7 @@ class VatPeriodCorrectionsListController @Inject()(
 
               val completedCorrectionPeriodsModel: Seq[ListItem] = VatPeriodCorrectionsListSummary.getCompletedRows(waypoints, request.userAnswers)
 
-              Ok(view(waypoints, period, completedCorrectionPeriodsModel, incompletePeriods, isIntermediary = request.isIntermediary, companyName = request.registrationWrapper.getCompanyName()))
+              Ok(view(waypoints, period, completedCorrectionPeriodsModel, incompletePeriods, isIntermediary = request.isIntermediary, companyName = request.companyName))
             })
 
       }

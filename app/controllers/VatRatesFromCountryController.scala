@@ -74,7 +74,7 @@ class VatRatesFromCountryController @Inject()(
                     addVatRateAndRedirect(currentVatRatesAnswers, remainingVatRates.toList, countryIndex, nextVatRateIndex, waypoints)
                 }
               case _ =>
-                Ok(view(preparedForm, waypoints, period, countryIndex, country, utils.ItemsHelper.checkboxItems(remainingVatRates), request.isIntermediary, request.registrationWrapper.getCompanyName())).toFuture
+                Ok(view(preparedForm, waypoints, period, countryIndex, country, utils.ItemsHelper.checkboxItems(remainingVatRates), request.isIntermediary, request.companyName)).toFuture
             }
           }
         }
@@ -94,7 +94,7 @@ class VatRatesFromCountryController @Inject()(
             val form = formProvider(remainingVatRates.toList)
             form.bindFromRequest().fold(
               formWithErrors =>
-                BadRequest(view(formWithErrors, waypoints, period, countryIndex, country, utils.ItemsHelper.checkboxItems(remainingVatRates).toList, request.isIntermediary, request.registrationWrapper.getCompanyName())).toFuture,
+                BadRequest(view(formWithErrors, waypoints, period, countryIndex, country, utils.ItemsHelper.checkboxItems(remainingVatRates).toList, request.isIntermediary, request.companyName)).toFuture,
 
               value => {
                 val nextVatRateIndex = Index(currentVatRatesAnswers.vatRatesFromCountry.map(_.size).getOrElse(0))

@@ -17,6 +17,7 @@
 package controllers
 
 import base.SpecBase
+import config.Constants.ukCountryCodeAreaPrefix
 import config.FrontendAppConfig
 import connectors.{FinancialDataConnector, IntermediaryRegistrationConnector, RegistrationConnector, ReturnStatusConnector, SaveForLaterConnector}
 import controllers.actions.{GetRegistrationAction, GetRegistrationActionProvider}
@@ -55,12 +56,14 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
   private val otherIossNumber: String = "IM9001234123"
   private val enrolment1: Enrolment = Enrolment(iossEnrolmentKey, Seq(EnrolmentIdentifier("IOSSNumber", iossNumber)), "test", None)
   private val enrolment2: Enrolment = Enrolment(iossEnrolmentKey, Seq(EnrolmentIdentifier("IOSSNumber", otherIossNumber)), "test", None)
+  private val ukBasedDesAddress = vatCustomerInfo.desAddress.copy(countryCode = ukCountryCodeAreaPrefix)
+  private val ukBasedVatInfo = vatCustomerInfo.copy(desAddress = ukBasedDesAddress)
 
   private def createRegistrationWrapperWithExclusion(effectiveDate: LocalDate): RegistrationWrapper = {
     val registration = registrationWrapper.registration
 
     registrationWrapper
-      .copy(vatInfo = Some(vatCustomerInfo.copy(deregistrationDecisionDate = Some(LocalDate.now(stubClockAtArbitraryDate)))))
+      .copy(vatInfo = Some(ukBasedVatInfo.copy(deregistrationDecisionDate = Some(LocalDate.now(stubClockAtArbitraryDate)))))
       .copy(
       registration = registration.copy(
         exclusions = List(
@@ -154,11 +157,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
     }
 
     "must return OK with leaveThisService link and without cancelYourRequestToLeave link when a trader is not excluded" in {
-
-      val registrationWrapper: RegistrationWrapper = arbitrary[RegistrationWrapper].sample.value
-
+      
       val registrationWrapperEmptyExclusions: RegistrationWrapper =
-        registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
+        registrationWrapper.copy(vatInfo= Some(ukBasedVatInfo), registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
 
       when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
 
@@ -382,7 +383,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
       val registrationWrapperEmptyExclusions: RegistrationWrapper =
         registrationWrapper
-          .copy(vatInfo = Some(vatCustomerInfo.copy(deregistrationDecisionDate = Some(LocalDate.now(stubClockAtArbitraryDate)))))
+          .copy(vatInfo = Some(ukBasedVatInfo.copy(deregistrationDecisionDate = Some(LocalDate.now(stubClockAtArbitraryDate)))))
           .copy(registration = registrationWrapper.registration.copy(exclusions = Seq(exclusion)))
 
       when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))

@@ -66,6 +66,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
     credentials = testCredentials,
     vrn = Some(vrn),
     iossNumber = iossNumber,
+    companyName = companyName,
     registrationWrapper = registrationWrapper,
     intermediaryNumber = Some(intermediaryNumber),
     userAnswers = completeUserAnswers)
@@ -199,6 +200,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
             val businessSummaryList: SummaryList = SummaryListViewModel(
               rows = Seq(
                 BusinessNameSummary.row(registrationWrapper),
+                DataRequestSummary.row(iossNumber),
                 BusinessVRNSummary.vrnRow(createDummyDataRequest(request)),
                 ReturnPeriodSummary.row(answers, waypoints, Some(period))
               ).flatten
@@ -342,6 +344,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
             val businessSummaryList: SummaryList = SummaryListViewModel(
               rows = Seq(
                 BusinessNameSummary.row(registrationWrapper),
+                DataRequestSummary.row(iossNumber),
                 BusinessVRNSummary.vrnRow(createDummyDataRequest(request)),
                 ReturnPeriodSummary.row(userAnswersWithCorrections, waypoints, Some(period))
               ).flatten
@@ -432,7 +435,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           val result = route(application, request).value
 
           implicit val dataRequest: DataRequest[_] =
-            DataRequest(request, testCredentials, Some(vrn), userAnswersId, registrationWrapper, None, userAnswers)
+            DataRequest(request, testCredentials, Some(vrn), userAnswersId, companyName, registrationWrapper, None, userAnswers)
 
           val expectedAuditEvent = ReturnsAuditModel.build(userAnswers, SubmissionResult.Success)
 
@@ -462,7 +465,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           val result = route(application, request).value
 
           implicit val dataRequest: DataRequest[_] =
-            DataRequest(request, testCredentials, Some(vrn), userAnswersId, registrationWrapper, None, userAnswers)
+            DataRequest(request, testCredentials, Some(vrn), userAnswersId, companyName, registrationWrapper, None, userAnswers)
 
           val expectedAuditEvent = ReturnsAuditModel.build(userAnswers, SubmissionResult.Failure)
 

@@ -189,6 +189,7 @@ class CheckYourAnswersController @Inject()(
       val period = maybePartialReturnPeriod.getOrElse(request.userAnswers.period)
       val rows = Seq(
         BusinessNameSummary.row(request.registrationWrapper),
+        DataRequestSummary.row(request.iossNumber),
         BusinessVRNSummary.vrnRow(request),
         ReturnPeriodSummary.row(request.userAnswers, waypoints, Some(period))
       ).flatten

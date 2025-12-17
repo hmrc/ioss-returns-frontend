@@ -29,7 +29,7 @@ class FakeDataRetrievalAction(dataToReturn: Option[UserAnswers], maybeIntermedia
   )(ExecutionContext.Implicits.global) {
 
   override protected def transform[A](request: RegistrationRequest[A]): Future[OptionalDataRequest[A]] =
-    Future(OptionalDataRequest(request.request, request.credentials, request.vrn, request.iossNumber, request.registrationWrapper, maybeIntermediaryNumber, dataToReturn))
+    Future(OptionalDataRequest(request.request, request.credentials, request.vrn, request.iossNumber, request.companyName, request.registrationWrapper, maybeIntermediaryNumber, dataToReturn))
 }
 
 class FakeDataRetrievalActionProvider(dataToReturn: Option[UserAnswers], maybeIntermediaryNumber: Option[String])

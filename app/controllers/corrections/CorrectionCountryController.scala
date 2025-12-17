@@ -62,7 +62,7 @@ class CorrectionCountryController @Inject()(
           case Some(value) => form.fill(value)
         }
 
-        Ok(view(preparedForm, waypoints, period, periodIndex, correctionReturnPeriod, countryIndex, request.isIntermediary, request.registrationWrapper.getCompanyName())).toFuture
+        Ok(view(preparedForm, waypoints, period, periodIndex, correctionReturnPeriod, countryIndex, request.isIntermediary, request.companyName)).toFuture
       }
   }
 
@@ -82,7 +82,7 @@ class CorrectionCountryController @Inject()(
 
         form.bindFromRequest().fold(
           formWithErrors =>
-            BadRequest(view(formWithErrors, waypoints, period, periodIndex, correctionReturnPeriod, countryIndex, request.isIntermediary, request.registrationWrapper.getCompanyName())).toFuture,
+            BadRequest(view(formWithErrors, waypoints, period, periodIndex, correctionReturnPeriod, countryIndex, request.isIntermediary, request.companyName)).toFuture,
           value =>
 
             for {

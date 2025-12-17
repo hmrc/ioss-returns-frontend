@@ -16,6 +16,7 @@
 
 package models
 
+import config.Constants.ukCountryCodeAreaPrefix
 import models.etmp.intermediary.{EtmpCustomerIdentificationLegacy, EtmpCustomerIdentificationNew, EtmpIdType}
 import models.etmp.{EtmpDisplayRegistration, VatCustomerInfo}
 import play.api.libs.json.{Json, OFormat}
@@ -33,12 +34,16 @@ case class RegistrationWrapper(vatInfo: Option[VatCustomerInfo], registration: E
   }
   
   def getCompanyName(): String = {
-    val clientCompanyName: String =
-      vatInfo
-      .flatMap(nonOptVat => nonOptVat.organisationName orElse nonOptVat.individualName)
-      .orElse(registration.otherAddress.flatMap(_.tradingName))
-      .getOrElse(throw new IllegalStateException("Unable to retrieve a required client Name from the vat information"))
-    
+    val clientCompanyName: String = vatInfo match {
+        case Some(nonOptionalVatInfo) if nonOptionalVatInfo.desAddress.countryCode.startsWith(ukCountryCodeAreaPrefix) =>
+          nonOptionalVatInfo.organisationName
+            .orElse(nonOptionalVatInfo.individualName)    
+            .getOrElse(throw new IllegalStateException("Unable to retrieve a required client Name from the vat information"))
+        case _ =>
+          registration.otherAddress.flatMap(_.tradingName)
+          .getOrElse(throw new IllegalStateException("Unable to retrieve a required client Name from the display registration information"))
+      }
+
     clientCompanyName + " "
   }
 }

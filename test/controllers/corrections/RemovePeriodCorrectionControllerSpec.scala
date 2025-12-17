@@ -60,7 +60,7 @@ class RemovePeriodCorrectionControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[RemovePeriodCorrectionView]
 
         status(result) mustBe OK
-        contentAsString(result) mustBe view(form, waypoints, period, index, correctionPeriod)(request, messages(application)).toString
+        contentAsString(result) mustBe view(form, waypoints, period, index, correctionPeriod, false, "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -165,7 +165,7 @@ class RemovePeriodCorrectionControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustBe BAD_REQUEST
-        contentAsString(result) mustBe view(boundForm, waypoints, period, index, correctionPeriod)(request, messages(application)).toString
+        contentAsString(result) mustBe view(boundForm, waypoints, period, index, correctionPeriod, false, "Company Name")(request, messages(application)).toString
       }
     }
 

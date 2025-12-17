@@ -156,7 +156,7 @@ class YourAccountController @Inject()(
 
     Ok(view(
       waypoints,
-      businessName = request.registrationWrapper.getCompanyName(),
+      businessName = request.companyName,
       iossNumber = request.iossNumber,
       paymentsViewModel = paymentsViewModel,
       changeYourRegistrationUrl = appConfig.amendRegistrationUrl,

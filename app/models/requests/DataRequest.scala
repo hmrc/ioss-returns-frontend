@@ -26,6 +26,7 @@ case class OptionalDataRequest[A] (
                                     credentials: Credentials,
                                     vrn: Option[Vrn],
                                     iossNumber: String,
+                                    companyName: String,
                                     registrationWrapper: RegistrationWrapper,
                                     intermediaryNumber: Option[String],
                                     userAnswers: Option[UserAnswers]
@@ -41,6 +42,7 @@ case class DataRequest[A] (
                             credentials: Credentials,
                             vrn: Option[Vrn],
                             iossNumber: String,
+                            companyName: String,
                             registrationWrapper: RegistrationWrapper,
                             intermediaryNumber: Option[String],
                             userAnswers: UserAnswers

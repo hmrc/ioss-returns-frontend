@@ -111,6 +111,7 @@ yourAccount.deregistered = You are no longer VAT registered. You must re-registe
 
 checkYourAnswers.title = Check Your Answers
 checkYourAnswers.heading = Check Your Answers
+checkYourAnswers.label.iossNumber = IOSS number
 checkYourAnswers.label.businessName = Business name
 checkYourAnswers.label.businessVrn = UK VAT registration number
 checkYourAnswers.label.businessUtrFtr = Tax reference
