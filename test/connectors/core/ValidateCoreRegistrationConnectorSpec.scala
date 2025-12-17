@@ -19,8 +19,8 @@ package connectors.core
 import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, ok, post, urlEqualTo}
 import connectors.WireMockHelper
-import models.{EisError, UnexpectedResponseStatus}
 import models.core._
+import models.responses.{EisError, UnexpectedResponseStatus}
 import org.scalacheck.Gen
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
 import org.scalatest.time.{Seconds, Span}

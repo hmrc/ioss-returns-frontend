@@ -19,14 +19,16 @@ package controllers
 import base.SpecBase
 import config.Constants.{maxCurrencyAmount, minCurrencyAmount}
 import config.FrontendAppConfig
-import connectors.{SaveForLaterConnector, SavedUserAnswers}
+import connectors.SaveForLaterConnector
 import models.audit.{ReturnsAuditModel, SubmissionResult}
 import models.etmp.EtmpExclusionReason.TransferringMSID
 import models.etmp.intermediary.EtmpIdType.{FTR, NINO, UTR}
 import models.etmp.intermediary.{EtmpCustomerIdentificationLegacy, EtmpCustomerIdentificationNew}
 import models.etmp.{EtmpDisplayRegistration, EtmpExclusion}
 import models.requests.DataRequest
-import models.{ConflictFound, Country, RegistrationWrapper, TotalVatToCountry, UserAnswers, VatRateFromCountry}
+import models.responses.ConflictFound
+import models.saveForLater.SavedUserAnswers
+import models.{Country, RegistrationWrapper, TotalVatToCountry, UserAnswers, VatRateFromCountry}
 import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.{times, verify, when}
 import org.mockito.{ArgumentMatchers, Mockito}

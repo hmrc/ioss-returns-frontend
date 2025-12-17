@@ -18,16 +18,17 @@ package connectors
 
 import logging.Logging
 import models.*
+import models.responses.*
+import models.saveForLater.SavedUserAnswers
 import play.api.http.Status.*
 import play.api.libs.json.*
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
-
-import java.time.Instant
 
 object SaveForLaterHttpParser extends Logging {
 
   type SaveForLaterResponse = Either[ErrorResponse, Option[SavedUserAnswers]]
   type DeleteSaveForLaterResponse = Either[ErrorResponse, Boolean]
+  type IntermediarySaveForLaterResponse = Either[ErrorResponse, Seq[SavedUserAnswers]]
 
   implicit object SaveForLaterReads extends HttpReads[SaveForLaterResponse] {
     override def read(method: String, url: String, response: HttpResponse): SaveForLaterResponse = {
@@ -78,16 +79,25 @@ object SaveForLaterHttpParser extends Logging {
       }
     }
   }
-}
 
-case class SavedUserAnswers(
-                             iossNumber: String,
-                             period: Period,
-                             data: JsObject,
-                             lastUpdated: Instant
-                           )
+  implicit object IntermediarySaveForLaterReads extends HttpReads[IntermediarySaveForLaterResponse] {
 
-object SavedUserAnswers {
+    override def read(method: String, url: String, response: HttpResponse): IntermediarySaveForLaterResponse = {
+      response.status match {
+        case OK =>
+          response.json.validate[Seq[SavedUserAnswers]] match {
+            case JsSuccess(savedUserAnswers, _) => Right(savedUserAnswers)
+            case JsError(errors) =>
+              logger.warn(s"Failed trying to parse Intermediary saved user answers JSON $errors with " +
+                s"response Json: ${response.json} and errors: $errors", errors)
+              Left(InvalidJson)
+          }
 
-  implicit val format: OFormat[SavedUserAnswers] = Json.format[SavedUserAnswers]
+        case status =>
+          logger.warn("Received unexpected error from Intermediary saved user answers")
+          Left(UnexpectedResponseStatus(response.status, s"Unexpected response from Intermediary saved User Answers " +
+            s"with status $status."))
+      }
+    }
+  }
 }

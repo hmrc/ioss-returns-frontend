@@ -22,7 +22,8 @@ import models.Period.fromEtmpPeriodKey
 import models.etmp.{EtmpExclusion, EtmpExclusionReason, EtmpVatReturn, EtmpVatReturnCorrection}
 import models.financialdata.Charge
 import models.requests.OptionalDataRequest
-import models.{Period, RegistrationWrapper, StandardPeriod, UnexpectedResponseStatus}
+import models.responses.UnexpectedResponseStatus
+import models.{Period, RegistrationWrapper, StandardPeriod}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.mockito.{ArgumentMatchers, Mockito}

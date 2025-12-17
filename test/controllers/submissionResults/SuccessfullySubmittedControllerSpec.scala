@@ -19,8 +19,8 @@ package controllers.submissionResults
 import base.SpecBase
 import config.FrontendAppConfig
 import connectors.VatReturnConnector
-import models.NotFound
 import models.external.ExternalEntryUrl
+import models.responses.NotFound
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{reset, when}
 import org.scalatest.prop.TableDrivenPropertyChecks

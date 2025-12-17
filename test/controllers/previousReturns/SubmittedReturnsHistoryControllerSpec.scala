@@ -20,7 +20,8 @@ import base.SpecBase
 import connectors.VatReturnConnector
 import models.etmp.EtmpVatReturn
 import models.payments.{Payment, PaymentStatus, PrepareData}
-import models.{Period, StandardPeriod, UnexpectedResponseStatus}
+import models.responses.UnexpectedResponseStatus
+import models.{Period, StandardPeriod}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.mockito.Mockito.when

@@ -18,7 +18,7 @@ package models.financialdata
 
 import logging.Logging
 import models.payments.PrepareData
-import models.{ErrorResponse, InvalidJson, UnexpectedResponseStatus}
+import models.responses.{ErrorResponse, InvalidJson, UnexpectedResponseStatus}
 import play.api.http.Status.CREATED
 import play.api.libs.json.{JsError, JsSuccess}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}

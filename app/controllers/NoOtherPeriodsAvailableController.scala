@@ -17,8 +17,8 @@
 package controllers
 
 import config.FrontendAppConfig
-import controllers.actions._
-import pages.Waypoints
+import controllers.actions.*
+import pages.{Waypoints, YourAccountPage}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -37,9 +37,15 @@ class NoOtherPeriodsAvailableController @Inject()(
 
   def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetRegistration() {
     implicit request =>
-      val isIntermediary = request.isIntermediary
+
       val companyName = request.registrationWrapper.getCompanyName()
-      val intermediaryDashboardUrl = frontendAppConfig.intermediaryDashboardUrl
-      Ok(view(waypoints, isIntermediary, companyName, intermediaryDashboardUrl))
+
+      val redirectUrl: String = if (request.isIntermediary) {
+        frontendAppConfig.intermediaryDashboardUrl
+      } else {
+        YourAccountPage.route(waypoints).url
+      }
+
+      Ok(view(waypoints, companyName, redirectUrl))
   }
 }

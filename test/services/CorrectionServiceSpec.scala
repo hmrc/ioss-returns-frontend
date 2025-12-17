@@ -20,7 +20,8 @@ import base.SpecBase
 import connectors.VatReturnConnector
 import models.corrections.ReturnCorrectionValue
 import models.etmp.{EtmpVatRateType, EtmpVatReturn, EtmpVatReturnGoodsSupplied}
-import models.{Country, StandardPeriod, UnexpectedResponseStatus}
+import models.responses.UnexpectedResponseStatus
+import models.{Country, StandardPeriod}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito
 import org.mockito.Mockito.{times, verify, when}

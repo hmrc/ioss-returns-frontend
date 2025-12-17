@@ -17,7 +17,7 @@
 package connectors
 
 import logging.Logging
-import models.{ErrorResponse, InvalidJson, UnexpectedResponseStatus}
+import models.responses.{ErrorResponse, InvalidJson, UnexpectedResponseStatus}
 import play.api.http.Status.{CREATED, OK}
 import play.api.libs.json.{JsError, JsSuccess}
 import viewmodels.yourAccount.CurrentReturns

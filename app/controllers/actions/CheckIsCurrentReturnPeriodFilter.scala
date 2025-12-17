@@ -17,9 +17,10 @@
 package controllers.actions
 
 import connectors.ReturnStatusConnector
-import models.{ErrorResponse, Period}
+import models.Period
 import models.SubmissionStatus.{Complete, Excluded, Expired}
 import models.requests.OptionalDataRequest
+import models.responses.ErrorResponse
 import pages.EmptyWaypoints
 import play.api.mvc.Results.Redirect
 import play.api.mvc.{ActionFilter, Result}

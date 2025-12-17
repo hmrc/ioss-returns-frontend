@@ -18,8 +18,8 @@ package services
 
 import base.SpecBase
 import connectors.{FinancialDataConnector, PaymentConnector}
-import models.UnexpectedResponseStatus
 import models.payments.{PaymentResponse, PrepareData}
+import models.responses.UnexpectedResponseStatus
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.mockito.Mockito.when

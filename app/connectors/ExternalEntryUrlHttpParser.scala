@@ -17,8 +17,8 @@
 package connectors
 
 import logging.Logging
-import models.{ErrorResponse, InvalidJson, NotFound, UnexpectedResponseStatus}
 import models.external.ExternalEntryUrl
+import models.responses.{ErrorResponse, InvalidJson, NotFound, UnexpectedResponseStatus}
 import play.api.http.Status.{NOT_FOUND, OK}
 import play.api.libs.json.{JsError, JsSuccess}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}

@@ -16,10 +16,10 @@
 
 package controllers.actions
 
-import models.requests.{DataRequest, IdentifierRequest, OptionalDataRequest, RegistrationRequest}
+import models.requests.*
 import play.api.http.FileMimeTypes
 import play.api.i18n.{Langs, MessagesApi}
-import play.api.mvc._
+import play.api.mvc.*
 import repositories.SessionRepository
 
 import javax.inject.Inject

@@ -20,7 +20,8 @@ import base.SpecBase
 import config.FrontendAppConfig
 import forms.payments.WhichPreviousRegistrationVatPeriodToPayFormProvider
 import models.payments.{Payment, PaymentResponse, PaymentStatus, PrepareData}
-import models.{Period, UnexpectedResponseStatus}
+import models.Period
+import models.responses.UnexpectedResponseStatus
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito
 import org.mockito.Mockito.when

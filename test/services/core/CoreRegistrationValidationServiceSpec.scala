@@ -18,9 +18,9 @@ package services.core
 
 import base.SpecBase
 import connectors.core.ValidateCoreRegistrationConnector
-import models.UnexpectedResponseStatus
 import models.core.{CoreRegistrationValidationResult, Match, TraderId}
 import models.etmp.SchemeType
+import models.responses.UnexpectedResponseStatus
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalacheck.Gen

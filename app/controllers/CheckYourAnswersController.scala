@@ -27,7 +27,8 @@ import models.etmp.EtmpExclusion
 import models.etmp.intermediary.EtmpIdType.VRN
 import models.etmp.intermediary.{EtmpCustomerIdentificationLegacy, EtmpCustomerIdentificationNew}
 import models.requests.{DataRequest, SaveForLaterRequest}
-import models.{ConflictFound, ValidationError}
+import models.ValidationError
+import models.responses.ConflictFound
 import pages.corrections.CorrectPreviousReturnPage
 import pages.{CheckYourAnswersPage, SavedProgressPage, Waypoints}
 import play.api.i18n.{I18nSupport, Messages}

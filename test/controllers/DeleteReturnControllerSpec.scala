@@ -17,20 +17,22 @@
 package controllers
 
 import base.SpecBase
-import connectors.SaveForLaterConnector
 import forms.DeleteReturnFormProvider
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
+import pages.JourneyRecoveryPage
 import play.api.inject.bind
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import repositories.SessionRepository
+import services.saveForLater.SaveForLaterService
+import utils.FutureSyntax.FutureOps
 import views.html.DeleteReturnView
 
-import scala.concurrent.Future
-
 class DeleteReturnControllerSpec extends SpecBase with MockitoSugar {
+
+  private val mockSaveForLaterService: SaveForLaterService = mock[SaveForLaterService]
 
   private val formProvider = new DeleteReturnFormProvider()
   private val form = formProvider()
@@ -50,8 +52,8 @@ class DeleteReturnControllerSpec extends SpecBase with MockitoSugar {
 
         val view = application.injector.instanceOf[DeleteReturnView]
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, period, false, "CompanyName")(request, messages(application)).toString
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(form, period,  false, "CompanyName")(request, messages(application)).toString
       }
     }
 
@@ -68,22 +70,23 @@ class DeleteReturnControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.ContinueReturnController.onPageLoad(period).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` controllers.routes.ContinueReturnController.onPageLoad(period).url
       }
     }
 
     "must redirect to the Your Account page and delete answers if the answer is Yes" in {
-      val mockSessionRepository = mock[SessionRepository]
-      val save4LaterConnector = mock[SaveForLaterConnector]
 
-      when(mockSessionRepository.clear(any())) thenReturn Future.successful(true)
-      when(save4LaterConnector.delete(any())(any())) thenReturn Future.successful(Right(true))
+      val mockSessionRepository = mock[SessionRepository]
+
+      when(mockSessionRepository.clear(any())) thenReturn true.toFuture
+      when(mockSaveForLaterService.deleteSavedUserAnswers(any())(any())) thenReturn true.toFuture
+
       val application =
         applicationBuilder(userAnswers = Some(emptyUserAnswers))
           .overrides(
             bind[SessionRepository].toInstance(mockSessionRepository),
-            bind[SaveForLaterConnector].toInstance(save4LaterConnector)
+            bind[SaveForLaterService].toInstance(mockSaveForLaterService)
           )
           .build()
 
@@ -94,9 +97,10 @@ class DeleteReturnControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.YourAccountController.onPageLoad().url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` controllers.routes.YourAccountController.onPageLoad().url
         verify(mockSessionRepository, times(1)).clear(eqTo(emptyUserAnswers.id))
+        verify(mockSaveForLaterService, times(1)).deleteSavedUserAnswers(any())(any())
       }
     }
 
@@ -115,8 +119,8 @@ class DeleteReturnControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, period, false, "CompanyName")(request, messages(application)).toString
+        status(result) `mustBe` BAD_REQUEST
+        contentAsString(result) `mustBe` view(boundForm, period, false, "CompanyName")(request, messages(application)).toString
       }
     }
 
@@ -129,8 +133,8 @@ class DeleteReturnControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
 
@@ -145,8 +149,8 @@ class DeleteReturnControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
   }
