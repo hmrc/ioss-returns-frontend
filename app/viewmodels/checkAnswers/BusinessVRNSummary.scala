@@ -46,7 +46,7 @@ object BusinessVRNSummary {
             ))
           case EtmpIdType.UTR | EtmpIdType.FTR =>
             Some(SummaryListRowViewModel(
-              key = Key("checkYourAnswers.label.businessUtrFtr").withCssClass("govuk-!-width-one-third"),
+              key = Key("checkYourAnswers.label.businessUtrFtr").withCssClass("govuk-!-width-three-quarters"),
               value = ValueViewModel(HtmlFormat.escape(idValue).toString).withCssClass("govuk-table__cell--numeric"),
               actions = Seq.empty
             ))
