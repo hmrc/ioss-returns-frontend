@@ -108,7 +108,7 @@ trait SpecBase
       registrationDate = Some(LocalDate.now(stubClockAtArbitraryDate)),
       desAddress = DesAddress("Line 1", None, None, None, None, Some("AA11 1AA"), "GB"),
       partOfVatGroup = false,
-      organisationName = Some("Company name"),
+      organisationName = Some("Company Name"),
       singleMarketIndicator = true,
       individualName = None,
       deregistrationDecisionDate = Some(LocalDate.now(stubClockAtArbitraryDate)),

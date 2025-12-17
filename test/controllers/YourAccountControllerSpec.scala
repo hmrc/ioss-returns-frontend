@@ -78,6 +78,11 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
     )
   }
 
+  private def createArbRegistrationWrapperWithValidCompanyName(): RegistrationWrapper = {
+    val registration = registrationWrapper.registration
+    registrationWrapper.copy(vatInfo = Some(ukBasedVatInfo))
+  }
+
   private val mockReturnStatusConnector = mock[ReturnStatusConnector]
   private val mockFinancialDataConnector = mock[FinancialDataConnector]
   private val mockPreviousRegistrationService: PreviousRegistrationService = mock[PreviousRegistrationService]
@@ -157,9 +162,11 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
     }
 
     "must return OK with leaveThisService link and without cancelYourRequestToLeave link when a trader is not excluded" in {
-      
+
+      val registrationWrapper: RegistrationWrapper = createArbRegistrationWrapperWithValidCompanyName()
+
       val registrationWrapperEmptyExclusions: RegistrationWrapper =
-        registrationWrapper.copy(vatInfo= Some(ukBasedVatInfo), registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
+        registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
 
       when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
 
@@ -202,7 +209,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         status(result) mustBe OK
         contentAsString(result) mustBe view(
           waypoints,
-          registrationWrapper.getCompanyName(),
+          registrationWrapper.getCompanyName().trim,
           iossNumber,
           paymentsViewModel,
           appConfig.amendRegistrationUrl,
@@ -274,7 +281,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         status(result) mustBe OK
         contentAsString(result) mustBe view(
           waypoints,
-          registrationWrapperWithExclusion.getCompanyName(),
+          registrationWrapperWithExclusion.getCompanyName().trim,
           iossNumber,
           paymentsViewModel,
           appConfig.amendRegistrationUrl,
@@ -346,7 +353,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         status(result) mustBe OK
         contentAsString(result) mustBe view(
           waypoints,
-          registrationWrapperWithExclusion.getCompanyName(),
+          registrationWrapperWithExclusion.getCompanyName().trim,
           iossNumber,
           paymentsViewModel,
           appConfig.amendRegistrationUrl,
@@ -426,7 +433,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         status(result) mustBe OK
         contentAsString(result) mustBe view(
           waypoints,
-          registrationWrapperEmptyExclusions.getCompanyName(),
+          registrationWrapperEmptyExclusions.getCompanyName().trim,
           iossNumber,
           paymentsViewModel,
           appConfig.amendRegistrationUrl,
@@ -666,7 +673,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
       "when there are no returns due" in {
 
-        val registrationWrapper: RegistrationWrapper = arbitrary[RegistrationWrapper].sample.value
+        val registrationWrapper: RegistrationWrapper = createArbRegistrationWrapperWithValidCompanyName()
 
         val registrationWrapperEmptyExclusions: RegistrationWrapper =
           registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
@@ -711,7 +718,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           status(result) mustBe OK
           contentAsString(result) mustBe view(
             waypoints,
-            registrationWrapper.getCompanyName(),
+            registrationWrapper.getCompanyName().trim,
             iossNumber,
             paymentsViewModel,
             appConfig.amendRegistrationUrl,
@@ -737,7 +744,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
       "when there is 1 return due" in {
 
-        val registrationWrapper: RegistrationWrapper = arbitrary[RegistrationWrapper].sample.value
+        val registrationWrapper: RegistrationWrapper = createArbRegistrationWrapperWithValidCompanyName()
 
         val registrationWrapperEmptyExclusions: RegistrationWrapper =
           registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
@@ -776,7 +783,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           status(result) mustBe OK
           contentAsString(result) mustBe view(
             waypoints,
-            registrationWrapper.getCompanyName(),
+            registrationWrapper.getCompanyName().trim,
             iossNumber,
             paymentsViewModel,
             appConfig.amendRegistrationUrl,
@@ -805,7 +812,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val firstPeriod = StandardPeriod(LocalDate.now.minusYears(1).getYear, Month.JANUARY)
         val secondPeriod = StandardPeriod(LocalDate.now.minusYears(1).getYear, Month.FEBRUARY)
 
-        val registrationWrapper: RegistrationWrapper = arbitrary[RegistrationWrapper].sample.value
+        val registrationWrapper: RegistrationWrapper = createArbRegistrationWrapperWithValidCompanyName()
 
         val registrationWrapperEmptyExclusions: RegistrationWrapper =
           registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
@@ -845,7 +852,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           status(result) mustBe OK
           contentAsString(result) mustBe view(
             waypoints,
-            registrationWrapper.getCompanyName(),
+            registrationWrapper.getCompanyName().trim,
             iossNumber,
             paymentsViewModel,
             appConfig.amendRegistrationUrl,
@@ -874,7 +881,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         val period = StandardPeriod(LocalDate.now.minusYears(1).getYear, Month.JANUARY)
 
-        val registrationWrapper: RegistrationWrapper = arbitrary[RegistrationWrapper].sample.value
+        val registrationWrapper: RegistrationWrapper = createArbRegistrationWrapperWithValidCompanyName()
 
         val registrationWrapperEmptyExclusions: RegistrationWrapper =
           registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
@@ -913,7 +920,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           status(result) mustBe OK
           contentAsString(result) mustBe view(
             waypoints,
-            registrationWrapper.getCompanyName(),
+            registrationWrapper.getCompanyName().trim,
             iossNumber,
             paymentsViewModel,
             appConfig.amendRegistrationUrl,
@@ -942,7 +949,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val firstPeriod = StandardPeriod(LocalDate.now.minusYears(1).getYear, Month.JANUARY)
         val secondPeriod = StandardPeriod(LocalDate.now.minusYears(1).getYear, Month.FEBRUARY)
 
-        val registrationWrapper: RegistrationWrapper = arbitrary[RegistrationWrapper].sample.value
+        val registrationWrapper: RegistrationWrapper = createArbRegistrationWrapperWithValidCompanyName()
 
         val registrationWrapperEmptyExclusions: RegistrationWrapper =
           registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
@@ -982,7 +989,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           status(result) mustBe OK
           contentAsString(result) mustBe view(
             waypoints,
-            registrationWrapper.getCompanyName(),
+            registrationWrapper.getCompanyName().trim,
             iossNumber,
             paymentsViewModel,
             appConfig.amendRegistrationUrl,
@@ -1014,7 +1021,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val secondPeriod = StandardPeriod(periodYear, Month.FEBRUARY)
         val thirdPeriod = StandardPeriod(periodYear, Month.MARCH)
 
-        val registrationWrapper: RegistrationWrapper = arbitrary[RegistrationWrapper].sample.value
+        val registrationWrapper: RegistrationWrapper = createArbRegistrationWrapperWithValidCompanyName()
 
         val registrationWrapperEmptyExclusions: RegistrationWrapper =
           registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
@@ -1055,7 +1062,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           status(result) mustBe OK
           contentAsString(result) mustBe view(
             waypoints,
-            registrationWrapper.getCompanyName(),
+            registrationWrapper.getCompanyName().trim,
             iossNumber,
             paymentsViewModel,
             appConfig.amendRegistrationUrl,
@@ -1090,7 +1097,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val thirdPeriod = StandardPeriod(periodYear, Month.MARCH)
         val excludedPeriod = StandardPeriod(excludedYear, Month.MARCH)
 
-        val registrationWrapper: RegistrationWrapper = arbitrary[RegistrationWrapper].sample.value
+        val registrationWrapper: RegistrationWrapper = createArbRegistrationWrapperWithValidCompanyName()
 
         val registrationWrapperEmptyExclusions: RegistrationWrapper =
           registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
@@ -1134,7 +1141,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           status(result) mustBe OK
           contentAsString(result) mustBe view(
             waypoints,
-            registrationWrapper.getCompanyName(),
+            registrationWrapper.getCompanyName().trim,
             iossNumber,
             paymentsViewModel,
             appConfig.amendRegistrationUrl,
