@@ -60,7 +60,7 @@ class RemoveCountryCorrectionControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[RemoveCountryCorrectionView]
 
         status(result) mustBe OK
-        contentAsString(result) mustBe view(form, waypoints, period, index, index, country)(request, messages(application)).toString
+        contentAsString(result) mustBe view(form, waypoints, period, index, index, country, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -141,7 +141,7 @@ class RemoveCountryCorrectionControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustBe BAD_REQUEST
-        contentAsString(result) mustBe view(boundForm, waypoints, period, index, index, country)(request, messages(application)).toString
+        contentAsString(result) mustBe view(boundForm, waypoints, period, index, index, country, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
