@@ -26,6 +26,8 @@ import services.{PeriodWithFinancialDataService, PreviousRegistrationService}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import viewmodels.previousReturns.PreviousRegistration
 import views.html.previousReturns.ViewReturnsMultipleRegView
+import models.requests.OptionalDataRequest
+
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -58,9 +60,9 @@ class ViewReturnsMultipleRegController @Inject()(
       }
   }
 
-  private def okView(waypoints: Waypoints, previousRegistration: PreviousRegistration)(implicit r: Request[_]): Future[Result] = {
+  private def okView(waypoints: Waypoints, previousRegistration: PreviousRegistration)(implicit r: OptionalDataRequest[_]): Future[Result] = {
     periodWithFinancialDataService.getPeriodWithFinancialData(previousRegistration.iossNumber).map { periodWithFinancialData =>
-      Ok(view(waypoints, previousRegistration, periodWithFinancialData))
+      Ok(view(waypoints, previousRegistration, periodWithFinancialData, isIntermediary = r.isIntermediary, companyName = r.companyName))
     }
   }
 }

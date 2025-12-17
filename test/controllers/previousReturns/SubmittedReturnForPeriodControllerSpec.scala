@@ -159,7 +159,9 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 outstandingAmount,
                 vatDeclared,
                 displayPayNow = vatDeclared > 0 && outstandingAmount > 0,
-                returnIsExcludedAndOutstandingAmount = false
+                returnIsExcludedAndOutstandingAmount = false,
+                isIntermediary = false,
+                companyName = "Company Name"
               )(request, messages(application)).toString
           }
         }
@@ -237,7 +239,9 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 outstandingAmount,
                 vatDeclared,
                 displayPayNow = vatDeclared > 0 && outstandingAmount > 0,
-                returnIsExcludedAndOutstandingAmount = false
+                returnIsExcludedAndOutstandingAmount = false,
+                isIntermediary = false,
+                companyName = "Company Name"
               )(request, messages(application)).toString
           }
         }
@@ -326,7 +330,9 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 outstandingAmount,
                 vatDeclared,
                 displayPayNow = vatDeclared > 0 && outstandingAmount > 0,
-                returnIsExcludedAndOutstandingAmount = false
+                returnIsExcludedAndOutstandingAmount = false,
+                isIntermediary = false,
+                companyName = "Company Name"
               )(request, messages(application)).toString
           }
         }
@@ -422,7 +428,9 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 outstandingAmount,
                 vatDeclared,
                 displayPayNow = vatDeclared > 0 && outstandingAmount > 0,
-                returnIsExcludedAndOutstandingAmount = false
+                returnIsExcludedAndOutstandingAmount = false,
+                isIntermediary = false,
+                companyName = "Company Name"
               )(request, messages(application)).toString
           }
         }
@@ -498,7 +506,9 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 outstandingAmount,
                 vatDeclared,
                 displayPayNow = vatDeclared > 0 && outstandingAmount > 0,
-                returnIsExcludedAndOutstandingAmount = false
+                returnIsExcludedAndOutstandingAmount = false,
+                isIntermediary = false,
+                companyName = "Company Name"
               )(request, messages(application)).toString
           }
         }
@@ -613,7 +623,9 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                   outstandingAmount,
                   vatDeclared,
                   displayPayNow = false,
-                  returnIsExcludedAndOutstandingAmount = false
+                  returnIsExcludedAndOutstandingAmount = false,
+                  isIntermediary = false,
+                  companyName = "Company Name"
                 )(request, messages(application)).toString
             }
           }
@@ -727,7 +739,9 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                   outstandingAmount,
                   vatDeclared,
                   displayPayNow = false,
-                  returnIsExcludedAndOutstandingAmount = true
+                  returnIsExcludedAndOutstandingAmount = true,
+                  isIntermediary = false,
+                  companyName = "Company Name"
                 )(request, messages(application)).toString
             }
           }
@@ -832,7 +846,9 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 outstandingAmount,
                 vatDeclared,
                 displayPayNow = vatDeclared > 0 && outstandingAmount > 0,
-                returnIsExcludedAndOutstandingAmount = false
+                returnIsExcludedAndOutstandingAmount = false,
+                isIntermediary = false,
+                companyName = "Company Name"
               )(request, messages(application)).toString
           }
         }
@@ -912,7 +928,9 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 outstandingAmount,
                 vatDeclared,
                 displayPayNow = vatDeclared > 0 && outstandingAmount > 0,
-                returnIsExcludedAndOutstandingAmount = false
+                returnIsExcludedAndOutstandingAmount = false,
+                isIntermediary = false,
+                companyName = "Company Name"
               )(request, messages(application)).toString
           }
         }
@@ -1001,7 +1019,9 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 outstandingAmount,
                 vatDeclared,
                 displayPayNow = vatDeclared > 0 && outstandingAmount > 0,
-                returnIsExcludedAndOutstandingAmount = false
+                returnIsExcludedAndOutstandingAmount = false,
+                isIntermediary = false,
+                companyName = "Company Name"
               )(request, messages(application)).toString
           }
         }
@@ -1099,7 +1119,9 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 outstandingAmount,
                 vatDeclared,
                 displayPayNow = vatDeclared > 0 && outstandingAmount > 0,
-                returnIsExcludedAndOutstandingAmount = false
+                returnIsExcludedAndOutstandingAmount = false,
+                isIntermediary = false,
+                companyName = "Company Name"
               )(request, messages(application)).toString
           }
         }
@@ -1178,7 +1200,9 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 outstandingAmount,
                 vatDeclared,
                 displayPayNow = vatDeclared > 0 && outstandingAmount > 0,
-                returnIsExcludedAndOutstandingAmount = false
+                returnIsExcludedAndOutstandingAmount = false,
+                isIntermediary = false,
+                companyName = "Company Name"
               )(request, messages(application)).toString
           }
         }
@@ -1295,7 +1319,9 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                   outstandingAmount,
                   vatDeclared,
                   displayPayNow = false,
-                  returnIsExcludedAndOutstandingAmount = false
+                  returnIsExcludedAndOutstandingAmount = false,
+                  isIntermediary = false,
+                  companyName = "Company Name"
                 )(request, messages(application)).toString
             }
           }
@@ -1411,7 +1437,9 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                   outstandingAmount,
                   vatDeclared,
                   displayPayNow = false,
-                  returnIsExcludedAndOutstandingAmount = true
+                  returnIsExcludedAndOutstandingAmount = true,
+                  isIntermediary = false,
+                  companyName = "Company Name"
                 )(request, messages(application)).toString
             }
           }

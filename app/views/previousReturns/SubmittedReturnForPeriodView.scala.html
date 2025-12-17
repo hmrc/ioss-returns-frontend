@@ -35,7 +35,9 @@ layout: templates.Layout,
         totalVatPayable: BigDecimal,
         vatDeclared: BigDecimal,
         displayPayNow: Boolean,
-        returnIsExcludedAndOutstandingAmount: Boolean
+        returnIsExcludedAndOutstandingAmount: Boolean,
+        isIntermediary:Boolean,
+        companyName: String
 )(implicit request: Request[_], messages: Messages)
 
     @layout(pageTitle = titleNoForm(messages("submittedReturnForPeriod.title", period.displayText))) {
