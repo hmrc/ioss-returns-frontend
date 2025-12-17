@@ -42,7 +42,10 @@ layout: templates.Layout,
 
     @layout(pageTitle = titleNoForm(messages("submittedReturnForPeriod.title", period.displayText))) {
 
-        @period match {
+    @if(isIntermediary){<p class="govuk-caption-l hmrc-caption-l">@companyName</p>}
+
+
+    @period match {
             case period: PartialReturnPeriod => {
                 <h1 class="govuk-heading-l">@messages("submittedReturnForPeriod.heading", period.displayToAndFromText)</h1>
             }
