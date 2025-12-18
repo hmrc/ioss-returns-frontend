@@ -51,7 +51,7 @@ class DeleteVatRateSalesForCountryController @Inject()(
           getVatRateFromCountry(waypoints, countryIndex, vatRateIndex) {
             vatRate =>
 
-              val form: Form[Boolean] = formProvider(vatRate.rateForDisplay, country, isIntermediary)
+              val form: Form[Boolean] = formProvider(vatRate.rateForDisplay, country, request.isIntermediary)
 
               Ok(view(form, waypoints, request.userAnswers.period, countryIndex, vatRateIndex, vatRate.rateForDisplay, country, request.isIntermediary, request.companyName)).toFuture
           }
@@ -66,7 +66,7 @@ class DeleteVatRateSalesForCountryController @Inject()(
           getVatRateFromCountry(waypoints, countryIndex, vatRateIndex) {
             vatRate =>
 
-              val form: Form[Boolean] = formProvider(vatRate.rateForDisplay, country, isIntermediary)
+              val form: Form[Boolean] = formProvider(vatRate.rateForDisplay, country, request.isIntermediary)
 
               form.bindFromRequest().fold(
                 formWithErrors =>
