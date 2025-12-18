@@ -62,13 +62,13 @@
                 legend = LegendViewModel(
                     if(maybeExclusion.isDefined && isFinalReturn) {
                         if(isIntermediary) {
-                            HtmlContent(Html("""<h1 class="govuk-fieldset__heading">""" + messages("startReturn.intermediary.finalReturn", companyName) + "</h1>"))
+                            HtmlContent(Html("""<h1 class="govuk-fieldset__heading">""" + messages("startReturn.intermediary.finalReturn", companyName.trim) + "</h1>"))
                         } else {
                             HtmlContent(Html("""<h1 class="govuk-fieldset__heading">""" + messages("startReturn.finalReturn") + "</h1>"))
                         }
                     } else {
                         if(isIntermediary) {
-                            HtmlContent(Html("""<h1 class="govuk-fieldset__heading">""" + messages("startReturn.intermediary.heading", period.displayText, companyName) + "</h1>"))
+                            HtmlContent(Html("""<h1 class="govuk-fieldset__heading">""" + messages("startReturn.intermediary.heading", period.displayText, companyName.trim) + "</h1>"))
                         } else {
                             HtmlContent(Html("""<h1 class="govuk-fieldset__heading">""" + messages("startReturn.heading", period.displayText) + "</h1>"))
                         }
