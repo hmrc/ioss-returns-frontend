@@ -50,6 +50,7 @@ class JourneyRecoveryController @Inject()(
           }
       }
 
+      // TODO -> start again view link currently redirects to index controller but fails for intermediaries
       safeUrl
         .map(url => Ok(continueView(url, isIntermediary)))
         .getOrElse(Ok(startAgainView(isIntermediary)))

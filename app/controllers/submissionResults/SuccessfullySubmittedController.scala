@@ -79,6 +79,7 @@ class SuccessfullySubmittedController @Inject()(
       for {
         clientName <- intermediaryClientName
         errorOrExternalUrl <- vatReturnConnector.getSavedExternalEntry()
+        _ <- cc.sessionRepository.clear(request.userId)
       } yield {
         val maybeExternalUrl = errorOrExternalUrl.fold(
           _ => None,
