@@ -22,8 +22,6 @@ import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
 import models.audit.{ReturnsAuditModel, SubmissionResult}
 import models.etmp.EtmpExclusion
-import models.etmp.intermediary.EtmpIdType.VRN
-import models.etmp.intermediary.{EtmpCustomerIdentificationLegacy, EtmpCustomerIdentificationNew}
 import models.requests.{DataRequest, SaveForLaterRequest}
 import models.{ConflictFound, ValidationError}
 import pages.corrections.CorrectPreviousReturnPage

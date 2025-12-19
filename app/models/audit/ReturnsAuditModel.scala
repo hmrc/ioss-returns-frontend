@@ -17,7 +17,7 @@
 package models.audit
 
 import models.etmp.intermediary.EtmpIdType.VRN
-import models.etmp.intermediary.{EtmpCustomerIdentificationLegacy, EtmpCustomerIdentificationNew}
+import models.etmp.intermediary.EtmpCustomerIdentificationNew
 import models.{UserAnswers, UserAnswersForAudit}
 import models.requests.DataRequest
 import play.api.libs.json.{JsValue, Json}

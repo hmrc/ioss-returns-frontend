@@ -26,6 +26,7 @@ import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.PartialReturnPeriodService
+import services.PaymentsService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax.FutureOps
 import views.html.StartReturnView
@@ -39,6 +40,7 @@ class StartReturnController @Inject()(
                                        cc: AuthenticatedControllerComponents,
                                        formProvider: StartReturnFormProvider,
                                        partialReturnPeriodService: PartialReturnPeriodService,
+                                       paymentsService: PaymentsService,
                                        view: StartReturnView,
                                        clock: Clock
                                      )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
@@ -65,8 +67,12 @@ class StartReturnController @Inject()(
         exclusion.exclusionReason != Reversal && nextPeriod.isAfter(exclusion.effectiveDate)
       }
 
-      partialReturnPeriodService.getPartialReturnPeriod(request.iossNumber, request.registrationWrapper, period).map { maybePartialReturnPeriod =>
-        Ok(view(form, waypoints, period, maybeExclusion, isFinalReturn, maybePartialReturnPeriod, isIntermediary, companyName))
+      for {
+        maybePartialReturnPeriod <- partialReturnPeriodService.getPartialReturnPeriod(request.iossNumber, request.registrationWrapper, period)
+        prepareData <- paymentsService.prepareFinancialDataWithIossNumber(request.iossNumber)
+      } yield {
+        val overduePayments = prepareData.overduePayments.sortBy(p => (p.period.year, p.period.month.getValue))
+        Ok(view(form, waypoints, period, maybeExclusion, isFinalReturn, maybePartialReturnPeriod, isIntermediary, companyName, overduePayments))
       }
 
   }
@@ -92,10 +98,12 @@ class StartReturnController @Inject()(
 
       form.bindFromRequest().fold(
         formWithErrors =>
-
-          partialReturnPeriodService.getPartialReturnPeriod(request.iossNumber, request.registrationWrapper, period).map { maybePartialReturnPeriod =>
-            BadRequest(view(formWithErrors, waypoints, period, maybeExclusion, isFinalReturn, maybePartialReturnPeriod, isIntermediary, companyName))
-
+          for {
+            maybePartialReturnPeriod <- partialReturnPeriodService.getPartialReturnPeriod(request.iossNumber, request.registrationWrapper, period)
+            prepareData <- paymentsService.prepareFinancialDataWithIossNumber(request.iossNumber)
+          } yield {
+            val overduePayments = prepareData.overduePayments.sortBy(p => (p.period.year, p.period.month.getValue))
+            BadRequest(view(formWithErrors, waypoints, period, maybeExclusion, isFinalReturn, maybePartialReturnPeriod, isIntermediary, companyName, overduePayments))
           },
 
         value => {
