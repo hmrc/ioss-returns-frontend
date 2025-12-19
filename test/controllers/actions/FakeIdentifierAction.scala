@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,10 @@ package controllers.actions
 import config.FrontendAppConfig
 import models.requests.IdentifierRequest
 import org.scalatestplus.mockito.MockitoSugar.mock
-import play.api.mvc._
-import services.{AccountService, UrlBuilderService}
-import uk.gov.hmrc.auth.core.{AuthConnector, Enrolment, Enrolments}
+import play.api.mvc.*
+import services.UrlBuilderService
 import uk.gov.hmrc.auth.core.retrieve.Credentials
+import uk.gov.hmrc.auth.core.{AuthConnector, Enrolment, Enrolments}
 import uk.gov.hmrc.domain.Vrn
 import utils.FutureSyntax.FutureOps
 

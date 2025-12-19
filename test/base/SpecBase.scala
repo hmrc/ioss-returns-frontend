@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -121,7 +121,7 @@ trait SpecBase
     val getRegistrationActionBind = if(getRegistrationAction.nonEmpty) {
       bind[GetRegistrationActionProvider].toInstance(getRegistrationAction.get)
     } else {
-      bind[GetRegistrationActionProvider].toInstance(new FakeGetRegistrationActionProvider(registration))
+      bind[GetRegistrationActionProvider].toInstance(new FakeGetRegistrationActionProvider(registration, maybeIntermediaryNumber))
     }
 
     new GuiceApplicationBuilder()

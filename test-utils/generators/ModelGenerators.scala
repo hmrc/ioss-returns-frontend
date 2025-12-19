@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,16 @@
 
 package generators
 
-import connectors.SavedUserAnswers
 import config.Constants.{maxCurrencyAmount, minCurrencyAmount}
 import models.*
-import models.core.{CoreCorrection, CoreMsconSupply, CorePeriod, CoreSupply, CoreTraderId, CoreVatReturn}
+import models.core.*
 import models.corrections.ReturnCorrectionValue
 import models.enrolments.{EACDEnrolment, EACDEnrolments, EACDIdentifiers}
 import models.etmp.*
-import models.etmp.intermediary.{EtmpClientDetails, EtmpCustomerIdentification, EtmpIdType, EtmpIntermediaryDetails, EtmpIntermediaryDisplayRegistration, EtmpIntermediaryDisplaySchemeDetails, IntermediaryRegistrationWrapper, IntermediaryVatCustomerInfo}
+import models.etmp.intermediary.*
 import models.financialdata.Charge
 import models.payments.{Payment, PaymentStatus, PrepareData}
+import models.saveForLater.SavedUserAnswers
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Arbitrary, Gen}
 import play.api.libs.json.{JsObject, Json}
@@ -695,7 +695,7 @@ trait ModelGenerators {
   implicit val arbitrarySavedUserAnswers: Arbitrary[SavedUserAnswers] =
     Arbitrary {
       for {
-        iossNumber <- arbitrary[String]
+        iossNumber <- arbitraryIossNumber.arbitrary
         period <- arbitrary[StandardPeriod]
         data = JsObject(Seq("test" -> Json.toJson("test")))
         now = Instant.now
@@ -779,20 +779,31 @@ trait ModelGenerators {
     }
   }
 
-  implicit val arbitraryStandardPeriod: Arbitrary[StandardPeriod] =
+  implicit val arbitraryStandardPeriod: Arbitrary[StandardPeriod] = {
     Arbitrary {
       for {
         year <- Gen.choose(2022, 2099)
         month <- Gen.oneOf(Month.values.toIndexedSeq)
       } yield StandardPeriod(year, month)
     }
+  }
 
-  implicit val arbitraryPeriodWithStatus: Arbitrary[PeriodWithStatus] =
+  implicit val arbitraryPeriodWithStatus: Arbitrary[PeriodWithStatus] = {
     Arbitrary {
       for {
         period <- arbitrary[StandardPeriod]
         status <- Gen.oneOf(SubmissionStatus.values)
       } yield PeriodWithStatus(period, status)
     }
+  }
 
+  implicit lazy val arbitraryIossNumber: Arbitrary[String] = {
+    Arbitrary {
+      for {
+        iossNumber <- Gen.listOfN(7, Gen.numChar).map(_.mkString)
+      } yield {
+        s"IM900$iossNumber"
+      }
+    }
+  }
 }
