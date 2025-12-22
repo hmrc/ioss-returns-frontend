@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,16 +20,18 @@ import models.RegistrationWrapper
 import play.api.i18n.Messages
 import play.twirl.api.HtmlFormat
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
-import viewmodels.govuk.summarylist._
-import viewmodels.implicits._
+import viewmodels.govuk.all.{SummaryListRowViewModel, ValueViewModel}
+import viewmodels.govuk.summarylist.*
+import viewmodels.implicits.*
 
-object BusinessNameSummary {
+object DataRequestSummary {
 
-  def row(registrationWrapper: RegistrationWrapper)(implicit messages: Messages): Option[SummaryListRow] = {
+  def row(iossNumber: String)(implicit messages: Messages): Option[SummaryListRow] = {
     Some(SummaryListRowViewModel(
-      key = "checkYourAnswers.label.businessName",
-      value = ValueViewModel(HtmlFormat.escape(registrationWrapper.getCompanyName()).toString).withCssClass("govuk-table__cell--numeric"),
+      key = "checkYourAnswers.label.iossNumber",
+      value = ValueViewModel(HtmlFormat.escape(iossNumber).toString).withCssClass("govuk-table__cell--numeric"),
       actions = Seq.empty
     ))
   }
+
 }

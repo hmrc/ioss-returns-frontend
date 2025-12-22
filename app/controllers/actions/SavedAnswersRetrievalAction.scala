@@ -57,6 +57,7 @@ class SavedAnswersRetrievalAction (repository: SessionRepository, saveForLaterCo
         request.credentials,
         request.vrn,
         request.iossNumber,
+        request.companyName,
         request.registrationWrapper,
         request.intermediaryNumber,
         _

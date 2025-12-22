@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,25 +14,21 @@
  * limitations under the License.
  */
 
-package models.requests
+package models.etmp
 
-import models.Period
 import play.api.libs.json.{Json, OFormat}
-import queries.SalesToCountry
-import uk.gov.hmrc.domain.Vrn
 
-import java.time.LocalDate
-
-case class VatReturnRequest(
-                           vrn: Option[Vrn],
-                           period: Period,
-                           startDate: Option[LocalDate],
-                           endDate: Option[LocalDate],
-                           sales: List[SalesToCountry]
+case class EtmpOtherAddress(
+                             issuedBy: String,
+                             tradingName: Option[String],
+                             addressLine1: String,
+                             addressLine2: Option[String],
+                             townOrCity: String,
+                             regionOrState: Option[String],
+                             postcode: Option[String]
                            )
 
 
-object VatReturnRequest {
-
-  implicit val format: OFormat[VatReturnRequest] = Json.format[VatReturnRequest]
+object EtmpOtherAddress {
+  implicit val format: OFormat[EtmpOtherAddress] = Json.format[EtmpOtherAddress]
 }

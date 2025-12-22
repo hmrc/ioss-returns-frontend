@@ -385,7 +385,7 @@ class FakeMultipleEnrolmentsGetRegistrationAction(enrolments: Enrolments, regist
 )(ExecutionContext.Implicits.global) {
 
   override def refine[A](request: IdentifierRequest[A]): Future[Either[Result, RegistrationRequest[A]]] =
-    Right(RegistrationRequest(request.request, request.credentials, request.vrn, "IM9001234567", registration, None, enrolments)).toFuture
+    Right(RegistrationRequest(request.request, request.credentials, Some(request.vrn), "Company Name", "IM9001234567", registration, None, enrolments)).toFuture
 }
 
 class FakeMultipleEnrolmentsGetRegistrationActionProvider(enrolments: Enrolments, registrationWrapper: RegistrationWrapper) extends GetRegistrationActionProvider(

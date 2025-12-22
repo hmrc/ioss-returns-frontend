@@ -112,7 +112,7 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(
-          form, waypoints, period, monthNames, index)(request, messages(application)).toString
+          form, waypoints, period, monthNames, index, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
   }
@@ -134,7 +134,7 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(
-          form, waypoints, period, monthNames, index)(request, messages(application)).toString
+          form, waypoints, period, monthNames, index, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
 
     }
@@ -189,7 +189,7 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
 
         status(result) mustEqual BAD_REQUEST
         contentAsString(result) mustEqual view(
-          boundForm, waypoints, period, monthNames, index)(request, messages(application)).toString
+          boundForm, waypoints, period, monthNames, index, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 

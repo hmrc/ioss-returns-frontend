@@ -16,6 +16,7 @@
 
 package base
 
+import config.Constants.ukCountryCodeAreaPrefix
 import controllers.actions.*
 import generators.{Generators, UserAnswersGenerator}
 import models.*
@@ -34,6 +35,7 @@ import play.api.i18n.{Messages, MessagesApi}
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
+import testUtils.RegistrationData.datesBetween
 import uk.gov.hmrc.auth.core.retrieve.Credentials
 import uk.gov.hmrc.auth.core.{Enrolment, Enrolments}
 import uk.gov.hmrc.domain.Vrn
@@ -62,6 +64,7 @@ trait SpecBase
   val waypoints: Waypoints = EmptyWaypoints
   val index: Index = Index(0)
   val vatRateIndex: Index = Index(0)
+  val companyName: String = "Test Company Name"
   val vatRates = List(VatRateFromCountry(BigDecimal(20), VatRateType.Standard, LocalDate.of(2023, 3, 1), None))
   val twentyPercentVatRate = VatRateFromCountry(20, VatRateType.Reduced, arbitrary[LocalDate].sample.value)
   val fivePercentVatRate = VatRateFromCountry(5, VatRateType.Reduced, arbitrary[LocalDate].sample.value)
@@ -70,11 +73,16 @@ trait SpecBase
 
   lazy val registrationWrapper: RegistrationWrapper = {
     val arbirtyRegistration = Arbitrary.arbitrary[RegistrationWrapper].sample.value
-    arbirtyRegistration.copy(registration = arbirtyRegistration.registration.copy(
+    val arbitrayVatInfo = arbitraryVatInfo.arbitrary.sample.value
+    val ukBasedDesAddress = arbitrayVatInfo.desAddress.copy(countryCode = ukCountryCodeAreaPrefix)
+    val ukBasedVatInfo = arbitrayVatInfo.copy(desAddress = ukBasedDesAddress)
+    
+    arbirtyRegistration.copy( vatInfo = Some(ukBasedVatInfo), 
+      registration = arbirtyRegistration.registration.copy(
       schemeDetails = arbirtyRegistration.registration.schemeDetails.copy(commencementDate = commencementDate),
       exclusions = Seq.empty
-    ))
-  }
+    ))}
+  
 
   val arbitraryDate: LocalDate = datesBetween(LocalDate.of(2023, 3, 1), LocalDate.of(2025, 12, 31)).sample.value
   val arbitraryInstant: Instant = arbitraryDate.atStartOfDay(ZoneId.systemDefault).toInstant
@@ -100,7 +108,7 @@ trait SpecBase
       registrationDate = Some(LocalDate.now(stubClockAtArbitraryDate)),
       desAddress = DesAddress("Line 1", None, None, None, None, Some("AA11 1AA"), "GB"),
       partOfVatGroup = false,
-      organisationName = Some("Company name"),
+      organisationName = Some("Company Name"),
       singleMarketIndicator = true,
       individualName = None,
       deregistrationDecisionDate = Some(LocalDate.now(stubClockAtArbitraryDate)),

@@ -20,6 +20,7 @@ import base.SpecBase
 import models.Country
 import models.corrections.{CorrectionToCountry, PeriodWithCorrections}
 import play.api.libs.json.{JsNull, Json}
+import uk.gov.hmrc.domain.Vrn
 
 class CorrectionRequestSpec extends SpecBase {
 
@@ -37,9 +38,9 @@ class CorrectionRequestSpec extends SpecBase {
         )
       )
 
-      val correctionRequest = CorrectionRequest(vrn, period, corrections)
+      val correctionRequest = CorrectionRequest(Some(vrn), period, corrections)
 
-      correctionRequest.vrn mustBe vrn
+      correctionRequest.vrn.value mustBe vrn
       correctionRequest.period mustBe period
       correctionRequest.corrections mustBe corrections
     }
@@ -53,7 +54,7 @@ class CorrectionRequestSpec extends SpecBase {
         )
       )
 
-      val correctionRequest = CorrectionRequest(vrn, period, corrections)
+      val correctionRequest = CorrectionRequest(Some(vrn), period, corrections)
 
       correctionRequest.corrections.head.correctionsToCountry mustBe None
     }
@@ -70,7 +71,26 @@ class CorrectionRequestSpec extends SpecBase {
       )
     )
 
-    val correctionRequest = CorrectionRequest(vrn, period, corrections)
+    val correctionRequest = CorrectionRequest(Some(vrn), period, corrections)
+
+    val json = Json.toJson(correctionRequest)
+    val deserialized = json.as[CorrectionRequest]
+
+    deserialized mustBe correctionRequest
+  }
+
+  "serialize and deserialize correctly without Vrn" in {
+    val corrections = List(
+      PeriodWithCorrections(
+        correctionReturnPeriod = period,
+        correctionsToCountry = Some(List(CorrectionToCountry(
+          Country("FR", "France"),
+          Some(BigDecimal(1000))
+        )))
+      )
+    )
+
+    val correctionRequest = CorrectionRequest(None, period, corrections)
 
     val json = Json.toJson(correctionRequest)
     val deserialized = json.as[CorrectionRequest]
@@ -93,8 +113,8 @@ class CorrectionRequestSpec extends SpecBase {
 
   "fail to deserialize JSON with missing required fields" in {
     val invalidJson = Json.obj(
+      "vrn" -> Vrn("12345"),
       "period" -> period,
-      "corrections" -> Json.arr()
     )
 
     val result = invalidJson.validate[CorrectionRequest]
@@ -110,7 +130,7 @@ class CorrectionRequestSpec extends SpecBase {
       )
     )
 
-    val correctionRequest = CorrectionRequest(vrn, period, corrections)
+    val correctionRequest = CorrectionRequest(Some(vrn), period, corrections)
 
     correctionRequest.corrections.head.correctionsToCountry mustBe Some(List.empty)
   }

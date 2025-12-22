@@ -84,7 +84,7 @@ class CheckSubmittedReturnsFilterSpec extends SpecBase with MockitoSugar with Be
         .build()
 
       running(application) {
-        val request = DataRequest(FakeRequest(), testCredentials, vrn, iossNumber, registrationWrapper, None, completeUserAnswers)
+        val request = DataRequest(FakeRequest(), testCredentials, Some(vrn), iossNumber, companyName, registrationWrapper, None, completeUserAnswers)
         val controller = new Harness(mockConnector)
 
         val result = controller.callFilter(request).futureValue
@@ -105,7 +105,7 @@ class CheckSubmittedReturnsFilterSpec extends SpecBase with MockitoSugar with Be
           .build()
 
         running(application) {
-          val request = DataRequest(FakeRequest(), testCredentials, vrn, iossNumber, registrationWrapper, None, completeUserAnswers)
+          val request = DataRequest(FakeRequest(), testCredentials, Some(vrn), iossNumber, companyName, registrationWrapper, None, completeUserAnswers)
           val controller = new Harness(mockConnector)
 
           val result = controller.callFilter(request).futureValue
@@ -123,7 +123,7 @@ class CheckSubmittedReturnsFilterSpec extends SpecBase with MockitoSugar with Be
           .build()
 
         running(application) {
-          val request = DataRequest(FakeRequest(), testCredentials, vrn, iossNumber, registrationWrapper, None, completeUserAnswers)
+          val request = DataRequest(FakeRequest(), testCredentials, Some(vrn), iossNumber, companyName, registrationWrapper, None, completeUserAnswers)
           val controller = new Harness(mockConnector)
 
           val result = controller.callFilter(request).futureValue

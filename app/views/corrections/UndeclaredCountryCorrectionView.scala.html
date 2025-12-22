@@ -17,6 +17,7 @@
 @import components.ButtonGroup
 @import viewmodels.LegendSize
 @import pages.corrections.UndeclaredCountryCorrectionPage
+ 
 
 @this(
     layout: templates.Layout,
@@ -26,7 +27,8 @@
     button: ButtonGroup
 )
 
-@(form: Form[_], waypoints: Waypoints, period: Period, country: Country, correctionPeriod: Period, periodIndex:Index, countryIndex: Index)(implicit request: Request[_], messages: Messages)
+
+@(form: Form[_], waypoints: Waypoints, period: Period, country: Country, correctionPeriod: Period, periodIndex:Index, countryIndex: Index, isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, messages("undeclaredCountryCorrection.title"))) {
 
@@ -38,7 +40,13 @@
         }
 
         <header class="hmrc-page-heading">
-            <p class="govuk-caption-l hmrc-caption-l">@messages("undeclaredCountryCorrection.caption", correctionPeriod.displayText)</p>
+            <p class="govuk-caption-l hmrc-caption-l">@{
+                if(isIntermediary){
+                    messages("undeclaredCountryCorrection.intermediary.caption", companyName, correctionPeriod.displayText)
+                } else {
+                    messages("undeclaredCountryCorrection.caption", correctionPeriod.displayText)
+                }
+            }</p>
             <h1 class="govuk-heading-l">@messages("undeclaredCountryCorrection.heading", country.name)</h1>
         </header>
 

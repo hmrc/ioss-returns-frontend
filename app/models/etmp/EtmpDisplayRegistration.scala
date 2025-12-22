@@ -17,14 +17,18 @@
 package models.etmp
 
 import date.LocalDateOps
+import models.etmp.intermediary.EtmpCustomerIdentification
+import models.etmp.intermediary.EtmpIdType.VRN
 import play.api.libs.json.{Json, OFormat}
 
 import java.time.LocalDate
 
 case class EtmpDisplayRegistration(
+                                    customerIdentification: EtmpCustomerIdentification,
                                     tradingNames: Seq[EtmpTradingName],
                                     schemeDetails: EtmpSchemeDetails,
                                     bankDetails: Option[EtmpBankDetails],
+                                    otherAddress: Option[EtmpOtherAddress],
                                     // although ETMP send an array to us, they will only ever send 1 exclusion
                                     exclusions: Seq[EtmpExclusion],
                                     adminUse: EtmpAdminUse

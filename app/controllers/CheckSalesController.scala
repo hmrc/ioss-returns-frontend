@@ -65,16 +65,27 @@ class CheckSalesController @Inject()(
               data = getIncompleteVatRateAndSales _,
               onFailure = (incomplete: Seq[VatRateWithOptionalSalesFromCountry]) => {
                 Ok(view(
-                  form,
-                  waypoints,
-                  period,
-                  checkSalesSummary,
-                  countryIndex,
-                  country,
-                  canAddAnotherVatRate,
-                  incomplete)).toFuture
+                  form = form,
+                  waypoints = waypoints,
+                  period = period,
+                  checkSalesSummaryLists = checkSalesSummary,
+                  countryIndex = countryIndex,
+                  country = country,
+                  canAddAnotherVatRate = canAddAnotherVatRate,
+                  incompleteSales = incomplete,
+                  companyName = request.companyName,
+                  isIntermediary = request.isIntermediary)).toFuture
               }) {
-              Ok(view(form, waypoints, period, checkSalesSummary, countryIndex, country, canAddAnotherVatRate)).toFuture
+              Ok(view(
+                form = form,
+                waypoints = waypoints,
+                period = period,
+                checkSalesSummaryLists = checkSalesSummary,
+                countryIndex = countryIndex,
+                country = country,
+                canAddAnotherVatRate = canAddAnotherVatRate,
+                companyName = request.companyName,
+                isIntermediary = request.isIntermediary)).toFuture
             }
           }
         }
@@ -114,7 +125,7 @@ class CheckSalesController @Inject()(
               }) {
               form.bindFromRequest().fold(
                 formWithErrors =>
-                  BadRequest(view(formWithErrors, waypoints, period, checkSalesSummary, countryIndex, country, canAddAnotherVatRate, Seq.empty)).toFuture,
+                  BadRequest(view(formWithErrors, waypoints, period, checkSalesSummary, countryIndex, country, canAddAnotherVatRate, Seq.empty, request.companyName, request.isIntermediary)).toFuture,
 
                 value =>
                   for {

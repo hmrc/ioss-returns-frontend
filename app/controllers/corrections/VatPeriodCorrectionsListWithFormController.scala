@@ -62,7 +62,7 @@ class VatPeriodCorrectionsListWithFormController @Inject()(
               val correctionPeriodsWithNoVatCorrection = vatPeriodCorrectionsService
                 .getCorrectionPeriodsWhereCountryVatCorrectionMissesAtLeastOnce(periodWithCorrections)
 
-              Ok(view(form, waypoints, period, completedCorrectionPeriodsModel, correctionPeriodsWithNoVatCorrection))
+              Ok(view(form, waypoints, period, completedCorrectionPeriodsModel, correctionPeriodsWithNoVatCorrection, isIntermediary = request.isIntermediary, companyName = request.companyName))
             } orWhenEmpty {
               Redirect(controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(waypoints, period))
 
@@ -89,7 +89,7 @@ class VatPeriodCorrectionsListWithFormController @Inject()(
 
           form.bindFromRequest().fold(
             formWithErrors => {
-              BadRequest(view(formWithErrors, waypoints, period, completedCorrectionPeriodsModel, correctionPeriodsWithNoVatCorrection))
+              BadRequest(view(formWithErrors, waypoints, period, completedCorrectionPeriodsModel, correctionPeriodsWithNoVatCorrection, isIntermediary = request.isIntermediary, companyName = request.companyName))
             },
             value => {
               Redirect(VatPeriodCorrectionsListPage(period, value).navigate(waypoints, request.userAnswers, request.userAnswers).url)

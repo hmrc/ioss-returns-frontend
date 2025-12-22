@@ -22,7 +22,7 @@
     govukButton: GovukButton
 )
 
-@(form: Form[_], period: Period)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], period: Period, isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, messages("continueReturn.title"))) {
 
@@ -37,7 +37,7 @@
                 field  = form("value"),
                 legend = HmrcPageHeadingLegend(
                         content = messages("continueReturn.heading"),
-                        caption = period.displayText,
+                        caption =  if(isIntermediary) companyName + period.displayText else period.displayText,
                         classes = "govuk-fieldset__legend--l"
                         ),
                 items  = ContinueReturn.options

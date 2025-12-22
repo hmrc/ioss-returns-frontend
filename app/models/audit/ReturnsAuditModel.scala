@@ -16,9 +16,11 @@
 
 package models.audit
 
+import models.etmp.intermediary.EtmpIdType.VRN
+import models.etmp.intermediary.{EtmpCustomerIdentificationLegacy, EtmpCustomerIdentificationNew}
 import models.{UserAnswers, UserAnswersForAudit}
 import models.requests.DataRequest
-import play.api.libs.json.{Json, JsValue}
+import play.api.libs.json.{JsValue, Json}
 
 case class ReturnsAuditModel(
                               userId: String,
@@ -46,10 +48,14 @@ object ReturnsAuditModel {
              userAnswers: UserAnswers,
              submissionResult: SubmissionResult
            )(implicit request: DataRequest[_]): ReturnsAuditModel = {
+    val vrnOrAlternativeId: String = request.registrationWrapper.registration.customerIdentification match
+      case EtmpCustomerIdentificationNew(idType, idValue) if idType != VRN => idValue
+      case _ => request.vrnOrError.vrn
+
     ReturnsAuditModel(
       userId = request.credentials.providerId,
       userAgent = request.headers.get("user-agent").getOrElse(""),
-      vrn = request.vrn.vrn,
+      vrn = vrnOrAlternativeId,
       userAnswers = userAnswers.toUserAnswersForAudit,
       submissionResult = submissionResult
     )

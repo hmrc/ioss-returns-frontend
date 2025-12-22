@@ -159,7 +159,9 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 outstandingAmount,
                 vatDeclared,
                 displayPayNow = vatDeclared > 0 && outstandingAmount > 0,
-                returnIsExcludedAndOutstandingAmount = false
+                returnIsExcludedAndOutstandingAmount = false,
+                isIntermediary = false,
+                companyName = "Company Name"
               )(request, messages(application)).toString
           }
         }
@@ -237,7 +239,9 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 outstandingAmount,
                 vatDeclared,
                 displayPayNow = vatDeclared > 0 && outstandingAmount > 0,
-                returnIsExcludedAndOutstandingAmount = false
+                returnIsExcludedAndOutstandingAmount = false,
+                isIntermediary = false,
+                companyName = "Company Name"
               )(request, messages(application)).toString
           }
         }
@@ -326,7 +330,9 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 outstandingAmount,
                 vatDeclared,
                 displayPayNow = vatDeclared > 0 && outstandingAmount > 0,
-                returnIsExcludedAndOutstandingAmount = false
+                returnIsExcludedAndOutstandingAmount = false,
+                isIntermediary = false,
+                companyName = "Company Name"
               )(request, messages(application)).toString
           }
         }
@@ -422,7 +428,9 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 outstandingAmount,
                 vatDeclared,
                 displayPayNow = vatDeclared > 0 && outstandingAmount > 0,
-                returnIsExcludedAndOutstandingAmount = false
+                returnIsExcludedAndOutstandingAmount = false,
+                isIntermediary = false,
+                companyName = "Company Name"
               )(request, messages(application)).toString
           }
         }
@@ -498,7 +506,9 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 outstandingAmount,
                 vatDeclared,
                 displayPayNow = vatDeclared > 0 && outstandingAmount > 0,
-                returnIsExcludedAndOutstandingAmount = false
+                returnIsExcludedAndOutstandingAmount = false,
+                isIntermediary = false,
+                companyName = "Company Name"
               )(request, messages(application)).toString
           }
         }
@@ -530,7 +540,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             )
 
             val registrationWrapper = RegistrationWrapper(
-              vatInfo = arbitraryVatInfo.arbitrary.sample.value,
+              vatInfo = Some(arbitraryVatInfo.arbitrary.sample.value),
               registration = etmpDisplayRegistration.copy(exclusions = Seq(etmpExclusion))
             )
 
@@ -549,8 +559,9 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 OptionalDataRequest(
                   FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoad(waypoints, exceededPeriod).url),
                   testCredentials,
-                  vrn,
+                  Some(vrn),
                   iossNumber,
+                  companyName,
                   registrationWrapper,
                   None,
                   None
@@ -612,7 +623,9 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                   outstandingAmount,
                   vatDeclared,
                   displayPayNow = false,
-                  returnIsExcludedAndOutstandingAmount = false
+                  returnIsExcludedAndOutstandingAmount = false,
+                  isIntermediary = false,
+                  companyName = "Company Name"
                 )(request, messages(application)).toString
             }
           }
@@ -643,7 +656,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             )
 
             val registrationWrapper = RegistrationWrapper(
-              vatInfo = arbitraryVatInfo.arbitrary.sample.value,
+              vatInfo = Some(arbitraryVatInfo.arbitrary.sample.value),
               registration = etmpDisplayRegistration.copy(exclusions = Seq(etmpExclusion))
             )
 
@@ -662,8 +675,9 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 OptionalDataRequest(
                   FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoad(waypoints, exceededPeriod).url),
                   testCredentials,
-                  vrn,
+                  Some(vrn),
                   iossNumber,
+                  companyName,
                   registrationWrapper,
                   None,
                   None
@@ -725,7 +739,9 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                   outstandingAmount,
                   vatDeclared,
                   displayPayNow = false,
-                  returnIsExcludedAndOutstandingAmount = true
+                  returnIsExcludedAndOutstandingAmount = true,
+                  isIntermediary = false,
+                  companyName = "Company Name"
                 )(request, messages(application)).toString
             }
           }
@@ -830,7 +846,9 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 outstandingAmount,
                 vatDeclared,
                 displayPayNow = vatDeclared > 0 && outstandingAmount > 0,
-                returnIsExcludedAndOutstandingAmount = false
+                returnIsExcludedAndOutstandingAmount = false,
+                isIntermediary = false,
+                companyName = "Company Name"
               )(request, messages(application)).toString
           }
         }
@@ -910,7 +928,9 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 outstandingAmount,
                 vatDeclared,
                 displayPayNow = vatDeclared > 0 && outstandingAmount > 0,
-                returnIsExcludedAndOutstandingAmount = false
+                returnIsExcludedAndOutstandingAmount = false,
+                isIntermediary = false,
+                companyName = "Company Name"
               )(request, messages(application)).toString
           }
         }
@@ -999,7 +1019,9 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 outstandingAmount,
                 vatDeclared,
                 displayPayNow = vatDeclared > 0 && outstandingAmount > 0,
-                returnIsExcludedAndOutstandingAmount = false
+                returnIsExcludedAndOutstandingAmount = false,
+                isIntermediary = false,
+                companyName = "Company Name"
               )(request, messages(application)).toString
           }
         }
@@ -1097,7 +1119,9 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 outstandingAmount,
                 vatDeclared,
                 displayPayNow = vatDeclared > 0 && outstandingAmount > 0,
-                returnIsExcludedAndOutstandingAmount = false
+                returnIsExcludedAndOutstandingAmount = false,
+                isIntermediary = false,
+                companyName = "Company Name"
               )(request, messages(application)).toString
           }
         }
@@ -1176,7 +1200,9 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 outstandingAmount,
                 vatDeclared,
                 displayPayNow = vatDeclared > 0 && outstandingAmount > 0,
-                returnIsExcludedAndOutstandingAmount = false
+                returnIsExcludedAndOutstandingAmount = false,
+                isIntermediary = false,
+                companyName = "Company Name"
               )(request, messages(application)).toString
           }
         }
@@ -1208,7 +1234,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             )
 
             val registrationWrapper = RegistrationWrapper(
-              vatInfo = arbitraryVatInfo.arbitrary.sample.value,
+              vatInfo = Some(arbitraryVatInfo.arbitrary.sample.value),
               registration = etmpDisplayRegistration.copy(exclusions = Seq(etmpExclusion))
             )
 
@@ -1229,8 +1255,9 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 OptionalDataRequest(
                   FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoadForIossNumber(waypoints, exceededPeriod, iossNumber).url),
                   testCredentials,
-                  vrn,
+                  Some(vrn),
                   iossNumber,
+                  companyName,
                   registrationWrapper,
                   None,
                   None
@@ -1292,7 +1319,9 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                   outstandingAmount,
                   vatDeclared,
                   displayPayNow = false,
-                  returnIsExcludedAndOutstandingAmount = false
+                  returnIsExcludedAndOutstandingAmount = false,
+                  isIntermediary = false,
+                  companyName = "Company Name"
                 )(request, messages(application)).toString
             }
           }
@@ -1323,7 +1352,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             )
 
             val registrationWrapper = RegistrationWrapper(
-              vatInfo = arbitraryVatInfo.arbitrary.sample.value,
+              vatInfo = Some(arbitraryVatInfo.arbitrary.sample.value),
               registration = etmpDisplayRegistration.copy(exclusions = Seq(etmpExclusion))
             )
 
@@ -1344,8 +1373,9 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 OptionalDataRequest(
                   FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoadForIossNumber(waypoints, exceededPeriod, iossNumber).url),
                   testCredentials,
-                  vrn,
+                  Some(vrn),
                   iossNumber,
+                  companyName,
                   registrationWrapper,
                   None,
                   None
@@ -1407,7 +1437,9 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                   outstandingAmount,
                   vatDeclared,
                   displayPayNow = false,
-                  returnIsExcludedAndOutstandingAmount = true
+                  returnIsExcludedAndOutstandingAmount = true,
+                  isIntermediary = false,
+                  companyName = "Company Name"
                 )(request, messages(application)).toString
             }
           }

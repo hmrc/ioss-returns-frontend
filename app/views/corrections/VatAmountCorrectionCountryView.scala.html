@@ -18,7 +18,7 @@
 @import viewmodels.InputWidth._
 @import components.ButtonGroup
 @import pages.corrections.VatAmountCorrectionCountryPage
-
+ 
 @this(
         layout: templates.Layout,
         formHelper: FormWithCSRF,
@@ -26,6 +26,7 @@
         govukInput: GovukInput,
         button: ButtonGroup
 )
+
 
 @(
         form: Form[_],
@@ -36,13 +37,19 @@
         countryIndex: Index,
         country: Country,
         isCountryPreviouslyDeclared: Boolean,
-        previouslyDeclaredAmount: BigDecimal
+        previouslyDeclaredAmount: BigDecimal,
+        isIntermediary: Boolean,
+        companyName: String
 )(implicit request: Request[_], messages: Messages)
 
     @layout(pageTitle = title(
         form,
         messages("vatAmountCorrectionCountry.title", country.name),
-        Some(messages("caption.fromCountry.periodAndCountry", correctionPeriod.displayText, country.name))
+        if(isIntermediary) {
+            Some(messages("caption.intermediary.fromCountry.periodAndCountry", companyName, correctionPeriod.displayText, country.name))
+        } else {
+            Some(messages("caption.fromCountry.periodAndCountry", correctionPeriod.displayText, country.name))
+        }
     )) {
 
         @formHelper(action = controllers.corrections.routes.VatAmountCorrectionCountryController.onSubmit(waypoints, periodIndex, countryIndex), Symbol("autoComplete") -> "off") {
@@ -56,7 +63,11 @@
                     field = form("value"),
                     label = HmrcPageHeadingLabel(
                         content = messages("vatAmountCorrectionCountry.heading", country.name),
-                        caption = messages("vatAmountCorrectionCountry.caption", correctionPeriod.displayText),
+                        caption = if(isIntermediary) {
+                            messages("vatAmountCorrectionCountry.intermediary.caption", companyName, correctionPeriod.displayText)
+                        } else {
+                            messages("vatAmountCorrectionCountry.caption", correctionPeriod.displayText)
+                        },
                         classes = "govuk-label--l"
                     )
                 )

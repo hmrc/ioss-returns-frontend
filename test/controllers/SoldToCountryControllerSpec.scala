@@ -54,7 +54,7 @@ class SoldToCountryControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[SoldToCountryView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, waypoints, period, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, waypoints, period, index, false, "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -72,7 +72,7 @@ class SoldToCountryControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(country), waypoints, period, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form.fill(country), waypoints, period, index, false, "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -117,7 +117,7 @@ class SoldToCountryControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, waypoints, period, index)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, waypoints, period, index, false, "Company Name")(request, messages(application)).toString
       }
     }
 

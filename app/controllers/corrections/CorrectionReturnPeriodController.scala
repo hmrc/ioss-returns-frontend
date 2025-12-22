@@ -82,7 +82,7 @@ class CorrectionReturnPeriodController @Inject()(
           case Some(value) => form.fill(value)
         }
 
-        Ok(view(preparedForm, waypoints, period, uncompletedCorrectionPeriods, index))
+        Ok(view(preparedForm, waypoints, period, uncompletedCorrectionPeriods, index, request.isIntermediary, request.companyName))
 
       }
   }
@@ -121,7 +121,7 @@ class CorrectionReturnPeriodController @Inject()(
         form.bindFromRequest().fold(
           formWithErrors => {
             Future.successful(BadRequest(
-              view(formWithErrors, waypoints, period, correctionPeriod, index)
+              view(formWithErrors, waypoints, period, correctionPeriod, index, request.isIntermediary, request.companyName)
             ))
           },
 

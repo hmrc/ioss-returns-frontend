@@ -17,6 +17,7 @@
 package controllers.actions
 
 import base.SpecBase
+import config.Constants.ukCountryCodeAreaPrefix
 import config.FrontendAppConfig
 import connectors.{IntermediaryRegistrationConnector, RegistrationConnector}
 import models.RegistrationWrapper
@@ -62,7 +63,12 @@ class GetRegistrationActionSpec extends SpecBase with MockitoSugar with EitherVa
 
       "must save the registration to the sessionRepository and return Right" in {
 
-        val registrationWrapper = Arbitrary.arbitrary[RegistrationWrapper].sample.value
+        val arbitrayVatInfo = arbitraryVatInfo.arbitrary.sample.value
+        val ukBasedDesAddress = arbitrayVatInfo.desAddress.copy(countryCode = ukCountryCodeAreaPrefix)
+        val ukBasedVatInfo = arbitrayVatInfo.copy(desAddress = ukBasedDesAddress)
+
+        val registrationWrapper = Arbitrary.arbitrary[RegistrationWrapper].sample.value.copy(
+          vatInfo = Some(ukBasedVatInfo))
 
         val request = FakeRequest()
         val accountService = mock[AccountService]

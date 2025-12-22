@@ -47,7 +47,7 @@ class RemovePeriodCorrectionController @Inject()(
 
         val preparedForm: Form[Boolean] = formProvider(correctionPeriod)
 
-        Ok(view(preparedForm, waypoints, request.userAnswers.period, periodIndex, correctionPeriod)).toFuture
+        Ok(view(preparedForm, waypoints, request.userAnswers.period, periodIndex, correctionPeriod, request.isIntermediary, request.companyName)).toFuture
       }
   }
 
@@ -60,7 +60,7 @@ class RemovePeriodCorrectionController @Inject()(
 
         form.bindFromRequest().fold(
           formWithErrors =>
-            Future.successful(BadRequest(view(formWithErrors, waypoints, request.userAnswers.period, periodIndex, correctionPeriod))),
+            Future.successful(BadRequest(view(formWithErrors, waypoints, request.userAnswers.period, periodIndex, correctionPeriod, request.isIntermediary, request.companyName))),
 
           value =>
             if (value) {

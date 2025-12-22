@@ -113,7 +113,9 @@ class SubmittedReturnForPeriodController @Inject()(
           totalVatPayable = outstanding,
           vatDeclared = vatDeclared,
           displayPayNow = displayPayNow,
-          returnIsExcludedAndOutstandingAmount = returnIsExcludedAndOutstandingAmount
+          returnIsExcludedAndOutstandingAmount = returnIsExcludedAndOutstandingAmount,
+          isIntermediary = request.isIntermediary,
+          companyName = request.companyName
         )))
 
       case (Left(error), _) =>

@@ -68,10 +68,12 @@ class CorrectionListCountriesController @Inject()(
                   correctionPeriod,
                   periodIndex,
                   canAddCountries,
-                  incompleteCorrections.map(_.correctionCountry.name)
+                  incompleteCorrections.map(_.correctionCountry.name),
+                  request.isIntermediary,
+                  request.companyName
                 ))
               }) {
-              Ok(view(form, waypoints, list, period, correctionPeriod, periodIndex, canAddCountries, Seq.empty))
+              Ok(view(form, waypoints, list, period, correctionPeriod, periodIndex, canAddCountries, Seq.empty, request.isIntermediary, request.companyName))
             }
         }
 
@@ -105,7 +107,7 @@ class CorrectionListCountriesController @Inject()(
 
             form.bindFromRequest().fold(
               formWithErrors =>
-                Future.successful(BadRequest(view(formWithErrors, waypoints, list, period, correctionPeriod, periodIndex, canAddCountries, Seq.empty))),
+                Future.successful(BadRequest(view(formWithErrors, waypoints, list, period, correctionPeriod, periodIndex, canAddCountries, Seq.empty, request.isIntermediary, request.companyName))),
 
               value =>
                 for {

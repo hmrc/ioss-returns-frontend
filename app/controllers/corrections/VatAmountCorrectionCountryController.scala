@@ -70,7 +70,9 @@ class VatAmountCorrectionCountryController @Inject()(
               countryIndex,
               country,
               isCountryPreviouslyDeclared,
-              previouslyDeclaredAmount
+              previouslyDeclaredAmount,
+              request.isIntermediary,
+              request.companyName
             )).toFuture
           }
         }
@@ -103,7 +105,9 @@ class VatAmountCorrectionCountryController @Inject()(
                   countryIndex,
                   country,
                   isCountryPreviouslyDeclared,
-                  previouslyDeclaredAmount
+                  previouslyDeclaredAmount,
+                  request.isIntermediary,
+                  request.companyName
                 )).toFuture,
               value =>
 

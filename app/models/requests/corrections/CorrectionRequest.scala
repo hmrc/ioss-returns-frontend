@@ -22,7 +22,7 @@ import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.domain.Vrn
 
 case class CorrectionRequest(
-                       vrn: Vrn,
+                       vrn: Option[Vrn],
                        period: StandardPeriod,
                        corrections: List[PeriodWithCorrections]
                        )

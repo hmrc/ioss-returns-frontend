@@ -22,9 +22,11 @@
         govukButton: GovukButton
 )
 
-@(form: Form[_], waypoints: Waypoints, period: Period, periodIndex: Index, countryIndex: Index, country: Country)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, period: Period, periodIndex: Index, countryIndex: Index, country: Country, isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
 
   @layout(pageTitle = title(form, messages("removeCountryCorrection.title", country.name))) {
+
+    @if(isIntermediary){<p class="govuk-caption-l hmrc-caption-l">@companyName</p>}
 
     @formHelper(action = controllers.corrections.routes.RemoveCountryCorrectionController.onSubmit(waypoints, periodIndex, countryIndex), Symbol("autoComplete") -> "off") {
 
