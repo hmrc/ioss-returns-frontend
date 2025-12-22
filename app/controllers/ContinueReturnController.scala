@@ -39,7 +39,7 @@ class ContinueReturnController @Inject()(
   def onPageLoad(period: Period): Action[AnyContent] = cc.authAndRequireData() {
     implicit request =>
       request.userAnswers.get(SavedProgressPage).map(
-        _ => Ok(view(form, request.userAnswers.period, request.isIntermediary, request.companyName))
+        _ => Ok(view(form, request.userAnswers.period))
       ).getOrElse(
         Redirect(controllers.routes.StartReturnController.onPageLoad(period = period))
       )
@@ -50,7 +50,7 @@ class ContinueReturnController @Inject()(
     implicit request =>
       form.bindFromRequest().fold(
         formWithErrors =>
-          BadRequest(view(formWithErrors, request.userAnswers.period, request.isIntermediary, request.companyName)),
+          BadRequest(view(formWithErrors, request.userAnswers.period)),
         value =>
           Redirect(ContinueReturnPage.navigate(request.userAnswers, value))
       )

@@ -17,14 +17,13 @@
 package generators
 
 import connectors.SavedUserAnswers
-import org.scalacheck.Gen.const
 import config.Constants.{maxCurrencyAmount, minCurrencyAmount}
 import models.*
 import models.core.{CoreCorrection, CoreMsconSupply, CorePeriod, CoreSupply, CoreTraderId, CoreVatReturn}
 import models.corrections.ReturnCorrectionValue
 import models.enrolments.{EACDEnrolment, EACDEnrolments, EACDIdentifiers}
 import models.etmp.*
-import models.etmp.intermediary.{EtmpClientDetails, EtmpCustomerIdentification, EtmpCustomerIdentificationLegacy, EtmpCustomerIdentificationNew, EtmpIdType, EtmpIntermediaryDetails, EtmpIntermediaryDisplayRegistration, EtmpIntermediaryDisplaySchemeDetails, IntermediaryRegistrationWrapper, IntermediaryVatCustomerInfo}
+import models.etmp.intermediary.{EtmpClientDetails, EtmpCustomerIdentification, EtmpIdType, EtmpIntermediaryDetails, EtmpIntermediaryDisplayRegistration, EtmpIntermediaryDisplaySchemeDetails, IntermediaryRegistrationWrapper, IntermediaryVatCustomerInfo}
 import models.financialdata.Charge
 import models.payments.{Payment, PaymentStatus, PrepareData}
 import org.scalacheck.Arbitrary.arbitrary
@@ -32,7 +31,6 @@ import org.scalacheck.{Arbitrary, Gen}
 import play.api.libs.json.{JsObject, Json}
 import queries.{OptionalSalesAtVatRate, SalesToCountryWithOptionalSales, VatRateWithOptionalSalesFromCountry}
 import viewmodels.previousReturns.PreviousRegistration
-import uk.gov.hmrc.domain.Vrn
 
 import java.time.temporal.ChronoUnit
 import java.time.{Instant, LocalDate, LocalDateTime, Month}
@@ -361,77 +359,28 @@ trait ModelGenerators {
       } yield EtmpAdminUse(Some(changeDate))
     }
 
-  implicit val arbitraryEtmpOtherAddress: Arbitrary[EtmpOtherAddress] = Arbitrary {
+  implicit val arbitraryEtmpDisplayRegistration: Arbitrary[EtmpDisplayRegistration] = Arbitrary {
     for {
-      issuedBy <- arbitrary[String]
-      tradingName <- arbitrary[String]
-      addressLine1 <- arbitrary[String]
-      addressLine2 <- arbitrary[String]
-      townOrCity <- arbitrary[String]
-      regionOrState <- arbitrary[String]
-      postcode <- arbitrary[String]
-    } yield EtmpOtherAddress(
-      issuedBy = issuedBy,
-      tradingName = Some(tradingName),
-      addressLine1 = addressLine1,
-      addressLine2 = Some(addressLine2),
-      townOrCity = townOrCity,
-      regionOrState = Some(regionOrState),
-      postcode = Some(postcode)
-    )
-  }
-  implicit val arbitraryEtmpDisplayRegistrationLegacy: Arbitrary[EtmpDisplayRegistration] = Arbitrary {
-    for {
-      vrn <- Gen.alphaStr
       etmpTradingNames <- Gen.listOfN(2, arbitraryEtmpTradingName.arbitrary)
       schemeDetails <- arbitrary[EtmpSchemeDetails]
       bankDetails <- arbitrary[EtmpBankDetails]
       exclusions <- Gen.listOfN(1, arbitraryEtmpExclusion.arbitrary)
       adminUse <- arbitrary[EtmpAdminUse]
     } yield EtmpDisplayRegistration(
-      EtmpCustomerIdentificationLegacy(Vrn(vrn)),
       etmpTradingNames,
       schemeDetails,
       Some(bankDetails),
-      otherAddress = None,
-      exclusions,
-      adminUse
-    )
-  }
-  
-  implicit val arbitraryEtmpDisplayRegistrationNew: Arbitrary[EtmpDisplayRegistration] = Arbitrary {
-    for {
-      etmpIdType <- Gen.oneOf(EtmpIdType.values)
-      idValue <- Gen.alphaStr
-      etmpTradingNames <- Gen.listOfN(2, arbitraryEtmpTradingName.arbitrary)
-      schemeDetails <- arbitrary[EtmpSchemeDetails]
-      bankDetails <- arbitrary[EtmpBankDetails]
-      exclusions <- Gen.listOfN(1, arbitraryEtmpExclusion.arbitrary)
-      adminUse <- arbitrary[EtmpAdminUse]
-    } yield EtmpDisplayRegistration(
-      EtmpCustomerIdentificationNew(etmpIdType, idValue),
-      etmpTradingNames,
-      schemeDetails,
-      Some(bankDetails),
-      otherAddress = None,
       exclusions,
       adminUse
     )
   }
 
-  implicit lazy val arbitraryEtmpCustomerIdentificationLegacy: Arbitrary[EtmpCustomerIdentificationLegacy] =
-    Arbitrary {
-      for {
-        idValue <- Gen.alphaStr
-      } yield EtmpCustomerIdentificationLegacy(Vrn(idValue))
-    }
-    
-  implicit lazy val arbitraryEtmpCustomerIdentificationNew: Arbitrary[EtmpCustomerIdentificationNew] =
+  implicit lazy val arbitraryEtmpCustomerIdentification: Arbitrary[EtmpCustomerIdentification] =
     Arbitrary {
       for {
         etmpIdType <- Gen.oneOf(EtmpIdType.values)
         idValue <- Gen.alphaStr
-      } yield EtmpCustomerIdentificationNew(etmpIdType, idValue)
+      } yield EtmpCustomerIdentification(etmpIdType, idValue)
     }
 
   implicit lazy val arbitraryEtmpClientDetails: Arbitrary[EtmpClientDetails] =
@@ -469,7 +418,7 @@ trait ModelGenerators {
 
   implicit val arbitraryEtmpIntermediaryDisplayRegistration: Arbitrary[EtmpIntermediaryDisplayRegistration] = Arbitrary {
     for {
-      etmpCustomerIdentification <- arbitraryEtmpCustomerIdentificationNew.arbitrary
+      etmpCustomerIdentification <- arbitrary[EtmpCustomerIdentification]
       etmpTradingNames <- Gen.listOfN(2, arbitraryEtmpTradingName.arbitrary)
       numberOfClients <- Gen.choose(1, 10)
       etmpClientDetails <- Gen.listOfN(numberOfClients, arbitrary[EtmpClientDetails])
@@ -493,8 +442,8 @@ trait ModelGenerators {
   implicit val arbitraryRegistrationWrapper: Arbitrary[RegistrationWrapper] = Arbitrary {
     for {
       vatInfo <- arbitrary[VatCustomerInfo]
-      registration <- arbitraryEtmpDisplayRegistrationNew.arbitrary
-    } yield RegistrationWrapper(Some(vatInfo), registration)
+      registration <- arbitrary[EtmpDisplayRegistration]
+    } yield RegistrationWrapper(vatInfo, registration)
   }
 
   implicit val arbitraryIntermediaryRegistrationWrapper: Arbitrary[IntermediaryRegistrationWrapper] = Arbitrary {

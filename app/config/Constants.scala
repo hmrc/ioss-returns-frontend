@@ -23,6 +23,5 @@ object Constants {
     val correctionsPeriodsLimit: Int = 3
     val periodYear: Int = 2023
     val submittedReturnsPeriodsLimit: Int = 6
-    val ukCountryCodeAreaPrefix: String = "GB"
 
 }

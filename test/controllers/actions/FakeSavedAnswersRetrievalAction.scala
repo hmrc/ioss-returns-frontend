@@ -31,7 +31,7 @@ class FakeSavedAnswersRetrievalAction(dataToReturn: Option[UserAnswers])
   )(ExecutionContext.Implicits.global) {
 
   override protected def transform[A](request: RegistrationRequest[A]): Future[OptionalDataRequest[A]] =
-    Future(OptionalDataRequest(request.request, request.credentials, request.vrn, request.iossNumber, request.companyName, request.registrationWrapper, None, dataToReturn))
+    Future(OptionalDataRequest(request.request, request.credentials, request.vrn, request.iossNumber, request.registrationWrapper, None, dataToReturn))
 }
 
 class FakeSavedAnswersRetrievalActionProvider(dataToReturn: Option[UserAnswers])

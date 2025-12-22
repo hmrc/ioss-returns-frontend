@@ -54,7 +54,7 @@ class SalesToCountryController @Inject()(
             case None => form
             case Some(value) => form.fill(value)
           }
-          Ok(view(preparedForm, waypoints, period, countryIndex, vatRateIndex, vatRate, country, request.isIntermediary, request.companyName))
+          Ok(view(preparedForm, waypoints, period, countryIndex, vatRateIndex, vatRate, country))
       }
   }
 
@@ -68,7 +68,7 @@ class SalesToCountryController @Inject()(
 
           form.bindFromRequest().fold(
             formWithErrors =>
-              BadRequest(view(formWithErrors, waypoints, period, countryIndex, vatRateIndex, vatRate, country, request.isIntermediary, request.companyName)).toFuture,
+              BadRequest(view(formWithErrors, waypoints, period, countryIndex, vatRateIndex, vatRate, country)).toFuture,
 
             value =>
               for {

@@ -44,6 +44,6 @@ class SubmittedReturnsHistoryController @Inject()(
       for {
         periodWithFinancialData <- periodWithFinancialDataService.getPeriodWithFinancialData(request.iossNumber)
         previousRegistrations <- previousRegistrationService.getPreviousRegistrations(request.isIntermediary)
-      } yield Ok(view(waypoints, periodWithFinancialData, previousRegistrations, isIntermediary = request.isIntermediary, companyName = request.companyName))
+      } yield Ok(view(waypoints, periodWithFinancialData, previousRegistrations))
   }
 }

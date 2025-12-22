@@ -77,7 +77,7 @@ class ViewReturnsMultipleRegControllerSpec extends SpecBase with BeforeAndAfterE
 
         status(result) mustBe OK
         contentAsString(result) mustBe
-          view(waypoints, selectedPreviousRegistration.previousRegistration, periodsWithFinancialData, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
+          view(waypoints, selectedPreviousRegistration.previousRegistration, periodsWithFinancialData)(request, messages(application)).toString
       }
     }
 
@@ -148,7 +148,7 @@ class ViewReturnsMultipleRegControllerSpec extends SpecBase with BeforeAndAfterE
 
         status(result) mustBe OK
         contentAsString(result) mustBe
-          view(waypoints, previousRegistrations.head, periodsWithFinancialData, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
+          view(waypoints, previousRegistrations.head, periodsWithFinancialData)(request, messages(application)).toString
       }
     }
 

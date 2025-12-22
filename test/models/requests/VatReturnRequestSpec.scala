@@ -37,23 +37,7 @@ class VatReturnRequestSpec extends SpecBase {
           List(SalesDetails(VatRate(20, DomainVatRateType.Standard), Some(1000), VatOnSales(VatOnSalesChoice.Standard, 200)))
         )
       )
-      val vatReturnRequest = VatReturnRequest(Some(vrn), period, startDate, endDate, sales)
-
-      val json = Json.toJson(vatReturnRequest)
-      val deserialized = json.as[VatReturnRequest]
-
-      deserialized mustBe vatReturnRequest
-    }
-    "serialize and deserialize correctly without Vrn" in {
-      val startDate = Some(LocalDate.of(2024, 1, 1))
-      val endDate = Some(LocalDate.of(2024, 12, 31))
-      val sales = List(
-        SalesToCountry(
-          Country("AT", "Austria"),
-          List(SalesDetails(VatRate(20, DomainVatRateType.Standard), Some(1000), VatOnSales(VatOnSalesChoice.Standard, 200)))
-        )
-      )
-      val vatReturnRequest = VatReturnRequest(None, period, startDate, endDate, sales)
+      val vatReturnRequest = VatReturnRequest(vrn, period, startDate, endDate, sales)
 
       val json = Json.toJson(vatReturnRequest)
       val deserialized = json.as[VatReturnRequest]
@@ -65,7 +49,7 @@ class VatReturnRequestSpec extends SpecBase {
       val startDate = Some(LocalDate.of(2024, 1, 1))
       val endDate = Some(LocalDate.of(2024, 12, 31))
 
-      val vatReturnRequest = VatReturnRequest(Some(vrn), period, startDate, endDate, Nil)
+      val vatReturnRequest = VatReturnRequest(vrn, period, startDate, endDate, Nil)
 
       vatReturnRequest.sales mustBe Nil
     }

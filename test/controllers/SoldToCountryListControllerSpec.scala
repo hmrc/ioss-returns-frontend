@@ -72,7 +72,7 @@ class SoldToCountryListControllerSpec extends SpecBase with MockitoSugar {
         val list = SoldToCountryListSummary.addToListRows(baseAnswers, waypoints, SoldToCountryListPage())
 
         status(result) mustBe OK
-        contentAsString(result) mustBe view(form, waypoints, period, list, canAddSales = true, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
+        contentAsString(result) mustBe view(form, waypoints, period, list, canAddSales = true)(request, messages(application)).toString
       }
     }
 
@@ -93,7 +93,7 @@ class SoldToCountryListControllerSpec extends SpecBase with MockitoSugar {
         val list = SoldToCountryListSummary.addToListRows(baseAnswers, waypoints, SoldToCountryListPage())
 
         status(result) mustBe OK
-        contentAsString(result) must not be view(form.fill(true), waypoints, period, list, canAddSales = true, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
+        contentAsString(result) must not be view(form.fill(true), waypoints, period, list, canAddSales = true)(request, messages(application)).toString
       }
     }
 
@@ -120,7 +120,7 @@ class SoldToCountryListControllerSpec extends SpecBase with MockitoSugar {
         val list = SoldToCountryListSummary.addToListRows(userAnswers, waypoints, SoldToCountryListPage())
 
         status(result) mustBe OK
-        contentAsString(result) mustBe view(form, waypoints, period, list, canAddSales = false, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
+        contentAsString(result) mustBe view(form, waypoints, period, list, canAddSales = false)(request, messages(application)).toString
       }
     }
 
@@ -147,7 +147,7 @@ class SoldToCountryListControllerSpec extends SpecBase with MockitoSugar {
         val list = SoldToCountryListSummary.addToListRows(userAnswers, waypoints, SoldToCountryListPage())
 
         status(result) mustBe OK
-        contentAsString(result) mustBe view(form, waypoints, period, list, canAddSales = true, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
+        contentAsString(result) mustBe view(form, waypoints, period, list, canAddSales = true)(request, messages(application)).toString
       }
     }
 
@@ -197,7 +197,7 @@ class SoldToCountryListControllerSpec extends SpecBase with MockitoSugar {
         val list = SoldToCountryListSummary.addToListRows(baseAnswers, waypoints, SoldToCountryListPage())
 
         status(result) mustBe BAD_REQUEST
-        contentAsString(result) mustBe view(boundForm, waypoints, period, list, canAddSales = true, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
+        contentAsString(result) mustBe view(boundForm, waypoints, period, list, canAddSales = true)(request, messages(application)).toString
       }
     }
 
@@ -271,9 +271,7 @@ class SoldToCountryListControllerSpec extends SpecBase with MockitoSugar {
           period,
           salesSummary,
           canAddSales = true,
-          incompleteCountries,
-          isIntermediary = false,
-          companyName = "Company Name"
+          incompleteCountries
         )(request, messages(application)).toString
       }
     }

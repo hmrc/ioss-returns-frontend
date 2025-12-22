@@ -18,7 +18,6 @@
 @import viewmodels.LegendSize
 @import components.ButtonGroup
 
-
 @this(
         layout: templates.Layout,
         formHelper: FormWithCSRF,
@@ -36,9 +35,7 @@
     period: Period,
     salesList: Seq[ListItem],
     canAddSales: Boolean,
-    incompleteCountries: Seq[Country] = List.empty,
-    isIntermediary: Boolean,
-    companyName: String
+    incompleteCountries: Seq[Country] = List.empty
 )(implicit request: Request[_], messages: Messages)
 
 @titleText = @{
@@ -57,7 +54,7 @@
 
 @layout(pageTitle = title(form, titleText)) {
 
-    @if(isIntermediary){<p class="govuk-caption-l hmrc-caption-l">@{companyName + period.displayText}</p>}
+
     @if(form.errors.nonEmpty) {
         @govukErrorSummary(ErrorSummaryViewModel(form))
     }

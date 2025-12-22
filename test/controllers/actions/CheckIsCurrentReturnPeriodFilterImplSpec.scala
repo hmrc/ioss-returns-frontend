@@ -64,7 +64,7 @@ class CheckIsCurrentReturnPeriodFilterImplSpec extends SpecBase with BeforeAndAf
           CurrentReturns(returns = returns, excluded = false, finalReturnsCompleted = false, completeOrExcludedReturns = List.empty)
         )))
 
-      val request = OptionalDataRequest(FakeRequest(), testCredentials, Some(vrn), iossNumber, companyName, registrationWrapper, None, Some(completeUserAnswers))
+      val request = OptionalDataRequest(FakeRequest(), testCredentials, vrn, iossNumber, registrationWrapper, None, Some(completeUserAnswers))
       val controller = new Harness(middlePeriod)
 
       val result = controller.callFilter(request).futureValue
@@ -97,7 +97,7 @@ class CheckIsCurrentReturnPeriodFilterImplSpec extends SpecBase with BeforeAndAf
         when(mockReturnStatusConnector.getCurrentReturns(ArgumentMatchers.eq(iossNumber))(any()))
           .thenReturn(Future.successful(Right(currentReturns)))
 
-        val request = OptionalDataRequest(FakeRequest(), testCredentials, Some(vrn), iossNumber, companyName, registrationWrapper, None, Some(completeUserAnswers))
+        val request = OptionalDataRequest(FakeRequest(), testCredentials, vrn, iossNumber, registrationWrapper, None, Some(completeUserAnswers))
         val controller = new Harness(middlePeriod)
 
         val result = controller.callFilter(request).futureValue
@@ -132,7 +132,7 @@ class CheckIsCurrentReturnPeriodFilterImplSpec extends SpecBase with BeforeAndAf
         when(mockReturnStatusConnector.getCurrentReturns(ArgumentMatchers.eq(iossNumber))(any()))
           .thenReturn(Future.successful(Right(currentReturns)))
 
-        val request = OptionalDataRequest(FakeRequest(), testCredentials, Some(vrn), iossNumber, companyName, registrationWrapper, None, Some(completeUserAnswers))
+        val request = OptionalDataRequest(FakeRequest(), testCredentials, vrn, iossNumber, registrationWrapper, None, Some(completeUserAnswers))
         val controller = new Harness(middlePeriod)
 
         val result = controller.callFilter(request).futureValue
@@ -161,7 +161,7 @@ class CheckIsCurrentReturnPeriodFilterImplSpec extends SpecBase with BeforeAndAf
       when(mockReturnStatusConnector.getCurrentReturns(ArgumentMatchers.eq(iossNumber))(any()))
         .thenReturn(Future.successful(Right(currentReturns)))
 
-      val request = OptionalDataRequest(FakeRequest(), testCredentials, Some(vrn), iossNumber, companyName, registrationWrapper, None, Some(completeUserAnswers))
+      val request = OptionalDataRequest(FakeRequest(), testCredentials, vrn, iossNumber, registrationWrapper, None, Some(completeUserAnswers))
       val controller = new Harness(earliestPeriod)
 
       val result = controller.callFilter(request).futureValue
@@ -185,7 +185,7 @@ class CheckIsCurrentReturnPeriodFilterImplSpec extends SpecBase with BeforeAndAf
       when(mockReturnStatusConnector.getCurrentReturns(ArgumentMatchers.eq(iossNumber))(any()))
         .thenReturn(Future.successful(Right(currentReturns)))
 
-      val request = OptionalDataRequest(FakeRequest(), testCredentials, Some(vrn), iossNumber, companyName, registrationWrapper, None, Some(completeUserAnswers))
+      val request = OptionalDataRequest(FakeRequest(), testCredentials, vrn, iossNumber, registrationWrapper, None, Some(completeUserAnswers))
       val controller = new Harness(unknownPeriod)
 
       val result = controller.callFilter(request).futureValue

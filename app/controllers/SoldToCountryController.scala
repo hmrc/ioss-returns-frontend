@@ -56,7 +56,7 @@ class SoldToCountryController @Inject()(
         case Some(value) => form.fill(value)
       }
 
-      Ok(view(preparedForm, waypoints, period, index, request.isIntermediary, request.companyName))
+      Ok(view(preparedForm, waypoints, period, index))
   }
 
   def onSubmit(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndRequireData().async {
@@ -73,7 +73,7 @@ class SoldToCountryController @Inject()(
 
       form.bindFromRequest().fold(
         formWithErrors =>
-          BadRequest(view(formWithErrors, waypoints, period, index, request.isIntermediary, request.companyName)).toFuture,
+          BadRequest(view(formWithErrors, waypoints, period, index)).toFuture,
 
         value =>
           for {

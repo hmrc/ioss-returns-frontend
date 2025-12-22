@@ -53,7 +53,7 @@ class CheckExcludedTraderOptionalFilterSpec extends SpecBase with MockitoSugar w
       when(mockConfig.exclusionsEnabled) thenReturn true
 
       running(application) {
-        val request = OptionalDataRequest(FakeRequest(), testCredentials, Some(vrn), iossNumber, companyName, registrationWrapper, None, Some(completeUserAnswers))
+        val request = OptionalDataRequest(FakeRequest(), testCredentials, vrn, iossNumber, registrationWrapper, None, Some(completeUserAnswers))
         val controller = new Harness(period)
 
         val result = controller.callFilter(request).futureValue
@@ -83,7 +83,7 @@ class CheckExcludedTraderOptionalFilterSpec extends SpecBase with MockitoSugar w
           )
         )
 
-        val request = OptionalDataRequest(FakeRequest(), testCredentials, Some(vrn), iossNumber, companyName, excludedRegistration, None, Some(completeUserAnswers))
+        val request = OptionalDataRequest(FakeRequest(), testCredentials, vrn, iossNumber, excludedRegistration, None, Some(completeUserAnswers))
         val controller = new Harness(period)
 
         val result = controller.callFilter(request).futureValue
@@ -113,7 +113,7 @@ class CheckExcludedTraderOptionalFilterSpec extends SpecBase with MockitoSugar w
           )
         )
 
-        val request = OptionalDataRequest(FakeRequest(), testCredentials, Some(vrn), iossNumber, companyName, excludedRegistration, None, Some(completeUserAnswers))
+        val request = OptionalDataRequest(FakeRequest(), testCredentials, vrn, iossNumber, excludedRegistration, None, Some(completeUserAnswers))
         val controller = new Harness(period)
 
         val result = controller.callFilter(request).futureValue
@@ -144,7 +144,7 @@ class CheckExcludedTraderOptionalFilterSpec extends SpecBase with MockitoSugar w
           )
         )
 
-        val request = OptionalDataRequest(FakeRequest(), testCredentials, Some(vrn), iossNumber, companyName, excludedRegistration, None, Some(completeUserAnswers))
+        val request = OptionalDataRequest(FakeRequest(), testCredentials, vrn, iossNumber, excludedRegistration, None, Some(completeUserAnswers))
         val controller = new Harness(period)
 
         val result = controller.callFilter(request).futureValue

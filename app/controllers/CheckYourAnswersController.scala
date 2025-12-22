@@ -22,8 +22,6 @@ import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
 import models.audit.{ReturnsAuditModel, SubmissionResult}
 import models.etmp.EtmpExclusion
-import models.etmp.intermediary.EtmpIdType.VRN
-import models.etmp.intermediary.{EtmpCustomerIdentificationLegacy, EtmpCustomerIdentificationNew}
 import models.requests.{DataRequest, SaveForLaterRequest}
 import models.{ConflictFound, ValidationError}
 import pages.corrections.CorrectPreviousReturnPage
@@ -189,8 +187,7 @@ class CheckYourAnswersController @Inject()(
       val period = maybePartialReturnPeriod.getOrElse(request.userAnswers.period)
       val rows = Seq(
         BusinessNameSummary.row(request.registrationWrapper),
-        DataRequestSummary.row(request.iossNumber),
-        BusinessVRNSummary.vrnRow(request),
+        BusinessVRNSummary.row(request.vrn),
         ReturnPeriodSummary.row(request.userAnswers, waypoints, Some(period))
       ).flatten
       SummaryListViewModel(rows).withCssClass("govuk-summary-card govuk-summary-card__content govuk-!-display-block width-auto")

@@ -178,7 +178,7 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
           val view = application.injector.instanceOf[VatPeriodCorrectionsListView]
 
           responseString.filterNot(_.isWhitespace) mustEqual
-            view(EmptyWaypoints, periodJuly2021, allPeriodsModel, List.empty, isIntermediary = false, companyName = "Company Name")(request, messages(application))
+            view(EmptyWaypoints, periodJuly2021, allPeriodsModel, List.empty)(request, messages(application))
               .toString.filterNot(_.isWhitespace)
         }
       }
@@ -212,7 +212,7 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
 
           val view = application.injector.instanceOf[VatPeriodCorrectionsListView]
           responseString mustEqual
-            view(waypoints, periodJuly2021, allPeriodsModel, List(allPeriods.head), isIntermediary = false, companyName = "Company Name")(request, messages(application))
+            view(waypoints, periodJuly2021, allPeriodsModel, List(allPeriods.head))(request, messages(application))
               .toString
         }
       }

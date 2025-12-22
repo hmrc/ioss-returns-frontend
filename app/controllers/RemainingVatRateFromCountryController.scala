@@ -59,7 +59,7 @@ class RemainingVatRateFromCountryController @Inject()(
               case Some(value) => form.fill(value)
             }
 
-            Ok(view(preparedForm, waypoints, period, countryIndex, vatRateIndex, remainingVatRate.rateForDisplay, country, request.isIntermediary, request.companyName)).toFuture
+            Ok(view(preparedForm, waypoints, period, countryIndex, vatRateIndex, remainingVatRate.rateForDisplay, country)).toFuture
           }
         }
       }
@@ -78,7 +78,7 @@ class RemainingVatRateFromCountryController @Inject()(
 
             form.bindFromRequest().fold(
               formWithErrors =>
-                BadRequest(view(formWithErrors, waypoints, period, countryIndex, vatRateIndex, remainingVatRate.rateForDisplay, country, request.isIntermediary, request.companyName)).toFuture,
+                BadRequest(view(formWithErrors, waypoints, period, countryIndex, vatRateIndex, remainingVatRate.rateForDisplay, country)).toFuture,
 
               value =>
                 if (value) {

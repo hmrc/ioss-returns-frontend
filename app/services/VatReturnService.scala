@@ -35,7 +35,7 @@ class VatReturnService @Inject()(
                                   returnStatusConnector: ReturnStatusConnector
                                 )(implicit ec: ExecutionContext) extends Logging {
 
-  def fromUserAnswers(answers: UserAnswers, vrn: Option[Vrn], period: Period): ValidationResult[VatReturnRequest] = {
+  def fromUserAnswers(answers: UserAnswers, vrn: Vrn, period: Period): ValidationResult[VatReturnRequest] = {
     getSales(answers).map(sales =>
       VatReturnRequest(vrn, StandardPeriod.fromPeriod(period), Some(period.firstDay), Some(period.lastDay), sales)
     )

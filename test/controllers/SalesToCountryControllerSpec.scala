@@ -65,7 +65,7 @@ class SalesToCountryControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[SalesToCountryView]
 
         status(result) mustBe OK
-        contentAsString(result) mustBe view(form, waypoints, period, index, index, vatRateFromCountry, country, false, "Company Name")(request, messages(application)).toString
+        contentAsString(result) mustBe view(form, waypoints, period, index, index, vatRateFromCountry, country)(request, messages(application)).toString
       }
     }
 
@@ -83,7 +83,7 @@ class SalesToCountryControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustBe OK
-        contentAsString(result) mustBe view(form.fill(validAnswer), waypoints, period, index, index, vatRateFromCountry, country, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
+        contentAsString(result) mustBe view(form.fill(validAnswer), waypoints, period, index, index, vatRateFromCountry, country)(request, messages(application)).toString
       }
     }
 
@@ -131,7 +131,7 @@ class SalesToCountryControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustBe BAD_REQUEST
-        contentAsString(result) mustBe view(boundForm, waypoints, period, index, index, vatRateFromCountry, country, false, "Company Name")(request, messages(application)).toString
+        contentAsString(result) mustBe view(boundForm, waypoints, period, index, index, vatRateFromCountry, country)(request, messages(application)).toString
       }
     }
 

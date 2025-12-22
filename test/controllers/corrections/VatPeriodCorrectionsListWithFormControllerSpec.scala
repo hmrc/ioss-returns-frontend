@@ -153,7 +153,7 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
 
           val view = application.injector.instanceOf[VatPeriodAvailableCorrectionsListView]
           responseString mustEqual
-            view(form, waypoints, periodJuly2021, completedCorrectionsModel, List.empty, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
+            view(form, waypoints, periodJuly2021, completedCorrectionsModel, List.empty)(request, messages(application)).toString
         }
       }
 
@@ -199,7 +199,7 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
             val view = application.injector.instanceOf[VatPeriodAvailableCorrectionsListView]
 
             responseString mustEqual
-              view(form, waypoints, periodJuly2021, completedCorrectionsModel, List.empty, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
+              view(form, waypoints, periodJuly2021, completedCorrectionsModel, List.empty)(request, messages(application)).toString
           }
         }
 

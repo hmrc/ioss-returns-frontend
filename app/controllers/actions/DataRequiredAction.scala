@@ -41,7 +41,6 @@ class DataRequiredActionImpl @Inject()(implicit val executionContext: ExecutionC
           request.credentials,
           request.vrn,
           request.iossNumber,
-          request.companyName,
           request.registrationWrapper,
           request.intermediaryNumber,
           data

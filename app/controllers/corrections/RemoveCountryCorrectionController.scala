@@ -49,7 +49,7 @@ class RemoveCountryCorrectionController @Inject()(
 
         val preparedForm: Form[Boolean] = formProvider(country)
 
-        Ok(view(preparedForm, waypoints, period, periodIndex, countryIndex, country, request.isIntermediary, request.companyName)).toFuture
+        Ok(view(preparedForm, waypoints, period, periodIndex, countryIndex, country)).toFuture
       }
   }
 
@@ -63,7 +63,7 @@ class RemoveCountryCorrectionController @Inject()(
 
         form.bindFromRequest().fold(
           formWithErrors =>
-            Future.successful(BadRequest(view(formWithErrors, waypoints, period, periodIndex, countryIndex, country, request.isIntermediary, request.companyName))),
+            Future.successful(BadRequest(view(formWithErrors, waypoints, period, periodIndex, countryIndex, country))),
 
           value =>
             if (value) {

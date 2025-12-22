@@ -100,7 +100,7 @@ class CheckSalesControllerSpec extends SpecBase with MockitoSugar with SummaryLi
 
         status(result) mustBe OK
         contentAsString(result) mustBe
-          view(form, waypoints, period, list, index, country, canAddAnotherVatRate = true, companyName = "CompanyName", isIntermediary = false)(request, messages(application)).toString
+          view(form, waypoints, period, list, index, country, canAddAnotherVatRate = true)(request, messages(application)).toString
       }
     }
 
@@ -206,7 +206,7 @@ class CheckSalesControllerSpec extends SpecBase with MockitoSugar with SummaryLi
 
         status(result) mustBe BAD_REQUEST
         contentAsString(result) mustBe
-          view(boundForm, waypoints, period, list, index, country, canAddAnotherVatRate = true, List.empty, "Company Name", false)(request, messages(application)).toString
+          view(boundForm, waypoints, period, list, index, country, canAddAnotherVatRate = true, List.empty)(request, messages(application)).toString
       }
     }
 

@@ -24,7 +24,7 @@ import uk.gov.hmrc.domain.Vrn
 import java.time.LocalDate
 
 case class VatReturnRequest(
-                           vrn: Option[Vrn],
+                           vrn: Vrn,
                            period: Period,
                            startDate: Option[LocalDate],
                            endDate: Option[LocalDate],

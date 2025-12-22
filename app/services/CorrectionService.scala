@@ -54,7 +54,7 @@ class CorrectionService @Inject()(
     }
   }
 
-  def fromUserAnswers(answers: UserAnswers, vrn: Option[Vrn], period: Period): ValidationResult[CorrectionRequest] = {
+  def fromUserAnswers(answers: UserAnswers, vrn: Vrn, period: Period): ValidationResult[CorrectionRequest] = {
     getCorrections(answers).map { corrections =>
       CorrectionRequest(vrn, StandardPeriod.fromPeriod(period), corrections)
     }

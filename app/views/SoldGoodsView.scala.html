@@ -17,7 +17,6 @@
 @import components.ButtonGroup
 @import viewmodels.LegendSize
 
-
 @this(
         layout: templates.Layout,
         formHelper: FormWithCSRF,
@@ -26,7 +25,7 @@
         button: ButtonGroup
 )
 
-@(form: Form[_], waypoints: Waypoints, period: Period, isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, period: Period)(implicit request: Request[_], messages: Messages)
 
     @layout(pageTitle = title(form, messages("soldGoods.title", period.displayText))) {
 
@@ -41,7 +40,7 @@
                     field = form("value"),
                     legend = HmrcPageHeadingLegend(
                         content = messages("soldGoods.heading", period.displayText),
-                        caption = if(isIntermediary) companyName + period.displayText else period.displayText,
+                        caption = period.displayText,
                         classes = "govuk-fieldset__legend--l"
                     )
                 )

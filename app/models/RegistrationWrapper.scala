@@ -16,37 +16,10 @@
 
 package models
 
-import config.Constants.ukCountryCodeAreaPrefix
-import models.etmp.intermediary.{EtmpCustomerIdentificationLegacy, EtmpCustomerIdentificationNew, EtmpIdType}
 import models.etmp.{EtmpDisplayRegistration, VatCustomerInfo}
 import play.api.libs.json.{Json, OFormat}
-import uk.gov.hmrc.domain.Vrn
 
-
-case class RegistrationWrapper(vatInfo: Option[VatCustomerInfo], registration: EtmpDisplayRegistration) {
-  
-  val maybeVrn: Option[Vrn] = {
-    registration.customerIdentification match
-      case EtmpCustomerIdentificationLegacy(vrn) => Some(vrn)
-      case EtmpCustomerIdentificationNew(idType, idValue) => 
-        if (idType == EtmpIdType.VRN) Some(Vrn(idValue)) else None
-      case _ => None
-  }
-  
-  def getCompanyName(): String = {
-    val clientCompanyName: String = vatInfo match {
-        case Some(nonOptionalVatInfo) if nonOptionalVatInfo.desAddress.countryCode.startsWith(ukCountryCodeAreaPrefix) =>
-          nonOptionalVatInfo.organisationName
-            .orElse(nonOptionalVatInfo.individualName)    
-            .getOrElse(throw new IllegalStateException("Unable to retrieve a required client Name from the vat information"))
-        case _ =>
-          registration.otherAddress.flatMap(_.tradingName)
-          .getOrElse(throw new IllegalStateException("Unable to retrieve a required client Name from the display registration information"))
-      }
-
-    clientCompanyName + " "
-  }
-}
+case class RegistrationWrapper(vatInfo: VatCustomerInfo, registration: EtmpDisplayRegistration)
 
 object RegistrationWrapper {
   implicit val format: OFormat[RegistrationWrapper] = Json.format[RegistrationWrapper]

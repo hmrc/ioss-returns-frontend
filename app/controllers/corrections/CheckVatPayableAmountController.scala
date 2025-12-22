@@ -71,12 +71,10 @@ class CheckVatPayableAmountController @Inject()(
                   correctionPeriod,
                   periodIndex,
                   countryIndex,
-                  countryCorrectionComplete = false,
-                  request.isIntermediary,
-                  request.companyName
+                  countryCorrectionComplete = false
                 )).toFuture
               }) {
-              Ok(view(waypoints, period, summaryList, country, correctionPeriod, periodIndex, countryIndex, countryCorrectionComplete = true, request.isIntermediary, request.companyName)).toFuture
+              Ok(view(waypoints, period, summaryList, country, correctionPeriod, periodIndex, countryIndex, countryCorrectionComplete = true)).toFuture
             }
           }
         case _ =>

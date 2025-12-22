@@ -24,11 +24,9 @@
         button: ButtonGroup
 )
 
-@(form: Form[_], waypoints: Waypoints, period: Period, periodIndex: Index, correctionPeriod: Period, isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, period: Period, periodIndex: Index, correctionPeriod: Period)(implicit request: Request[_], messages: Messages)
 
   @layout(pageTitle = title(form, messages("removePeriodCorrection.title", correctionPeriod.displayText))) {
-    
-    @if(isIntermediary){<p class="govuk-caption-l hmrc-caption-l">@companyName</p>}
 
     @formHelper(action = controllers.corrections.routes.RemovePeriodCorrectionController.onSubmit(waypoints, periodIndex), Symbol("autoComplete") -> "off") {
 

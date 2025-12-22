@@ -14,17 +14,15 @@
  * limitations under the License.
  *@
 
- 
-
 @this(
         layout: templates.Layout,
         formHelper: FormWithCSRF,
         govukErrorSummary: GovukErrorSummary,
         govukRadios: GovukRadios,
-        govukButton: GovukButton,
+        govukButton: GovukButton
 )
 
-@(form: Form[_], period: Period, isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], period: Period)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, messages("deleteReturn.title"))) {
 
@@ -39,7 +37,7 @@
         field = form("value"),
         legend = HmrcPageHeadingLegend(
           content = messages("deleteReturn.heading"),
-          caption =  if(isIntermediary) companyName + period.displayText else period.displayText,
+          caption = period.displayText,
           classes = "govuk-fieldset__legend--l"
         )
       )

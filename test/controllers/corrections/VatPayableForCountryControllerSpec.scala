@@ -63,7 +63,7 @@ class VatPayableForCountryControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[VatPayableForCountryView]
 
         status(result) mustBe OK
-        contentAsString(result) mustBe view(form, waypoints, period, index, Index(0), country, period, BigDecimal(1000), isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
+        contentAsString(result) mustBe view(form, waypoints, period, index, Index(0), country, period, BigDecimal(1000))(request, messages(application)).toString
       }
     }
 
@@ -87,7 +87,7 @@ class VatPayableForCountryControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[VatPayableForCountryView]
 
         status(result) mustBe OK
-        contentAsString(result) mustBe view(form, waypoints, period, index, Index(0), country, period, BigDecimal(500), isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
+        contentAsString(result) mustBe view(form, waypoints, period, index, Index(0), country, period, BigDecimal(500))(request, messages(application)).toString
       }
     }
 
@@ -116,9 +116,7 @@ class VatPayableForCountryControllerSpec extends SpecBase with MockitoSugar {
           Index(0),
           country,
           period,
-          BigDecimal(1000),
-          isIntermediary = false,
-          companyName = "Company Name"
+          BigDecimal(1000)
         )(request, messages(application)).toString
       }
     }
@@ -174,9 +172,7 @@ class VatPayableForCountryControllerSpec extends SpecBase with MockitoSugar {
           Index(0),
           country,
           period,
-          BigDecimal(1000),
-          isIntermediary = false,
-          companyName = "Company Name"
+          BigDecimal(1000)
         )(
           request, messages(application)
         ).toString

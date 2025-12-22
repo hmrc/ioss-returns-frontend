@@ -24,7 +24,7 @@
         govukButton: GovukButton
 )
 
-@(waypoints: Waypoints, previousRegistration: PreviousRegistration, periodsWithFinancialData: Map[Int, Seq[(Period, Payment)]], isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
+@(waypoints: Waypoints, previousRegistration: PreviousRegistration, periodsWithFinancialData: Map[Int, Seq[(Period, Payment)]])(implicit request: Request[_], messages: Messages)
 
     @layout(pageTitle = titleNoForm(messages("viewReturnsMultipleReg.title", previousRegistration.startPeriod.displayText, previousRegistration.endPeriod.displayText))) {
 

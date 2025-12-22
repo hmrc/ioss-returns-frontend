@@ -18,99 +18,38 @@ package models.etmp
 
 import base.SpecBase
 import models.etmp.EtmpExclusionReason.{CeasedTrade, FailsToComply, NoLongerMeetsConditions, NoLongerSupplies, Reversal, TransferringMSID, VoluntarilyLeaves}
-import models.etmp.intermediary.{EtmpCustomerIdentification, EtmpCustomerIdentificationLegacy, EtmpCustomerIdentificationNew}
 import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.libs.json.{JsSuccess, Json}
-import testUtils.RegistrationData.{arbitraryEtmpCustomerIdentificationLegacy, etmpDisplayRegistration}
+import testUtils.RegistrationData.etmpDisplayRegistration
 
 import java.time.LocalDate
 
 class EtmpDisplayRegistrationSpec extends SpecBase with TableDrivenPropertyChecks {
 
-  private val customerIdentificationLegacy: EtmpCustomerIdentificationLegacy = arbitraryEtmpCustomerIdentificationLegacy.arbitrary.sample.value
-  private val customerIdentificationNew: EtmpCustomerIdentificationNew = arbitraryEtmpCustomerIdentificationNew.arbitrary.sample.value
   private val tradingNames: Seq[EtmpTradingName] = etmpDisplayRegistration.tradingNames
   private val schemeDetails = etmpDisplayRegistration.schemeDetails
   private val bankDetails: EtmpBankDetails = etmpDisplayRegistration.bankDetails.get
-  private val otherAddress: EtmpOtherAddress = etmpDisplayRegistration.otherAddress.get
   private val exclusions: Seq[EtmpExclusion] = etmpDisplayRegistration.exclusions
   private val adminUse: EtmpAdminUse = etmpDisplayRegistration.adminUse
 
   "EtmpDisplayRegistration" - {
 
-    "must serialise/deserialise to and from EtmpDisplayRegistration" - {
-      "with the legacy customer identification and WITHOUT optional field" in {
+    "must serialise/deserialise to and from EtmpDisplayRegistration" in {
 
-        val displayRegistration: EtmpDisplayRegistration = etmpDisplayRegistration
-          .copy(customerIdentification = customerIdentificationLegacy, bankDetails = None, otherAddress = None)
+      val displayRegistration: EtmpDisplayRegistration = etmpDisplayRegistration
 
-        val expectedJson = Json.obj(
-          "customerIdentification" -> customerIdentificationLegacy,
-          "tradingNames" -> tradingNames,
-          "schemeDetails" -> schemeDetails,
-          "exclusions" -> exclusions,
-          "adminUse" -> adminUse
-        )
+      val expectedJson = Json.obj(
+        "tradingNames" -> tradingNames,
+        "schemeDetails" -> schemeDetails,
+        "bankDetails" -> bankDetails,
+        "exclusions" -> exclusions,
+        "adminUse" -> adminUse
+      )
 
-        Json.toJson(displayRegistration) mustBe expectedJson
-        expectedJson.validate[EtmpDisplayRegistration] mustBe JsSuccess(displayRegistration)
-      }
-
-      "with the legacy customer identification and WITH optional field" in {
-
-        val displayRegistration: EtmpDisplayRegistration = etmpDisplayRegistration
-          .copy(customerIdentification = customerIdentificationLegacy, bankDetails = Some(bankDetails), otherAddress = Some(otherAddress))
-
-        val expectedJson = Json.obj(
-          "customerIdentification" -> customerIdentificationLegacy,
-          "tradingNames" -> tradingNames,
-          "schemeDetails" -> schemeDetails,
-          "bankDetails" -> bankDetails,
-          "otherAddress" -> otherAddress,
-          "exclusions" -> exclusions,
-          "adminUse" -> adminUse
-        )
-
-        Json.toJson(displayRegistration) mustBe expectedJson
-        expectedJson.validate[EtmpDisplayRegistration] mustBe JsSuccess(displayRegistration)
-      }
-
-      "with the NEW customer identification and WITHOUT optional field" in {
-
-        val displayRegistration: EtmpDisplayRegistration = etmpDisplayRegistration
-          .copy(customerIdentification = customerIdentificationNew, bankDetails = None, otherAddress = None)
-        val expectedJson = Json.obj(
-          "customerIdentification" -> customerIdentificationNew,
-          "tradingNames" -> tradingNames,
-          "schemeDetails" -> schemeDetails,
-          "exclusions" -> exclusions,
-          "adminUse" -> adminUse
-        )
-
-        Json.toJson(displayRegistration) mustBe expectedJson
-        expectedJson.validate[EtmpDisplayRegistration] mustBe JsSuccess(displayRegistration)
-      }
-
-        "with the NEW customer identification and WITH optional field" in {
-
-         val displayRegistration: EtmpDisplayRegistration = etmpDisplayRegistration
-          .copy(customerIdentification = customerIdentificationNew, bankDetails = Some(bankDetails), otherAddress = Some(otherAddress))
-
-         val expectedJson = Json.obj(
-          "customerIdentification" -> customerIdentificationNew,
-          "tradingNames" -> tradingNames,
-          "schemeDetails" -> schemeDetails,
-          "bankDetails" -> bankDetails,
-          "otherAddress" -> otherAddress,
-          "exclusions" -> exclusions,
-          "adminUse" -> adminUse
-          )
-
-         Json.toJson(displayRegistration) mustBe expectedJson
-          expectedJson.validate[EtmpDisplayRegistration] mustBe JsSuccess(displayRegistration)
-      }
-
+      Json.toJson(displayRegistration) mustBe expectedJson
+      expectedJson.validate[EtmpDisplayRegistration] mustBe JsSuccess(displayRegistration)
     }
+
     "canRejoinRegistration" - {
       val currentDate = LocalDate.now()
 

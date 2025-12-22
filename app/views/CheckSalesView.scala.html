@@ -36,19 +36,10 @@
     countryIndex: Index,
     country: Country,
     canAddAnotherVatRate: Boolean,
-    incompleteSales: Seq[VatRateWithOptionalSalesFromCountry] = List.empty,
-    companyName: String,
-    isIntermediary: Boolean
+    incompleteSales: Seq[VatRateWithOptionalSalesFromCountry] = List.empty
 )(implicit request: Request[_], messages: Messages)
 
-@caption = @{
-    if(isIntermediary) {
-        messages("checkSales.intermediary.caption", companyName, period.displayText, country.name)
-    } else {
-        messages("checkSales.caption", period.displayText, country.name)
-    }
-}
-@layout(pageTitle = title(form, messages("checkSales.title"), Some(caption))) {
+    @layout(pageTitle = title(form, messages("checkSales.title"), Some(messages("checkSales.caption", period.displayText, country.name)))) {
 
 
         @if(form.errors.nonEmpty) {
@@ -56,7 +47,7 @@
         }
 
         <header class="hmrc-page-heading">
-            <p class="govuk-caption-l hmrc-caption-l">@caption</p>
+            <p class="govuk-caption-l hmrc-caption-l">@messages("checkSales.caption", period.displayText, country.name)</p>
             <h1 class="govuk-heading-l">@messages("checkSales.heading")</h1>
         </header>
 

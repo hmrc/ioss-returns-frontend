@@ -156,7 +156,7 @@ class YourAccountController @Inject()(
 
     Ok(view(
       waypoints,
-      businessName = request.companyName,
+      businessName = request.registrationWrapper.vatInfo.getName,
       iossNumber = request.iossNumber,
       paymentsViewModel = paymentsViewModel,
       changeYourRegistrationUrl = appConfig.amendRegistrationUrl,
@@ -212,7 +212,7 @@ class YourAccountController @Inject()(
 
   private def hasDeregisteredFromVat(request: RegistrationRequest[AnyContent]): Boolean = {
       request.registrationWrapper.vatInfo match {
-        case Some(vatInfo) if vatInfo.deregistrationDecisionDate.isDefined =>
+        case vatInfo if vatInfo.deregistrationDecisionDate.isDefined =>
           true
         case _ =>
           false

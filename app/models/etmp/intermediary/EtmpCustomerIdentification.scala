@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,34 +16,11 @@
 
 package models.etmp.intermediary
 
-import play.api.libs.json.{Json, OFormat, Reads, Writes}
-import uk.gov.hmrc.domain.Vrn
+import play.api.libs.json.{Json, OFormat}
 
-trait EtmpCustomerIdentification
+case class EtmpCustomerIdentification(idType: EtmpIdType, idValue: String)
 
 object EtmpCustomerIdentification {
 
-  implicit val reads: Reads[EtmpCustomerIdentification] =
-    EtmpCustomerIdentificationNew.format.widen[EtmpCustomerIdentification] orElse
-      EtmpCustomerIdentificationLegacy.format.widen[EtmpCustomerIdentification]
-
-  implicit val writes: Writes[EtmpCustomerIdentification] = Writes {
-    case ecin: EtmpCustomerIdentificationNew => Json.toJson(ecin)(EtmpCustomerIdentificationNew.format)
-    case ecil: EtmpCustomerIdentificationLegacy => Json.toJson(ecil)(EtmpCustomerIdentificationLegacy.format)
-  }
+  implicit val format: OFormat[EtmpCustomerIdentification] = Json.format[EtmpCustomerIdentification]
 }
-
-case class EtmpCustomerIdentificationLegacy(vrn: Vrn) extends EtmpCustomerIdentification
-
-object EtmpCustomerIdentificationLegacy {
-
-  implicit val format: OFormat[EtmpCustomerIdentificationLegacy] = Json.format[EtmpCustomerIdentificationLegacy]
-}
-
-case class EtmpCustomerIdentificationNew(idType: EtmpIdType, idValue: String) extends EtmpCustomerIdentification
-
-object EtmpCustomerIdentificationNew {
-
-  implicit val format: OFormat[EtmpCustomerIdentificationNew] = Json.format[EtmpCustomerIdentificationNew]
-}
-

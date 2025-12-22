@@ -34,7 +34,6 @@ class DataRetrievalAction(sessionRepository: SessionRepository)
         request.credentials,
         request.vrn,
         request.iossNumber,
-        request.companyName,
         request.registrationWrapper,
         request.intermediaryNumber,
         maybeUserAnswers
