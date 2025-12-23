@@ -17,20 +17,16 @@
 package controllers.intermediary
 
 import config.FrontendAppConfig
-import connectors.ReturnStatusConnector
 import controllers.actions.AuthenticatedControllerComponents
 import controllers.routes
-import forms.StartReturnFormProvider
-import models.{IntermediarySelectedIossNumber, Period, StandardPeriod, SubmissionStatus, UserAnswers}
-import pages.{EmptyWaypoints, Waypoints}
+import models.IntermediarySelectedIossNumber
+import pages.Waypoints
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.IntermediarySelectedIossNumberRepository
-import services.{PartialReturnPeriodService, VatReturnService}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax.FutureOps
 
-import java.time.{Clock, Instant, Month}
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 

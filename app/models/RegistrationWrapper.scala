@@ -24,20 +24,20 @@ import uk.gov.hmrc.domain.Vrn
 
 
 case class RegistrationWrapper(vatInfo: Option[VatCustomerInfo], registration: EtmpDisplayRegistration) {
-
+  
   val maybeVrn: Option[Vrn] = {
     registration.customerIdentification match
       case EtmpCustomerIdentificationLegacy(vrn) => Some(vrn)
-      case EtmpCustomerIdentificationNew(idType, idValue) =>
+      case EtmpCustomerIdentificationNew(idType, idValue) => 
         if (idType == EtmpIdType.VRN) Some(Vrn(idValue)) else None
       case _ => None
   }
-
+  
   def getCompanyName(): String = {
     val clientCompanyName: String = vatInfo match {
         case Some(nonOptionalVatInfo) if nonOptionalVatInfo.desAddress.countryCode.startsWith(ukCountryCodeAreaPrefix) =>
           nonOptionalVatInfo.organisationName
-            .orElse(nonOptionalVatInfo.individualName)
+            .orElse(nonOptionalVatInfo.individualName)    
             .getOrElse(throw new IllegalStateException("Unable to retrieve a required client Name from the vat information"))
         case _ =>
           registration.otherAddress.flatMap(_.tradingName)

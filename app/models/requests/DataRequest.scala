@@ -34,6 +34,7 @@ case class OptionalDataRequest[A] (
 
   val userId: String = credentials.providerId
   val isIntermediary: Boolean = intermediaryNumber.nonEmpty
+  
 }
 
 case class DataRequest[A] (

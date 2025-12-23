@@ -20,7 +20,6 @@ import connectors.{FinancialDataConnector, RegistrationConnector}
 import logging.Logging
 import models.StandardPeriod
 import models.payments.PrepareData
-import models.requests.OptionalDataRequest
 import uk.gov.hmrc.http.HeaderCarrier
 import viewmodels.previousReturns.PreviousRegistration
 import utils.FutureSyntax.FutureOps

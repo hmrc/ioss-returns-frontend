@@ -18,7 +18,6 @@ package models.etmp
 
 import date.LocalDateOps
 import models.etmp.intermediary.EtmpCustomerIdentification
-import models.etmp.intermediary.EtmpIdType.VRN
 import play.api.libs.json.{Json, OFormat}
 
 import java.time.LocalDate

@@ -19,7 +19,7 @@ package services
 import cats.implicits.{catsSyntaxValidatedIdBinCompat0, toTraverseOps}
 import connectors.ReturnStatusConnector
 import logging.Logging
-import models.requests.{RegistrationRequest, VatReturnRequest}
+import models.requests.VatReturnRequest
 import models.{DataMissingError, Index, Period, StandardPeriod, SubmissionStatus, UserAnswers, ValidationResult, VatRateFromCountry, VatRateType}
 import models.domain.{VatRate as DomainVatRate, VatRateType as DomainVatRateType}
 import pages.{SoldGoodsPage, VatRatesFromCountryPage}
