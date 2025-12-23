@@ -18,7 +18,7 @@
 @import viewmodels.InputWidth._
 @import components.ButtonGroup
 @import pages.corrections.VatAmountCorrectionCountryPage
- 
+
 @this(
         layout: templates.Layout,
         formHelper: FormWithCSRF,
@@ -26,7 +26,6 @@
         govukInput: GovukInput,
         button: ButtonGroup
 )
-
 
 @(
         form: Form[_],
@@ -44,7 +43,11 @@
 
     @layout(pageTitle = title(
         form,
-        messages("vatAmountCorrectionCountry.title", country.name),
+        if(isIntermediary) {
+            messages("vatAmountCorrectionCountry.intermediary.title", country.name)
+        } else {
+            messages("vatAmountCorrectionCountry.title", country.name)
+        },
         if(isIntermediary) {
             Some(messages("caption.intermediary.fromCountry.periodAndCountry", companyName, correctionPeriod.displayText, country.name))
         } else {
@@ -62,7 +65,11 @@
                 InputViewModel(
                     field = form("value"),
                     label = HmrcPageHeadingLabel(
-                        content = messages("vatAmountCorrectionCountry.heading", country.name),
+                        content = if(isIntermediary) {
+                            messages("vatAmountCorrectionCountry.intermediary.heading", country.name)
+                        } else {
+                            messages("vatAmountCorrectionCountry.heading", country.name)
+                        },
                         caption = if(isIntermediary) {
                             messages("vatAmountCorrectionCountry.intermediary.caption", companyName, correctionPeriod.displayText)
                         } else {
@@ -76,11 +83,23 @@
                         ""
                     } else {
                         if(previouslyDeclaredAmount != BigDecimal(0)) {
-                            s"<p>${Html(messages("vatAmountCorrectionCountry.hint"))}</br>" +
-                                    s"${Html(messages("vatAmountCorrectionCountry.previous-amount.hint", currencyFormat(previouslyDeclaredAmount)))}</p>"
-                        } else {
-                            s"${Html(messages("vatAmountCorrectionCountry.hint"))}</p>"
-                        }
+                            s"<p>${Html(if(isIntermediary) {
+                                messages("vatAmountCorrectionCountry.intermediary.hint")
+                            } else {
+                                messages("vatAmountCorrectionCountry.hint")
+                            })}</br>" +
+                                s"${Html(if(isIntermediary) {
+                                    messages("vatAmountCorrectionCountry.intermediary.previous-amount.hint", currencyFormat(previouslyDeclaredAmount))
+                                } else {
+                                    messages("vatAmountCorrectionCountry.previous-amount.hint", currencyFormat(previouslyDeclaredAmount))
+                                 })}</p>"
+                            } else {
+                                s"${Html(if(isIntermediary) {
+                                    messages("vatAmountCorrectionCountry.intermediary.hint")
+                                } else {
+                                    messages("vatAmountCorrectionCountry.hint")
+                                })}</p>"
+                            }
                     })))
                 .withWidth(Fixed10)
                 .withCssClass("govuk-currency-input__inner__input")

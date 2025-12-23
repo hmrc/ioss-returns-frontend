@@ -63,7 +63,11 @@
         @if(!incompleteSales.isEmpty) {
             @govukWarningText(WarningText(
                 iconFallbackText = Option(messages("site.warning")),
-                content = Text(messages("error.missing_answers"))
+                content = Text(if(isIntermediary) {
+                    messages("error.intermediary.missing_answers")
+                } else {
+                    messages("error.missing_answers")
+                })
             ))
         }
 

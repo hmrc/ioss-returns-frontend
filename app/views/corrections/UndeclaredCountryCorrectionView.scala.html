@@ -17,7 +17,6 @@
 @import components.ButtonGroup
 @import viewmodels.LegendSize
 @import pages.corrections.UndeclaredCountryCorrectionPage
- 
 
 @this(
     layout: templates.Layout,
@@ -30,7 +29,11 @@
 
 @(form: Form[_], waypoints: Waypoints, period: Period, country: Country, correctionPeriod: Period, periodIndex:Index, countryIndex: Index, isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = title(form, messages("undeclaredCountryCorrection.title"))) {
+@layout(pageTitle = title(form, if(isIntermediary) {
+    messages("undeclaredCountryCorrection.intermediary.title", country.name)
+} else {
+    messages("undeclaredCountryCorrection.title", country.name)
+})) {
 
     @formHelper(action = controllers.corrections.routes.UndeclaredCountryCorrectionController.onSubmit(waypoints, periodIndex, countryIndex), Symbol("autoComplete") -> "off") {
 
@@ -47,7 +50,11 @@
                     messages("undeclaredCountryCorrection.caption", correctionPeriod.displayText)
                 }
             }</p>
-            <h1 class="govuk-heading-l">@messages("undeclaredCountryCorrection.heading", country.name)</h1>
+            <h1 class="govuk-heading-l">@if(isIntermediary) {
+                    @messages("undeclaredCountryCorrection.intermediary.heading", country.name)
+                } else {
+                    @messages("undeclaredCountryCorrection.heading", country.name)
+                }</h1>
         </header>
 
         @govukRadios(

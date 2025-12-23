@@ -19,7 +19,7 @@
 @import uk.gov.hmrc.hmrcfrontend.views.viewmodels.accessibleautocomplete.AccessibleAutocomplete
 @import viewmodels.LabelSize
 @import views.html.components.ButtonGroup
- 
+
 @this(
         layout: templates.Layout,
         formHelper: FormWithCSRF,
@@ -29,7 +29,7 @@
 )
 
 
-@(form: Form[_], waypoints: Waypoints, period: Period, periodIndex: Index, correctionPeriod: Period, index: Index, isIntermediary:Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, period: Period, periodIndex: Index, correctionPeriod: Period, index: Index, isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, messages("correctionCountry.title"))) {
 
@@ -57,7 +57,11 @@
           defaultValue = Some("")
         )
       ))
-      .withHint(HintViewModel(messages("correctionCountry.hint")))
+        .withHint(HintViewModel(if(isIntermediary) {
+            messages("correctionCountry.intermediary.hint")
+        } else {
+            messages("correctionCountry.hint")
+        }))
     )
 
     @button(

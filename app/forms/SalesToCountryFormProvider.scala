@@ -25,16 +25,21 @@ import javax.inject.Inject
 
 class SalesToCountryFormProvider @Inject()(vatRateService: VatRateService) extends Mappings {
 
-  def apply(vatRate: VatRateFromCountry): Form[BigDecimal] =
+  def apply(vatRate: VatRateFromCountry, isIntermediary: Boolean = false): Form[BigDecimal] = {
+    val requiredKey = if(isIntermediary) "salesToCountry.intermediary.error.required" else "salesToCountry.error.required"
+    val wholeNumberKey = if(isIntermediary) "salesToCountry.intermediary.error.wholeNumber" else "salesToCountry.error.wholeNumber"
+    val nonNumericKey = if(isIntermediary) "salesToCountry.intermediary.error.nonNumeric" else "salesToCountry.error.nonNumeric"
+
     Form(
       "value" -> currency(
-        "salesToCountry.error.required",
-        "salesToCountry.error.wholeNumber",
-        "salesToCountry.error.nonNumeric",
+        requiredKey,
+        wholeNumberKey,
+        nonNumericKey,
         args = Seq(vatRate.rateForDisplay))
-          .verifying(inRange[BigDecimal](0, maxCurrencyAmount, "salesToCountry.error.outOfRange"))
-              .verifying("salesToCountry.error.calculatedVatRateOutOfRange", value => {
-                vatRateService.standardVatOnSales(value, vatRate) > BigDecimal(0)
-              })
+        .verifying(inRange[BigDecimal](0, maxCurrencyAmount, "salesToCountry.error.outOfRange"))
+        .verifying("salesToCountry.error.calculatedVatRateOutOfRange", value => {
+          vatRateService.standardVatOnSales(value, vatRate) > BigDecimal(0)
+        })
     )
+  }
 }

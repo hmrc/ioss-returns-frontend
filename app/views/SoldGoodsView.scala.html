@@ -17,7 +17,6 @@
 @import components.ButtonGroup
 @import viewmodels.LegendSize
 
-
 @this(
         layout: templates.Layout,
         formHelper: FormWithCSRF,
@@ -28,7 +27,11 @@
 
 @(form: Form[_], waypoints: Waypoints, period: Period, isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
 
-    @layout(pageTitle = title(form, messages("soldGoods.title", period.displayText))) {
+    @layout(pageTitle = title(form, if(isIntermediary) {
+        messages("soldGoods.intermediary.title", period.displayText)
+    } else {
+        messages("soldGoods.title", period.displayText)
+    })) {
 
         @formHelper(action = routes.SoldGoodsController.onSubmit(waypoints), Symbol("autoComplete") -> "off") {
 
@@ -40,7 +43,11 @@
                 RadiosViewModel.yesNo(
                     field = form("value"),
                     legend = HmrcPageHeadingLegend(
-                        content = messages("soldGoods.heading", period.displayText),
+                        content =  if(isIntermediary) {
+                            messages("soldGoods.intermediary.heading", period.displayText)
+                        } else {
+                            messages("soldGoods.heading", period.displayText)
+                        },
                         caption = if(isIntermediary) companyName + period.displayText else period.displayText,
                         classes = "govuk-fieldset__legend--l"
                     )

@@ -24,10 +24,13 @@
     button: ButtonGroup
 )
 
-@(form: Form[_], waypoints: Waypoints, period: Period, returnPeriod: Period, periodIndex: Index)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, period: Period, returnPeriod: Period, periodIndex: Index, isIntermediary: Boolean)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = title(form, messages("correctionReturnSinglePeriod.title", returnPeriod.displayText))) {
-
+@layout(pageTitle = title(form, if(isIntermediary) {
+    messages("correctionReturnSinglePeriod.intermediary.title", returnPeriod.displayText)
+} else {
+    messages("correctionReturnSinglePeriod.title", returnPeriod.displayText)
+})) {
     @formHelper(action = controllers.corrections.routes.CorrectionReturnSinglePeriodController.onSubmit(waypoints, periodIndex), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
