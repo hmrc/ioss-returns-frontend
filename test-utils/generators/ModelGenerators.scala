@@ -398,7 +398,7 @@ trait ModelGenerators {
       adminUse
     )
   }
-  
+
   implicit val arbitraryEtmpDisplayRegistrationNew: Arbitrary[EtmpDisplayRegistration] = Arbitrary {
     for {
       etmpIdType <- Gen.oneOf(EtmpIdType.values)
@@ -425,7 +425,7 @@ trait ModelGenerators {
         idValue <- Gen.alphaStr
       } yield EtmpCustomerIdentificationLegacy(Vrn(idValue))
     }
-    
+
   implicit lazy val arbitraryEtmpCustomerIdentificationNew: Arbitrary[EtmpCustomerIdentificationNew] =
     Arbitrary {
       for {
