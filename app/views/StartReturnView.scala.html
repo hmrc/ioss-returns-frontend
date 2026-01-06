@@ -16,12 +16,12 @@
 
 @import components.ButtonGroup
 @import models.etmp.EtmpExclusion
-@import models.payments.Payment
 @import uk.gov.hmrc.govukfrontend.views.html.components.Radios
 @import uk.gov.hmrc.govukfrontend.views.viewmodels.radios.RadioItem
 @import uk.gov.hmrc.govukfrontend.views.viewmodels.radios.Radios
 @import uk.gov.hmrc.govukfrontend.views.viewmodels.warningtext.WarningText
 @import viewmodels.LegendSize
+@import viewmodels.yourAccount.Return
 
 @this(
     layout: templates.Layout,
@@ -32,7 +32,7 @@
     govukWarningText: GovukWarningText
 )
 
-@(form: Form[_], waypoints: Waypoints, period: Period, maybeExclusion: Option[EtmpExclusion], isFinalReturn: Boolean, maybePartialReturnPeriod: Option[PartialReturnPeriod], isIntermediary: Boolean, companyName: String, overduePayments: List[Payment])(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, period: Period, maybeExclusion: Option[EtmpExclusion], isFinalReturn: Boolean, maybePartialReturnPeriod: Option[PartialReturnPeriod], isIntermediary: Boolean, companyName: String, overdueReturns: Seq[Return])(implicit request: Request[_], messages: Messages)
 
     @layout(pageTitle = title(
         form,
@@ -75,22 +75,22 @@
                         }
                     }
                 ).withSize(LegendSize.Large)
-            )
-        )
-
-    @if(isIntermediary && overduePayments.nonEmpty) {
-        <p class="govuk-body">
-                @if(overduePayments.size == 1) {
-                    @messages("startReturn.intermediary.overdueReturn.single", overduePayments.head.period.displayText)
-                } else if(overduePayments.size == 2) {
-                    @messages("startReturn.intermediary.overdueReturn.two",
-                        overduePayments(0).period.displayText,
-                        overduePayments(1).period.displayText)
+            ).withHint(HintViewModel(
+                if(isIntermediary && overdueReturns.nonEmpty) {
+                    if(overdueReturns.size == 1) {
+                        messages("startReturn.intermediary.overdueReturn.single", overdueReturns.head.period.displayText)
+                    } else if(overdueReturns.size == 2) {
+                        messages("startReturn.intermediary.overdueReturn.two",
+                            overdueReturns(0).period.displayText,
+                            overdueReturns(1).period.displayText)
+                    } else {
+                        messages("startReturn.intermediary.overdueReturn.multiple", overdueReturns.size)
+                    }
                 } else {
-                    @messages("startReturn.intermediary.overdueReturn.multiple", overduePayments.size)
+                    ""
                 }
-        </p>
-    }
+            ))
+        )
 
         @maybePartialReturnPeriod.map { partialReturnPeriod =>
             @govukWarningText(WarningText(

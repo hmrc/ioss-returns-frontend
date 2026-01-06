@@ -23,8 +23,6 @@ import models.SubmissionStatus.{Complete, Due, Excluded, Next, Overdue}
 import models.{PartialReturnPeriod, StandardPeriod, SubmissionStatus}
 import models.etmp.EtmpExclusion
 import models.etmp.EtmpExclusionReason.{NoLongerSupplies, Reversal}
-import services.PaymentsService
-import models.payments.PrepareData
 import org.mockito.ArgumentMatchers.any
 import org.mockito.{ArgumentMatchers, Mockito}
 import org.mockito.Mockito.when
@@ -58,7 +56,6 @@ class StartReturnControllerSpec
 
   private val mockReturnStatusConnector: ReturnStatusConnector = mock[ReturnStatusConnector]
   private val mockPartialReturnPeriodService = mock[PartialReturnPeriodService]
-  private val mockPaymentsService = mock[PaymentsService]
 
   private val maybePartialReturn = Some(PartialReturnPeriod(period.firstDay, period.lastDay, period.year, Month.DECEMBER))
 
@@ -77,7 +74,6 @@ class StartReturnControllerSpec
   private def resetMocks(): Unit = {
     Mockito.reset(mockReturnStatusConnector)
     Mockito.reset(mockPartialReturnPeriodService)
-    Mockito.reset(mockPaymentsService)
   }
 
   "StartReturn Controller" - {
@@ -86,14 +82,10 @@ class StartReturnControllerSpec
       "must redirect when there are no returns" in {
         when(mockReturnStatusConnector.getCurrentReturns(ArgumentMatchers.eq(iossNumber))(any()))
           .thenReturn(Future.successful(Right(emptyCurrentReturns)))
-
-        when(mockPaymentsService.prepareFinancialDataWithIossNumber(ArgumentMatchers.eq(iossNumber))(any(), any()))
-          .thenReturn(Future.successful(PrepareData(List.empty, List.empty, List.empty, BigDecimal(0), BigDecimal(0), iossNumber)))
-
+        
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
           .overrides(bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector))
           .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
-          .overrides(bind[PaymentsService].toInstance(mockPaymentsService))
           .build()
 
         running(application) {
@@ -117,10 +109,7 @@ class StartReturnControllerSpec
 
           when(mockReturnStatusConnector.getCurrentReturns(ArgumentMatchers.eq(iossNumber))(any()))
             .thenReturn(Future.successful(Right(emptyCurrentReturns.copy(returns = List(createReturn(submissionStatus, period))))))
-
-          when(mockPaymentsService.prepareFinancialDataWithIossNumber(ArgumentMatchers.eq(iossNumber))(any(), any()))
-            .thenReturn(Future.successful(PrepareData(List.empty, List.empty, List.empty, BigDecimal(0), BigDecimal(0), iossNumber)))
-
+          
           when(mockPartialReturnPeriodService.getPartialReturnPeriod(
             ArgumentMatchers.eq(iossNumber),
             ArgumentMatchers.eq(registrationWrapper),
@@ -131,7 +120,6 @@ class StartReturnControllerSpec
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
             .overrides(bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector))
             .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
-            .overrides(bind[PaymentsService].toInstance(mockPaymentsService))
             .build()
 
           running(application) {
@@ -158,10 +146,7 @@ class StartReturnControllerSpec
 
           when(mockReturnStatusConnector.getCurrentReturns(ArgumentMatchers.eq(iossNumber))(any()))
             .thenReturn(Future.successful(Right(emptyCurrentReturns.copy(returns = List(createReturn(submissionStatus, period))))))
-
-          when(mockPaymentsService.prepareFinancialDataWithIossNumber(ArgumentMatchers.eq(iossNumber))(any(), any()))
-            .thenReturn(Future.successful(PrepareData(List.empty, List.empty, List.empty, BigDecimal(0), BigDecimal(0), iossNumber)))
-
+          
           when(mockPartialReturnPeriodService.getPartialReturnPeriod(
             ArgumentMatchers.eq(iossNumber),
             ArgumentMatchers.eq(registrationWrapper),
@@ -172,7 +157,6 @@ class StartReturnControllerSpec
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
             .overrides(bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector))
             .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
-            .overrides(bind[PaymentsService].toInstance(mockPaymentsService))
             .build()
 
           running(application) {
@@ -266,9 +250,6 @@ class StartReturnControllerSpec
             Right(emptyCurrentReturns.copy(returns = List(createReturn(Due, period))))
           ))
 
-        when(mockPaymentsService.prepareFinancialDataWithIossNumber(ArgumentMatchers.eq(iossNumber))(any(), any()))
-          .thenReturn(Future.successful(PrepareData(List.empty, List.empty, List.empty, BigDecimal(0), BigDecimal(0), iossNumber)))
-
         when(mockPartialReturnPeriodService.getPartialReturnPeriod(
           ArgumentMatchers.eq(iossNumber),
           ArgumentMatchers.eq(registrationWrapperWithExclusion),
@@ -281,7 +262,6 @@ class StartReturnControllerSpec
           registration = registrationWrapperWithExclusion
         ).overrides(bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector))
           .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
-          .overrides(bind[PaymentsService].toInstance(mockPaymentsService))
           .build()
 
         running(application) {
@@ -323,10 +303,7 @@ class StartReturnControllerSpec
           .thenReturn(Future.successful(
             Right(emptyCurrentReturns.copy(returns = List(createReturn(Due, period))))
           ))
-
-        when(mockPaymentsService.prepareFinancialDataWithIossNumber(ArgumentMatchers.eq(iossNumber))(any(), any()))
-          .thenReturn(Future.successful(PrepareData(List.empty, List.empty, List.empty, BigDecimal(0), BigDecimal(0), iossNumber)))
-
+        
         when(mockPartialReturnPeriodService.getPartialReturnPeriod(
           ArgumentMatchers.eq(iossNumber),
           ArgumentMatchers.eq(registrationWrapperWithExclusion),
@@ -339,7 +316,6 @@ class StartReturnControllerSpec
           registration = registrationWrapperWithExclusion
         ).overrides(bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector))
           .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
-          .overrides(bind[PaymentsService].toInstance(mockPaymentsService))
           .build()
 
         running(application) {
@@ -517,10 +493,7 @@ class StartReturnControllerSpec
             .thenReturn(Future.successful(
               Right(emptyCurrentReturns.copy(returns = List(createReturn(submissionStatus, period))))
             ))
-
-          when(mockPaymentsService.prepareFinancialDataWithIossNumber(ArgumentMatchers.eq(iossNumber))(any(), any()))
-            .thenReturn(Future.successful(PrepareData(List.empty, List.empty, List.empty, BigDecimal(0), BigDecimal(0), iossNumber)))
-
+          
           when(mockPartialReturnPeriodService.getPartialReturnPeriod(
             ArgumentMatchers.eq(iossNumber),
             ArgumentMatchers.eq(registrationWrapper),
@@ -531,7 +504,6 @@ class StartReturnControllerSpec
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
             .overrides(bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector))
             .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
-            .overrides(bind[PaymentsService].toInstance(mockPaymentsService))
             .build()
 
           running(application) {
