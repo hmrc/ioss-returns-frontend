@@ -21,6 +21,7 @@
 @import uk.gov.hmrc.govukfrontend.views.viewmodels.radios.Radios
 @import uk.gov.hmrc.govukfrontend.views.viewmodels.warningtext.WarningText
 @import viewmodels.LegendSize
+@import viewmodels.yourAccount.Return
 
 @this(
     layout: templates.Layout,
@@ -31,7 +32,7 @@
     govukWarningText: GovukWarningText
 )
 
-@(form: Form[_], waypoints: Waypoints, period: Period, maybeExclusion: Option[EtmpExclusion], isFinalReturn: Boolean, maybePartialReturnPeriod: Option[PartialReturnPeriod], isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, period: Period, maybeExclusion: Option[EtmpExclusion], isFinalReturn: Boolean, maybePartialReturnPeriod: Option[PartialReturnPeriod], isIntermediary: Boolean, companyName: String, overdueReturns: Seq[Return])(implicit request: Request[_], messages: Messages)
 
     @layout(pageTitle = title(
         form,
@@ -74,7 +75,21 @@
                         }
                     }
                 ).withSize(LegendSize.Large)
-            )
+            ).withHint(HintViewModel(
+                if(isIntermediary && overdueReturns.nonEmpty) {
+                    if(overdueReturns.size == 1) {
+                        messages("startReturn.intermediary.overdueReturn.single", overdueReturns.head.period.displayText)
+                    } else if(overdueReturns.size == 2) {
+                        messages("startReturn.intermediary.overdueReturn.two",
+                            overdueReturns(0).period.displayText,
+                            overdueReturns(1).period.displayText)
+                    } else {
+                        messages("startReturn.intermediary.overdueReturn.multiple", overdueReturns.size)
+                    }
+                } else {
+                    ""
+                }
+            ))
         )
 
         @maybePartialReturnPeriod.map { partialReturnPeriod =>

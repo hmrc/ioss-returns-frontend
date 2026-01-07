@@ -23,7 +23,7 @@ import logging.Logging
 import models.requests.IdentifierRequest
 import play.api.mvc.Results._
 import play.api.mvc._
-import services.{AccountService, UrlBuilderService}
+import services.UrlBuilderService
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve._
 import uk.gov.hmrc.auth.core.AffinityGroup.{Individual, Organisation}

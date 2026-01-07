@@ -16,10 +16,7 @@
 
 package controllers.actions
 
-import config.FrontendAppConfig
-import connectors.{IntermediaryRegistrationConnector, RegistrationConnector}
 import controllers.routes
-import logging.Logging
 import models.requests.{DataRequest, OptionalDataRequest}
 import play.api.mvc.Results.Redirect
 import play.api.mvc.{ActionRefiner, Result}

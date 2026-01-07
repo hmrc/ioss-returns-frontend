@@ -35,7 +35,7 @@ import pages.{EmptyWaypoints, NoOtherPeriodsAvailablePage, SoldGoodsPage}
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import services.PartialReturnPeriodService
 import viewmodels.yourAccount.{CurrentReturns, Return}
 import views.html.StartReturnView
@@ -129,7 +129,7 @@ class StartReturnControllerSpec
             val view = application.injector.instanceOf[StartReturnView]
 
             status(result) mustBe OK
-            contentAsString(result) mustBe view(form, waypoints, period, None, isFinalReturn = false, None, isIntermediary = false, companyName = "" )(request, messages(application)).toString
+            contentAsString(result) mustBe view(form, waypoints, period, None, isFinalReturn = false, None, isIntermediary = false, companyName = "", List.empty)(request, messages(application)).toString
           }
         }
       }
@@ -174,7 +174,8 @@ class StartReturnControllerSpec
               isFinalReturn = false,
               maybePartialReturn,
               isIntermediary = false,
-              companyName = ""
+              companyName = "",
+              List.empty
             )(request, messages(application)).toString
           }
         }
@@ -279,8 +280,229 @@ class StartReturnControllerSpec
             isFinalReturn = false,
             None,
             isIntermediary = false,
-            companyName = ""
+            companyName = "",
+            List.empty
           )(request, messages(application)).toString
+        }
+      }
+
+      "must not call ReturnStatusConnector when user is not an intermediary" in {
+        when(mockReturnStatusConnector.getCurrentReturns(ArgumentMatchers.eq(iossNumber))(any()))
+          .thenReturn(Future.successful(Right(emptyCurrentReturns.copy(returns = List(createReturn(Due, period))))))
+
+        when(mockPartialReturnPeriodService.getPartialReturnPeriod(
+          ArgumentMatchers.eq(iossNumber),
+          ArgumentMatchers.eq(registrationWrapper),
+          ArgumentMatchers.eq(period)
+        )(any()))
+          .thenReturn(Future.successful(None))
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+          .overrides(bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector))
+          .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
+          .build()
+
+        running(application) {
+          val request = FakeRequest(GET, startReturnRoute)
+          val result = route(application, request).value
+
+          status(result) mustBe OK
+          contentAsString(result) mustNot include("overdue return")
+        }
+      }
+
+      "must show no hint text when intermediary has no overdue returns" in {
+        val intermediaryRegistration = registrationWrapper.copy(
+          vatInfo = registrationWrapper.vatInfo.map(_.copy(
+            organisationName = Some(companyName)
+          ))
+        )
+
+        val currentReturnsWithNoOverdue = CurrentReturns(
+          returns = List(createReturn(Due, period)),
+          finalReturnsCompleted = false,
+          completeOrExcludedReturns = List.empty
+        )
+
+        when(mockReturnStatusConnector.getCurrentReturns(ArgumentMatchers.eq(iossNumber))(any()))
+          .thenReturn(Future.successful(Right(currentReturnsWithNoOverdue)))
+
+        when(mockPartialReturnPeriodService.getPartialReturnPeriod(
+          ArgumentMatchers.eq(iossNumber),
+          ArgumentMatchers.eq(intermediaryRegistration),
+          ArgumentMatchers.eq(period)
+        )(any()))
+          .thenReturn(Future.successful(None))
+
+        val application = applicationBuilder(
+          userAnswers = Some(emptyUserAnswers),
+          registration = intermediaryRegistration,
+          maybeIntermediaryNumber = Some(intermediaryNumber)
+        )
+          .overrides(bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector))
+          .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
+          .build()
+
+        running(application) {
+          val request = FakeRequest(GET, startReturnRoute)
+          val result = route(application, request).value
+
+          status(result) mustBe OK
+          contentAsString(result) mustNot include("overdue return")
+        }
+      }
+
+      "must show hint text with single period when intermediary has 1 overdue return" in {
+        val intermediaryRegistration = registrationWrapper.copy(
+          vatInfo = registrationWrapper.vatInfo.map(_.copy(
+            organisationName = Some(companyName)
+          ))
+        )
+
+        val previousPeriod = StandardPeriod(2024, Month.APRIL)
+        val overdueReturn = createReturn(Overdue, previousPeriod)
+
+        val currentReturnsWithOneOverdue = CurrentReturns(
+          returns = List(
+            createReturn(Overdue, period),
+            overdueReturn
+          ),
+          finalReturnsCompleted = false,
+          completeOrExcludedReturns = List.empty
+        )
+
+        when(mockReturnStatusConnector.getCurrentReturns(ArgumentMatchers.eq(iossNumber))(any()))
+          .thenReturn(Future.successful(Right(currentReturnsWithOneOverdue)))
+
+        when(mockPartialReturnPeriodService.getPartialReturnPeriod(
+          ArgumentMatchers.eq(iossNumber),
+          ArgumentMatchers.eq(intermediaryRegistration),
+          ArgumentMatchers.eq(period)
+        )(any()))
+          .thenReturn(Future.successful(None))
+
+        val application = applicationBuilder(
+          userAnswers = Some(emptyUserAnswers),
+          registration = intermediaryRegistration,
+          maybeIntermediaryNumber = Some(intermediaryNumber)
+        )
+          .overrides(bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector))
+          .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
+          .build()
+
+        running(application) {
+          val request = FakeRequest(GET, startReturnRoute)
+          val result = route(application, request).value
+
+          status(result) mustBe OK
+          contentAsString(result) must include(previousPeriod.displayText)
+          contentAsString(result) must include("overdue return")
+        }
+      }
+
+      "must show hint text with both periods when intermediary has 2 overdue returns" in {
+        val intermediaryRegistration = registrationWrapper.copy(
+          vatInfo = registrationWrapper.vatInfo.map(_.copy(
+            organisationName = Some(companyName)
+          ))
+        )
+
+        val period1 = StandardPeriod(2024, Month.APRIL)
+        val period2 = StandardPeriod(2024, Month.MAY)
+        val overdueReturn = createReturn(Overdue, period1)
+        val dueReturn = createReturn(Due, period2)
+
+        val currentReturnsWithTwoOverdue = CurrentReturns(
+          returns = List(
+            createReturn(Overdue, period),
+            overdueReturn,
+            dueReturn
+          ),
+          finalReturnsCompleted = false,
+          completeOrExcludedReturns = List.empty
+        )
+
+        when(mockReturnStatusConnector.getCurrentReturns(ArgumentMatchers.eq(iossNumber))(any()))
+          .thenReturn(Future.successful(Right(currentReturnsWithTwoOverdue)))
+
+        when(mockPartialReturnPeriodService.getPartialReturnPeriod(
+          ArgumentMatchers.eq(iossNumber),
+          ArgumentMatchers.eq(intermediaryRegistration),
+          ArgumentMatchers.eq(period)
+        )(any()))
+          .thenReturn(Future.successful(None))
+
+        val application = applicationBuilder(
+          userAnswers = Some(emptyUserAnswers),
+          registration = intermediaryRegistration,
+          maybeIntermediaryNumber = Some(intermediaryNumber)
+        )
+          .overrides(bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector))
+          .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
+          .build()
+
+        running(application) {
+          val request = FakeRequest(GET, startReturnRoute)
+          val result = route(application, request).value
+
+          status(result) mustBe OK
+          contentAsString(result) must include(period.displayText)
+          contentAsString(result) must include(period1.displayText)
+          contentAsString(result) must include("overdue return")
+        }
+      }
+
+      "must show hint text with count when intermediary has 3+ overdue returns" in {
+        val intermediaryRegistration = registrationWrapper.copy(
+          vatInfo = registrationWrapper.vatInfo.map(_.copy(
+            organisationName = Some(companyName)
+          ))
+        )
+
+        val period1 = StandardPeriod(2024, Month.APRIL)
+        val period2 = StandardPeriod(2024, Month.MAY)
+        val period3 = StandardPeriod(2024, Month.JUNE)
+        val overdueReturn1 = createReturn(Overdue, period1)
+        val overdueReturn2 = createReturn(Overdue, period2)
+        val overdueReturn3 = createReturn(Overdue, period3)
+
+        val currentReturnsWithMultipleOverdue = CurrentReturns(
+          returns = List(
+            createReturn(Overdue, period),
+            overdueReturn1,
+            overdueReturn2,
+            overdueReturn3
+          ),
+          finalReturnsCompleted = false,
+          completeOrExcludedReturns = List.empty
+        )
+
+        when(mockReturnStatusConnector.getCurrentReturns(ArgumentMatchers.eq(iossNumber))(any()))
+          .thenReturn(Future.successful(Right(currentReturnsWithMultipleOverdue)))
+
+        when(mockPartialReturnPeriodService.getPartialReturnPeriod(
+          ArgumentMatchers.eq(iossNumber),
+          ArgumentMatchers.eq(intermediaryRegistration),
+          ArgumentMatchers.eq(period)
+        )(any()))
+          .thenReturn(Future.successful(None))
+
+        val application = applicationBuilder(
+          userAnswers = Some(emptyUserAnswers),
+          registration = intermediaryRegistration,
+          maybeIntermediaryNumber = Some(intermediaryNumber)
+        )
+          .overrides(bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector))
+          .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
+          .build()
+
+        running(application) {
+          val request = FakeRequest(GET, startReturnRoute)
+          val result = route(application, request).value
+
+          status(result) mustBe OK
+          contentAsString(result) must include("4")
+          contentAsString(result) must include("overdue return")
         }
       }
 
@@ -332,7 +554,8 @@ class StartReturnControllerSpec
             isFinalReturn = false,
             None,
             isIntermediary = false,
-            companyName = ""
+            companyName = "",
+            List.empty
           )(request, messages(application)).toString
         }
       }
@@ -516,7 +739,7 @@ class StartReturnControllerSpec
 
             status(result) mustBe BAD_REQUEST
             contentAsString(result) mustBe view(boundForm, waypoints, period, None, isFinalReturn = false, None, isIntermediary = false,
-              companyName = "")(request, messages(application)).toString
+              companyName = "", List.empty)(request, messages(application)).toString
           }
         }
       }

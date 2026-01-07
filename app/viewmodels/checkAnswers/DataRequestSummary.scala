@@ -16,11 +16,9 @@
 
 package viewmodels.checkAnswers
 
-import models.RegistrationWrapper
 import play.api.i18n.Messages
 import play.twirl.api.HtmlFormat
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
-import viewmodels.govuk.all.{SummaryListRowViewModel, ValueViewModel}
 import viewmodels.govuk.summarylist.*
 import viewmodels.implicits.*
 

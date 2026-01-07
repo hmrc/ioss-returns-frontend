@@ -198,6 +198,9 @@ startReturn.intermediary.heading = Do you want to start the {0} return for {1}?
 startReturn.intermediary.error.required = Select yes if you want to start their return
 startReturn.intermediary.partialFrom = Only include their sales from {0}.
 startReturn.intermediary.partialTo = Only include their sales up to {0}.
+startReturn.intermediary.overdueReturn.single = Your client has an overdue return for {0}. You must complete their oldest return first.
+startReturn.intermediary.overdueReturn.two = Your client has overdue returns for {0} and {1}. You must complete their oldest return first.
+startReturn.intermediary.overdueReturn.multiple = Your client has {0} overdue returns. You must complete their oldest return first.
 
 soldGoods.title = Did you make eligible sales into the EU or Northern Ireland in {0}?
 soldGoods.heading = Did you make eligible sales into the EU or Northern Ireland in {0}?

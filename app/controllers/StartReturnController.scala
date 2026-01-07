@@ -16,10 +16,12 @@
 
 package controllers
 
+import connectors.ReturnStatusConnector
 import controllers.actions._
 import forms.StartReturnFormProvider
 import models.etmp.EtmpExclusion
 import models.etmp.EtmpExclusionReason.Reversal
+import models.SubmissionStatus.Overdue
 import models.{Period, UserAnswers}
 import pages.{StartReturnPage, Waypoints}
 import play.api.data.Form
@@ -28,6 +30,7 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.PartialReturnPeriodService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax.FutureOps
+import viewmodels.yourAccount.{CurrentReturns, Return}
 import views.html.StartReturnView
 
 import java.time.{Clock, Instant}
@@ -39,6 +42,7 @@ class StartReturnController @Inject()(
                                        cc: AuthenticatedControllerComponents,
                                        formProvider: StartReturnFormProvider,
                                        partialReturnPeriodService: PartialReturnPeriodService,
+                                       returnStatusConnector: ReturnStatusConnector,
                                        view: StartReturnView,
                                        clock: Clock
                                      )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
@@ -65,8 +69,22 @@ class StartReturnController @Inject()(
         exclusion.exclusionReason != Reversal && nextPeriod.isAfter(exclusion.effectiveDate)
       }
 
-      partialReturnPeriodService.getPartialReturnPeriod(request.iossNumber, request.registrationWrapper, period).map { maybePartialReturnPeriod =>
-        Ok(view(form, waypoints, period, maybeExclusion, isFinalReturn, maybePartialReturnPeriod, isIntermediary, companyName))
+      for {
+        maybePartialReturnPeriod <- partialReturnPeriodService.getPartialReturnPeriod(request.iossNumber, request.registrationWrapper, period)
+        currentReturnsResponse <- if (isIntermediary) {
+          returnStatusConnector.getCurrentReturns(request.iossNumber)
+        } else {
+          Future.successful(Right(CurrentReturns(returns = Seq.empty, finalReturnsCompleted = false)))
+        }
+      } yield {
+        val overdueReturns: Seq[Return] = currentReturnsResponse match {
+          case Right(currentReturns) =>
+            currentReturns.returns
+              .filter(r => r.submissionStatus == Overdue)
+              .sortBy(r => (r.period.year, r.period.month.getValue))
+          case Left(_) => Seq.empty
+        }
+        Ok(view(form, waypoints, period, maybeExclusion, isFinalReturn, maybePartialReturnPeriod, isIntermediary, companyName, overdueReturns))
       }
 
   }
@@ -92,10 +110,22 @@ class StartReturnController @Inject()(
 
       form.bindFromRequest().fold(
         formWithErrors =>
-
-          partialReturnPeriodService.getPartialReturnPeriod(request.iossNumber, request.registrationWrapper, period).map { maybePartialReturnPeriod =>
-            BadRequest(view(formWithErrors, waypoints, period, maybeExclusion, isFinalReturn, maybePartialReturnPeriod, isIntermediary, companyName))
-
+          for {
+            maybePartialReturnPeriod <- partialReturnPeriodService.getPartialReturnPeriod(request.iossNumber, request.registrationWrapper, period)
+            currentReturnsResponse <- if (isIntermediary) {
+              returnStatusConnector.getCurrentReturns(request.iossNumber)
+            } else {
+              Future.successful(Right(CurrentReturns(returns = Seq.empty, finalReturnsCompleted = false)))
+            }
+          } yield {
+            val overdueReturns: Seq[Return] = currentReturnsResponse match {
+              case Right(currentReturns) =>
+                currentReturns.returns
+                  .filter(r => r.submissionStatus == Overdue)
+                  .sortBy(r => (r.period.year, r.period.month.getValue))
+              case Left(_) => Seq.empty
+            }
+            BadRequest(view(formWithErrors, waypoints, period, maybeExclusion, isFinalReturn, maybePartialReturnPeriod, isIntermediary, companyName, overdueReturns))
           },
 
         value => {
