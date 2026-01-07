@@ -19,6 +19,8 @@ package controllers.corrections
 import base.SpecBase
 import config.FrontendAppConfig
 import controllers.routes
+import models.RegistrationWrapper
+import models.etmp.VatCustomerInfo
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar.mock
@@ -53,14 +55,19 @@ class NoOtherPeriodsAvailableControllerSpec extends SpecBase {
         val redirectUrl: String = YourAccountPage.route(waypoints).url
 
         status(result) `mustBe` OK
-        contentAsString(result) `mustBe` view(waypoints, companyName = "CompanyName",  redirectUrl)(request, messages(application)).toString
+        contentAsString(result) `mustBe` view(waypoints, isIntermediary = false, companyName = "CompanyName",  redirectUrl)(request, messages(application)).toString
       }
     }
 
     "must return OK and the correct view for a GET when isIntermediary" in {
 
+      val vatInfo: VatCustomerInfo = registrationWrapper.vatInfo.get.copy(organisationName = Some("CompanyName"))
+      val registration: RegistrationWrapper = registrationWrapper.copy(vatInfo = Some(vatInfo))
+      val companyName: String = registration.getCompanyName()
+
       val application = applicationBuilder(
         userAnswers = Some(emptyUserAnswers),
+        registration = registration,
         maybeIntermediaryNumber = Some(intermediaryNumber)
       ).build()
 
@@ -76,7 +83,7 @@ class NoOtherPeriodsAvailableControllerSpec extends SpecBase {
         val redirectUrl: String = config.intermediaryDashboardUrl
 
         status(result) `mustBe` OK
-        contentAsString(result) `mustBe` view(waypoints, redirectUrl)(request, messages(application)).toString
+        contentAsString(result) `mustBe` view(waypoints, isIntermediary = true, companyName, redirectUrl)(request, messages(application)).toString
       }
     }
 

@@ -16,8 +16,8 @@
 
 package models.requests
 
+import models.{RegistrationWrapper, UserAnswers}
 import play.api.mvc.{Request, WrappedRequest}
-import models.{Period, RegistrationWrapper, UserAnswers}
 import uk.gov.hmrc.auth.core.retrieve.Credentials
 import uk.gov.hmrc.domain.Vrn
 

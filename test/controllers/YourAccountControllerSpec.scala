@@ -79,7 +79,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
   }
 
   private def createArbRegistrationWrapperWithValidCompanyName(): RegistrationWrapper = {
-    val registration = registrationWrapper.registration
     registrationWrapper.copy(vatInfo = Some(ukBasedVatInfo))
   }
 

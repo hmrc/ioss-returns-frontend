@@ -45,7 +45,7 @@ class NoOtherPeriodsAvailableController @Inject()(
       } else {
         YourAccountPage.route(waypoints).url
       }
-
-      Ok(view(waypoints, companyName, redirectUrl))
+      
+      Ok(view(waypoints, request.isIntermediary, companyName, redirectUrl))
   }
 }

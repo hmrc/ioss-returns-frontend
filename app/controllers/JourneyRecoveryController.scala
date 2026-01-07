@@ -59,7 +59,7 @@ class JourneyRecoveryController @Inject()(
       }
 
       safeUrl
-        .map(url => Ok(continueView(url)))
+        .map(url => Ok(continueView(url, hasIntermediaryEnrolment)))
         .getOrElse(Ok(startAgainView(startAgainRedirect)))
   }
 }

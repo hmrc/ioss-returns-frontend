@@ -22,12 +22,10 @@ import connectors.SaveForLaterConnector
 import connectors.SaveForLaterHttpParser.SaveForLaterResponse
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
+import models.ValidationError
 import models.audit.{ReturnsAuditModel, SubmissionResult}
 import models.etmp.EtmpExclusion
-import models.etmp.intermediary.EtmpIdType.VRN
-import models.etmp.intermediary.{EtmpCustomerIdentificationLegacy, EtmpCustomerIdentificationNew}
 import models.requests.{DataRequest, SaveForLaterRequest}
-import models.ValidationError
 import models.responses.ConflictFound
 import pages.corrections.CorrectPreviousReturnPage
 import pages.{CheckYourAnswersPage, SavedProgressPage, Waypoints}
@@ -110,7 +108,6 @@ class CheckYourAnswersController @Inject()(
   def onSubmit(waypoints: Waypoints, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
 
-      val isIntermediary = request.isIntermediary
       val userAnswers = request.userAnswers
 
       val preferredPeriod = userAnswers.period

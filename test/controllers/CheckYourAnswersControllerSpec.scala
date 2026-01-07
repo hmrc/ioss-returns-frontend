@@ -22,8 +22,8 @@ import config.FrontendAppConfig
 import connectors.SaveForLaterConnector
 import models.audit.{ReturnsAuditModel, SubmissionResult}
 import models.etmp.EtmpExclusionReason.TransferringMSID
+import models.etmp.intermediary.EtmpCustomerIdentificationNew
 import models.etmp.intermediary.EtmpIdType.{FTR, NINO, UTR}
-import models.etmp.intermediary.{EtmpCustomerIdentificationLegacy, EtmpCustomerIdentificationNew}
 import models.etmp.{EtmpDisplayRegistration, EtmpExclusion}
 import models.requests.DataRequest
 import models.responses.ConflictFound
@@ -506,7 +506,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
             val result = route(application, request).value
 
             implicit val dataRequest: DataRequest[_] =
-              DataRequest(request, testCredentials, vrn, userAnswersId, registrationWrapper, None, userAnswers)
+              DataRequest(request, testCredentials, Some(vrn), userAnswersId, companyName, registrationWrapper, None, userAnswers)
 
             val expectedAuditEvent = ReturnsAuditModel.build(userAnswers, SubmissionResult.Failure)
 
@@ -543,7 +543,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
             val config = application.injector.instanceOf[FrontendAppConfig]
 
             implicit val dataRequest: DataRequest[_] =
-              DataRequest(request, testCredentials, vrn, userAnswersId, registrationWrapper, None, userAnswers)
+              DataRequest(request, testCredentials, Some(vrn), userAnswersId, companyName, registrationWrapper, None, userAnswers)
 
             val expectedAuditEvent = ReturnsAuditModel.build(userAnswers, SubmissionResult.Failure)
 
