@@ -16,12 +16,13 @@
 
 package controllers
 
+import config.FrontendAppConfig
 import controllers.actions.AuthenticatedControllerComponents
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.play.bootstrap.binders._
-import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl._
+import uk.gov.hmrc.play.bootstrap.binders.*
+import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl.*
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.{JourneyRecoveryContinueView, JourneyRecoveryStartAgainView}
 
@@ -29,16 +30,23 @@ import javax.inject.Inject
 
 class JourneyRecoveryController @Inject()(
                                            cc: AuthenticatedControllerComponents,
+                                           frontendAppConfig: FrontendAppConfig,
                                            continueView: JourneyRecoveryContinueView,
                                            startAgainView: JourneyRecoveryStartAgainView
                                          ) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(continueUrl: Option[RedirectUrl] = None): Action[AnyContent] = cc.authAndGetRegistration() {
+  def onPageLoad(continueUrl: Option[RedirectUrl] = None): Action[AnyContent] = cc.auth {
     implicit request =>
-      val isIntermediary = request.isIntermediary
-      
+
+     val hasIntermediaryEnrolment: Boolean =  request.enrolments.getEnrolment("HMRC-IOSS-INT").nonEmpty
+     val startAgainRedirect: String = if (hasIntermediaryEnrolment) {
+       frontendAppConfig.intermediaryDashboardUrl
+     } else {
+       routes.IndexController.onPageLoad.url
+     }
+
       val safeUrl: Option[String] = continueUrl.flatMap {
         unsafeUrl =>
           unsafeUrl.getEither(OnlyRelative) match {
@@ -50,9 +58,8 @@ class JourneyRecoveryController @Inject()(
           }
       }
 
-      // TODO -> start again view link currently redirects to index controller but fails for intermediaries
       safeUrl
-        .map(url => Ok(continueView(url, isIntermediary)))
-        .getOrElse(Ok(startAgainView(isIntermediary)))
+        .map(url => Ok(continueView(url)))
+        .getOrElse(Ok(startAgainView(startAgainRedirect)))
   }
 }
