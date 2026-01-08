@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -122,20 +122,27 @@ trait SpecBase
                                     clock: Option[Clock] = None,
                                     registration: RegistrationWrapper = registrationWrapper,
                                     getRegistrationAction: Option[GetRegistrationActionProvider] = None,
-                                    maybeIntermediaryNumber: Option[String] = None
+                                    maybeIntermediaryNumber: Option[String] = None,
+                                    getIdentifierAction: Option[IdentifierAction] = None
                                   ): GuiceApplicationBuilder = {
     val clockToBind = clock.getOrElse(stubClockAtArbitraryDate)
 
     val getRegistrationActionBind = if(getRegistrationAction.nonEmpty) {
       bind[GetRegistrationActionProvider].toInstance(getRegistrationAction.get)
     } else {
-      bind[GetRegistrationActionProvider].toInstance(new FakeGetRegistrationActionProvider(registration))
+      bind[GetRegistrationActionProvider].toInstance(new FakeGetRegistrationActionProvider(registration, maybeIntermediaryNumber))
+    }
+    
+    val getIdentifierActionBind = if(getIdentifierAction.nonEmpty) {
+      bind[IdentifierAction].to[FakeIntermediaryIdentifierAction]
+    } else {
+      bind[IdentifierAction].to[FakeIdentifierAction]
     }
 
     new GuiceApplicationBuilder()
       .overrides(
         bind[DataRequiredAction].to[DataRequiredActionImpl],
-        bind[IdentifierAction].to[FakeIdentifierAction],
+        getIdentifierActionBind,
         bind[Clock].toInstance(clockToBind),
         bind[DataRetrievalActionProvider].toInstance(new FakeDataRetrievalActionProvider(userAnswers, maybeIntermediaryNumber)),
         getRegistrationActionBind,

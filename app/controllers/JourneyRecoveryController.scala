@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,13 @@
 
 package controllers
 
+import config.FrontendAppConfig
 import controllers.actions.AuthenticatedControllerComponents
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.play.bootstrap.binders._
-import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl._
+import uk.gov.hmrc.play.bootstrap.binders.*
+import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl.*
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.{JourneyRecoveryContinueView, JourneyRecoveryStartAgainView}
 
@@ -29,16 +30,23 @@ import javax.inject.Inject
 
 class JourneyRecoveryController @Inject()(
                                            cc: AuthenticatedControllerComponents,
+                                           frontendAppConfig: FrontendAppConfig,
                                            continueView: JourneyRecoveryContinueView,
                                            startAgainView: JourneyRecoveryStartAgainView
                                          ) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(continueUrl: Option[RedirectUrl] = None): Action[AnyContent] = cc.authAndGetRegistration() {
+  def onPageLoad(continueUrl: Option[RedirectUrl] = None): Action[AnyContent] = cc.auth {
     implicit request =>
-      val isIntermediary = request.isIntermediary
-      
+
+     val hasIntermediaryEnrolment: Boolean =  request.enrolments.getEnrolment("HMRC-IOSS-INT").nonEmpty
+     val startAgainRedirect: String = if (hasIntermediaryEnrolment) {
+       frontendAppConfig.intermediaryDashboardUrl
+     } else {
+       routes.IndexController.onPageLoad.url
+     }
+
       val safeUrl: Option[String] = continueUrl.flatMap {
         unsafeUrl =>
           unsafeUrl.getEither(OnlyRelative) match {
@@ -51,7 +59,7 @@ class JourneyRecoveryController @Inject()(
       }
 
       safeUrl
-        .map(url => Ok(continueView(url, isIntermediary)))
-        .getOrElse(Ok(startAgainView(isIntermediary)))
+        .map(url => Ok(continueView(url, hasIntermediaryEnrolment)))
+        .getOrElse(Ok(startAgainView(startAgainRedirect)))
   }
 }

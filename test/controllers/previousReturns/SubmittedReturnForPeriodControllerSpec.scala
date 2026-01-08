@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,8 @@ import models.Period.fromEtmpPeriodKey
 import models.etmp.{EtmpExclusion, EtmpExclusionReason, EtmpVatReturn, EtmpVatReturnCorrection}
 import models.financialdata.Charge
 import models.requests.OptionalDataRequest
-import models.{Period, RegistrationWrapper, StandardPeriod, UnexpectedResponseStatus}
+import models.responses.UnexpectedResponseStatus
+import models.{Period, RegistrationWrapper, StandardPeriod}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.mockito.{ArgumentMatchers, Mockito}

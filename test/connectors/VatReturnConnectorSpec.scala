@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,9 +22,10 @@ import connectors.ExternalEntryUrlHttpParser.ExternalEntryUrlResponse
 import generators.Generators
 import models.core.CoreVatReturn
 import models.etmp.{EtmpObligations, EtmpVatReturn}
-import models.{Country, InvalidJson, UnexpectedResponseStatus}
+import models.Country
 import models.corrections.ReturnCorrectionValue
 import models.external.ExternalEntryUrl
+import models.responses.{InvalidJson, UnexpectedResponseStatus}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.Application

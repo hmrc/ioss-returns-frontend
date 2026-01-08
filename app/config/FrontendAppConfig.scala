@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -82,6 +82,7 @@ class FrontendAppConfig @Inject() (configuration: Configuration) {
   val internalAuthToken: String = configuration.get[String]("internal-auth.token")
   val intermediaryEnabled: Boolean = configuration.get[Boolean]("features.intermediary.enabled")
   val intermediaryEnrolment: String = configuration.get[String]("features.intermediary.enrolment")
+  val intermediaryIdentifierName: String = configuration.get[String]("features.intermediary.identifier-name")
 
   val authLoginStubSignInUrl: String = configuration.get[String]("urls.authStubSignIn")
 

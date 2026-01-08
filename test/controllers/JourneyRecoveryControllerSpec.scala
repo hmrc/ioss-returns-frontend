@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,10 @@
 package controllers
 
 import base.SpecBase
+import config.FrontendAppConfig
+import controllers.actions.FakeIntermediaryIdentifierAction
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl
 import views.html.{JourneyRecoveryContinueView, JourneyRecoveryStartAgainView}
 
@@ -40,8 +42,8 @@ class JourneyRecoveryControllerSpec extends SpecBase {
 
           val continueView = application.injector.instanceOf[JourneyRecoveryContinueView]
 
-          status(result) mustEqual OK
-          contentAsString(result) mustEqual continueView(continueUrl.unsafeValue, isIntermediary = false)(request, messages(application)).toString
+          status(result) `mustBe` OK
+          contentAsString(result) `mustBe` continueView(continueUrl.unsafeValue, isIntermediary = false)(request, messages(application)).toString
         }
       }
     }
@@ -60,8 +62,36 @@ class JourneyRecoveryControllerSpec extends SpecBase {
 
           val startAgainView = application.injector.instanceOf[JourneyRecoveryStartAgainView]
 
-          status(result) mustEqual OK
-          contentAsString(result) mustEqual startAgainView(isIntermediary = false)(request, messages(application)).toString
+          val redirectUrl: String = routes.IndexController.onPageLoad.url
+
+          status(result) `mustBe` OK
+          contentAsString(result) `mustBe` startAgainView(redirectUrl)(request, messages(application)).toString
+        }
+      }
+
+      "must return OK and the start again view for an Intermediary" in {
+
+        val fakeIntermediaryIdentifierAction: FakeIntermediaryIdentifierAction = FakeIntermediaryIdentifierAction()
+
+        val application = applicationBuilder(
+          userAnswers = None,
+          getIdentifierAction = Some(fakeIntermediaryIdentifierAction)
+        ).build()
+
+        running(application) {
+          val continueUrl = RedirectUrl("https://foo.com")
+          val request     = FakeRequest(GET, routes.JourneyRecoveryController.onPageLoad(Some(continueUrl)).url)
+
+          val result = route(application, request).value
+
+          val startAgainView = application.injector.instanceOf[JourneyRecoveryStartAgainView]
+
+          val config = application.injector.instanceOf[FrontendAppConfig]
+
+          val redirectUrl: String = config.intermediaryDashboardUrl
+
+          status(result) `mustBe` OK
+          contentAsString(result) `mustBe` startAgainView(redirectUrl)(request, messages(application)).toString
         }
       }
     }
@@ -79,8 +109,10 @@ class JourneyRecoveryControllerSpec extends SpecBase {
 
           val startAgainView = application.injector.instanceOf[JourneyRecoveryStartAgainView]
 
-          status(result) mustEqual OK
-          contentAsString(result) mustEqual startAgainView(isIntermediary = false)(request, messages(application)).toString
+          val redirectUrl: String = routes.IndexController.onPageLoad.url
+
+          status(result) `mustBe` OK
+          contentAsString(result) `mustBe` startAgainView(redirectUrl)(request, messages(application)).toString
         }
       }
     }

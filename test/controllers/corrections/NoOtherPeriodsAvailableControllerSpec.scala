@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,17 @@
 package controllers.corrections
 
 import base.SpecBase
+import config.FrontendAppConfig
 import controllers.routes
+import models.RegistrationWrapper
+import models.etmp.VatCustomerInfo
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar.mock
-import play.api.inject._
+import pages.YourAccountPage
+import play.api.inject.*
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import repositories.SessionRepository
 import views.html.NoOtherPeriodsAvailableView
 
@@ -48,8 +52,38 @@ class NoOtherPeriodsAvailableControllerSpec extends SpecBase {
 
         val view = application.injector.instanceOf[NoOtherPeriodsAvailableView]
 
-        status(result) mustBe OK
-        contentAsString(result) mustBe view(waypoints, isIntermediary = false, companyName = "CompanyName", intermediaryDashboardUrl = "htttps://www.test.co.uk")(request, messages(application)).toString
+        val redirectUrl: String = YourAccountPage.route(waypoints).url
+
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(waypoints, isIntermediary = false, companyName = "CompanyName",  redirectUrl)(request, messages(application)).toString
+      }
+    }
+
+    "must return OK and the correct view for a GET when isIntermediary" in {
+
+      val vatInfo: VatCustomerInfo = registrationWrapper.vatInfo.get.copy(organisationName = Some("CompanyName"))
+      val registration: RegistrationWrapper = registrationWrapper.copy(vatInfo = Some(vatInfo))
+      val companyName: String = registration.getCompanyName()
+
+      val application = applicationBuilder(
+        userAnswers = Some(emptyUserAnswers),
+        registration = registration,
+        maybeIntermediaryNumber = Some(intermediaryNumber)
+      ).build()
+
+      running(application) {
+        val request = FakeRequest(GET, routes.NoOtherPeriodsAvailableController.onPageLoad(waypoints).url)
+
+        val result = route(application, request).value
+
+        val view = application.injector.instanceOf[NoOtherPeriodsAvailableView]
+
+        val config = application.injector.instanceOf[FrontendAppConfig]
+
+        val redirectUrl: String = config.intermediaryDashboardUrl
+
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(waypoints, isIntermediary = true, companyName, redirectUrl)(request, messages(application)).toString
       }
     }
 
@@ -67,8 +101,8 @@ class NoOtherPeriodsAvailableControllerSpec extends SpecBase {
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.CheckYourAnswersController.onPageLoad().url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` routes.CheckYourAnswersController.onPageLoad().url
       }
     }
 
@@ -81,8 +115,8 @@ class NoOtherPeriodsAvailableControllerSpec extends SpecBase {
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.CheckYourAnswersController.onPageLoad().url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` routes.CheckYourAnswersController.onPageLoad().url
       }
     }
 
@@ -100,9 +134,8 @@ class NoOtherPeriodsAvailableControllerSpec extends SpecBase {
 
         val result = route(application, request).value
 
-        whenReady(result.failed) { exp => exp mustBe a[Exception] }
+        whenReady(result.failed) { exp => exp `mustBe` a[Exception] }
       }
-
     }
   }
 }

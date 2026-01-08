@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,16 +17,16 @@
 package controllers
 
 import config.FrontendAppConfig
+import connectors.*
 import connectors.CurrentReturnHttpParser.CurrentReturnsResponse
 import connectors.PrepareDataHttpParser.PrepareDataResponse
-import connectors._
 import controllers.CheckCorrectionsTimeLimit.isOlderThanThreeYears
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
 import models.SubmissionStatus.{Excluded, Expired}
 import models.etmp.EtmpExclusion
 import models.etmp.EtmpExclusionReason.{NoLongerSupplies, Reversal, TransferringMSID, VoluntarilyLeaves}
-import models.payments._
+import models.payments.*
 import models.requests.RegistrationRequest
 import models.{Period, SubmissionStatus, UserAnswers}
 import pages.Waypoints
@@ -61,7 +61,7 @@ class YourAccountController @Inject()(
     implicit request =>
 
       val userResearchUrl = appConfig.userResearchUrl1
-      
+
       val results: Future[(CurrentReturnsResponse, PrepareDataResponse, Option[UserAnswers])] = getCurrentReturns()
 
       if (request.enrolments.enrolments.count(_.key == appConfig.iossEnrolment) > 1) {

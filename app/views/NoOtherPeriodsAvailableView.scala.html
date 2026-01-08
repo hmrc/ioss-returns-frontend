@@ -1,5 +1,5 @@
 @*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@
         govukButton: GovukButton
 )
 
-@(waypoints: Waypoints, isIntermediary: Boolean, companyName: String, intermediaryDashboardUrl: String)(implicit request: Request[_], messages: Messages)
+@(waypoints: Waypoints, isIntermediary: Boolean, companyName: String, redirectUrl: String)(implicit request: Request[_], messages: Messages)
 
     @layout(pageTitle = titleNoForm(if(isIntermediary) {
         messages("noOtherPeriodsAvailable.intermediary.title", companyName)
@@ -37,9 +37,5 @@
 
         <p class="govuk-body">@messages("noOtherPeriodsAvailable.p1")</p>
 
-        <p class="govuk-body">@if(isIntermediary) {
-            @Html(messages("noOtherPeriodsAvailable.backToYourAccount", intermediaryDashboardUrl))
-        } else {
-            @Html(messages("noOtherPeriodsAvailable.backToYourAccount", YourAccountPage.route(waypoints).url))
-        }</p>
+        <p class="govuk-body">@Html(messages("noOtherPeriodsAvailable.backToYourAccount", redirectUrl))</p>
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,8 @@ import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock.*
 import models.financialdata.{Charge, FinancialData, FinancialTransaction, Item}
 import models.payments.{Payment, PaymentStatus, PrepareData}
-import models.{InvalidJson, StandardPeriod, UnexpectedResponseStatus}
+import models.responses.{InvalidJson, UnexpectedResponseStatus}
+import models.StandardPeriod
 import play.api.Application
 import play.api.http.Status.{INTERNAL_SERVER_ERROR, OK}
 import play.api.libs.json.Json

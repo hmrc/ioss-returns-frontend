@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,10 @@
 package controllers.actions
 
 import connectors.ReturnStatusConnector
-import models.{ErrorResponse, Period}
+import models.Period
 import models.SubmissionStatus.{Complete, Excluded, Expired}
 import models.requests.OptionalDataRequest
+import models.responses.ErrorResponse
 import pages.EmptyWaypoints
 import play.api.mvc.Results.Redirect
 import play.api.mvc.{ActionFilter, Result}

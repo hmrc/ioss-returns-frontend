@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,10 @@ import utils.FutureSyntax.*
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 
-class FakeGetRegistrationAction(registration: RegistrationWrapper)
+class FakeGetRegistrationAction(
+                                 registration: RegistrationWrapper,
+                                 maybeIntermediaryNumber: Option[String]
+                               )
   extends GetRegistrationAction(
     mock[AccountService],
     mock[IntermediaryRegistrationConnector],
@@ -44,10 +47,13 @@ class FakeGetRegistrationAction(registration: RegistrationWrapper)
   private val enrolments: Enrolments = Enrolments(Set(Enrolment(iossEnrolmentKey, Seq.empty, "test", None)))
 
   override protected def refine[A](request: IdentifierRequest[A]): Future[Either[Result, RegistrationRequest[A]]] =
-    Right(RegistrationRequest(request.request, request.credentials, Some(request.vrn), "Company Name", "IM9001234567", registration, None, enrolments)).toFuture
+    Right(RegistrationRequest(request.request, request.credentials, Some(request.vrn), "Company Name", "IM9001234567", registration, maybeIntermediaryNumber, enrolments)).toFuture
 }
 
-class FakeGetRegistrationActionProvider(registrationWrapper: RegistrationWrapper)
+class FakeGetRegistrationActionProvider(
+                                         registrationWrapper: RegistrationWrapper,
+                                         maybeIntermediaryNumber: Option[String]
+                                       )
 extends GetRegistrationActionProvider(
   mock[AccountService],
   mock[IntermediaryRegistrationConnector],
@@ -56,5 +62,5 @@ extends GetRegistrationActionProvider(
   mock[FrontendAppConfig]
 )(ExecutionContext.Implicits.global) {
 
-  override def apply(maybeIossNumber: Option[String] = None): GetRegistrationAction = new FakeGetRegistrationAction(registrationWrapper)
+  override def apply(maybeIossNumber: Option[String] = None): GetRegistrationAction = new FakeGetRegistrationAction(registrationWrapper, maybeIntermediaryNumber)
 }

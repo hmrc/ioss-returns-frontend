@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,8 @@ import base.SpecBase
 import config.FrontendAppConfig
 import forms.payments.WhichPreviousRegistrationVatPeriodToPayFormProvider
 import models.payments.{Payment, PaymentResponse, PaymentStatus, PrepareData}
-import models.{Period, UnexpectedResponseStatus}
+import models.Period
+import models.responses.UnexpectedResponseStatus
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito
 import org.mockito.Mockito.when

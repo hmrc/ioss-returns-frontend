@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,9 @@ package services.core
 
 import base.SpecBase
 import connectors.core.ValidateCoreRegistrationConnector
-import models.UnexpectedResponseStatus
 import models.core.{CoreRegistrationValidationResult, Match, TraderId}
 import models.etmp.SchemeType
+import models.responses.UnexpectedResponseStatus
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalacheck.Gen

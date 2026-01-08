@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,17 +17,20 @@
 package controllers
 
 import config.FrontendAppConfig
-import connectors.{SaveForLaterConnector, SavedUserAnswers, VatReturnConnector}
+import connectors.{SaveForLaterConnector, VatReturnConnector}
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
+import models.Period
 import models.requests.SaveForLaterRequest
-import models.{ConflictFound, Period}
+import models.responses.ConflictFound
+import models.saveForLater.SavedUserAnswers
 import pages.SavedProgressPage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl._
+import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl.*
 import uk.gov.hmrc.play.bootstrap.binders.{OnlyRelative, RedirectUrl}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.FutureSyntax.FutureOps
 import views.html.SavedProgressView
 
 import java.time.ZoneId
@@ -53,12 +56,15 @@ class SavedProgressController @Inject()(
         .atZone(ZoneId.systemDefault()).toLocalDate.format(dateTimeFormatter)
       val safeContinueUrl = continueUrl.get(OnlyRelative).url
 
-      Future.fromTry(request.userAnswers.set(SavedProgressPage, safeContinueUrl)).flatMap {
-        updatedAnswers =>
+      Future.fromTry(request.userAnswers.set(SavedProgressPage, safeContinueUrl)).flatMap { updatedAnswers =>
           val s4LRequest = SaveForLaterRequest(updatedAnswers, request.iossNumber, period)
           (for{
             maybeSavedExternalUrl <- vatReturnConnector.getSavedExternalEntry()
-            s4laterResult <- connector.submit(s4LRequest)
+            s4laterResult <- if (request.isIntermediary) {
+              connector.submitForIntermediary(s4LRequest)
+            } else {
+              connector.submit(s4LRequest)
+            }
           } yield {
             val externalUrl = maybeSavedExternalUrl.fold(_ => None, _.url)
             (s4laterResult, externalUrl)
@@ -67,16 +73,27 @@ class SavedProgressController @Inject()(
               for {
                 _ <- cc.sessionRepository.set(updatedAnswers)
               } yield {
-                Ok(view(period, answersExpiry, safeContinueUrl, externalUrl))
+                val determinedRedirect = if (request.isIntermediary) {
+                  Some(appConfig.intermediaryDashboardUrl)
+                } else {
+                  externalUrl
+                }
+                Ok(view(period, answersExpiry, safeContinueUrl, determinedRedirect))
               }
-            case (Left(ConflictFound), externalUrl)=>
-              Future.successful(Redirect(externalUrl.getOrElse(routes.YourAccountController.onPageLoad().url)))
+
+            case (Left(ConflictFound), externalUrl) if request.isIntermediary =>
+              Redirect(appConfig.intermediaryDashboardUrl).toFuture
+
+            case (Left(ConflictFound), externalUrl) =>
+              Redirect(externalUrl.getOrElse(routes.YourAccountController.onPageLoad().url)).toFuture
+
             case (Left(e), _) =>
               logger.error(s"Unexpected result on submit: ${e.toString}")
-              Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
+              Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
+
             case (Right(None), _) =>
               logger.error(s"Unexpected result on submit")
-              Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
+              Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
           }
       }
   }

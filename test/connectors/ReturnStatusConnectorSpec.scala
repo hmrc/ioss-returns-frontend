@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,8 @@ import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock.*
 import formats.Format
 import models.SubmissionStatus.Due
-import models.{InvalidJson, Period, PeriodWithStatus, UnexpectedResponseStatus}
+import models.responses.{InvalidJson, UnexpectedResponseStatus}
+import models.{Period, PeriodWithStatus}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.EitherValues
 import play.api.Application

@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,25 +17,27 @@
 package connectors
 
 import logging.Logging
-import models._
-import play.api.http.Status._
-import play.api.libs.json._
+import models.*
+import models.responses.*
+import models.saveForLater.SavedUserAnswers
+import play.api.http.Status.*
+import play.api.libs.json.*
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
-
-import java.time.Instant
-
 
 object SaveForLaterHttpParser extends Logging {
 
   type SaveForLaterResponse = Either[ErrorResponse, Option[SavedUserAnswers]]
   type DeleteSaveForLaterResponse = Either[ErrorResponse, Boolean]
+  type IntermediarySaveForLaterResponse = Either[ErrorResponse, Seq[SavedUserAnswers]]
 
   implicit object SaveForLaterReads extends HttpReads[SaveForLaterResponse] {
     override def read(method: String, url: String, response: HttpResponse): SaveForLaterResponse = {
       response.status match {
         case OK | CREATED =>
           response.json.validate[SavedUserAnswers] match {
-            case JsSuccess(answers, _) => Right(Some(answers))
+            case JsSuccess(answers, _) =>
+              Right(Some(answers))
+
             case JsError(errors) =>
               logger.warn(s"Failed trying to parse JSON $errors. Json was ${response.json}", errors)
               Left(InvalidJson)
@@ -43,10 +45,12 @@ object SaveForLaterHttpParser extends Logging {
         case NOT_FOUND =>
           logger.warn("Received NotFound for saved user answers")
           Right(None)
+
         case CONFLICT =>
           logger.warn("Received Conflict found for saved user answers")
           Left(ConflictFound)
-        case status   =>
+
+        case status =>
           logger.warn("Received unexpected error from saved user answers")
           Left(UnexpectedResponseStatus(response.status, s"Unexpected response, status $status returned"))
       }
@@ -69,22 +73,31 @@ object SaveForLaterHttpParser extends Logging {
         case CONFLICT =>
           logger.warn("Received Conflict found for saved user answers")
           Left(ConflictFound)
-        case status   =>
+        case status =>
           logger.warn("Received unexpected error from saved user answers")
           Left(UnexpectedResponseStatus(response.status, s"Unexpected response, status $status returned"))
       }
     }
   }
-}
 
-case class SavedUserAnswers(
-                             iossNumber: String,
-                             period: Period,
-                             data: JsObject,
-                             lastUpdated: Instant
-                           )
+  implicit object IntermediarySaveForLaterReads extends HttpReads[IntermediarySaveForLaterResponse] {
 
-object SavedUserAnswers {
+    override def read(method: String, url: String, response: HttpResponse): IntermediarySaveForLaterResponse = {
+      response.status match {
+        case OK =>
+          response.json.validate[Seq[SavedUserAnswers]] match {
+            case JsSuccess(savedUserAnswers, _) => Right(savedUserAnswers)
+            case JsError(errors) =>
+              logger.warn(s"Failed trying to parse Intermediary saved user answers JSON $errors with " +
+                s"response Json: ${response.json} and errors: $errors", errors)
+              Left(InvalidJson)
+          }
 
-  implicit val format: OFormat[SavedUserAnswers] = Json.format[SavedUserAnswers]
+        case status =>
+          logger.warn("Received unexpected error from Intermediary saved user answers")
+          Left(UnexpectedResponseStatus(response.status, s"Unexpected response from Intermediary saved User Answers " +
+            s"with status $status."))
+      }
+    }
+  }
 }

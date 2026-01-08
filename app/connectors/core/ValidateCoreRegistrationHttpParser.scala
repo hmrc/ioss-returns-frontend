@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@
 package connectors.core
 
 import logging.Logging
-import models.{EisError, ErrorResponse, InvalidJson, UnexpectedResponseStatus}
 import models.core.{CoreRegistrationValidationResult, EisErrorResponse}
+import models.responses.{EisError, ErrorResponse, InvalidJson, UnexpectedResponseStatus}
 import play.api.http.Status.OK
 import play.api.libs.json.{JsError, JsSuccess}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,8 @@ import base.SpecBase
 import connectors.VatReturnConnector
 import models.etmp.EtmpVatReturn
 import models.payments.{Payment, PaymentStatus, PrepareData}
-import models.{Period, StandardPeriod, UnexpectedResponseStatus}
+import models.responses.UnexpectedResponseStatus
+import models.{Period, StandardPeriod}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.mockito.Mockito.when

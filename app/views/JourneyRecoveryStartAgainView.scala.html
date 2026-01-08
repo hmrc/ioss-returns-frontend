@@ -1,5 +1,5 @@
 @*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,22 +19,18 @@
     govukButton: GovukButton
 )
 
-@(isIntermediary: Boolean)(implicit request: Request[_], messages: Messages)
+@(startAgainRedirect: String)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(messages("journeyRecovery.startAgain.title"))) {
 
     <h1 class="govuk-heading-l">@messages("journeyRecovery.startAgain.heading")</h1>
 
-    <p class="govuk-body">@if(isIntermediary) {
-        @messages("journeyRecovery.intermediary.startAgain.guidance")
-    } else {
-        @messages("journeyRecovery.startAgain.guidance")
-    }</p>
+    <p class="govuk-body">@messages("journeyRecovery.startAgain.guidance")</p>
 
     <p class="govuk-body">
         @govukButton(
             ButtonViewModel(messages("site.startAgain"))
-                .asLink(routes.IndexController.onPageLoad.url)
+                .asLink(startAgainRedirect)
         )
     </p>
 }

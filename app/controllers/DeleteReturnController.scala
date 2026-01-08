@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,46 +16,50 @@
 
 package controllers
 
-import connectors.SaveForLaterConnector
-import controllers.actions._
+import controllers.actions.*
 import forms.DeleteReturnFormProvider
 import models.Period
+import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import services.saveForLater.SaveForLaterService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.FutureSyntax.FutureOps
 import views.html.DeleteReturnView
 
 import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class DeleteReturnController @Inject()(
                                         cc: AuthenticatedControllerComponents,
                                         formProvider: DeleteReturnFormProvider,
                                         view: DeleteReturnView,
-                                        saveForLaterConnector: SaveForLaterConnector
+                                        saveForLaterService: SaveForLaterService
                                       )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
-  private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(period: Period): Action[AnyContent] = cc.authAndRequireData() {
+  private val form: Form[Boolean] = formProvider()
+
+  def onPageLoad(period: Period): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
-      Ok(view(form, request.userAnswers.period, request.isIntermediary, request.companyName))
+
+      Ok(view(form, request.userAnswers.period, request.isIntermediary, request.companyName)).toFuture
   }
 
   def onSubmit(period: Period): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
       form.bindFromRequest().fold(
         formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, request.userAnswers.period, request.isIntermediary, request.companyName))),
+          BadRequest(view(formWithErrors, request.userAnswers.period, request.isIntermediary, request.companyName)).toFuture,
         value =>
           if (value) {
             for {
               _ <- cc.sessionRepository.clear(request.userId)
-              _ <- saveForLaterConnector.delete(period)
+              _ <- saveForLaterService.deleteSavedUserAnswers(period)
             } yield Redirect(controllers.routes.YourAccountController.onPageLoad())
           } else {
-            Future.successful(Redirect(controllers.routes.ContinueReturnController.onPageLoad(request.userAnswers.period)))
+            Redirect(controllers.routes.ContinueReturnController.onPageLoad(request.userAnswers.period)).toFuture
           }
       )
   }

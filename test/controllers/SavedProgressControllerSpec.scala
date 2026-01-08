@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,24 +18,40 @@ package controllers
 
 import base.SpecBase
 import config.FrontendAppConfig
-import connectors.{SaveForLaterConnector, SavedUserAnswers, VatReturnConnector}
-import models.{ConflictFound, UnexpectedResponseStatus}
+import connectors.{SaveForLaterConnector, VatReturnConnector}
 import models.external.ExternalEntryUrl
+import models.responses.{ConflictFound, UnexpectedResponseStatus}
+import models.saveForLater.SavedUserAnswers
 import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito
 import org.mockito.Mockito.when
+import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.inject.bind
 import play.api.libs.json.{JsObject, Json}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl
+import utils.FutureSyntax.FutureOps
 import views.html.SavedProgressView
 
 import java.time.format.DateTimeFormatter
 import java.time.{Clock, Instant, LocalDate, ZoneId}
-import scala.concurrent.Future
 
-class SavedProgressControllerSpec extends SpecBase {
+class SavedProgressControllerSpec extends SpecBase with BeforeAndAfterEach {
+
+  private val mockSaveForLaterConnector = mock[SaveForLaterConnector]
+  private val mockVatReturnConnector = mock[VatReturnConnector]
+  private val mockAppConfig: FrontendAppConfig = mock[FrontendAppConfig]
+  private val cacheTtlAsLong = 1L
+  when(mockAppConfig.cacheTtl) thenReturn cacheTtlAsLong
+
+  override def beforeEach(): Unit = {
+    Mockito.reset(
+      mockVatReturnConnector,
+      mockSaveForLaterConnector
+    )
+  }
 
   "SavedProgress Controller" - {
 
@@ -44,13 +60,8 @@ class SavedProgressControllerSpec extends SpecBase {
       val instantDate = Instant.now
       val stubClock: Clock = Clock.fixed(instantDate, ZoneId.systemDefault)
       val date = LocalDate.now(stubClock).plusDays(28)
-      val cacheTtlAsLong = 1L
 
       val dateTimeFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy")
-
-      val mockAppConfig: FrontendAppConfig = mock[FrontendAppConfig]
-      val mockSaveForLaterConnector = mock[SaveForLaterConnector]
-      val mockVatReturnConnector = mock[VatReturnConnector]
 
       val savedAnswers = SavedUserAnswers(
         iossNumber,
@@ -59,10 +70,9 @@ class SavedProgressControllerSpec extends SpecBase {
         instantDate
       )
 
-      when(mockAppConfig.cacheTtl) thenReturn cacheTtlAsLong
-      when(mockSaveForLaterConnector.submit(any())(any())) thenReturn Future.successful(Right(Some(savedAnswers)))
-      when(mockSaveForLaterConnector.delete(any())(any())) thenReturn Future.successful(Right(true))
-      when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
+      when(mockSaveForLaterConnector.submit(any())(any())) thenReturn Right(Some(savedAnswers)).toFuture
+      when(mockSaveForLaterConnector.delete(any())(any())) thenReturn Right(true).toFuture
+      when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(None)).toFuture
 
       val app = applicationBuilder(userAnswers = Some(completeUserAnswers.copy(lastUpdated = instantDate)))
         .overrides(
@@ -78,9 +88,8 @@ class SavedProgressControllerSpec extends SpecBase {
 
         val view = app.injector.instanceOf[SavedProgressView]
 
-
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(period, date.format(dateTimeFormatter), "/test")(request, messages(app)).toString
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(period, date.format(dateTimeFormatter), "/test")(request, messages(app)).toString
       }
     }
 
@@ -89,13 +98,8 @@ class SavedProgressControllerSpec extends SpecBase {
       val instantDate = Instant.now
       val stubClock: Clock = Clock.fixed(instantDate, ZoneId.systemDefault)
       val date = LocalDate.now(stubClock).plusDays(28)
-      val cacheTtlAsLong = 1L
 
       val dateTimeFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy")
-
-      val mockAppConfig: FrontendAppConfig = mock[FrontendAppConfig]
-      val mockSaveForLaterConnector = mock[SaveForLaterConnector]
-      val mockVatReturnConnector = mock[VatReturnConnector]
 
       val savedAnswers = SavedUserAnswers(
         iossNumber,
@@ -104,11 +108,9 @@ class SavedProgressControllerSpec extends SpecBase {
         instantDate
       )
 
-
-      when(mockAppConfig.cacheTtl) thenReturn cacheTtlAsLong
-      when(mockSaveForLaterConnector.submit(any())(any())) thenReturn Future.successful(Right(Some(savedAnswers)))
-      when(mockSaveForLaterConnector.delete(any())(any())) thenReturn Future.successful(Right(true))
-      when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(Some("example"))))
+      when(mockSaveForLaterConnector.submit(any())(any())) thenReturn Right(Some(savedAnswers)).toFuture
+      when(mockSaveForLaterConnector.delete(any())(any())) thenReturn Right(true).toFuture
+      when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(Some("example"))).toFuture
 
       val app = applicationBuilder(userAnswers = Some(completeUserAnswers.copy(lastUpdated = instantDate)))
         .overrides(
@@ -124,69 +126,15 @@ class SavedProgressControllerSpec extends SpecBase {
 
         val view = app.injector.instanceOf[SavedProgressView]
 
-
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(period, date.format(dateTimeFormatter), "/test", Some("example"))(request, messages(app)).toString
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(period, date.format(dateTimeFormatter), "/test", Some("example"))(request, messages(app)).toString
       }
     }
 
     "must redirect to Your Account Controller when Save For Later Connector returns ConflictFound" in {
 
-      val mockSaveForLaterConnector = mock[SaveForLaterConnector]
-      val mockVatReturnConnector = mock[VatReturnConnector]
-
-      when(mockSaveForLaterConnector.submit(any())(any())) thenReturn Future.successful(Left(ConflictFound))
-      when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
-
-      val app = applicationBuilder(userAnswers = Some(completeUserAnswers))
-              .overrides(
-                bind[SaveForLaterConnector].toInstance(mockSaveForLaterConnector),
-                bind[VatReturnConnector].toInstance(mockVatReturnConnector)
-              ).build()
-
-      running(app) {
-
-        val request = FakeRequest(GET, routes.SavedProgressController.onPageLoad(period, RedirectUrl("/test")).url)
-
-        val result = route(app, request).value
-
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.YourAccountController.onPageLoad().url
-      }
-    }
-
-    "must redirect to the external 'Back to your account' url when Save For Later Connector returns ConflictFound" in {
-
-      val mockSaveForLaterConnector = mock[SaveForLaterConnector]
-      val mockVatReturnConnector = mock[VatReturnConnector]
-
-      when(mockSaveForLaterConnector.submit(any())(any())) thenReturn Future.successful(Left(ConflictFound))
-      when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(Some("example"))))
-
-      val app = applicationBuilder(userAnswers = Some(completeUserAnswers))
-              .overrides(
-                bind[SaveForLaterConnector].toInstance(mockSaveForLaterConnector),
-                bind[VatReturnConnector].toInstance(mockVatReturnConnector)
-              ).build()
-
-      running(app) {
-
-        val request = FakeRequest(GET, routes.SavedProgressController.onPageLoad(period, RedirectUrl("/test")).url)
-
-        val result = route(app, request).value
-
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual "example"
-      }
-    }
-
-    "must redirect to Journey Recovery Controller when Save For Later Connector returns Error Response" in {
-
-      val mockSaveForLaterConnector = mock[SaveForLaterConnector]
-      val mockVatReturnConnector = mock[VatReturnConnector]
-
-      when(mockSaveForLaterConnector.submit(any())(any())) thenReturn Future.successful(Left(UnexpectedResponseStatus(1, "error")))
-      when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Future.successful(Right(ExternalEntryUrl(None)))
+      when(mockSaveForLaterConnector.submit(any())(any())) thenReturn Left(ConflictFound).toFuture
+      when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(None)).toFuture
 
       val app = applicationBuilder(userAnswers = Some(completeUserAnswers))
         .overrides(
@@ -200,10 +148,126 @@ class SavedProgressControllerSpec extends SpecBase {
 
         val result = route(app, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` routes.YourAccountController.onPageLoad().url
       }
     }
 
+    "must redirect to the external 'Back to your account' url when Save For Later Connector returns ConflictFound" in {
+
+      when(mockSaveForLaterConnector.submit(any())(any())) thenReturn Left(ConflictFound).toFuture
+      when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(Some("example"))).toFuture
+
+      val app = applicationBuilder(userAnswers = Some(completeUserAnswers))
+        .overrides(
+          bind[SaveForLaterConnector].toInstance(mockSaveForLaterConnector),
+          bind[VatReturnConnector].toInstance(mockVatReturnConnector)
+        ).build()
+
+      running(app) {
+
+        val request = FakeRequest(GET, routes.SavedProgressController.onPageLoad(period, RedirectUrl("/test")).url)
+
+        val result = route(app, request).value
+
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` "example"
+      }
+    }
+
+    "must redirect to Journey Recovery Controller when Save For Later Connector returns Error Response" in {
+
+      when(mockSaveForLaterConnector.submit(any())(any())) thenReturn Left(UnexpectedResponseStatus(1, "error")).toFuture
+      when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(None)).toFuture
+
+      val app = applicationBuilder(userAnswers = Some(completeUserAnswers))
+        .overrides(
+          bind[SaveForLaterConnector].toInstance(mockSaveForLaterConnector),
+          bind[VatReturnConnector].toInstance(mockVatReturnConnector)
+        ).build()
+
+      running(app) {
+
+        val request = FakeRequest(GET, routes.SavedProgressController.onPageLoad(period, RedirectUrl("/test")).url)
+
+        val result = route(app, request).value
+
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` routes.JourneyRecoveryController.onPageLoad().url
+      }
+    }
+
+    "for an Intermediary" - {
+
+      "must return OK and the correct view for a GET and clear user-answers after return submitted" in {
+
+        val instantDate: Instant = Instant.now()
+        val stubClock: Clock = Clock.fixed(instantDate, ZoneId.systemDefault)
+        val date = LocalDate.now(stubClock).plusDays(28)
+
+        val dateTimeFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy")
+
+        val savedAnswers = SavedUserAnswers(
+          iossNumber,
+          period,
+          JsObject(Seq("test" -> Json.toJson("test"))),
+          instantDate
+        )
+
+        when(mockSaveForLaterConnector.submitForIntermediary(any())(any())) thenReturn Right(Some(savedAnswers)).toFuture
+        when(mockSaveForLaterConnector.delete(any())(any())) thenReturn Right(true).toFuture
+        when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(None)).toFuture
+
+        val app = applicationBuilder(
+          userAnswers = Some(completeUserAnswers.copy(lastUpdated = instantDate)),
+          maybeIntermediaryNumber = Some(intermediaryNumber)
+        )
+          .overrides(
+            bind[SaveForLaterConnector].toInstance(mockSaveForLaterConnector),
+            bind[VatReturnConnector].toInstance(mockVatReturnConnector)
+          ).build()
+
+        running(app) {
+
+          val request = FakeRequest(GET, routes.SavedProgressController.onPageLoad(period, RedirectUrl("/test")).url)
+
+          val config = app.injector.instanceOf[FrontendAppConfig]
+
+          val result = route(app, request).value
+
+          val view = app.injector.instanceOf[SavedProgressView]
+
+          status(result) `mustBe` OK
+          contentAsString(result) `mustBe` view(period, date.format(dateTimeFormatter), "/test", Some(config.intermediaryDashboardUrl))(request, messages(app)).toString
+        }
+      }
+
+      "must redirect to Intermediary Dashboard Your Account Controller when Save For Later Connector returns ConflictFound" in {
+
+        when(mockSaveForLaterConnector.submitForIntermediary(any())(any())) thenReturn Left(ConflictFound).toFuture
+        when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(None)).toFuture
+
+        val app = applicationBuilder(
+          userAnswers = Some(completeUserAnswers),
+          maybeIntermediaryNumber = Some(intermediaryNumber)
+        )
+          .overrides(
+            bind[SaveForLaterConnector].toInstance(mockSaveForLaterConnector),
+            bind[VatReturnConnector].toInstance(mockVatReturnConnector)
+          ).build()
+
+        running(app) {
+
+          val request = FakeRequest(GET, routes.SavedProgressController.onPageLoad(period, RedirectUrl("/test")).url)
+
+          val config = app.injector.instanceOf[FrontendAppConfig]
+
+          val result = route(app, request).value
+
+          status(result) `mustBe` SEE_OTHER
+          redirectLocation(result).value `mustBe` config.intermediaryDashboardUrl
+        }
+      }
+    }
   }
 }

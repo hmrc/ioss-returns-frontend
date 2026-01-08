@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import connectors.FinancialDataHttpParser.ChargeResponse
 import connectors.{FinancialDataConnector, VatReturnConnector}
 import models.financialdata.Charge
 import models.payments.PaymentResponse
-import models.{InvalidJson, UnexpectedResponseStatus}
+import models.responses.{InvalidJson, UnexpectedResponseStatus}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.mockito.Mockito.when

@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,10 @@ package controllers.submissionResults
 import base.SpecBase
 import config.FrontendAppConfig
 import connectors.VatReturnConnector
-import models.NotFound
 import models.external.ExternalEntryUrl
+import models.responses.NotFound
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.{reset, when}
+import org.mockito.Mockito.*
 import org.scalatest.prop.TableDrivenPropertyChecks
 import org.scalatestplus.mockito.MockitoSugar.mock
 import pages.SoldGoodsPage
@@ -31,10 +31,9 @@ import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import queries.TotalAmountVatDueGBPQuery
+import repositories.SessionRepository
+import utils.FutureSyntax.FutureOps
 import views.html.submissionResults.SuccessfullySubmittedView
-
-import scala.concurrent.Future
-
 
 class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPropertyChecks {
   private val options = Table(
@@ -47,17 +46,19 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
 
   private val totalOwed = BigDecimal("200.52")
   private val mockVatReturnConnector: VatReturnConnector = mock[VatReturnConnector]
+  private val mockSessionRepository: SessionRepository = mock[SessionRepository]
 
   "SuccessfullySubmitted Controller" - {
 
-    "must return OK and a view with no external url when the saved external entry fails retrieval" in {
+    "must return OK and a view and clear the session with no external url when the saved external entry fails retrieval" in {
+
       forAll(options) { (soldGoodsPage, correctPreviousReturnPage, nilReturn) =>
         val returnReference = s"XI/${iossNumber}/M0${period.month.getValue}.${period.year}"
         val application = createApplication(soldGoodsPage, correctPreviousReturnPage)
 
-        reset(mockVatReturnConnector)
-        when(mockVatReturnConnector.getSavedExternalEntry()(any()))
-          .thenReturn(Future.successful(Left(NotFound)))
+        reset(mockVatReturnConnector, mockSessionRepository)
+        when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Left(NotFound).toFuture
+        when(mockSessionRepository.clear(any())) thenReturn true.toFuture
 
         running(application) {
           val request = FakeRequest(GET, routes.SuccessfullySubmittedController.onPageLoad().url)
@@ -79,6 +80,7 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
             clientName = "Mr Tufftys Tuffs",
             intermediaryDashboardUrl = config.intermediaryDashboardUrl
           )(request, messages(application)).toString
+          verify(mockSessionRepository, times(1)).clear(any())
         }
       }
     }
@@ -92,11 +94,15 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
 
       applicationBuilder(userAnswers = Some(completedAnswers))
         .configure("urls.userResearch2" -> "https://test-url.com")
-        .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
+        .overrides(
+          bind[VatReturnConnector].toInstance(mockVatReturnConnector),
+          bind[SessionRepository].toInstance(mockSessionRepository)
+        )
         .build()
     }
 
-    "must return OK and the correct view for a GET with an external url passed if one can be retrieved" in {
+    "must return OK and the correct view and clear the session for a GET with an external url passed if one can be retrieved" in {
+
       forAll(options) { (soldGoodsPage, correctPreviousReturnPage, nilReturn) =>
 
         val externalUrlOptions = Table(
@@ -109,9 +115,9 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
           val returnReference = s"XI/${iossNumber}/M0${period.month.getValue}.${period.year}"
           val application = createApplication(soldGoodsPage, correctPreviousReturnPage)
 
-          reset(mockVatReturnConnector)
-          when(mockVatReturnConnector.getSavedExternalEntry()(any()))
-            .thenReturn(Future.successful(Right(ExternalEntryUrl(maybeExternalUrl))))
+          reset(mockVatReturnConnector, mockSessionRepository)
+          when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(maybeExternalUrl)).toFuture
+          when(mockSessionRepository.clear(any())) thenReturn true.toFuture
 
           running(application) {
             val request = FakeRequest(GET, routes.SuccessfullySubmittedController.onPageLoad().url)
@@ -133,18 +139,20 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
               clientName = "Mr Tufftys Tuffs",
               intermediaryDashboardUrl = config.intermediaryDashboardUrl
             )(request, messages(application)).toString
+            verify(mockSessionRepository, times(1)).clear(any())
           }
         }
       }
     }
 
-    "must return OK and a view with no external url when (SoldGoodsPage, None) => nilReturn = true" in {
+    "must return OK and a view and clear the session with no external url when (SoldGoodsPage, None) => nilReturn = true" in {
+
       val returnReference = s"XI/${iossNumber}/M0${period.month.getValue}.${period.year}"
       val application = createApplication(soldGoodsPage = false, correctPreviousReturnPage = false)
 
-      reset(mockVatReturnConnector)
-      when(mockVatReturnConnector.getSavedExternalEntry()(any()))
-        .thenReturn(Future.successful(Left(NotFound)))
+      reset(mockVatReturnConnector, mockSessionRepository)
+      when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Left(NotFound).toFuture
+      when(mockSessionRepository.clear(any())) thenReturn true.toFuture
 
       running(application) {
         val request = FakeRequest(GET, routes.SuccessfullySubmittedController.onPageLoad().url)
@@ -166,16 +174,21 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
           clientName = "Mr Tufftys Tuffs",
           intermediaryDashboardUrl = config.intermediaryDashboardUrl
         )(request, messages(application)).toString
+        verify(mockSessionRepository, times(1)).clear(any())
       }
     }
 
     "must throw RuntimeException when TotalAmountVatDueGBPQuery is missing in userAnswers" in {
+
       val incompleteAnswers = completeUserAnswers
         .set(SoldGoodsPage, false).success.value
         .set(CorrectPreviousReturnPage(0), false).success.value
 
+      reset(mockSessionRepository)
+
       val application = applicationBuilder(userAnswers = Some(incompleteAnswers))
         .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
+        .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
         .build()
 
       running(application) {
@@ -187,6 +200,7 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
         }
 
         exception.getMessage mustEqual "TotalAmountVatDueGBPQuery has not been set in answers"
+        verifyNoInteractions(mockSessionRepository)
       }
     }
   }

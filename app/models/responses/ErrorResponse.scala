@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package models
+package models.responses
 
 import models.core.EisErrorResponse
 
@@ -28,6 +28,10 @@ case object InvalidJson extends ErrorResponse {
 
 case object NotFound extends ErrorResponse {
   override val body = "Not found"
+}
+
+case object InternalServerError extends ErrorResponse {
+  override val body: String = "Internal server error"
 }
 
 case object ConflictFound extends ErrorResponse {

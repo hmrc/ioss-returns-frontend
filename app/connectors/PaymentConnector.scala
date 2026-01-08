@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ package connectors
 import config.Service
 import connectors.PaymentHttpParser.{ReturnPaymentReads, ReturnPaymentResponse}
 import logging.Logging
-import models.UnexpectedResponseStatus
 import models.payments.PaymentRequest
+import models.responses.UnexpectedResponseStatus
 import play.api.Configuration
 import play.api.libs.json.Json
 import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue

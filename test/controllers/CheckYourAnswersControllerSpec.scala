@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +18,16 @@ package controllers
 
 import base.SpecBase
 import config.Constants.{maxCurrencyAmount, minCurrencyAmount}
-import connectors.{SaveForLaterConnector, SavedUserAnswers}
+import config.FrontendAppConfig
+import connectors.SaveForLaterConnector
 import models.audit.{ReturnsAuditModel, SubmissionResult}
 import models.etmp.EtmpExclusionReason.TransferringMSID
+import models.etmp.intermediary.EtmpCustomerIdentificationNew
 import models.etmp.intermediary.EtmpIdType.{FTR, NINO, UTR}
-import models.etmp.intermediary.{EtmpCustomerIdentificationLegacy, EtmpCustomerIdentificationNew}
 import models.etmp.{EtmpDisplayRegistration, EtmpExclusion}
 import models.requests.DataRequest
+import models.responses.ConflictFound
+import models.saveForLater.SavedUserAnswers
 import models.{Country, RegistrationWrapper, TotalVatToCountry, UserAnswers, VatRateFromCountry}
 import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.{times, verify, when}
@@ -474,6 +477,81 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           status(result) `mustBe` SEE_OTHER
           redirectLocation(result).value `mustBe` controllers.submissionResults.routes.ReturnSubmissionFailureController.onPageLoad().url
           verify(mockAuditService, times(1)).audit(eqTo(expectedAuditEvent))(any(), any())
+        }
+      }
+
+      "when the user is an intermediary and has answered all necessary data and submission of the return fails" - {
+
+        "must redirect to Return Submission Failure Controller" in {
+
+          when(mockCoreVatReturnService.submitCoreVatReturn(any())(any())) thenReturn
+            Future.failed(new RuntimeException("Failed submission"))
+
+          when(mockSaveForLaterConnector.submitForIntermediary(any())(any())) thenReturn
+            Right(Some(mock[SavedUserAnswers])).toFuture
+
+          val userAnswers = completeUserAnswers
+          val application = applicationBuilder(
+            userAnswers = Some(userAnswers),
+            maybeIntermediaryNumber = Some(intermediaryNumber)
+          )
+            .overrides(bind[CoreVatReturnService].toInstance(mockCoreVatReturnService))
+            .overrides(bind[AuditService].toInstance(mockAuditService))
+            .overrides(bind[SaveForLaterConnector].toInstance(mockSaveForLaterConnector))
+            .build()
+
+          running(application) {
+            val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, incompletePromptShown = false).url)
+
+            val result = route(application, request).value
+
+            implicit val dataRequest: DataRequest[_] =
+              DataRequest(request, testCredentials, Some(vrn), userAnswersId, companyName, registrationWrapper, None, userAnswers)
+
+            val expectedAuditEvent = ReturnsAuditModel.build(userAnswers, SubmissionResult.Failure)
+
+            status(result) `mustBe` SEE_OTHER
+            redirectLocation(result).value `mustBe` controllers.submissionResults.routes.ReturnSubmissionFailureController.onPageLoad().url
+            verify(mockAuditService, times(1)).audit(eqTo(expectedAuditEvent))(any(), any())
+            verify(mockSaveForLaterConnector, times(1)).submitForIntermediary(any())(any())
+          }
+        }
+
+        "must redirect to the Intermediary Dashboard frontends' Your Account Controller when Save for Later connector returns Conflict Found" in {
+
+          when(mockCoreVatReturnService.submitCoreVatReturn(any())(any())) thenReturn
+            Future.failed(new RuntimeException("Failed submission"))
+
+          when(mockSaveForLaterConnector.submitForIntermediary(any())(any())) thenReturn
+            Left(ConflictFound).toFuture
+
+          val userAnswers = completeUserAnswers
+          val application = applicationBuilder(
+            userAnswers = Some(userAnswers),
+            maybeIntermediaryNumber = Some(intermediaryNumber)
+          )
+            .overrides(bind[CoreVatReturnService].toInstance(mockCoreVatReturnService))
+            .overrides(bind[AuditService].toInstance(mockAuditService))
+            .overrides(bind[SaveForLaterConnector].toInstance(mockSaveForLaterConnector))
+            .build()
+
+          running(application) {
+            val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, incompletePromptShown = false).url)
+
+            val result = route(application, request).value
+
+            val config = application.injector.instanceOf[FrontendAppConfig]
+
+            implicit val dataRequest: DataRequest[_] =
+              DataRequest(request, testCredentials, Some(vrn), userAnswersId, companyName, registrationWrapper, None, userAnswers)
+
+            val expectedAuditEvent = ReturnsAuditModel.build(userAnswers, SubmissionResult.Failure)
+
+            status(result) `mustBe` SEE_OTHER
+            redirectLocation(result).value `mustBe` config.intermediaryDashboardUrl
+            verify(mockAuditService, times(1)).audit(eqTo(expectedAuditEvent))(any(), any())
+            verify(mockSaveForLaterConnector, times(1)).submitForIntermediary(any())(any())
+          }
         }
       }
     }
