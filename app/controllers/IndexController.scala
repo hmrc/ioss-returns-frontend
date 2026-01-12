@@ -16,6 +16,7 @@
 
 package controllers
 
+import config.FrontendAppConfig
 import controllers.actions.AuthenticatedControllerComponents
 import pages.EmptyWaypoints
 import play.api.i18n.I18nSupport
@@ -26,11 +27,16 @@ import javax.inject.Inject
 
 class IndexController @Inject()(
                                  cc: AuthenticatedControllerComponents,
+                                 appConfig: FrontendAppConfig
                                ) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad: Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced { _ =>
-    Redirect(routes.YourAccountController.onPageLoad(waypoints = EmptyWaypoints))
+  def onPageLoad: Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced { implicit request =>
+    if(request.isIntermediary) {
+      Redirect(appConfig.intermediaryDashboardUrl)
+    } else {
+      Redirect(routes.YourAccountController.onPageLoad(waypoints = EmptyWaypoints))
+    }
   }
 }

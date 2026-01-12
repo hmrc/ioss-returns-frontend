@@ -17,8 +17,10 @@
 package controllers
 
 import base.SpecBase
+import config.FrontendAppConfig
+import controllers.actions.FakeIntermediaryIdentifierAction
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 
 class IndexControllerSpec extends SpecBase {
 
@@ -35,6 +37,26 @@ class IndexControllerSpec extends SpecBase {
 
         status(result) mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual routes.YourAccountController.onPageLoad(waypoints).url
+      }
+    }
+
+    "must return OK and the correct view for an intermediary and redirect to the intermediary dashboard" in {
+
+      val application = applicationBuilder(
+        userAnswers = None,
+        getIdentifierAction = Some(new FakeIntermediaryIdentifierAction()),
+        maybeIntermediaryNumber = Some(intermediaryNumber)
+      ).build()
+
+      running(application) {
+        val config = application.injector.instanceOf[FrontendAppConfig]
+
+        val request = FakeRequest(GET, routes.IndexController.onPageLoad.url)
+
+        val result = route(application, request).value
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual config.intermediaryDashboardUrl
       }
     }
   }
