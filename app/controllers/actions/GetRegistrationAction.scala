@@ -78,30 +78,60 @@ class GetRegistrationAction(
     }
   }
 
-  private def checkIntermediaryAccessAndFormRequest(intermediaryNumber: String, iossNumber: String, request: IdentifierRequest[_])
+  private def checkIntermediaryAccessAndFormRequest[A](intermediaryNumber: String, iossNumber: String, request: IdentifierRequest[A])
                                                    (implicit hc: HeaderCarrier) = {
-    intermediaryRegistrationConnector.get(intermediaryNumber).flatMap { intermediaryRegistrationWrapper =>
-      val availableIossNumbers = intermediaryRegistrationWrapper.etmpDisplayRegistration.clientDetails.map(_.clientIossID)
-      if (availableIossNumbers.contains(iossNumber)) {
-        registrationConnector.get(iossNumber).map { registrationWrapper =>
-          Right(RegistrationRequest(
-            request = request.request,
-            credentials =request.credentials,
-            vrn = registrationWrapper.maybeVrn,
-            companyName = registrationWrapper.getCompanyName(),
-            iossNumber = iossNumber,
-            registrationWrapper = registrationWrapper,
-            intermediaryNumber = Some(intermediaryNumber),
-            enrolments = request.enrolments
-          ))
-        }
-      } else {
-        logger.warn(
-          s"Intermediary $intermediaryNumber tried to access iossNumber $iossNumber, but they aren't the intermediary of this ioss number"
-        )
-        Left(Redirect(controllers.routes.NotRegisteredController.onPageLoad())).toFuture
+
+    def buildRegistrationRequest(intermediaryNumber: String): Future[Either[Result, RegistrationRequest[A]]] = {
+      registrationConnector.get(iossNumber).map { registrationWrapper =>
+        Right(RegistrationRequest(
+          request = request.request,
+          credentials = request.credentials,
+          vrn = registrationWrapper.maybeVrn,
+          companyName = registrationWrapper.getCompanyName(),
+          iossNumber = iossNumber,
+          registrationWrapper = registrationWrapper,
+          intermediaryNumber = Some(intermediaryNumber),
+          enrolments = request.enrolments
+        ))
       }
     }
+
+    intermediaryRegistrationConnector.get(intermediaryNumber).flatMap { currentRegistration =>
+
+      val hasDirectAccess = currentRegistration.etmpDisplayRegistration.clientDetails.map(_.clientIossID).contains(iossNumber)
+
+      if (hasDirectAccess) {
+        buildRegistrationRequest(intermediaryNumber)
+      } else {
+        val allIntermediaryEnrolments = findIntermediariesFromEnrolments(request.enrolments)
+
+        findAuthorisedIntermediaryForIossClient(allIntermediaryEnrolments, iossNumber).flatMap {
+          case Some(authorisedIntermediaryNumber) =>
+            buildRegistrationRequest(authorisedIntermediaryNumber)
+          case None =>
+            logger.warn(
+              s"Intermediary $intermediaryNumber tried to access iossNumber $iossNumber, but they aren't the intermediary of this ioss number"
+            )
+            Left(Redirect(controllers.routes.NotRegisteredController.onPageLoad())).toFuture
+        }
+      }
+    }
+  }
+
+  private def findAuthorisedIntermediaryForIossClient(intermediaryNumbers: Seq[String], iossNumber: String)
+                                                     (implicit hc: HeaderCarrier): Future[Option[String]] = {
+
+    def isAuthorisedToAccessIossClient(intermediaryNumber: String): Future[Boolean] = {
+      intermediaryRegistrationConnector.get(intermediaryNumber).map { registration =>
+        registration.etmpDisplayRegistration.clientDetails.map(_.clientIossID).contains(iossNumber)
+      }
+    }
+
+    Future.sequence(intermediaryNumbers.map { intermediaryNumber =>
+      isAuthorisedToAccessIossClient(intermediaryNumber)
+        .map(isAuthorised => intermediaryNumber -> isAuthorised)
+    })
+      .map(_.collectFirst { case (intermediaryNumber, true) => intermediaryNumber})
   }
 
   private def findIossFromEnrolments(enrolments: Enrolments)(implicit hc: HeaderCarrier): Future[Option[String]] = {
@@ -120,13 +150,18 @@ class GetRegistrationAction(
   }
 
   private def findIntermediaryFromEnrolments(enrolments: Enrolments)(implicit hc: HeaderCarrier): Future[Option[String]] = {
-    // TODO multiple intermediary enrolments
     enrolments
       .enrolments
       .filter(_.key == config.intermediaryEnrolment)
       .flatMap(_.identifiers.filter(_.key == "IntNumber").map(_.value))
       .headOption
       .toFuture
+  }
+
+  private def findIntermediariesFromEnrolments(enrolments: Enrolments): Seq[String] = {
+    enrolments.enrolments
+      .filter(_.key == "HMRC-IOSS-INT")
+      .flatMap(_.identifiers.find(id => id.key == "IntNumber" && id.value.nonEmpty).map(_.value)).toSeq
   }
 
   private def isIntermediary(enrolments: Enrolments): Boolean = {

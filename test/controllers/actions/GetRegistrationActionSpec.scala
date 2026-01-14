@@ -20,14 +20,17 @@ import base.SpecBase
 import config.Constants.ukCountryCodeAreaPrefix
 import config.FrontendAppConfig
 import connectors.{IntermediaryRegistrationConnector, RegistrationConnector}
-import models.RegistrationWrapper
+import models.{IntermediarySelectedIossNumber, RegistrationWrapper}
+import models.etmp.intermediary.IntermediaryRegistrationWrapper
 import models.requests.{IdentifierRequest, RegistrationRequest}
-import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
+import org.mockito.Mockito
 import org.mockito.Mockito.when
 import org.scalacheck.Arbitrary
-import org.scalatest.EitherValues
+import org.scalatest.{BeforeAndAfterEach, EitherValues}
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.mvc.Result
+import play.api.mvc.Results.Redirect
 import play.api.test.FakeRequest
 import repositories.IntermediarySelectedIossNumberRepository
 import services.AccountService
@@ -37,24 +40,104 @@ import utils.FutureSyntax.FutureOps
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class GetRegistrationActionSpec extends SpecBase with MockitoSugar with EitherValues {
+class GetRegistrationActionSpec extends SpecBase with MockitoSugar with EitherValues with BeforeAndAfterEach {
+
+  val mockAccountService: AccountService = mock[AccountService]
+  val mockIntermediaryRegistrationConnector: IntermediaryRegistrationConnector = mock[IntermediaryRegistrationConnector]
+  val mockRegistrationConnector: RegistrationConnector = mock[RegistrationConnector]
+  val mockAppConfig: FrontendAppConfig = mock[FrontendAppConfig]
+  val mockIntermediarySelectedIossNumberRepository: IntermediarySelectedIossNumberRepository = mock[IntermediarySelectedIossNumberRepository]
 
   class Harness(
                  accountService: AccountService,
                  intermediaryRegistrationConnector: IntermediaryRegistrationConnector,
                  registrationConnector: RegistrationConnector,
                  appConfig: FrontendAppConfig,
+                 requestedMaybeIossNumber: Option[String],
                  intermediarySelectedIossNumberRepository: IntermediarySelectedIossNumberRepository
                ) extends GetRegistrationAction(
     accountService,
     intermediaryRegistrationConnector,
     registrationConnector,
     appConfig,
-    None,
+    requestedMaybeIossNumber,
     intermediarySelectedIossNumberRepository
   ) {
     def callRefine[A](request: IdentifierRequest[A]): Future[Either[Result, RegistrationRequest[A]]] =
       refine(request)
+  }
+
+  def intermediaryRegistrationWithClients(iossNumber: Seq[String]): IntermediaryRegistrationWrapper = {
+    arbitraryIntermediaryRegistrationWrapper.arbitrary.sample.value.copy(
+      etmpDisplayRegistration = arbitraryEtmpIntermediaryDisplayRegistration.arbitrary.sample.value.copy(
+        clientDetails = iossNumber.map { ioss =>
+          arbitraryEtmpClientDetails.arbitrary.sample.value.copy(clientIossID = ioss)
+        }
+      )
+    )
+  }
+
+  def enrolmentsWithIntermediaries(intermediaryNumbers: Seq[String]): Enrolments = {
+    Enrolments(intermediaryNumbers.map { int =>
+      Enrolment(
+        key = "HMRC-IOSS-INT",
+        identifiers = Seq(EnrolmentIdentifier("IntNumber", int)),
+        state = "Activated"
+      )
+    }.toSet
+    )
+  }
+
+  def expectedRegistrationRequest[A](
+                                      request: IdentifierRequest[A],
+                                      iossNumber: String,
+                                      registration: RegistrationWrapper,
+                                      intermediaryNumber: Option[String]
+                                    ): RegistrationRequest[A] = {
+
+    RegistrationRequest(
+      request = request.request,
+      credentials = request.credentials,
+      vrn = request.vrn,
+      iossNumber = iossNumber,
+      registrationWrapper = registration,
+      intermediaryNumber = intermediaryNumber,
+      enrolments = request.enrolments
+    )
+  }
+
+  def enrolmentsWithSingleIoss(iossNumber: String, config: FrontendAppConfig): Enrolments = {
+    Enrolments(
+      Set(
+        Enrolment(
+          key = config.iossEnrolment,
+          identifiers = Seq(EnrolmentIdentifier("IOSSNumber", iossNumber)),
+          state = "Activated"
+        )
+      )
+    )
+  }
+
+  def enrolmentsWithMultipleIoss(iossNumbers: Seq[String], config: FrontendAppConfig): Enrolments = {
+    Enrolments(
+      iossNumbers.map { iossNumber =>
+        Enrolment(
+          key = config.iossEnrolment,
+          identifiers = Seq(EnrolmentIdentifier("IOSSNumber", iossNumber)),
+          state = "Activated"
+        )
+      }.toSet
+    )
+  }
+
+  override def beforeEach(): Unit = {
+    Mockito.reset(
+      mockAccountService,
+      mockIntermediaryRegistrationConnector,
+      mockRegistrationConnector,
+      mockAppConfig,
+      mockIntermediarySelectedIossNumberRepository
+    )
   }
 
   "Get Registration Action" - {
@@ -91,11 +174,306 @@ class GetRegistrationActionSpec extends SpecBase with MockitoSugar with EitherVa
 
         when(registrationConnector.get(any())(any())) thenReturn registrationWrapper.toFuture
 
-        val action = new Harness(accountService, intermediaryRegistrationConnector, registrationConnector, appConfig, intermediarySelectedIossNumberRepository)
+        val action = new Harness(accountService, intermediaryRegistrationConnector, registrationConnector, appConfig, None, intermediarySelectedIossNumberRepository)
 
         val result = action.callRefine(IdentifierRequest(request, testCredentials, vrn, enrolments)).futureValue
 
         result.isRight mustEqual true
+      }
+    }
+
+    "must return a Registration Request" - {
+
+      "when exactly one IOSS enrolment exists" in {
+
+        when(mockAppConfig.iossEnrolment) thenReturn "HMRC-IOSS-ORG"
+
+        val registrationWrapper = arbitraryRegistrationWrapper.arbitrary.sample.value
+
+        when(mockRegistrationConnector.get(any())(any())) thenReturn registrationWrapper.toFuture
+
+        val request = IdentifierRequest(
+          FakeRequest(),
+          testCredentials,
+          vrn,
+          enrolmentsWithSingleIoss(iossNumber, mockAppConfig)
+        )
+
+        val action = new Harness(
+          mockAccountService,
+          mockIntermediaryRegistrationConnector,
+          mockRegistrationConnector,
+          mockAppConfig,
+          None,
+          mockIntermediarySelectedIossNumberRepository
+        )
+
+        val result = action.callRefine(request).futureValue
+
+        result mustBe Right(expectedRegistrationRequest(
+          request,
+          iossNumber,
+          registrationWrapper,
+          None
+        ))
+      }
+
+      "when multiple IOSS enrolments exist, use the latest account" in {
+
+        val currentIoss = iossNumber
+        val previousIoss = "IM9001234568"
+
+        val registrationWrapper = arbitraryRegistrationWrapper.arbitrary.sample.value
+
+        when(mockAppConfig.iossEnrolment) thenReturn "HMRC-IOSS-ORG"
+        when(mockAccountService.getLatestAccount()(any())) thenReturn currentIoss.toFuture
+        when(mockRegistrationConnector.get(any())(any())) thenReturn registrationWrapper.toFuture
+
+        val request = IdentifierRequest(
+          FakeRequest(),
+          testCredentials,
+          vrn,
+          enrolmentsWithMultipleIoss(Seq(currentIoss, previousIoss), mockAppConfig)
+        )
+
+        val action = new Harness(
+          mockAccountService,
+          mockIntermediaryRegistrationConnector,
+          mockRegistrationConnector,
+          mockAppConfig,
+          requestedMaybeIossNumber = None,
+          mockIntermediarySelectedIossNumberRepository
+        )
+
+        val result = action.callRefine(request).futureValue
+
+        result mustBe Right(expectedRegistrationRequest(
+          request,
+          iossNumber,
+          registrationWrapper,
+          None
+        ))
+      }
+
+      "when an IOSS enrolment does not exist" - {
+
+        "and both intermediary and requestedMaybeIossNumber are present" in {
+
+          val request = IdentifierRequest(
+            FakeRequest(),
+            testCredentials,
+            vrn,
+            enrolmentsWithIntermediaries(Seq(intermediaryNumber))
+          )
+
+          when(mockAppConfig.intermediaryEnrolment) thenReturn "HMRC-IOSS-INT"
+          when(mockIntermediaryRegistrationConnector.get(any())(any())) thenReturn
+            intermediaryRegistrationWithClients(Seq(iossNumber)).toFuture
+          when(mockRegistrationConnector.get(any())(any())) thenReturn
+            registrationWrapper.toFuture
+
+          val action = new Harness(
+            mockAccountService,
+            mockIntermediaryRegistrationConnector,
+            mockRegistrationConnector,
+            mockAppConfig,
+            requestedMaybeIossNumber = Some(iossNumber),
+            mockIntermediarySelectedIossNumberRepository
+          )
+
+          val result = action.callRefine(request).futureValue
+
+          result mustBe Right(
+            expectedRegistrationRequest(request, iossNumber, registrationWrapper, Some(intermediaryNumber))
+          )
+        }
+
+        "when only intermediary is present and IOSS is retrieved from selected repository" in {
+
+          val intermediarySelectedIossNumber = IntermediarySelectedIossNumber(
+            userId = userAnswersId,
+            intermediaryNumber,
+            iossNumber
+          )
+          val request = IdentifierRequest(
+            FakeRequest(),
+            testCredentials,
+            vrn,
+            enrolmentsWithIntermediaries(Seq(intermediaryNumber))
+          )
+
+          when(mockAppConfig.intermediaryEnrolment) thenReturn "HMRC-IOSS-INT"
+          when(mockIntermediaryRegistrationConnector.get(any())(any())) thenReturn
+            intermediaryRegistrationWithClients(Seq(iossNumber)).toFuture
+          when(mockIntermediarySelectedIossNumberRepository.get(any())) thenReturn Some(intermediarySelectedIossNumber).toFuture
+          when(mockIntermediarySelectedIossNumberRepository.keepAlive(any())) thenReturn true.toFuture
+          when(mockRegistrationConnector.get(any())(any())) thenReturn
+            registrationWrapper.toFuture
+
+          val action = new Harness(
+            mockAccountService,
+            mockIntermediaryRegistrationConnector,
+            mockRegistrationConnector,
+            mockAppConfig,
+            requestedMaybeIossNumber = None,
+            mockIntermediarySelectedIossNumberRepository
+          )
+
+          val result = action.callRefine(request).futureValue
+
+          result mustBe Right(
+            expectedRegistrationRequest(request, iossNumber, registrationWrapper, Some(intermediaryNumber))
+          )
+        }
+
+        "and previous intermediary enrolment has access to requestedMaybeIossNumber" in {
+
+          val currentIntermediary = intermediaryNumber
+          val previousIntermediary = "IN9007654322"
+
+          when(mockAppConfig.intermediaryEnrolment) thenReturn "HMRC-IOSS-INT"
+          when(mockIntermediaryRegistrationConnector.get(eqTo(currentIntermediary))(any())) thenReturn
+            intermediaryRegistrationWithClients(Nil).toFuture
+          when(mockIntermediaryRegistrationConnector.get(eqTo(previousIntermediary))(any())) thenReturn
+            intermediaryRegistrationWithClients(Seq(iossNumber)).toFuture
+          when(mockRegistrationConnector.get(any())(any())) thenReturn
+            registrationWrapper.toFuture
+
+          val request = IdentifierRequest(
+            FakeRequest(),
+            testCredentials,
+            vrn,
+            enrolmentsWithIntermediaries(Seq(currentIntermediary, previousIntermediary))
+          )
+
+          val action = new Harness(
+            mockAccountService,
+            mockIntermediaryRegistrationConnector,
+            mockRegistrationConnector,
+            mockAppConfig,
+            requestedMaybeIossNumber = Some(iossNumber),
+            mockIntermediarySelectedIossNumberRepository
+          )
+
+          val result = action.callRefine(request).futureValue
+
+          result mustBe Right(
+            expectedRegistrationRequest(request, iossNumber, registrationWrapper, Some(previousIntermediary))
+          )
+        }
+      }
+    }
+
+    "must Redirect to NotRegistered page" - {
+
+      "when both IOSS and intermediary enrolment does not exist" in {
+
+        val request = IdentifierRequest(
+          FakeRequest(),
+          testCredentials,
+          vrn,
+          enrolments
+        )
+
+        val action = new Harness(
+          mockAccountService,
+          mockIntermediaryRegistrationConnector,
+          mockRegistrationConnector,
+          mockAppConfig,
+          requestedMaybeIossNumber = None,
+          mockIntermediarySelectedIossNumberRepository
+        )
+
+        val result = action.callRefine(request).futureValue
+
+        result mustBe Left(Redirect(controllers.routes.NotRegisteredController.onPageLoad()))
+      }
+
+      "when both current and previous intermediary enrolments does not have access to IOSS client" in {
+
+        val currentIntermediary = intermediaryNumber
+        val previousIntermediary = "IN9007654322"
+
+        when(mockAppConfig.intermediaryEnrolment) thenReturn "HMRC-IOSS-INT"
+        when(mockIntermediaryRegistrationConnector.get(eqTo(currentIntermediary))(any())) thenReturn
+          intermediaryRegistrationWithClients(Nil).toFuture
+        when(mockIntermediaryRegistrationConnector.get(eqTo(previousIntermediary))(any())) thenReturn
+          intermediaryRegistrationWithClients(Nil).toFuture
+
+        val request = IdentifierRequest(
+          FakeRequest(),
+          testCredentials,
+          vrn,
+          enrolmentsWithIntermediaries(Seq(currentIntermediary, previousIntermediary))
+        )
+
+        val action = new Harness(
+          mockAccountService,
+          mockIntermediaryRegistrationConnector,
+          mockRegistrationConnector,
+          mockAppConfig,
+          requestedMaybeIossNumber = Some("unknown-ioss"),
+          mockIntermediarySelectedIossNumberRepository
+        )
+
+        val result = action.callRefine(request).futureValue
+
+        result mustBe Left(Redirect(controllers.routes.NotRegisteredController.onPageLoad()))
+      }
+
+      "when only intermediary is present, requestedMaybeIossNumber is None, and IOSS is not retrieved from the selected repository" in {
+
+        when(mockAppConfig.intermediaryEnrolment) thenReturn "HMRC-IOSS-INT"
+        when(mockIntermediaryRegistrationConnector.get(any())(any())) thenReturn
+          intermediaryRegistrationWithClients(Seq(iossNumber)).toFuture
+        when(mockIntermediarySelectedIossNumberRepository.get(any())) thenReturn None.toFuture
+        when(mockRegistrationConnector.get(any())(any())) thenReturn
+          registrationWrapper.toFuture
+
+        val request = IdentifierRequest(
+          FakeRequest(),
+          testCredentials,
+          vrn,
+          enrolmentsWithIntermediaries(Seq(intermediaryNumber))
+        )
+
+        val action = new Harness(
+          mockAccountService,
+          mockIntermediaryRegistrationConnector,
+          mockRegistrationConnector,
+          mockAppConfig,
+          requestedMaybeIossNumber = None,
+          mockIntermediarySelectedIossNumberRepository
+        )
+
+        val result = action.callRefine(request).futureValue
+
+        result mustBe Left(Redirect(controllers.routes.NotRegisteredController.onPageLoad()))
+      }
+
+      "when both intermediary and requestedMaybeIossNumber are not present" in {
+
+        when(mockAppConfig.intermediaryEnrolment) thenReturn "HMRC-IOSS-INT"
+
+        val request = IdentifierRequest(
+          FakeRequest(),
+          testCredentials,
+          vrn,
+          enrolmentsWithIntermediaries(Seq.empty)
+        )
+
+        val action = new Harness(
+          mockAccountService,
+          mockIntermediaryRegistrationConnector,
+          mockRegistrationConnector,
+          mockAppConfig,
+          requestedMaybeIossNumber = None,
+          mockIntermediarySelectedIossNumberRepository
+        )
+
+        val result = action.callRefine(request).futureValue
+
+        result mustBe Left(Redirect(controllers.routes.NotRegisteredController.onPageLoad()))
       }
     }
   }
