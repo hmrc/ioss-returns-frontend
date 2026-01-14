@@ -76,13 +76,13 @@ trait SpecBase
     val arbitrayVatInfo = arbitraryVatInfo.arbitrary.sample.value
     val ukBasedDesAddress = arbitrayVatInfo.desAddress.copy(countryCode = ukCountryCodeAreaPrefix)
     val ukBasedVatInfo = arbitrayVatInfo.copy(desAddress = ukBasedDesAddress)
-    
-    arbirtyRegistration.copy( vatInfo = Some(ukBasedVatInfo), 
+
+    arbirtyRegistration.copy( vatInfo = Some(ukBasedVatInfo),
       registration = arbirtyRegistration.registration.copy(
       schemeDetails = arbirtyRegistration.registration.schemeDetails.copy(commencementDate = commencementDate),
       exclusions = Seq.empty
     ))}
-  
+
 
   val arbitraryDate: LocalDate = datesBetween(LocalDate.of(2023, 3, 1), LocalDate.of(2025, 12, 31)).sample.value
   val arbitraryInstant: Instant = arbitraryDate.atStartOfDay(ZoneId.systemDefault).toInstant
@@ -132,7 +132,7 @@ trait SpecBase
     } else {
       bind[GetRegistrationActionProvider].toInstance(new FakeGetRegistrationActionProvider(registration, maybeIntermediaryNumber))
     }
-    
+
     val getIdentifierActionBind = if(getIdentifierAction.nonEmpty) {
       bind[IdentifierAction].to[FakeIntermediaryIdentifierAction]
     } else {

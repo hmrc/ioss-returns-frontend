@@ -32,7 +32,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class FakeGetRegistrationAction(
                                  registration: RegistrationWrapper,
-                                 maybeIntermediaryNumber: Option[String]
+                                maybeIntermediaryNumber: Option[String]
                                )
   extends GetRegistrationAction(
     mock[AccountService],
