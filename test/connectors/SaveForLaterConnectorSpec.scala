@@ -109,7 +109,7 @@ class SaveForLaterConnectorSpec extends SpecBase
     ".get" - {
 
       val responseJson = Json.toJson(savedUserAnswers.head)
-      val getUrl: String = s"/ioss-returns/save-for-later"
+      val getUrl: String = s"/ioss-returns/save-for-later/$iossNumber"
 
       "must return Right(SavedUserAnswers) when the server responds with OK" in {
 
@@ -123,7 +123,7 @@ class SaveForLaterConnectorSpec extends SpecBase
                 aResponse().withStatus(OK).withBody(responseJson.toString())
               ))
 
-          connector.get().futureValue mustBe Right(Some(savedUserAnswers.head))
+          connector.get(iossNumber).futureValue mustBe Right(Some(savedUserAnswers.head))
         }
       }
 
@@ -139,7 +139,7 @@ class SaveForLaterConnectorSpec extends SpecBase
                 aResponse().withStatus(NOT_FOUND)
               ))
 
-          connector.get().futureValue mustBe Right(None)
+          connector.get(iossNumber).futureValue mustBe Right(None)
         }
       }
 
@@ -155,7 +155,7 @@ class SaveForLaterConnectorSpec extends SpecBase
                 aResponse().withStatus(OK).withBody(Json.toJson("test").toString())
               ))
 
-          connector.get().futureValue mustBe Left(InvalidJson)
+          connector.get(iossNumber).futureValue mustBe Left(InvalidJson)
         }
       }
 
@@ -171,7 +171,7 @@ class SaveForLaterConnectorSpec extends SpecBase
                 aResponse().withStatus(CONFLICT)
               ))
 
-          connector.get().futureValue mustBe Left(ConflictFound)
+          connector.get(iossNumber).futureValue mustBe Left(ConflictFound)
         }
       }
 
@@ -187,7 +187,8 @@ class SaveForLaterConnectorSpec extends SpecBase
                 aResponse().withStatus(123)
               ))
 
-          connector.get().futureValue mustBe Left(UnexpectedResponseStatus(123, s"Unexpected response, status 123 returned"))
+          connector.get(iossNumber).futureValue mustBe
+            Left(UnexpectedResponseStatus(123, s"Unexpected response, status 123 returned"))
         }
 
       }

@@ -44,8 +44,8 @@ class SaveForLaterConnector @Inject()(
     httpClientV2.post(url).withBody(Json.toJson(s4lRequest)).execute[SaveForLaterResponse]
   }
 
-  def get()(implicit hc: HeaderCarrier): Future[SaveForLaterResponse] = {
-    httpClientV2.get(url).execute[SaveForLaterResponse]
+  def get(iossNumber: String)(implicit hc: HeaderCarrier): Future[SaveForLaterResponse] = {
+    httpClientV2.get(url"$url/$iossNumber").execute[SaveForLaterResponse]
   }
 
   def submitForIntermediary(s4lRequest: SaveForLaterRequest)(implicit hc: HeaderCarrier): Future[SaveForLaterResponse] = {

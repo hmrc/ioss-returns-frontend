@@ -58,7 +58,7 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
 
         reset(mockVatReturnConnector, mockSessionRepository)
         when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Left(NotFound).toFuture
-        when(mockSessionRepository.clear(any())) thenReturn true.toFuture
+        when(mockSessionRepository.clear(any(), any())) thenReturn true.toFuture
 
         running(application) {
           val request = FakeRequest(GET, routes.SuccessfullySubmittedController.onPageLoad().url)
@@ -80,7 +80,7 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
             clientName = "Mr Tufftys Tuffs",
             intermediaryDashboardUrl = config.intermediaryDashboardUrl
           )(request, messages(application)).toString
-          verify(mockSessionRepository, times(1)).clear(any())
+          verify(mockSessionRepository, times(1)).clear(any(), any())
         }
       }
     }
@@ -117,7 +117,7 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
 
           reset(mockVatReturnConnector, mockSessionRepository)
           when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(maybeExternalUrl)).toFuture
-          when(mockSessionRepository.clear(any())) thenReturn true.toFuture
+          when(mockSessionRepository.clear(any(), any())) thenReturn true.toFuture
 
           running(application) {
             val request = FakeRequest(GET, routes.SuccessfullySubmittedController.onPageLoad().url)
@@ -139,7 +139,7 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
               clientName = "Mr Tufftys Tuffs",
               intermediaryDashboardUrl = config.intermediaryDashboardUrl
             )(request, messages(application)).toString
-            verify(mockSessionRepository, times(1)).clear(any())
+            verify(mockSessionRepository, times(1)).clear(any(), any())
           }
         }
       }
@@ -152,7 +152,7 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
 
       reset(mockVatReturnConnector, mockSessionRepository)
       when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Left(NotFound).toFuture
-      when(mockSessionRepository.clear(any())) thenReturn true.toFuture
+      when(mockSessionRepository.clear(any(), any())) thenReturn true.toFuture
 
       running(application) {
         val request = FakeRequest(GET, routes.SuccessfullySubmittedController.onPageLoad().url)
@@ -174,7 +174,7 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
           clientName = "Mr Tufftys Tuffs",
           intermediaryDashboardUrl = config.intermediaryDashboardUrl
         )(request, messages(application)).toString
-        verify(mockSessionRepository, times(1)).clear(any())
+        verify(mockSessionRepository, times(1)).clear(any(), any())
       }
     }
 

@@ -62,7 +62,7 @@ class SessionRepositorySpec
 
         insert(userAnswers).futureValue
 
-        val result         = repository.get(userAnswers.id).futureValue
+        val result         = repository.get(userAnswers.id, userAnswers.iossNumber).futureValue
         val expectedResult = userAnswers copy (lastUpdated = instant)
 
         result.value mustEqual expectedResult
@@ -73,7 +73,8 @@ class SessionRepositorySpec
 
       "must return None" in {
 
-        repository.get("id that does not exist").futureValue must not be defined
+        repository.get("id that does not exist", userAnswers.iossNumber).futureValue must not be defined
+        repository.get(userAnswers.id, "id that does not exist").futureValue must not be defined
       }
     }
   }
@@ -84,16 +85,18 @@ class SessionRepositorySpec
 
       insert(userAnswers).futureValue
 
-      val result = repository.clear(userAnswers.id).futureValue
+      val result = repository.clear(userAnswers.id, userAnswers.iossNumber).futureValue
 
       result mustEqual true
-      repository.get(userAnswers.id).futureValue must not be defined
+      repository.get(userAnswers.id, userAnswers.iossNumber).futureValue must not be defined
     }
 
     "must return true when there is no record to remove" in {
-      val result = repository.clear("id that does not exist").futureValue
+      val result = repository.clear("id that does not exist", userAnswers.iossNumber).futureValue
+      val result2 = repository.clear(userAnswers.id, "id that does not exist").futureValue
 
       result mustEqual true
+      result2 mustEqual true
     }
   }
 
@@ -105,7 +108,7 @@ class SessionRepositorySpec
 
         insert(userAnswers).futureValue
 
-        val result = repository.keepAlive(userAnswers.id).futureValue
+        val result = repository.keepAlive(userAnswers.id, userAnswers.iossNumber).futureValue
 
         val expectedUpdatedAnswers = userAnswers copy (lastUpdated = instant)
 
@@ -119,7 +122,8 @@ class SessionRepositorySpec
 
       "must return true" in {
 
-        repository.keepAlive("id that does not exist").futureValue mustEqual true
+        repository.keepAlive("id that does not exist", userAnswers.iossNumber).futureValue mustEqual true
+        repository.keepAlive(userAnswers.id, "id that does not exist").futureValue mustEqual true
       }
     }
   }

@@ -32,10 +32,10 @@ class SavedAnswersRetrievalAction (repository: SessionRepository, saveForLaterCo
   extends ActionTransformer[RegistrationRequest, OptionalDataRequest] {
 
   override protected def transform[A](request: RegistrationRequest[A]): Future[OptionalDataRequest[A]] = {
-    val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request.request, request.request.session)
+    implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request.request, request.request.session)
     val userAnswers = for {
-      answersInSession <- repository.get(request.userId)
-      savedForLater <- saveForLaterConnector.get()(hc)
+      answersInSession <- repository.get(request.userId, request.iossNumber)
+      savedForLater <- saveForLaterConnector.get(request.iossNumber)
     } yield {
       val answers = if (answersInSession.isEmpty) {
         savedForLater match {

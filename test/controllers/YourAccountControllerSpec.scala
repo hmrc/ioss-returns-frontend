@@ -126,7 +126,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
         when(mockFinancialDataConnector.prepareFinancialData()(any())) thenReturn Right(prepareData).toFuture
 
-        when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
+        when(saveForLaterConnector.get(any())(any())) thenReturn Future.successful(Right(None))
 
         when(mockReturnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Right(CurrentReturns(
@@ -167,7 +167,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
       val registrationWrapperEmptyExclusions: RegistrationWrapper =
         registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
 
-      when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
+      when(saveForLaterConnector.get(any())(any())) thenReturn Future.successful(Right(None))
 
       when(mockReturnStatusConnector.getCurrentReturns(any())(any())) thenReturn
         Right(CurrentReturns(
@@ -236,7 +236,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
       val registrationWrapperWithExclusion: RegistrationWrapper = createRegistrationWrapperWithExclusion(LocalDate.now())
 
-      when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
+      when(saveForLaterConnector.get(any())(any())) thenReturn Future.successful(Right(None))
 
       when(mockReturnStatusConnector.getCurrentReturns(any())(any())) thenReturn
         Right(CurrentReturns(
@@ -308,7 +308,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
       val registrationWrapperWithExclusion: RegistrationWrapper = createRegistrationWrapperWithExclusion(LocalDate.now())
 
-      when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
+      when(saveForLaterConnector.get(any())(any())) thenReturn Future.successful(Right(None))
 
       when(mockReturnStatusConnector.getCurrentReturns(any())(any())) thenReturn
         Right(CurrentReturns(
@@ -392,7 +392,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           .copy(vatInfo = Some(ukBasedVatInfo.copy(deregistrationDecisionDate = Some(LocalDate.now(stubClockAtArbitraryDate)))))
           .copy(registration = registrationWrapper.registration.copy(exclusions = Seq(exclusion)))
 
-      when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
+      when(saveForLaterConnector.get(any())(any())) thenReturn Future.successful(Right(None))
 
       when(mockReturnStatusConnector.getCurrentReturns(any())(any())) thenReturn
         Right(CurrentReturns(
@@ -485,7 +485,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         iossNumber = otherIossNumber
       )
 
-      when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
+      when(saveForLaterConnector.get(any())(any())) thenReturn Future.successful(Right(None))
       when(mockPreviousRegistrationService.getPreviousRegistrationPrepareFinancialData(any())(any())) thenReturn List(previousRegistrationPrepareData).toFuture
       when(mockFinancialDataConnector.prepareFinancialData()(any())) thenReturn
         Right(PrepareData(List.empty, List.empty, List.empty, 0, 0, iossNumber)).toFuture
@@ -592,7 +592,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         iossNumber = otherIossNumber
       )
 
-      when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
+      when(saveForLaterConnector.get(any())(any())) thenReturn Future.successful(Right(None))
       when(mockPreviousRegistrationService.getPreviousRegistrationPrepareFinancialData(any())(any())) thenReturn List(previousRegistrationPrepareData).toFuture
       when(mockFinancialDataConnector.prepareFinancialData()(any())) thenReturn
         Right(PrepareData(List.empty, List.empty, List.empty, 0, 0, iossNumber)).toFuture
@@ -677,7 +677,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val registrationWrapperEmptyExclusions: RegistrationWrapper =
           registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
 
-        when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
+        when(saveForLaterConnector.get(any())(any())) thenReturn Future.successful(Right(None))
         when(mockReturnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Right(CurrentReturns(
             Seq(Return(
@@ -748,7 +748,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val registrationWrapperEmptyExclusions: RegistrationWrapper =
           registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
 
-        when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
+        when(saveForLaterConnector.get(any())(any())) thenReturn Future.successful(Right(None))
         when(mockReturnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Right(CurrentReturns(
             Seq(Return.fromPeriod(period, Due, inProgress = true, isOldest = false
@@ -816,7 +816,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val registrationWrapperEmptyExclusions: RegistrationWrapper =
           registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
 
-        when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
+        when(saveForLaterConnector.get(any())(any())) thenReturn Future.successful(Right(None))
         when(mockReturnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Right(CurrentReturns(
             Seq(
@@ -885,7 +885,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val registrationWrapperEmptyExclusions: RegistrationWrapper =
           registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
 
-        when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
+        when(saveForLaterConnector.get(any())(any())) thenReturn Future.successful(Right(None))
         when(mockReturnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Right(CurrentReturns(
             Seq(
@@ -953,7 +953,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val registrationWrapperEmptyExclusions: RegistrationWrapper =
           registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
 
-        when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
+        when(saveForLaterConnector.get(any())(any())) thenReturn Future.successful(Right(None))
         when(mockReturnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Right(CurrentReturns(
             Seq(
@@ -1025,7 +1025,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val registrationWrapperEmptyExclusions: RegistrationWrapper =
           registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
 
-        when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
+        when(saveForLaterConnector.get(any())(any())) thenReturn Future.successful(Right(None))
         when(mockReturnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Right(CurrentReturns(
             Seq(
@@ -1101,7 +1101,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val registrationWrapperEmptyExclusions: RegistrationWrapper =
           registrationWrapper.copy(registration = registrationWrapper.registration.copy(exclusions = Seq.empty))
 
-        when(saveForLaterConnector.get()(any())) thenReturn Future.successful(Right(None))
+        when(saveForLaterConnector.get(any())(any())) thenReturn Future.successful(Right(None))
         when(mockReturnStatusConnector.getCurrentReturns(any())(any())) thenReturn
           Right(CurrentReturns(
             Seq(

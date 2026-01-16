@@ -145,7 +145,7 @@ class StartReturnController @Inject()(
           for {
             answers <- userAnswers.toFuture
             _ <- if (clearSession) {
-              cc.sessionRepository.clear(answers.id)
+              cc.sessionRepository.clear(answers.id, request.iossNumber)
             } else {
               Future.successful(())
             }
