@@ -107,8 +107,8 @@ class YourAccountController @Inject()(
 
   private def getSavedAnswers()(implicit request: RegistrationRequest[AnyContent]): Future[Option[UserAnswers]] = {
     for {
-      answersInSession <- sessionRepository.get(request.userId)
-      savedForLater <- saveForLaterConnector.get()
+      answersInSession <- sessionRepository.get(request.userId, request.iossNumber)
+      savedForLater <- saveForLaterConnector.get(request.iossNumber)
     } yield {
       val answers = if (answersInSession.isEmpty) {
         savedForLater match {

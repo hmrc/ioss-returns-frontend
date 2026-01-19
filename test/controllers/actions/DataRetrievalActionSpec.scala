@@ -48,7 +48,7 @@ class DataRetrievalActionSpec extends SpecBase with MockitoSugar {
         val repository = mock[SessionRepository]
         val request    = RegistrationRequest(FakeRequest(), testCredentials, Some(vrn), "Company Name", iossNumber, registrationWrapper, None, enrolments)
 
-        when(repository.get(any())) thenReturn Future.successful(None)
+        when(repository.get(any(), any())) thenReturn Future.successful(None)
 
         val action = new Harness(repository)
 
@@ -65,7 +65,7 @@ class DataRetrievalActionSpec extends SpecBase with MockitoSugar {
         val repository = mock[SessionRepository]
         val request    = RegistrationRequest(FakeRequest(), testCredentials, Some(vrn), "Company Name", iossNumber, registrationWrapper, None, enrolments)
 
-        when(repository.get(any())) thenReturn Future.successful(Some(emptyUserAnswers))
+        when(repository.get(any(), any())) thenReturn Future.successful(Some(emptyUserAnswers))
 
         val action = new Harness(repository)
 

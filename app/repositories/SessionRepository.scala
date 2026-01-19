@@ -52,22 +52,26 @@ class SessionRepository @Inject()(
 
   implicit val instantFormat: Format[Instant] = MongoJavatimeFormats.instantFormat
 
-  private def byId(id: String): Bson = Filters.equal("_id", id)
+  private def byId(id: String, iossNumber: String): Bson =
+    Filters.and(
+      Filters.equal("_id", id),
+      Filters.equal("iossNumber", iossNumber),
+    )
 
-  def keepAlive(id: String): Future[Boolean] =
+  def keepAlive(id: String, iossNumber: String): Future[Boolean] =
     collection
       .updateOne(
-        filter = byId(id),
+        filter = byId(id, iossNumber),
         update = Updates.set("lastUpdated", Instant.now(clock)),
       )
       .toFuture()
       .map(_ => true)
 
-  def get(id: String): Future[Option[UserAnswers]] =
-    keepAlive(id).flatMap {
+  def get(id: String, iossNumber: String): Future[Option[UserAnswers]] =
+    keepAlive(id, iossNumber).flatMap {
       _ =>
         collection
-          .find(byId(id))
+          .find(byId(id, iossNumber))
           .headOption()
     }
 
@@ -77,7 +81,7 @@ class SessionRepository @Inject()(
 
     collection
       .replaceOne(
-        filter      = byId(updatedAnswers.id),
+        filter      = byId(updatedAnswers.id, updatedAnswers.iossNumber),
         replacement = updatedAnswers,
         options     = ReplaceOptions().upsert(true)
       )
@@ -85,9 +89,9 @@ class SessionRepository @Inject()(
       .map(_ => true)
   }
 
-  def clear(id: String): Future[Boolean] =
+  def clear(id: String, iossNumber: String): Future[Boolean] =
     collection
-      .deleteOne(byId(id))
+      .deleteOne(byId(id, iossNumber))
       .toFuture()
       .map(_ => true)
 }

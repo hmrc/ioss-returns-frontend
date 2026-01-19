@@ -32,7 +32,7 @@ class KeepAliveController @Inject()(
   def keepAlive: Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced.async {
     implicit request =>
       cc.sessionRepository
-        .keepAlive(request.userId)
+        .keepAlive(request.userId, request.iossNumber)
         .map(_ => Ok)
   }
 }
