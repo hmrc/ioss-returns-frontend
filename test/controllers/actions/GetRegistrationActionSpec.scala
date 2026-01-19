@@ -20,8 +20,9 @@ import base.SpecBase
 import config.Constants.ukCountryCodeAreaPrefix
 import config.FrontendAppConfig
 import connectors.{IntermediaryRegistrationConnector, RegistrationConnector}
+import models.etmp.EtmpDisplayRegistration
 import models.{IntermediarySelectedIossNumber, RegistrationWrapper}
-import models.etmp.intermediary.IntermediaryRegistrationWrapper
+import models.etmp.intermediary.{EtmpCustomerIdentification, EtmpCustomerIdentificationLegacy, IntermediaryRegistrationWrapper}
 import models.requests.{IdentifierRequest, RegistrationRequest}
 import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito
@@ -70,6 +71,7 @@ class GetRegistrationActionSpec extends SpecBase with MockitoSugar with EitherVa
   def intermediaryRegistrationWithClients(iossNumber: Seq[String]): IntermediaryRegistrationWrapper = {
     arbitraryIntermediaryRegistrationWrapper.arbitrary.sample.value.copy(
       etmpDisplayRegistration = arbitraryEtmpIntermediaryDisplayRegistration.arbitrary.sample.value.copy(
+        customerIdentification = EtmpCustomerIdentificationLegacy(vrn),
         clientDetails = iossNumber.map { ioss =>
           arbitraryEtmpClientDetails.arbitrary.sample.value.copy(clientIossID = ioss)
         }
@@ -98,7 +100,8 @@ class GetRegistrationActionSpec extends SpecBase with MockitoSugar with EitherVa
     RegistrationRequest(
       request = request.request,
       credentials = request.credentials,
-      vrn = request.vrn,
+      vrn = registration.maybeVrn,
+      companyName = "organisation name ",
       iossNumber = iossNumber,
       registrationWrapper = registration,
       intermediaryNumber = intermediaryNumber,
@@ -188,7 +191,20 @@ class GetRegistrationActionSpec extends SpecBase with MockitoSugar with EitherVa
 
         when(mockAppConfig.iossEnrolment) thenReturn "HMRC-IOSS-ORG"
 
-        val registrationWrapper = arbitraryRegistrationWrapper.arbitrary.sample.value
+        val registrationWrapper = arbitraryRegistrationWrapper.arbitrary.sample.value.copy(
+          vatInfo = Some(arbitraryVatInfo.arbitrary.sample.value.copy(
+            desAddress = arbitraryDesAddress.arbitrary.sample.value.copy(
+              countryCode = ukCountryCodeAreaPrefix
+            ),
+            organisationName = Some("organisation name")
+          )),
+          registration = arbitraryEtmpDisplayRegistrationLegacy.arbitrary.sample.value.copy(
+            customerIdentification = EtmpCustomerIdentificationLegacy(vrn),
+            otherAddress = Some(arbitraryEtmpOtherAddress.arbitrary.sample.value.copy(
+              tradingName = Some("trading name")
+            ))
+          )
+        )
 
         when(mockRegistrationConnector.get(any())(any())) thenReturn registrationWrapper.toFuture
 
@@ -223,7 +239,20 @@ class GetRegistrationActionSpec extends SpecBase with MockitoSugar with EitherVa
         val currentIoss = iossNumber
         val previousIoss = "IM9001234568"
 
-        val registrationWrapper = arbitraryRegistrationWrapper.arbitrary.sample.value
+        val registrationWrapper = arbitraryRegistrationWrapper.arbitrary.sample.value.copy(
+          vatInfo = Some(arbitraryVatInfo.arbitrary.sample.value.copy(
+            desAddress = arbitraryDesAddress.arbitrary.sample.value.copy(
+              countryCode = ukCountryCodeAreaPrefix
+            ),
+            organisationName = Some("organisation name")
+          )),
+          registration = arbitraryEtmpDisplayRegistrationLegacy.arbitrary.sample.value.copy(
+            customerIdentification = EtmpCustomerIdentificationLegacy(vrn),
+            otherAddress = Some(arbitraryEtmpOtherAddress.arbitrary.sample.value.copy(
+              tradingName = Some("trading name")
+            ))
+          )
+        )
 
         when(mockAppConfig.iossEnrolment) thenReturn "HMRC-IOSS-ORG"
         when(mockAccountService.getLatestAccount()(any())) thenReturn currentIoss.toFuture
@@ -259,6 +288,20 @@ class GetRegistrationActionSpec extends SpecBase with MockitoSugar with EitherVa
 
         "and both intermediary and requestedMaybeIossNumber are present" in {
 
+          val registrationWrapper = arbitraryRegistrationWrapper.arbitrary.sample.value.copy(
+            vatInfo = Some(arbitraryVatInfo.arbitrary.sample.value.copy(
+              desAddress = arbitraryDesAddress.arbitrary.sample.value.copy(
+                countryCode = ukCountryCodeAreaPrefix
+              ),
+              organisationName = Some("organisation name")
+            )),
+            registration = arbitraryEtmpDisplayRegistrationLegacy.arbitrary.sample.value.copy(
+              otherAddress = Some(arbitraryEtmpOtherAddress.arbitrary.sample.value.copy(
+                tradingName = Some("trading name")
+              ))
+            )
+          )
+
           val request = IdentifierRequest(
             FakeRequest(),
             testCredentials,
@@ -289,6 +332,20 @@ class GetRegistrationActionSpec extends SpecBase with MockitoSugar with EitherVa
         }
 
         "when only intermediary is present and IOSS is retrieved from selected repository" in {
+
+          val registrationWrapper = arbitraryRegistrationWrapper.arbitrary.sample.value.copy(
+            vatInfo = Some(arbitraryVatInfo.arbitrary.sample.value.copy(
+              desAddress = arbitraryDesAddress.arbitrary.sample.value.copy(
+                countryCode = ukCountryCodeAreaPrefix
+              ),
+              organisationName = Some("organisation name")
+            )),
+            registration = arbitraryEtmpDisplayRegistrationLegacy.arbitrary.sample.value.copy(
+              otherAddress = Some(arbitraryEtmpOtherAddress.arbitrary.sample.value.copy(
+                tradingName = Some("trading name")
+              ))
+            )
+          )
 
           val intermediarySelectedIossNumber = IntermediarySelectedIossNumber(
             userId = userAnswersId,
@@ -327,6 +384,20 @@ class GetRegistrationActionSpec extends SpecBase with MockitoSugar with EitherVa
         }
 
         "and previous intermediary enrolment has access to requestedMaybeIossNumber" in {
+
+          val registrationWrapper = arbitraryRegistrationWrapper.arbitrary.sample.value.copy(
+            vatInfo = Some(arbitraryVatInfo.arbitrary.sample.value.copy(
+              desAddress = arbitraryDesAddress.arbitrary.sample.value.copy(
+                countryCode = ukCountryCodeAreaPrefix
+              ),
+              organisationName = Some("organisation name")
+            )),
+            registration = arbitraryEtmpDisplayRegistrationLegacy.arbitrary.sample.value.copy(
+              otherAddress = Some(arbitraryEtmpOtherAddress.arbitrary.sample.value.copy(
+                tradingName = Some("trading name")
+              ))
+            )
+          )
 
           val currentIntermediary = intermediaryNumber
           val previousIntermediary = "IN9007654322"
