@@ -53,7 +53,6 @@ class GetRegistrationAction(
         findIntermediaryFromEnrolments(request.enrolments).flatMap { maybeIntermediaryNumber =>
           (maybeIntermediaryNumber, requestedMaybeIossNumber) match {
             case (Some(intermediaryNumber), Some(iossNumber)) =>
-              println("Hiii1231231")
               checkIntermediaryAccessAndFormRequest(intermediaryNumber, iossNumber, request)
             case (Some(intermediaryNumber), None) =>
               intermediarySelectedIossNumberRepository.get(request.userId).flatMap {
