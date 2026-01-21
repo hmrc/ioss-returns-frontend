@@ -74,7 +74,14 @@ class StartReturnAsIntermediaryController @Inject()(
             Redirect(routes.StartReturnController.onPageLoad(EmptyWaypoints, oldestReturn.period))
           }
         case _ =>
-          Redirect(routes.NoReturnsDueController.onPageLoad()).toFuture
+          val intermediaryNumber = request.intermediaryNumber.get
+          val intermediarySelectedIossNumber = IntermediarySelectedIossNumber(request.userId, intermediaryNumber, iossNumber)
+
+          for {
+            _ <- intermediarySelectedIossNumberRepository.set(intermediarySelectedIossNumber)
+          } yield {
+            Redirect(routes.NoReturnsDueController.onPageLoad())
+          }
       }
     } else {
       Redirect(routes.NotRegisteredController.onPageLoad()).toFuture
