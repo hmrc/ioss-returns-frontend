@@ -131,7 +131,7 @@ class StartReturnController @Inject()(
         value => {
 
           val defaultUserAnswers = UserAnswers(
-            id = request.userId,
+            userId = request.userId,
             iossNumber = request.iossNumber,
             period = period,
             lastUpdated = Instant.now(clock)
@@ -145,7 +145,7 @@ class StartReturnController @Inject()(
           for {
             answers <- userAnswers.toFuture
             _ <- if (clearSession) {
-              cc.sessionRepository.clear(answers.id, request.iossNumber)
+              cc.sessionRepository.clear(answers.userId, request.iossNumber)
             } else {
               Future.successful(())
             }

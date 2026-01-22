@@ -82,7 +82,7 @@ class UserAnswersSpec extends SpecBase with Matchers {
 
     "must correctly transform UserAnswers to UserAnswersForAudit" in {
       val userAnswers = UserAnswers(
-        id = "testId",
+        userId = "testId",
         iossNumber = iossNumber,
         period = StandardPeriod(2023, Month.JUNE),
         data = Json.obj("key" -> "value"),
@@ -99,7 +99,7 @@ class UserAnswersSpec extends SpecBase with Matchers {
 
     "must handle empty data in UserAnswersForAudit" in {
       val userAnswers = UserAnswers(
-        id = "testId",
+        userId = "testId",
         iossNumber = iossNumber,
         period = StandardPeriod(2023, Month.JUNE),
         data = Json.obj(),
@@ -228,7 +228,7 @@ class UserAnswersSpec extends SpecBase with Matchers {
 
     "must handle lastUpdated field correctly" in {
       val userAnswers = UserAnswers(
-        id = "testId",
+        userId = "testId",
         iossNumber = iossNumber,
         period = StandardPeriod(2023, Month.JUNE),
         data = Json.obj("key" -> "value"),

@@ -54,7 +54,7 @@ class StartReturnAsIntermediaryController @Inject()(
         case Some(oldestReturn) =>
           // TODO set something to show client in "breadcrumb" type thing
           val defaultUserAnswers = UserAnswers(
-            id = request.userId,
+            userId = request.userId,
             iossNumber = iossNumber,
             period = oldestReturn.period,
             lastUpdated = Instant.now(clock)

@@ -72,7 +72,7 @@ class StartIntermediarySaveForLaterReturnControllerSpec extends SpecBase with Be
       when(mockSessionRepository.set(any())) thenReturn true.toFuture
 
       val userAnswers: UserAnswers = UserAnswers(
-        id = userAnswersId,
+        userId = userAnswersId,
         iossNumber = iossNumber,
         period = period,
         data = data,

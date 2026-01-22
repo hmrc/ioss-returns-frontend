@@ -42,6 +42,12 @@ class SessionRepository @Inject()(
     domainFormat   = UserAnswers.format,
     indexes        = Seq(
       IndexModel(
+        Indexes.ascending("userId", "iossNumber"),
+        IndexOptions()
+          .name("userIdAndIossNumberIdx")
+          .unique(true)
+      ),
+      IndexModel(
         Indexes.ascending("lastUpdated"),
         IndexOptions()
           .name("lastUpdatedIdx")
@@ -54,7 +60,7 @@ class SessionRepository @Inject()(
 
   private def byId(id: String, iossNumber: String): Bson =
     Filters.and(
-      Filters.equal("_id", id),
+      Filters.equal("userId", id),
       Filters.equal("iossNumber", iossNumber),
     )
 
@@ -81,7 +87,7 @@ class SessionRepository @Inject()(
 
     collection
       .replaceOne(
-        filter      = byId(updatedAnswers.id, updatedAnswers.iossNumber),
+        filter      = byId(updatedAnswers.userId, updatedAnswers.iossNumber),
         replacement = updatedAnswers,
         options     = ReplaceOptions().upsert(true)
       )

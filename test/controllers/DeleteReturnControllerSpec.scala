@@ -99,7 +99,7 @@ class DeleteReturnControllerSpec extends SpecBase with MockitoSugar {
 
         status(result) `mustBe` SEE_OTHER
         redirectLocation(result).value `mustBe` controllers.routes.YourAccountController.onPageLoad().url
-        verify(mockSessionRepository, times(1)).clear(eqTo(emptyUserAnswers.id), eqTo(emptyUserAnswers.iossNumber))
+        verify(mockSessionRepository, times(1)).clear(eqTo(emptyUserAnswers.userId), eqTo(emptyUserAnswers.iossNumber))
         verify(mockSaveForLaterService, times(1)).deleteSavedUserAnswers(any())(any())
       }
     }
