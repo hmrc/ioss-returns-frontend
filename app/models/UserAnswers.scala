@@ -25,7 +25,7 @@ import java.time.Instant
 import scala.util.{Failure, Success, Try}
 
 final case class UserAnswers(
-                              id: String,
+                              userId: String,
                               iossNumber: String,
                               period: Period,
                               data: JsObject = Json.obj(),
@@ -88,7 +88,7 @@ object UserAnswers {
   val reads: Reads[UserAnswers] = {
 
     (
-      (__ \ "_id").read[String] and
+      (__ \ "userId").read[String] and
       (__ \ "iossNumber").read[String] and
       (__ \ "period").read[Period] and
       (__ \ "data").read[JsObject] and
@@ -99,7 +99,7 @@ object UserAnswers {
   val writes: OWrites[UserAnswers] = {
 
     (
-      (__ \ "_id").write[String] and
+      (__ \ "userId").write[String] and
       (__ \ "iossNumber").write[String] and
       (__ \ "period").write[Period] and
       (__ \ "data").write[JsObject] and

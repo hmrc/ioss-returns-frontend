@@ -48,7 +48,7 @@ class KeepAliveControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        verify(mockSessionRepository, times(1)).keepAlive(emptyUserAnswers.id, emptyUserAnswers.iossNumber)
+        verify(mockSessionRepository, times(1)).keepAlive(emptyUserAnswers.userId, emptyUserAnswers.iossNumber)
       }
     }
   }

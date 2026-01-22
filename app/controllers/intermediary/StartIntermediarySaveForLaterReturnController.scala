@@ -50,7 +50,7 @@ class StartIntermediarySaveForLaterReturnController @Inject()(
           val intermediarySelectedIossNumber = IntermediarySelectedIossNumber(request.userId, intermediaryNumber, iossNumber)
 
           val userAnswers: UserAnswers = UserAnswers(
-            id = request.userId,
+            userId = request.userId,
             iossNumber = answers.iossNumber,
             period = answers.period,
             data = answers.data,

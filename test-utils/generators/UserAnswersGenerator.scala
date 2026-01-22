@@ -78,7 +78,7 @@ trait UserAnswersGenerator extends TryValues {
           case _ => Gen.mapOf(oneOf(generators))
         }
       } yield UserAnswers(
-        id = id,
+        userId = id,
         iossNumber = "IM9001234567",
         period = StandardPeriod(2021, Month.JULY),
         data = data.foldLeft(Json.obj()) {
