@@ -71,7 +71,7 @@ class SavedProgressControllerSpec extends SpecBase with BeforeAndAfterEach {
       )
 
       when(mockSaveForLaterConnector.submit(any())(any())) thenReturn Right(Some(savedAnswers)).toFuture
-      when(mockSaveForLaterConnector.delete(any())(any())) thenReturn Right(true).toFuture
+      when(mockSaveForLaterConnector.delete(any(), any())(any())) thenReturn Right(true).toFuture
       when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(None)).toFuture
 
       val app = applicationBuilder(userAnswers = Some(completeUserAnswers.copy(lastUpdated = instantDate)))
@@ -109,7 +109,7 @@ class SavedProgressControllerSpec extends SpecBase with BeforeAndAfterEach {
       )
 
       when(mockSaveForLaterConnector.submit(any())(any())) thenReturn Right(Some(savedAnswers)).toFuture
-      when(mockSaveForLaterConnector.delete(any())(any())) thenReturn Right(true).toFuture
+      when(mockSaveForLaterConnector.delete(any(), any())(any())) thenReturn Right(true).toFuture
       when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(Some("example"))).toFuture
 
       val app = applicationBuilder(userAnswers = Some(completeUserAnswers.copy(lastUpdated = instantDate)))
@@ -215,7 +215,7 @@ class SavedProgressControllerSpec extends SpecBase with BeforeAndAfterEach {
         )
 
         when(mockSaveForLaterConnector.submitForIntermediary(any())(any())) thenReturn Right(Some(savedAnswers)).toFuture
-        when(mockSaveForLaterConnector.delete(any())(any())) thenReturn Right(true).toFuture
+        when(mockSaveForLaterConnector.delete(any(), any())(any())) thenReturn Right(true).toFuture
         when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(None)).toFuture
 
         val app = applicationBuilder(
