@@ -56,8 +56,8 @@ class DeleteReturnController @Inject()(
           if (value) {
             for {
               _ <- cc.sessionRepository.clear(request.userId, request.iossNumber)
-              _ <- saveForLaterService.deleteSavedUserAnswers(period)
-            } yield Redirect(controllers.routes.YourAccountController.onPageLoad())
+              _ <- saveForLaterService.deleteSavedUserAnswers(request.iossNumber, period)
+            } yield Redirect(controllers.routes.IndexController.onPageLoad)
           } else {
             Redirect(controllers.routes.ContinueReturnController.onPageLoad(request.userAnswers.period)).toFuture
           }
