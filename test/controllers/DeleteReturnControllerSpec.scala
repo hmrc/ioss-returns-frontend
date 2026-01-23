@@ -80,7 +80,7 @@ class DeleteReturnControllerSpec extends SpecBase with MockitoSugar {
       val mockSessionRepository = mock[SessionRepository]
 
       when(mockSessionRepository.clear(any(), any())) thenReturn true.toFuture
-      when(mockSaveForLaterService.deleteSavedUserAnswers(any())(any())) thenReturn true.toFuture
+      when(mockSaveForLaterService.deleteSavedUserAnswers(any(), any())(any())) thenReturn true.toFuture
 
       val application =
         applicationBuilder(userAnswers = Some(emptyUserAnswers))
@@ -98,9 +98,9 @@ class DeleteReturnControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) `mustBe` SEE_OTHER
-        redirectLocation(result).value `mustBe` controllers.routes.YourAccountController.onPageLoad().url
+        redirectLocation(result).value `mustBe` controllers.routes.IndexController.onPageLoad.url
         verify(mockSessionRepository, times(1)).clear(eqTo(emptyUserAnswers.userId), eqTo(emptyUserAnswers.iossNumber))
-        verify(mockSaveForLaterService, times(1)).deleteSavedUserAnswers(any())(any())
+        verify(mockSaveForLaterService, times(1)).deleteSavedUserAnswers(any(), any())(any())
       }
     }
 

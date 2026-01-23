@@ -62,8 +62,8 @@ class SaveForLaterService @Inject()(
     }
   }
 
-  def deleteSavedUserAnswers(period: Period)(implicit hc: HeaderCarrier): Future[Boolean] = {
-    saveForLaterConnector.delete(period).flatMap {
+  def deleteSavedUserAnswers(iossNumber: String, period: Period)(implicit hc: HeaderCarrier): Future[Boolean] = {
+    saveForLaterConnector.delete(iossNumber, period).flatMap {
       case Right(isDeleted) => isDeleted.toFuture
 
       case Left(error) =>

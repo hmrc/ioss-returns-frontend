@@ -17,26 +17,30 @@
 package controllers.intermediary
 
 import config.FrontendAppConfig
+import connectors.SaveForLaterConnector
 import controllers.actions.AuthenticatedControllerComponents
 import controllers.routes
 import models.{IntermediarySelectedIossNumber, UserAnswers}
+import models.requests.OptionalDataRequest
 import pages.{EmptyWaypoints, Waypoints}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.IntermediarySelectedIossNumberRepository
 import services.VatReturnService
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax.FutureOps
 
 import java.time.{Clock, Instant}
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class StartReturnAsIntermediaryController @Inject()(
                                                      override val messagesApi: MessagesApi,
                                                      cc: AuthenticatedControllerComponents,
                                                      vatReturnService: VatReturnService,
                                                      intermediarySelectedIossNumberRepository: IntermediarySelectedIossNumberRepository,
+                                                     saveForLaterConnector: SaveForLaterConnector,
                                                      config: FrontendAppConfig,
                                                      clock: Clock
                                                    )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
@@ -47,12 +51,9 @@ class StartReturnAsIntermediaryController @Inject()(
     cc.authAndIntermediaryRequired(iossNumber) andThen
       cc.getData()).async { implicit request =>
 
-    // TODO toggle might be better suited in a filter
     if (config.intermediaryEnabled) {
-      // TODO check if intermediary has access to ioss number
       vatReturnService.getOldestDueReturn(iossNumber).flatMap {
         case Some(oldestReturn) =>
-          // TODO set something to show client in "breadcrumb" type thing
           val defaultUserAnswers = UserAnswers(
             userId = request.userId,
             iossNumber = iossNumber,
@@ -60,18 +61,21 @@ class StartReturnAsIntermediaryController @Inject()(
             lastUpdated = Instant.now(clock)
           )
 
-          val userAnswers = request.userAnswers.getOrElse(defaultUserAnswers)
-          
           val intermediaryNumber = request.intermediaryNumber.get //TODO make "IntermediaryRequiredAction" be a refiner that converts to an int number
           
           val intermediarySelectedIossNumber = IntermediarySelectedIossNumber(request.userId, intermediaryNumber, iossNumber)
 
           for {
             _ <- intermediarySelectedIossNumberRepository.set(intermediarySelectedIossNumber)
-            _ <- cc.sessionRepository.set(userAnswers)
+            maybeUserAnswers <- getSessionOrSavedUserAnswers(request)
+            _ <- cc.sessionRepository.set(maybeUserAnswers.getOrElse(defaultUserAnswers))
           } yield {
-            // TODO should we use waypoints to redirect back to intermediary dashboard at the end? Or maybe external entry?
-            Redirect(routes.StartReturnController.onPageLoad(EmptyWaypoints, oldestReturn.period))
+            if(oldestReturn.inProgress) {
+
+              Redirect(routes.ContinueReturnController.onPageLoad(oldestReturn.period))
+            } else {
+              Redirect(routes.StartReturnController.onPageLoad(EmptyWaypoints, oldestReturn.period))
+            }
           }
         case _ =>
           val intermediaryNumber = request.intermediaryNumber.get
@@ -85,6 +89,22 @@ class StartReturnAsIntermediaryController @Inject()(
       }
     } else {
       Redirect(routes.NotRegisteredController.onPageLoad()).toFuture
+    }
+  }
+
+  private def getSessionOrSavedUserAnswers(request: OptionalDataRequest[AnyContent])(implicit hc: HeaderCarrier): Future[Option[UserAnswers]] = {
+    for {
+      savedForLater <- saveForLaterConnector.get(request.iossNumber)
+    } yield {
+      val answers = if (request.userAnswers.isEmpty) {
+        savedForLater match {
+          case Right(Some(answers)) => Some(UserAnswers(request.userId, request.iossNumber, answers.period, answers.data, answers.lastUpdated))
+          case _ => None
+        }
+      } else {
+        request.userAnswers
+      }
+      answers
     }
   }
 

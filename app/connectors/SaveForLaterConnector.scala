@@ -56,8 +56,8 @@ class SaveForLaterConnector @Inject()(
     httpClientV2.get(intermediaryUrl).execute[IntermediarySaveForLaterResponse]
   }
 
-  def delete(period: Period)(implicit hc: HeaderCarrier): Future[DeleteSaveForLaterResponse] = {
-    val url: URL = url"$baseUrl/save-for-later/delete/$period"
+  def delete(iossNumber: String, period: Period)(implicit hc: HeaderCarrier): Future[DeleteSaveForLaterResponse] = {
+    val url: URL = url"$baseUrl/save-for-later/delete/$iossNumber/$period"
 
     httpClientV2.get(url).execute[DeleteSaveForLaterResponse]
   }

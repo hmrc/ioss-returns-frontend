@@ -171,14 +171,14 @@ class SaveForLaterServiceSpec extends SpecBase with BeforeAndAfterEach with Priv
 
       "must return true when the connector returns Right(true)" in {
 
-        when(mockSaveForLaterConnector.delete(any())(any())) thenReturn Right(true).toFuture
+        when(mockSaveForLaterConnector.delete(any(), any())(any())) thenReturn Right(true).toFuture
 
         val service = new SaveForLaterService(mockSaveForLaterConnector)
 
-        val result = service.deleteSavedUserAnswers(period).futureValue
+        val result = service.deleteSavedUserAnswers(iossNumber, period).futureValue
 
         result `mustBe` true
-        verify(mockSaveForLaterConnector, times(1)).delete(eqTo(period))(any())
+        verify(mockSaveForLaterConnector, times(1)).delete(eqTo(iossNumber), eqTo(period))(any())
       }
 
       "must throw an Exception when the connector returns an error" in {
@@ -186,17 +186,17 @@ class SaveForLaterServiceSpec extends SpecBase with BeforeAndAfterEach with Priv
         val error: ErrorResponse = InternalServerError
         val errorMessage: String = s"An error occurred deleting saved user answers for period: $period with error: ${error.body}"
 
-        when(mockSaveForLaterConnector.delete(any())(any())) thenReturn Left(error).toFuture
+        when(mockSaveForLaterConnector.delete(any(), any())(any())) thenReturn Left(error).toFuture
 
         val service = new SaveForLaterService(mockSaveForLaterConnector)
 
-        val result = service.deleteSavedUserAnswers(period).failed
+        val result = service.deleteSavedUserAnswers(iossNumber, period).failed
 
         whenReady(result) { exp =>
           exp `mustBe` a[Exception]
           exp.getMessage `mustBe` errorMessage
         }
-        verify(mockSaveForLaterConnector, times(1)).delete(eqTo(period))(any())
+        verify(mockSaveForLaterConnector, times(1)).delete(eqTo(iossNumber), eqTo(period))(any())
       }
     }
   }

@@ -349,7 +349,7 @@ class SaveForLaterConnectorSpec extends SpecBase
 
     ".delete" - {
 
-      val deleteUrl: String = s"/ioss-returns/save-for-later/delete/${period.toString}"
+      val deleteUrl: String = s"/ioss-returns/save-for-later/delete/$iossNumber/${period.toString}"
 
       "must return Right(true) when the server responds with OK" in {
 
@@ -363,7 +363,7 @@ class SaveForLaterConnectorSpec extends SpecBase
                 aResponse().withStatus(OK).withBody(JsBoolean(true).toString())
               ))
 
-          connector.delete(period).futureValue mustBe Right(true)
+          connector.delete(iossNumber, period).futureValue mustBe Right(true)
         }
       }
 
@@ -379,7 +379,7 @@ class SaveForLaterConnectorSpec extends SpecBase
                 aResponse().withStatus(OK).withBody(Json.toJson("test").toString())
               ))
 
-          connector.delete(period).futureValue mustBe Left(InvalidJson)
+          connector.delete(iossNumber, period).futureValue mustBe Left(InvalidJson)
         }
       }
 
@@ -395,7 +395,7 @@ class SaveForLaterConnectorSpec extends SpecBase
                 aResponse().withStatus(NOT_FOUND)
               ))
 
-          connector.delete(period).futureValue mustBe Left(NotFound)
+          connector.delete(iossNumber, period).futureValue mustBe Left(NotFound)
         }
       }
 
@@ -411,7 +411,7 @@ class SaveForLaterConnectorSpec extends SpecBase
                 aResponse().withStatus(CONFLICT)
               ))
 
-          connector.delete(period).futureValue mustBe Left(ConflictFound)
+          connector.delete(iossNumber, period).futureValue mustBe Left(ConflictFound)
         }
       }
 
@@ -427,7 +427,7 @@ class SaveForLaterConnectorSpec extends SpecBase
                 aResponse().withStatus(123)
               ))
 
-          connector.delete(period).futureValue mustBe Left(UnexpectedResponseStatus(123, s"Unexpected response, status 123 returned"))
+          connector.delete(iossNumber, period).futureValue mustBe Left(UnexpectedResponseStatus(123, s"Unexpected response, status 123 returned"))
         }
       }
     }
