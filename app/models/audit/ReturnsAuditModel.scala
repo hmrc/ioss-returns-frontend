@@ -27,7 +27,8 @@ case class ReturnsAuditModel(
                               userAgent: String,
                               vrn: String,
                               userAnswers: UserAnswersForAudit,
-                              submissionResult: SubmissionResult
+                              submissionResult: SubmissionResult,
+                              intermediaryNumber: Option[String]
                             ) extends JsonAuditModel {
 
   override val auditType: String = "ReturnSubmitted"
@@ -39,7 +40,7 @@ case class ReturnsAuditModel(
     "requestersVrn" -> vrn,
     "userAnswersDetails" -> Json.toJson(userAnswers),
     "submissionResult" -> Json.toJson(submissionResult)
-  )
+  ) ++ intermediaryNumber.map(n => Json.obj("requestersIntermediaryNumber" -> n)).getOrElse(Json.obj())
 }
 
 object ReturnsAuditModel {
@@ -57,7 +58,8 @@ object ReturnsAuditModel {
       userAgent = request.headers.get("user-agent").getOrElse(""),
       vrn = vrnOrAlternativeId,
       userAnswers = userAnswers.toUserAnswersForAudit,
-      submissionResult = submissionResult
+      submissionResult = submissionResult,
+      intermediaryNumber = request.intermediaryNumber
     )
   }
 }
