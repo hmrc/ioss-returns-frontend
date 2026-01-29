@@ -31,11 +31,10 @@ import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
 class StartPaymentAsIntermediaryController @Inject()(
-                                                     override val messagesApi: MessagesApi,
-                                                     cc: AuthenticatedControllerComponents,
-                                                     intermediarySelectedIossNumberRepository: IntermediarySelectedIossNumberRepository,
-                                                     config: FrontendAppConfig
-                                                   )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                                      override val messagesApi: MessagesApi,
+                                                      cc: AuthenticatedControllerComponents,
+                                                      intermediarySelectedIossNumberRepository: IntermediarySelectedIossNumberRepository
+                                                    )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
@@ -43,19 +42,14 @@ class StartPaymentAsIntermediaryController @Inject()(
     cc.authAndIntermediaryRequired(iossNumber) andThen
       cc.getData()).async { implicit request =>
 
-    // TODO toggle might be better suited in a filter
-    if (config.intermediaryEnabled) {
-      val intermediaryNumber = request.intermediaryNumber.get //TODO make "IntermediaryRequiredAction" be a refiner that converts to an int number
-      
-      val intermediarySelectedIossNumber = IntermediarySelectedIossNumber(request.userId, intermediaryNumber, iossNumber)
+    val intermediaryNumber = request.intermediaryNumber.get //TODO make "IntermediaryRequiredAction" be a refiner that converts to an int number
 
-      for {
-        _ <- intermediarySelectedIossNumberRepository.set(intermediarySelectedIossNumber)
-      } yield {
-        Redirect(controllers.payments.routes.WhichVatPeriodToPayController.onPageLoad())
-      }
-    } else {
-      Redirect(routes.NotRegisteredController.onPageLoad()).toFuture
+    val intermediarySelectedIossNumber = IntermediarySelectedIossNumber(request.userId, intermediaryNumber, iossNumber)
+
+    for {
+      _ <- intermediarySelectedIossNumberRepository.set(intermediarySelectedIossNumber)
+    } yield {
+      Redirect(controllers.payments.routes.WhichVatPeriodToPayController.onPageLoad())
     }
   }
 
