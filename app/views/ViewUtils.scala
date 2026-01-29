@@ -26,7 +26,7 @@ object ViewUtils {
 
   def title(form: Form[_], title: String, section: Option[String] = None)(implicit messages: Messages): String =
     titleNoForm(
-      title   = s"${errorPrefix(form)} ${messages(title)}",
+      title = s"${errorPrefix(form)} ${messages(title)}",
       section = section
     )
 
@@ -37,7 +37,7 @@ object ViewUtils {
     if (form.hasErrors || form.hasGlobalErrors) messages("error.browser.title.prefix") else ""
   }
 
-  def options(payments: Seq[Payment])(implicit messages: Messages): Seq[RadioItem] = {
+  def options(payments: Seq[Payment], isIntermediaryJourney: Boolean = false)(implicit messages: Messages): Seq[RadioItem] = {
 
     lazy val hasUnknownPayments: Boolean = payments.exists(_.paymentStatus == PaymentStatus.Unknown)
 
@@ -48,14 +48,26 @@ object ViewUtils {
         messages("whichVatPeriodToPay.amountKnown", payment.period.displayShortText)
       }
 
+    def getLabelWithAmount(payment: Payment): String = {
+      if (hasUnknownPayments) {
+        payment.period.displayText
+      } else {
+        messages("whichVatPeriodToPay.amountKnown.2", payment.amountOwed, payment.period.displayShortText)
+      }
+    }
+
     payments.zipWithIndex.map {
       case (value, index) =>
+        val labelContent = if (isIntermediaryJourney) {
+          getLabelWithAmount(value)
+        } else {
+          getLabel(value)
+        }
         RadioItem(
-          content = HtmlContent(getLabel(value)),
-          value = Some(value.period.toString),
+          content = HtmlContent(labelContent),
+          value = Some(labelContent),
           id = Some(s"value_$index")
         )
     }
   }
-
 }
