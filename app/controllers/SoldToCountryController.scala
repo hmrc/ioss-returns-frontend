@@ -80,10 +80,7 @@ class SoldToCountryController @Inject()(
 
         value =>
 
-          val cleanedUserAnswersTry =
-            request.userAnswers
-              .remove(AllSalesWithOptionalVatQuery(index))
-              .flatMap(_.remove(AllSalesWithTotalAndVatQuery))
+          val cleanedUserAnswersTry = request.userAnswers.remove(AllSalesWithOptionalVatQuery(index))
 
           for {
             cleanedAnswers <- Future.fromTry(cleanedUserAnswersTry)
