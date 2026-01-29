@@ -16,19 +16,20 @@
 
 package controllers
 
-import controllers.actions._
+import controllers.actions.*
 import forms.SoldToCountryFormProvider
 import models.Index
 import pages.{SoldToCountryPage, Waypoints}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import queries.AllSalesQuery
+import queries.{AllSalesQuery, AllSalesWithOptionalVatQuery, AllSalesWithTotalAndVatQuery}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax.FutureOps
 import views.html.SoldToCountryView
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Success
 
 class SoldToCountryController @Inject()(
                                          override val messagesApi: MessagesApi,
@@ -78,8 +79,12 @@ class SoldToCountryController @Inject()(
           BadRequest(view(formWithErrors, waypoints, period, index, request.isIntermediary, request.companyName)).toFuture,
 
         value =>
+
+          val cleanedUserAnswersTry = request.userAnswers.remove(AllSalesWithOptionalVatQuery(index))
+
           for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(SoldToCountryPage(index), value))
+            cleanedAnswers <- Future.fromTry(cleanedUserAnswersTry)
+            updatedAnswers <- Future.fromTry(cleanedAnswers.set(SoldToCountryPage(index), value))
             _ <- cc.sessionRepository.set(updatedAnswers)
           } yield Redirect(SoldToCountryPage(index).navigate(waypoints, request.userAnswers, updatedAnswers).route)
       )
