@@ -52,7 +52,8 @@ object ViewUtils {
       if (hasUnknownPayments) {
         payment.period.displayText
       } else {
-        messages("whichVatPeriodToPay.amountKnown.2", payment.amountOwed, payment.period.displayShortText)
+        val amountWithTwoDecimalPlaces: BigDecimal = BigDecimal(payment.amountOwed).setScale(2, BigDecimal.RoundingMode.HALF_UP)
+        messages("whichVatPeriodToPay.amountKnown.2", amountWithTwoDecimalPlaces, payment.period.displayShortText)
       }
     }
 
