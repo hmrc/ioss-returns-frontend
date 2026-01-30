@@ -52,8 +52,11 @@ object ViewUtils {
       if (hasUnknownPayments) {
         payment.period.displayText
       } else {
-        val amountWithTwoDecimalPlaces: BigDecimal = BigDecimal(payment.amountOwed).setScale(2, BigDecimal.RoundingMode.HALF_UP)
-        messages("whichVatPeriodToPay.amountKnown.2", amountWithTwoDecimalPlaces, payment.period.displayShortText)
+        
+        val amountWithTwoDecimalPlaces = payment.amountOwed.setScale(2, BigDecimal.RoundingMode.HALF_UP)
+        val displayAmount: String = f"£$amountWithTwoDecimalPlaces%.2f"
+          
+        messages("whichVatPeriodToPay.amountKnown.2", displayAmount, payment.period.displayShortText)
       }
     }
 
