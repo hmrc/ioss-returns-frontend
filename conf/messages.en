@@ -158,11 +158,11 @@ savedProgress.heading = savedProgress
 savedProgress.sign.in = If you sign out, you must sign back into your <a class="govuk-link" href="{0}">Government Gateway</a> to continue.
 saveProgress.button = Save and come back later
 
-continueReturn.title = What would you like to do?
-continueReturn.heading = What would you like to do?
-continueReturn.continue = Continue my return
-continueReturn.delete = Delete my return and start again
-continueReturn.error.required = Select to continue or delete your current return
+continueReturn.title = Do you want to continue the return in progress?
+continueReturn.heading = Do you want to continue the return in progress?
+continueReturn.continue = Yes
+continueReturn.delete = No, delete this return
+continueReturn.error.required = Select yes if you want to continue this return
 
 deleteReturn.title = Are you sure you want to delete this return?
 deleteReturn.heading = Are you sure you want to delete this return?
