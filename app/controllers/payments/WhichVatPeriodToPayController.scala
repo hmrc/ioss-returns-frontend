@@ -58,7 +58,7 @@ class WhichVatPeriodToPayController @Inject()(
         payments match {
           case payment :: Nil => makePayment(request.iossNumber, payment)
           case Nil => Future.successful(Ok(viewNoPayment(YourAccountPage.route(waypoints).url)))
-          case _ => Future.successful(Ok(view(form, payments, paymentError = paymentError)))
+          case _ => Future.successful(Ok(view(form, payments, paymentError = paymentError, isIntermediaryJourney = request.isIntermediary, companyName = request.companyName)))
         }
       }
   }
@@ -81,7 +81,7 @@ class WhichVatPeriodToPayController @Inject()(
           makePayment(request.iossNumber, payments.head)
         } else {
           form.bindFromRequest().fold(
-            formWithErrors => Future.successful(BadRequest(view(formWithErrors, payments, paymentError))),
+            formWithErrors => Future.successful(BadRequest(view(formWithErrors, payments, paymentError, request.isIntermediary, request.companyName))),
             value =>
               getChosenPayment(payments, value)
                 .map(p => makePayment(request.iossNumber, p)).getOrElse(

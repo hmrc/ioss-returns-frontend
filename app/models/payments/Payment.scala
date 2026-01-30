@@ -50,7 +50,7 @@ object Payment {
       case (value, index) =>
         RadioItem(
           content = HtmlContent(getLabel(value)),
-          value = Some(value.period.toString),
+          value = Some(getLabel(value)),
           id = Some(s"value_$index")
         )
     }
