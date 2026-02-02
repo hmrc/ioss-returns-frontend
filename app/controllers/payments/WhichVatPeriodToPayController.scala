@@ -81,8 +81,12 @@ class WhichVatPeriodToPayController @Inject()(
           makePayment(request.iossNumber, payments.head)
         } else {
           form.bindFromRequest().fold(
-            formWithErrors => Future.successful(BadRequest(view(formWithErrors, payments, paymentError, request.isIntermediary, request.companyName))),
+            formWithErrors =>
+              println("\n This is triggering a form with Errors?")
+              Future.successful(BadRequest(view(formWithErrors, payments, paymentError, request.isIntermediary, request.companyName))),
             value =>
+              println("\n This is not triggering a form with Errors?")
+              println(s"\n Value $value")
               getChosenPayment(payments, value)
                 .map(p => makePayment(request.iossNumber, p)).getOrElse(
                   Future.successful(Redirect(JourneyRecoveryPage.route(waypoints).url))

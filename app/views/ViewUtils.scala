@@ -69,7 +69,7 @@ object ViewUtils {
         }
         RadioItem(
           content = HtmlContent(labelContent),
-          value = Some(labelContent),
+          value = Some(value.period.toString),
           id = Some(s"value_$index")
         )
     }
