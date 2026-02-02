@@ -16,7 +16,7 @@
 
 package controllers
 
-import controllers.actions._
+import controllers.actions.*
 import forms.CheckSalesFormProvider
 import models.Index
 import pages.{CheckSalesPage, SalesToCountryPage, Waypoints}
@@ -60,10 +60,10 @@ class CheckSalesController @Inject()(
 
             val checkSalesSummary = CheckSalesSummary.rows(request.userAnswers, waypoints, countryIndex)
 
-            withCompleteDataAsync[VatRateWithOptionalSalesFromCountry](
+            withCompleteDataAsync[(VatRateWithOptionalSalesFromCountry, Int)](
               countryIndex,
               data = getIncompleteVatRateAndSales _,
-              onFailure = (incomplete: Seq[VatRateWithOptionalSalesFromCountry]) => {
+              onFailure = (incomplete: Seq[(VatRateWithOptionalSalesFromCountry, Int)]) => {
                 Ok(view(
                   form = form,
                   waypoints = waypoints,
@@ -99,25 +99,26 @@ class CheckSalesController @Inject()(
           val period = request.userAnswers.period
 
           vatRateService.getRemainingVatRatesForCountry(period, country, vatRates).flatMap { remainingVatRates =>
-
-            val vatRateIndex = Index(vatRates.vatRatesFromCountry.map(_.size).getOrElse(0) - 1)
-
+            
             val canAddAnotherVatRate = remainingVatRates.nonEmpty
 
             val checkSalesSummary = CheckSalesSummary.rows(request.userAnswers, waypoints, countryIndex)
 
-            val salesToCountry = request.userAnswers.get(SalesToCountryPage(countryIndex, vatRateIndex))
-
-            withCompleteDataAsync[VatRateWithOptionalSalesFromCountry](
+            withCompleteDataAsync[(VatRateWithOptionalSalesFromCountry, Int)](
               countryIndex,
               data = getIncompleteVatRateAndSales _,
-              onFailure = (_: Seq[VatRateWithOptionalSalesFromCountry]) => {
+              onFailure = (incomplete: Seq[(VatRateWithOptionalSalesFromCountry, Int)]) => {
                 if (incompletePromptShown) {
+                  val firstIncompleteIndex: Index = Index(incomplete.headOption.map(_._2)
+                    .getOrElse(throw IllegalStateException("Index doesn't exist")))
+
+                  val salesToCountry: Option[BigDecimal] = request.userAnswers.get(SalesToCountryPage(countryIndex, firstIncompleteIndex))
+
                   salesToCountry match {
                     case Some(_) =>
-                      Redirect(routes.VatOnSalesController.onPageLoad(waypoints, countryIndex, vatRateIndex)).toFuture
+                      Redirect(routes.VatOnSalesController.onPageLoad(waypoints, countryIndex, firstIncompleteIndex)).toFuture
                     case None =>
-                      Redirect(routes.SalesToCountryController.onPageLoad(waypoints, countryIndex, vatRateIndex)).toFuture
+                      Redirect(routes.SalesToCountryController.onPageLoad(waypoints, countryIndex, firstIncompleteIndex)).toFuture
                   }
                 } else {
                   Redirect(routes.CheckSalesController.onPageLoad(waypoints, countryIndex)).toFuture

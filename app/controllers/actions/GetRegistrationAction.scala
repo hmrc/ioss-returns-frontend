@@ -149,7 +149,7 @@ class GetRegistrationAction(
     }
   }
 
-  private def findIntermediaryFromEnrolments(enrolments: Enrolments)(implicit hc: HeaderCarrier): Future[Option[String]] = {
+  private def findIntermediaryFromEnrolments(enrolments: Enrolments): Future[Option[String]] = {
     enrolments
       .enrolments
       .filter(_.key == config.intermediaryEnrolment)

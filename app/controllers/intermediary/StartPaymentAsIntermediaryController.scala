@@ -16,16 +16,13 @@
 
 package controllers.intermediary
 
-import config.FrontendAppConfig
 import controllers.actions.AuthenticatedControllerComponents
-import controllers.routes
 import models.IntermediarySelectedIossNumber
 import pages.Waypoints
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.IntermediarySelectedIossNumberRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import utils.FutureSyntax.FutureOps
 
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext

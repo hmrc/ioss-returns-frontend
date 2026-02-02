@@ -36,7 +36,7 @@
     countryIndex: Index,
     country: Country,
     canAddAnotherVatRate: Boolean,
-    incompleteSales: Seq[VatRateWithOptionalSalesFromCountry] = List.empty,
+    incompleteSales: Seq[(VatRateWithOptionalSalesFromCountry, Int)] = List.empty,
     companyName: String,
     isIntermediary: Boolean
 )(implicit request: Request[_], messages: Messages)
@@ -95,9 +95,9 @@
         } else {
             <h2 class="govuk-heading-m push--top">@messages("error.missing_answers_header")</h2>
             <p class="govuk-body">@messages("error.missing_answers_prompt",  if(incompleteSales.size > 1) {
-                incompleteSales.map(_.rateForDisplay).reverse.tail.mkString(", ") + " and " + incompleteSales.last.rateForDisplay + " VAT rates"
+                incompleteSales.map(_._1.rateForDisplay).reverse.tail.mkString(", ") + " and " + incompleteSales.last._1.rateForDisplay + " VAT rates"
             } else {
-             incompleteSales.head.rateForDisplay + " VAT rate"
+             incompleteSales.head._1.rateForDisplay + " VAT rate"
             })</p>
 
             @formHelper(action = routes.CheckSalesController.onSubmit(waypoints, countryIndex, true)) {
