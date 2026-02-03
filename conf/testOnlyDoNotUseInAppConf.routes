@@ -19,3 +19,4 @@ GET        /pay-vat-on-goods-sold-to-eu/import-one-stop-shop-returns-payments/te
 GET        /pay-vat-on-goods-sold-to-eu/import-one-stop-shop-returns-payments/test-only/payments-from-bta                         @controllers.testOnly.TestOnlyController.paymentsFromExternal(lang: Option[String] ?= None)
 
 GET        /pay-vat-on-goods-sold-to-eu/import-one-stop-shop-returns-payments/test-only/login                                     @controllers.testOnly.TestOnlyController.quickAuthStub()
+GET        /pay-vat-on-goods-sold-to-eu/import-one-stop-shop-returns-payments/test-only/csv                                       @controllers.testOnly.TestOnlyCsvToUserAnswersController.populateUserAnswersFromCsv(waypoints: Waypoints ?= EmptyWaypoints)
