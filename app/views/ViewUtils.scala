@@ -21,6 +21,7 @@ import play.api.data.Form
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.radios.RadioItem
+import utils.CurrencyFormatter.currencyFormat
 
 object ViewUtils {
 
@@ -52,11 +53,7 @@ object ViewUtils {
       if (hasUnknownPayments) {
         payment.period.displayText
       } else {
-        
-        val amountWithTwoDecimalPlaces = payment.amountOwed.setScale(2, BigDecimal.RoundingMode.HALF_UP)
-        val displayAmount: String = f"£$amountWithTwoDecimalPlaces%.2f"
-          
-        messages("whichVatPeriodToPay.amountKnown.2", displayAmount, payment.period.displayShortText)
+        messages("whichVatPeriodToPay.amountKnown.withAmount", currencyFormat(payment.amountOwed), payment.period.displayShortText)
       }
     }
 
