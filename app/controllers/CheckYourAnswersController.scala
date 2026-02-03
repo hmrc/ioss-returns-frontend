@@ -88,9 +88,6 @@ class CheckYourAnswersController @Inject()(
         val maybeExclusion: Option[EtmpExclusion] = request.registrationWrapper.registration.exclusions.lastOption
 
         val isFinalReturn: Boolean = partialReturnPeriodService.isFinalReturn(maybeExclusion, period)
-        
-        val ua = request.userAnswers
-        println(s"ua: $ua")
 
         Ok(view(
           waypoints,
