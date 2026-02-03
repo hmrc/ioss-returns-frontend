@@ -16,11 +16,11 @@
 
 package utils
 
-import models.{Country, Index}
 import models.corrections.CorrectionToCountry
 import models.requests.DataRequest
+import models.{Country, Index}
 import play.api.mvc.{AnyContent, Result}
-import queries._
+import queries.*
 
 import scala.concurrent.Future
 
@@ -29,7 +29,7 @@ trait CompletionChecks {
   protected def withCompleteData[A](index: Index, data: Index => Seq[A], onFailure: Seq[A] => Result)
                                    (onSuccess: => Result): Result = {
     val incomplete = data(index)
-    if(incomplete.isEmpty) {
+    if (incomplete.isEmpty) {
       onSuccess
     } else {
       onFailure(incomplete)
@@ -40,7 +40,7 @@ trait CompletionChecks {
                                         (onSuccess: => Future[Result]): Future[Result] = {
 
     val incomplete = data(index)
-    if(incomplete.isEmpty) {
+    if (incomplete.isEmpty) {
       onSuccess
     } else {
       onFailure(incomplete)
@@ -52,7 +52,7 @@ trait CompletionChecks {
                                    (onSuccess: => Result): Result = {
 
     val incomplete = data()
-    if(incomplete.isEmpty) {
+    if (incomplete.isEmpty) {
       onSuccess
     } else {
       onFailure(incomplete)
@@ -63,7 +63,7 @@ trait CompletionChecks {
                                         (onSuccess: => Future[Result]): Future[Result] = {
 
     val incomplete = data()
-    if(incomplete.isEmpty) {
+    if (incomplete.isEmpty) {
       onSuccess
     } else {
       onFailure(incomplete)
@@ -89,16 +89,18 @@ trait CompletionChecks {
       .find(indexedCorrection => incompleteCorrections.contains(indexedCorrection._1))
   }
 
-  def getIncompleteVatRateAndSales(countryIndex: Index)(implicit request: DataRequest[AnyContent]): Seq[VatRateWithOptionalSalesFromCountry] = {
+  def getIncompleteVatRateAndSales(countryIndex: Index)(implicit request: DataRequest[AnyContent]): Seq[(VatRateWithOptionalSalesFromCountry, Int)] = {
     val noSales = request.userAnswers
-        .get(AllSalesWithOptionalVatQuery(countryIndex))
-        .map(_.filter(_.salesAtVatRate.isEmpty)).getOrElse(List.empty)
+      .get(AllSalesWithOptionalVatQuery(countryIndex))
+      .map(_.zipWithIndex
+        .filter(_._1.salesAtVatRate.isEmpty)
+      ).getOrElse(List.empty)
 
     val noVat = request.userAnswers
       .get(AllSalesWithOptionalVatQuery(countryIndex))
-      .map(
-        _.filter( v =>
-          v.salesAtVatRate.exists(_.vatOnSales.isEmpty)
+      .map(_.zipWithIndex
+        .filter(_._1.salesAtVatRate
+          .exists(_.vatOnSales.isEmpty)
         )
       ).getOrElse(List.empty)
 
@@ -124,5 +126,5 @@ trait CompletionChecks {
       .getOrElse(List.empty).zipWithIndex
       .find(indexedCorrection => incompleteCountries.contains(indexedCorrection._1.country))
   }
-
 }
+

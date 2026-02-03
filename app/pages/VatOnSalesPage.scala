@@ -51,10 +51,14 @@ case class VatOnSalesPage(countryIndex: Index, vatRateIndex: Index) extends Ques
   }
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page = {
-    answers.get(VatRatesFromCountryPage(countryIndex, vatRateIndex)).map {
-      rates =>
+    answers.get(VatRatesFromCountryPage(countryIndex, vatRateIndex)).map { rates =>
         if (rates.size > vatRateIndex.position + 1) {
-          SalesToCountryPage(countryIndex, vatRateIndex + 1)
+          val targetPage: SalesToCountryPage = SalesToCountryPage(countryIndex, vatRateIndex + 1)
+          if (answers.get(targetPage).isDefined) {
+            CheckSalesPage(countryIndex)
+          } else {
+            targetPage
+          }
         } else {
           CheckSalesPage(countryIndex)
         }

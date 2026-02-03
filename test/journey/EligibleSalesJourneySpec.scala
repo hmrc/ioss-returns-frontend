@@ -199,8 +199,10 @@ class EligibleSalesJourneySpec extends AnyFreeSpec with JourneyHelpers with Spec
           submitAnswer(SalesToCountryPage(countryIndex1, vatRateIndex), changedSalesValue),
           pageMustBe(VatOnSalesPage(countryIndex1, vatRateIndex)),
           submitAnswer(VatOnSalesPage(countryIndex1, vatRateIndex), arbitraryVatOnSales.arbitrary.sample.value),
-          pageMustBe(CheckSalesPage(countryIndex2)),
-          answerMustEqual(SalesToCountryPage(countryIndex1, vatRateIndex), changedSalesValue)
+          pageMustBe(CheckSalesPage(countryIndex1)),
+          answerMustEqual(SalesToCountryPage(countryIndex1, vatRateIndex), changedSalesValue),
+          submitAnswer(CheckSalesPage(countryIndex1), false),
+          pageMustBe(SoldToCountryListPage())
         )
     }
   }
