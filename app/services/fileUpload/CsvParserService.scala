@@ -61,17 +61,8 @@ class CsvParserService @Inject()() {
                            vatOnSales: BigDecimal
                          )
 
-  private val inlineCsv: String =
-    """"HM Revenue and Customs logo","","",""
-      |"Import One Stop Shop VAT return","","",""
-      |"Country","VAT % rate","Total eligible sales","Total VAT due"
-      |"Germany","12.50%","£1200","£140"
-      |"France","15","33,333","£4423"
-      |"France","10%","150.01","£15"
-      |""".stripMargin
-
-  def populateUserAnswersFromCsv(userAnswers: UserAnswers): Try[UserAnswers] = {
-    val rawRows: Seq[Array[String]] = CsvParserService.split(inlineCsv)
+  def populateUserAnswersFromCsv(userAnswers: UserAnswers, csvContent: String): Try[UserAnswers] = {
+    val rawRows: Seq[Array[String]] = CsvParserService.split(csvContent)
     val parsedRows: Seq[VatRow] = extractVatRows(rawRows)
     val soldGoodsAnswer: Try[UserAnswers] = userAnswers.set(SoldGoodsPage, true)
     val groupedByCountry: Seq[(String, Seq[VatRow])] = parsedRows.groupBy(_.country).toSeq.sortBy(_._1)

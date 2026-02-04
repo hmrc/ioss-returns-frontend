@@ -56,8 +56,17 @@ class CsvParserServiceSpec extends SpecBase with MockitoSugar with Matchers with
 
     "populate user answers from CSV" in {
 
+      val csv =
+        """"HM Revenue and Customs logo","","",""
+          |"Import One Stop Shop VAT return","","",""
+          |"Country","VAT % rate","Total eligible sales","Total VAT due"
+          |"Germany","12.50%","£1200","£140"
+          |"France","15","33,333","£4423"
+          |"France","10%","150.01","£15"
+          |""".stripMargin
+
       val service = new CsvParserService()
-      val result = service.populateUserAnswersFromCsv(emptyUserAnswers)
+      val result = service.populateUserAnswersFromCsv(emptyUserAnswers, csv)
 
       result.isSuccess mustBe true
       val updated = result.get

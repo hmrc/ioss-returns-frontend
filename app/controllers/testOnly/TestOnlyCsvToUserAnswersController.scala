@@ -33,12 +33,21 @@ class TestOnlyCsvToUserAnswersController @Inject()(
                                   )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
+
+  private val inlineCsv: String =
+    """"HM Revenue and Customs logo","","",""
+      |"Import One Stop Shop VAT return","","",""
+      |"Country","VAT % rate","Total eligible sales","Total VAT due"
+      |"Germany","12.50%","£1200","£140"
+      |"France","15","33,333","£4423"
+      |"France","10%","150.01","£15"
+      |""".stripMargin
   
   def populateUserAnswersFromCsv(waypoints: Waypoints): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
       
       Future
-        .fromTry(csvParser.populateUserAnswersFromCsv(request.userAnswers))
+        .fromTry(csvParser.populateUserAnswersFromCsv(request.userAnswers, inlineCsv))
         .flatMap { updatedAnswers =>
           cc.sessionRepository.set(updatedAnswers).map { _ =>
             Redirect(controllers.routes.CheckYourAnswersController.onPageLoad(waypoints))
