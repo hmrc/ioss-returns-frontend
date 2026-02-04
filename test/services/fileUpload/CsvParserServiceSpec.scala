@@ -62,17 +62,19 @@ class CsvParserServiceSpec extends SpecBase with MockitoSugar with Matchers with
       result.isSuccess mustBe true
       val updated = result.get
 
-      updated.get(SoldToCountryPage(Index(0))).value.name mustBe "Germany"
-      updated.get(SalesToCountryPage(Index(0), Index(0))).value mustBe BigDecimal(1200)
-      updated.get(VatOnSalesPage(Index(0), Index(0))).value.amount mustBe BigDecimal(140)
+      updated.get(SoldToCountryPage(Index(0))).value.name mustBe "France"
+      updated.get(SalesToCountryPage(Index(0), Index(0))).value mustBe BigDecimal(33333)
+      updated.get(VatOnSalesPage(Index(0), Index(0))).value.amount mustBe BigDecimal(4423)
 
-      updated.get(SoldToCountryPage(Index(1))).value.name mustBe "France"
-      updated.get(SalesToCountryPage(Index(1), Index(0))).value mustBe BigDecimal(33333)
-      updated.get(VatOnSalesPage(Index(1), Index(0))).value.amount mustBe BigDecimal(4423)
+      updated.get(SoldToCountryPage(Index(0))).value.name mustBe "France"
+      updated.get(SalesToCountryPage(Index(0), Index(1))).value mustBe BigDecimal(150.01)
+      updated.get(VatOnSalesPage(Index(0), Index(1))).value.amount mustBe BigDecimal(15)
 
-      updated.get(SoldToCountryPage(Index(2))).value.name mustBe "France"
-      updated.get(SalesToCountryPage(Index(2), Index(0))).value mustBe BigDecimal(150.01)
-      updated.get(VatOnSalesPage(Index(2), Index(0))).value.amount mustBe BigDecimal(15)
+      updated.get(SoldToCountryPage(Index(1))).value.name mustBe "Germany"
+      updated.get(SalesToCountryPage(Index(1), Index(0))).value mustBe BigDecimal(1200)
+      updated.get(VatOnSalesPage(Index(1), Index(0))).value.amount mustBe BigDecimal(140)
+
+
     }
 
   }

@@ -28,7 +28,7 @@ import javax.inject.{Inject, Singleton}
 import scala.util.Try
 
 object CsvParserService {
-  
+
   def split(content: String): Seq[Array[String]] = {
     val settings = new CsvParserSettings()
     settings.setNullValue("")
@@ -36,12 +36,12 @@ object CsvParserService {
     settings.setSkipEmptyLines(true)
     settings.setIgnoreLeadingWhitespaces(true)
     settings.setIgnoreTrailingWhitespaces(true)
-    
+
     val parser = new CsvParser(settings)
 
     val rows: Seq[Array[String]] =
       parser.parseAll(new StringReader(content)).asScala.toSeq
-    
+
     removeNonPrintableChars(rows)
   }
 
@@ -53,15 +53,15 @@ object CsvParserService {
 @Singleton
 
 class CsvParserService @Inject()() {
-  
+
   private final case class VatRow(
                            country: String,
                            vatRate: String,
                            salesToCountry: BigDecimal,
                            vatOnSales: BigDecimal
                          )
-  
-  private val inlineCsv: String = 
+
+  private val inlineCsv: String =
     """"HM Revenue and Customs logo","","",""
       |"Import One Stop Shop VAT return","","",""
       |"Country","VAT % rate","Total eligible sales","Total VAT due"
@@ -69,33 +69,40 @@ class CsvParserService @Inject()() {
       |"France","15","33,333","£4423"
       |"France","10%","150.01","£15"
       |""".stripMargin
-      
+
   def populateUserAnswersFromCsv(userAnswers: UserAnswers): Try[UserAnswers] = {
     val rawRows: Seq[Array[String]] = CsvParserService.split(inlineCsv)
     val parsedRows: Seq[VatRow] = extractVatRows(rawRows)
     val soldGoodsAnswer: Try[UserAnswers] = userAnswers.set(SoldGoodsPage, true)
+    val groupedByCountry: Seq[(String, Seq[VatRow])] = parsedRows.groupBy(_.country).toSeq.sortBy(_._1)
 
-    parsedRows.zipWithIndex.foldLeft(soldGoodsAnswer) {
-      case (accTry, (row, index)) =>
+    groupedByCountry.zipWithIndex.foldLeft(soldGoodsAnswer) {
+      case (accTry, ((countryName, vatRows), index)) =>
         val countryIndex = Index(index)
-        val vatRateIndex = Index(0)
-       
+
         accTry.flatMap { ua =>
-          ua
-            .set(SoldToCountryPage(countryIndex), countryFromName(row.country))
-            .flatMap(_.set(VatRatesFromCountryPage(countryIndex, vatRateIndex), List(vatRateFrom(row.vatRate))))
-            .flatMap(_.set(SalesToCountryPage(countryIndex, vatRateIndex), row.salesToCountry))
-            .flatMap(_.set(VatOnSalesPage(countryIndex, vatRateIndex), vatOnSalesFrom(row.vatOnSales)))
+          val rates: List[VatRateFromCountry] = vatRows.map(r => vatRateFrom(r.vatRate)).toList
+          val withCountryAndRates = ua.set(SoldToCountryPage(countryIndex), countryFromName(countryName))
+            .flatMap(_.set(VatRatesFromCountryPage(countryIndex, Index(0)), rates))
+
+          vatRows.zipWithIndex.foldLeft(withCountryAndRates) {
+            case (uaTry, (row, vatIndex)) =>
+              val vatRateIndex = Index(vatIndex)
+
+              uaTry
+                .flatMap(_.set(SalesToCountryPage(countryIndex, vatRateIndex), row.salesToCountry))
+                .flatMap(_.set(VatOnSalesPage(countryIndex, vatRateIndex), vatOnSalesFrom(row.vatOnSales)))
+          }
         }
     }
   }
-  
+
   private def extractVatRows(rows: Seq[Array[String]]): Seq[VatRow] = {
-    
+
     val headerIndex = {
       rows.indexWhere(_.headOption.exists(_.trim.equalsIgnoreCase("Country")))
     }
-    
+
     if (headerIndex < 0) {
       Seq.empty
     } else {
@@ -112,7 +119,7 @@ class CsvParserService @Inject()() {
         }
     }
   }
-  
+
   private def parseVatRate(vatRateFromCsv: String): String = {
     String(vatRateFromCsv.replace("%", "").trim)
   }
@@ -120,12 +127,12 @@ class CsvParserService @Inject()() {
   private def parseValue(valueFromCsv: String): BigDecimal = {
     BigDecimal(valueFromCsv.replace("£", "").replace(",", "").trim)
   }
-  
+
   private def countryFromName(countryName: String): Country = {
     Country.euCountries.find(_.name == countryName)
       .getOrElse(throw new IllegalArgumentException(s"Unknown country: '$countryName'"))
   }
-  
+
   private def vatRateFrom(vatRate: String): VatRateFromCountry = {
     VatRateFromCountry(
       rate = BigDecimal(vatRate),
@@ -133,12 +140,11 @@ class CsvParserService @Inject()() {
       validFrom = LocalDate.parse("2021-01-01")
     )
   }
-  
+
   private def vatOnSalesFrom(amount: BigDecimal): VatOnSales = {
     VatOnSales(
       choice = VatOnSalesChoice.Standard,
       amount = amount
     )
   }
-  
 }
