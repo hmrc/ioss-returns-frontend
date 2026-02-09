@@ -36,11 +36,11 @@ class UpscanInitiateConnector @Inject()(
 
   private val headers: Seq[(String, String)] = Seq("Content-Type" -> "application/json")
 
-  def initiateV2(callbackUrl: String, redirectOnSuccess: Option[String], redirectOnError: Option[String])
+  def initiateV2(redirectOnSuccess: Option[String], redirectOnError: Option[String])
                 (implicit hc: HeaderCarrier): Future[UpscanInitiateResponse] = {
 
     val request = UpscanInitiateRequest(
-      callbackUrl = callbackUrl, // todo add upscanCallbackUrl from appConfig when backend service is implemented and remove parsed
+      callbackUrl = appConfig.upscanCallbackUrl,
       successRedirect = redirectOnSuccess,
       errorRedirect = redirectOnError,
       minimumFileSize = Some(1),

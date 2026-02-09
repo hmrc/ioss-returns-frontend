@@ -93,5 +93,5 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
 
   lazy val initiateV2Url: String = servicesConfig.baseUrl("upscan-initiate") + "/upscan/v2/initiate"
   lazy val maxFileSize: Int = configuration.get[Int]("upscan.maxUploadFileSizeMb") * 1024 * 1024
-  lazy val upscanCallbackUrl: String = configuration.get[String]("upscan.callback-url") // todo implement in connector once call to backend is added
+  lazy val upscanCallbackUrl: String = configuration.get[String]("upscan.callback-url")
 }

@@ -68,7 +68,6 @@ class UpscanInitiateConnectorSpec extends SpecBase with WireMockHelper with Matc
         )
 
         val result = connector.initiateV2(
-          callbackUrl = "http://localhost:9999/upscan/callback",
           redirectOnSuccess = Some("http://success"),
           redirectOnError = Some("http://error")
         ).futureValue
@@ -92,7 +91,6 @@ class UpscanInitiateConnectorSpec extends SpecBase with WireMockHelper with Matc
         )
 
         val result = connector.initiateV2(
-          callbackUrl = "http://localhost:9999/upscan/callback",
           redirectOnSuccess = Some("http://success"),
           redirectOnError = Some("http://error")
         )
