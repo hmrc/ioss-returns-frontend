@@ -171,3 +171,7 @@ GET         /iv/failed-identity-verification                                    
 GET         /no-longer-able-to-view-return                                            controllers.NoLongerAbleToViewReturnController.onPageLoad()
 
 GET         /start-intermediary-save-for-later-return/:iossNumber/:period             controllers.intermediary.StartIntermediarySaveForLaterReturnController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, iossNumber: String, period: Period)
+
+GET         /want-to-upload-file                                                      controllers.fileUpload.WantToUploadFileController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
+POST        /want-to-upload-file                                                      controllers.fileUpload.WantToUploadFileController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints)
+

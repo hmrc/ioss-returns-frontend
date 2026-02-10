@@ -19,7 +19,7 @@ package journey
 import base.SpecBase
 import models.UserAnswers
 import org.scalatest.freespec.AnyFreeSpec
-import pages.{NoOtherPeriodsAvailablePage, SoldGoodsPage, StartReturnPage, YourAccountPage}
+import pages.{NoOtherPeriodsAvailablePage, StartReturnPage, WantToUploadFilePage, YourAccountPage}
 
 class StartReturnsJourneySpec extends AnyFreeSpec with JourneyHelpers with SpecBase {
 
@@ -39,7 +39,7 @@ class StartReturnsJourneySpec extends AnyFreeSpec with JourneyHelpers with SpecB
         .run(
           goTo(StartReturnPage(period)),
           submitAnswer(StartReturnPage(period), true),
-          pageMustBe(SoldGoodsPage)
+          pageMustBe(WantToUploadFilePage)
         )
     }
   }
