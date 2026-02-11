@@ -18,7 +18,7 @@ package services
 
 import models.Period
 import models.etmp.EtmpExclusion
-import models.etmp.EtmpExclusionReason.{CeasedTrade, FailsToComply, NoLongerMeetsConditions, NoLongerSupplies, Reversal, TransferringMSID, VoluntarilyLeaves}
+import models.etmp.EtmpExclusionReason.Reversal
 
 class ExcludedTraderService() {
 
@@ -28,19 +28,6 @@ class ExcludedTraderService() {
     } else {
       period.firstDay.isEqual(exclusion.effectiveDate) || period.firstDay.isAfter(exclusion.effectiveDate)
     }
-    
-/*    val isExcludedFirstDay: Boolean =
-      exclusion.exclusionReason == TransferringMSID && period.firstDay.isAfter(exclusion.effectiveDate)
-
-    val isExcludedLastDay: Boolean = Seq(
-      NoLongerSupplies,
-      VoluntarilyLeaves,
-      CeasedTrade,
-      NoLongerMeetsConditions,
-      FailsToComply
-    ).contains(exclusion.exclusionReason) && period.lastDay.isAfter(exclusion.effectiveDate)
-
-    isExcludedFirstDay || isExcludedLastDay*/
   }
 
 }
