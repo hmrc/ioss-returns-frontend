@@ -14,23 +14,32 @@
  * limitations under the License.
  */
 
-package pages
+package forms
 
-import models.UserAnswers
-import play.api.libs.json.JsPath
-import play.api.mvc.Call
+import forms.behaviours.BooleanFieldBehaviours
+import play.api.data.FormError
 
-case object WantToUploadFilePage extends QuestionPage[Boolean] {
+class FileUploadedFormProviderSpec extends BooleanFieldBehaviours {
 
-  override def path: JsPath = JsPath \ toString
+  val requiredKey = "fileUploaded.error.required"
+  val invalidKey = "error.boolean"
 
-  override def toString: String = "wantToUploadFile"
+  val form = new FileUploadedFormProvider()()
 
-  override def route(waypoints: Waypoints): Call = controllers.fileUpload.routes.WantToUploadFileController.onPageLoad(waypoints)
+  ".value" - {
 
-  override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
-    answers.get(this).map {
-      case true => FileUploadPage
-      case false => SoldGoodsPage
-    }.orRecover
+    val fieldName = "value"
+
+    behave like booleanField(
+      form,
+      fieldName,
+      invalidError = FormError(fieldName, invalidKey)
+    )
+
+    behave like mandatoryField(
+      form,
+      fieldName,
+      requiredError = FormError(fieldName, requiredKey)
+    )
+  }
 }

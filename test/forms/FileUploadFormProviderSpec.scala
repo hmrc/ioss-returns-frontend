@@ -14,23 +14,32 @@
  * limitations under the License.
  */
 
-package pages
+package forms
 
-import models.UserAnswers
-import play.api.libs.json.JsPath
-import play.api.mvc.Call
+import forms.behaviours.StringFieldBehaviours
+import org.scalacheck.Arbitrary.arbitrary
+import play.api.data.FormError
 
-case object WantToUploadFilePage extends QuestionPage[Boolean] {
+class FileUploadFormProviderSpec extends StringFieldBehaviours {
 
-  override def path: JsPath = JsPath \ toString
+  val requiredKey = "fileUpload.error.required"
 
-  override def toString: String = "wantToUploadFile"
+  val form = new FileUploadFormProvider()()
 
-  override def route(waypoints: Waypoints): Call = controllers.fileUpload.routes.WantToUploadFileController.onPageLoad(waypoints)
+  ".file" - {
 
-  override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
-    answers.get(this).map {
-      case true => FileUploadPage
-      case false => SoldGoodsPage
-    }.orRecover
+    val fieldName = "file"
+
+    behave like fieldThatBindsValidData(
+      form,
+      fieldName,
+      arbitrary[String].sample.value
+    )
+
+    behave like mandatoryField(
+      form,
+      fieldName,
+      requiredError = FormError(fieldName, requiredKey)
+    )
+  }
 }

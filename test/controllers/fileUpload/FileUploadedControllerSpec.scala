@@ -18,67 +18,65 @@ package controllers.fileUpload
 
 import base.SpecBase
 import controllers.routes
-import forms.WantToUploadFileFormProvider
+import forms.FileUploadedFormProvider
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
-import pages.WantToUploadFilePage
+import pages.FileUploadedPage
 import play.api.data.Form
 import play.api.inject.bind
-import play.api.mvc.Call
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import repositories.SessionRepository
-import views.html.fileUpload.WantToUploadFileView
+import views.html.fileUpload.FileUploadedView
 
 import scala.concurrent.Future
 
-class WantToUploadFileControllerSpec extends SpecBase with MockitoSugar {
+class FileUploadedControllerSpec extends SpecBase with MockitoSugar {
 
-  def onwardRoute = Call("GET", "/foo")
-
-  val formProvider = new WantToUploadFileFormProvider()
+  val formProvider = new FileUploadedFormProvider()
   val form: Form[Boolean] = formProvider()
+  private val fileName = "test.csv"
 
-  lazy val wantToUploadFileRoute: String = controllers.fileUpload.routes.WantToUploadFileController.onPageLoad(waypoints).url
+  lazy val fileUploadedRoute: String = controllers.fileUpload.routes.FileUploadedController.onPageLoad(waypoints).url
 
-  "WantToUploadFile Controller" - {
+  "FileUploaded Controller" - {
 
     "must return OK and the correct view for a GET" in {
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
       running(application) {
-        val request = FakeRequest(GET, wantToUploadFileRoute)
+        val request = FakeRequest(GET, fileUploadedRoute)
 
         val result = route(application, request).value
 
-        val view = application.injector.instanceOf[WantToUploadFileView]
+        val view = application.injector.instanceOf[FileUploadedView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, waypoints, period, false, companyName)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, waypoints, period, false, companyName, Some(fileName))(request, messages(application)).toString
       }
     }
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = emptyUserAnswers.set(WantToUploadFilePage, true).success.value
+      val userAnswers = emptyUserAnswers.set(FileUploadedPage, true).success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
       running(application) {
-        val request = FakeRequest(GET, wantToUploadFileRoute)
+        val request = FakeRequest(GET, fileUploadedRoute)
 
-        val view = application.injector.instanceOf[WantToUploadFileView]
+        val view = application.injector.instanceOf[FileUploadedView]
 
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(true), waypoints, period, false, companyName)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form.fill(true), waypoints, period, false, companyName, Some(fileName))(request, messages(application)).toString
       }
     }
 
-    "must redirect to the next page when valid data is submitted" in {
+    "must redirect to the CheckAnswersPage if no corrections available when valid data is submitted" in {
 
       val mockSessionRepository = mock[SessionRepository]
 
@@ -93,13 +91,14 @@ class WantToUploadFileControllerSpec extends SpecBase with MockitoSugar {
 
       running(application) {
         val request =
-          FakeRequest(POST, wantToUploadFileRoute)
+          FakeRequest(POST, fileUploadedRoute)
             .withFormUrlEncodedBody(("value", "true"))
 
         val result = route(application, request).value
+        val expectedAnswers = emptyUserAnswers.set(FileUploadedPage, true).success.value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.fileUpload.routes.FileUploadController.onPageLoad(waypoints).url
+        redirectLocation(result).value mustEqual FileUploadedPage.navigate(waypoints, emptyUserAnswers, expectedAnswers).route.url
       }
     }
 
@@ -109,17 +108,17 @@ class WantToUploadFileControllerSpec extends SpecBase with MockitoSugar {
 
       running(application) {
         val request =
-          FakeRequest(POST, wantToUploadFileRoute)
+          FakeRequest(POST, fileUploadedRoute)
             .withFormUrlEncodedBody(("value", ""))
 
         val boundForm = form.bind(Map("value" -> ""))
 
-        val view = application.injector.instanceOf[WantToUploadFileView]
+        val view = application.injector.instanceOf[FileUploadedView]
 
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, waypoints, period, false, companyName)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, waypoints, period, false, companyName, Some(fileName))(request, messages(application)).toString
       }
     }
 
@@ -128,7 +127,7 @@ class WantToUploadFileControllerSpec extends SpecBase with MockitoSugar {
       val application = applicationBuilder(userAnswers = None).build()
 
       running(application) {
-        val request = FakeRequest(GET, wantToUploadFileRoute)
+        val request = FakeRequest(GET, fileUploadedRoute)
 
         val result = route(application, request).value
 
@@ -143,7 +142,7 @@ class WantToUploadFileControllerSpec extends SpecBase with MockitoSugar {
 
       running(application) {
         val request =
-          FakeRequest(POST, wantToUploadFileRoute)
+          FakeRequest(POST, fileUploadedRoute)
             .withFormUrlEncodedBody(("value", "true"))
 
         val result = route(application, request).value

@@ -14,23 +14,17 @@
  * limitations under the License.
  */
 
-package pages
+package forms
 
-import models.UserAnswers
-import play.api.libs.json.JsPath
-import play.api.mvc.Call
+import javax.inject.Inject
 
-case object WantToUploadFilePage extends QuestionPage[Boolean] {
+import forms.mappings.Mappings
+import play.api.data.Form
 
-  override def path: JsPath = JsPath \ toString
+class FileUploadedFormProvider @Inject() extends Mappings {
 
-  override def toString: String = "wantToUploadFile"
-
-  override def route(waypoints: Waypoints): Call = controllers.fileUpload.routes.WantToUploadFileController.onPageLoad(waypoints)
-
-  override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
-    answers.get(this).map {
-      case true => FileUploadPage
-      case false => SoldGoodsPage
-    }.orRecover
+  def apply(): Form[Boolean] =
+    Form(
+      "value" -> boolean("fileUploaded.error.required")
+    )
 }

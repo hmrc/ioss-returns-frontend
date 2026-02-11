@@ -175,3 +175,10 @@ GET         /start-intermediary-save-for-later-return/:iossNumber/:period       
 GET         /want-to-upload-file                                                      controllers.fileUpload.WantToUploadFileController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
 POST        /want-to-upload-file                                                      controllers.fileUpload.WantToUploadFileController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints)
 
+
+GET         /file-upload                                                              controllers.fileUpload.FileUploadController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
+POST        /file-upload                                                              controllers.fileUpload.FileUploadController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints)
+
+GET         /file-uploaded                                                            controllers.fileUpload.FileUploadedController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
+POST        /file-uploaded                                                            controllers.fileUpload.FileUploadedController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints)
+
