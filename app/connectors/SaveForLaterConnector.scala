@@ -41,15 +41,11 @@ class SaveForLaterConnector @Inject()(
   private val intermediaryUrl: URL = url"$baseUrl/intermediary-save-for-later"
 
   def submit(s4lRequest: SaveForLaterRequest)(implicit hc: HeaderCarrier): Future[SaveForLaterResponse] = {
-    httpClientV2.post(url).withBody(Json.toJson(s4lRequest)).execute[SaveForLaterResponse]
+    httpClientV2.post(url"$url/${s4lRequest.iossNumber}").withBody(Json.toJson(s4lRequest)).execute[SaveForLaterResponse]
   }
 
   def get(iossNumber: String)(implicit hc: HeaderCarrier): Future[SaveForLaterResponse] = {
     httpClientV2.get(url"$url/$iossNumber").execute[SaveForLaterResponse]
-  }
-
-  def submitForIntermediary(s4lRequest: SaveForLaterRequest)(implicit hc: HeaderCarrier): Future[SaveForLaterResponse] = {
-    httpClientV2.post(intermediaryUrl).withBody(Json.toJson(s4lRequest)).execute[SaveForLaterResponse]
   }
 
   def getForIntermediary()(implicit hc: HeaderCarrier): Future[IntermediarySaveForLaterResponse] = {

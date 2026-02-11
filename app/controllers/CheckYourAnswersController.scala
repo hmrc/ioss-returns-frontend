@@ -207,9 +207,9 @@ class CheckYourAnswersController @Inject()(
   private def saveUserAnswersOnCoreError(redirectLocation: Call)(implicit request: DataRequest[AnyContent]): Future[Result] = {
     Future.fromTry(request.userAnswers.set(SavedProgressPage, routes.CheckYourAnswersController.onPageLoad().url)).flatMap {
       updatedAnswers =>
-        val saveForLateRequest = SaveForLaterRequest(updatedAnswers, request.iossNumber, request.userAnswers.period)
-        
-        callConnector(saveForLateRequest).flatMap {
+        val saveForLaterRequest = SaveForLaterRequest(updatedAnswers, request.iossNumber, request.userAnswers.period)
+
+        saveForLaterConnector.submit(saveForLaterRequest).flatMap {
           case Right(Some(_)) =>
             for {
               _ <- cc.sessionRepository.set(updatedAnswers)
@@ -230,16 +230,6 @@ class CheckYourAnswersController @Inject()(
             logger.error(s"Unexpected result on submit: $e")
             Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
         }
-    }
-  }
-
-  private def callConnector(
-                             saveForLaterRequest: SaveForLaterRequest
-                           )(implicit request: DataRequest[AnyContent]): Future[SaveForLaterResponse] = {
-    if (request.isIntermediary) {
-      saveForLaterConnector.submitForIntermediary(saveForLaterRequest)
-    } else {
-      saveForLaterConnector.submit(saveForLaterRequest)
     }
   }
 }

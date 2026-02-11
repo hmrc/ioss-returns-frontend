@@ -49,52 +49,6 @@ class SaveForLaterServiceSpec extends SpecBase with BeforeAndAfterEach with Priv
 
   "SaveForLaterService" - {
 
-    ".submitForIntermediary" - {
-
-      "must return Some(SavedUserAnswers) when the connector returns Right with a successful payload" in {
-
-        when(mockSaveForLaterConnector.submitForIntermediary(any())(any())) thenReturn Right(Some(savedUserAnswers.head)).toFuture
-
-        val saveForLaterRequest = SaveForLaterRequest(
-          iossNumber = savedUserAnswers.head.iossNumber,
-          period = savedUserAnswers.head.period,
-          data = savedUserAnswers.head.data
-        )
-
-        val service = new SaveForLaterService(mockSaveForLaterConnector)
-
-        val result = service.submitForIntermediary(saveForLaterRequest).futureValue
-
-        result `mustBe` Some(savedUserAnswers.head)
-        verify(mockSaveForLaterConnector, times(1)).submitForIntermediary(eqTo(saveForLaterRequest))(any())
-      }
-
-      "must throw an Exception when the connector returns an error" in {
-
-        val errorResponse: ErrorResponse = InternalServerError
-        val errorMessage: String = s"There was an error whilst submitting saved user answers with error: ${errorResponse.body}"
-
-        when(mockSaveForLaterConnector.submitForIntermediary(any())(any())) thenReturn Left(errorResponse).toFuture
-
-        val saveForLaterRequest = SaveForLaterRequest(
-          iossNumber = savedUserAnswers.head.iossNumber,
-          period = savedUserAnswers.head.period,
-          data = savedUserAnswers.head.data
-        )
-
-        val service = new SaveForLaterService(mockSaveForLaterConnector)
-
-        val result = service.submitForIntermediary(saveForLaterRequest).failed
-
-        whenReady(result) { exp =>
-          exp `mustBe` a[Exception]
-          exp.getMessage `mustBe` errorMessage
-        }
-
-        verify(mockSaveForLaterConnector, times(1)).submitForIntermediary(eqTo(saveForLaterRequest))(any())
-      }
-    }
-
     ".getAllClientSavedAnswers" - {
 
       "must return SavedUserAnswers when the connector returns Right(SavedUserAnswers)" in {

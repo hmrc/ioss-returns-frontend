@@ -31,18 +31,6 @@ class SaveForLaterService @Inject()(
                                      saveForLaterConnector: SaveForLaterConnector,
                                    )(implicit ec: ExecutionContext) extends Logging {
   
-  def submitForIntermediary(saveForLaterRequest: SaveForLaterRequest)(implicit hc: HeaderCarrier): Future[Option[SavedUserAnswers]] = {
-    saveForLaterConnector.submitForIntermediary(saveForLaterRequest).flatMap {
-      case Right(maybeSavedUserAnswers) => maybeSavedUserAnswers.toFuture
-
-      case Left(error) =>
-        val errorMessage: String = s"There was an error whilst submitting saved user answers with error: ${error.body}"
-        logger.error(errorMessage, error)
-        val exception: Exception = new Exception(errorMessage)
-        throw exception
-    }
-  }
-  
   private def getAllClientSavedAnswers()(implicit hc: HeaderCarrier): Future[Seq[SavedUserAnswers]] = {
 
     saveForLaterConnector.getForIntermediary().flatMap {

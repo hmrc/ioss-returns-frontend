@@ -214,7 +214,7 @@ class SavedProgressControllerSpec extends SpecBase with BeforeAndAfterEach {
           instantDate
         )
 
-        when(mockSaveForLaterConnector.submitForIntermediary(any())(any())) thenReturn Right(Some(savedAnswers)).toFuture
+        when(mockSaveForLaterConnector.submit(any())(any())) thenReturn Right(Some(savedAnswers)).toFuture
         when(mockSaveForLaterConnector.delete(any(), any())(any())) thenReturn Right(true).toFuture
         when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(None)).toFuture
 
@@ -244,7 +244,7 @@ class SavedProgressControllerSpec extends SpecBase with BeforeAndAfterEach {
 
       "must redirect to Intermediary Dashboard Your Account Controller when Save For Later Connector returns ConflictFound" in {
 
-        when(mockSaveForLaterConnector.submitForIntermediary(any())(any())) thenReturn Left(ConflictFound).toFuture
+        when(mockSaveForLaterConnector.submit(any())(any())) thenReturn Left(ConflictFound).toFuture
         when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(None)).toFuture
 
         val app = applicationBuilder(
