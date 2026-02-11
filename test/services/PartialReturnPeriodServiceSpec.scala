@@ -249,7 +249,7 @@ class PartialReturnPeriodServiceSpec extends SpecBase with BeforeAndAfterEach {
 
           s"must return true when the last day of the next period is after the effective date for code $exclusionReason" in {
 
-            val nextPeriod: LocalDate = period.getNext.lastDay
+            val nextPeriod: LocalDate = period.getNext.firstDay
 
             val etmpExclusionNotReversal: EtmpExclusion = etmpExclusion.copy(
               exclusionReason = exclusionReason,

@@ -99,7 +99,7 @@ class CheckExcludedTraderOptionalFilterSpec extends SpecBase with MockitoSugar w
       when(mockConfig.exclusionsEnabled) thenReturn true
 
       running(application) {
-        val effectiveDate: LocalDate = period.lastDay.minusDays(1)
+        val effectiveDate: LocalDate = period.firstDay.minusDays(1)
         val excludedRegistration = registrationWrapper.copy(
           registration = registrationWrapper.registration.copy(
             exclusions = Seq(
