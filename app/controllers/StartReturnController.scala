@@ -108,51 +108,53 @@ class StartReturnController @Inject()(
         exclusion.exclusionReason != Reversal && nextPeriod.isAfter(exclusion.effectiveDate)
       }
 
-      form.bindFromRequest().fold(
-        formWithErrors =>
-          for {
-            maybePartialReturnPeriod <- partialReturnPeriodService.getPartialReturnPeriod(request.iossNumber, request.registrationWrapper, period)
-            currentReturnsResponse <- if (isIntermediary) {
-              returnStatusConnector.getCurrentReturns(request.iossNumber)
-            } else {
-              Future.successful(Right(CurrentReturns(returns = Seq.empty, finalReturnsCompleted = false)))
+      partialReturnPeriodService.getPartialReturnPeriod(request.iossNumber, request.registrationWrapper, period).flatMap { maybePartialReturnPeriod =>
+
+        form.bindFromRequest().fold(
+          formWithErrors =>
+            for {
+              currentReturnsResponse <- if (isIntermediary) {
+                returnStatusConnector.getCurrentReturns(request.iossNumber)
+              } else {
+                Future.successful(Right(CurrentReturns(returns = Seq.empty, finalReturnsCompleted = false)))
+              }
+            } yield {
+              val overdueReturns: Seq[Return] = currentReturnsResponse match {
+                case Right(currentReturns) =>
+                  currentReturns.returns
+                    .filter(r => r.submissionStatus == Overdue)
+                    .sortBy(r => (r.period.year, r.period.month.getValue))
+                case Left(_) => Seq.empty
+              }
+              BadRequest(view(formWithErrors, waypoints, period, maybeExclusion, isFinalReturn, maybePartialReturnPeriod, isIntermediary, companyName, overdueReturns))
+            },
+
+          value => {
+
+            val defaultUserAnswers = UserAnswers(
+              userId = request.userId,
+              iossNumber = request.iossNumber,
+              period = maybePartialReturnPeriod.getOrElse(period),
+              lastUpdated = Instant.now(clock)
+            )
+
+            val (clearSession: Boolean, userAnswers: UserAnswers) = request.userAnswers match {
+              case Some(userAnswers) if userAnswers.period == period => (false, userAnswers)
+              case _ => (true, defaultUserAnswers)
             }
-          } yield {
-            val overdueReturns: Seq[Return] = currentReturnsResponse match {
-              case Right(currentReturns) =>
-                currentReturns.returns
-                  .filter(r => r.submissionStatus == Overdue)
-                  .sortBy(r => (r.period.year, r.period.month.getValue))
-              case Left(_) => Seq.empty
-            }
-            BadRequest(view(formWithErrors, waypoints, period, maybeExclusion, isFinalReturn, maybePartialReturnPeriod, isIntermediary, companyName, overdueReturns))
-          },
 
-        value => {
-
-          val defaultUserAnswers = UserAnswers(
-            userId = request.userId,
-            iossNumber = request.iossNumber,
-            period = period,
-            lastUpdated = Instant.now(clock)
-          )
-
-          val (clearSession: Boolean, userAnswers: UserAnswers) = request.userAnswers match {
-            case Some(userAnswers) if userAnswers.period == period => (false, userAnswers)
-            case _ => (true, defaultUserAnswers)
+            for {
+              answers <- userAnswers.toFuture
+              _ <- if (clearSession) {
+                cc.sessionRepository.clear(answers.userId, request.iossNumber)
+              } else {
+                Future.successful(())
+              }
+              updatedAnswers <- Future.fromTry(answers.set(StartReturnPage(period), value))
+              _ <- cc.sessionRepository.set(updatedAnswers)
+            } yield Redirect(StartReturnPage(period).navigate(waypoints, answers, updatedAnswers).route)
           }
-
-          for {
-            answers <- userAnswers.toFuture
-            _ <- if (clearSession) {
-              cc.sessionRepository.clear(answers.userId, request.iossNumber)
-            } else {
-              Future.successful(())
-            }
-            updatedAnswers <- Future.fromTry(answers.set(StartReturnPage(period), value))
-            _ <- cc.sessionRepository.set(updatedAnswers)
-          } yield Redirect(StartReturnPage(period).navigate(waypoints, answers, updatedAnswers).route)
-        }
-      )
+        )
+      }
   }
 }
