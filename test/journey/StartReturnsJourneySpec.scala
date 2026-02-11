@@ -17,19 +17,23 @@
 package journey
 
 import base.SpecBase
+import config.FrontendAppConfig
 import models.UserAnswers
+import org.mockito.Mockito.when
 import org.scalatest.freespec.AnyFreeSpec
-import pages.{NoOtherPeriodsAvailablePage, StartReturnPage, WantToUploadFilePage, YourAccountPage}
+import org.scalatestplus.mockito.MockitoSugar.mock
+import pages.{NoOtherPeriodsAvailablePage, SoldGoodsPage, StartReturnPage, WantToUploadFilePage, YourAccountPage}
 
 class StartReturnsJourneySpec extends AnyFreeSpec with JourneyHelpers with SpecBase {
 
+  private val mockAppConfig = mock[FrontendAppConfig]
   "when there are no other return periods available" - {
 
     "user can't complete any other returns other than the available return period" in {
       startingFrom(YourAccountPage, answers = UserAnswers(userAnswersId, iossNumber, period))
         .run(
-          goTo(StartReturnPage(period)),
-          submitAnswer(StartReturnPage(period), false),
+          goTo(StartReturnPage(period, mockAppConfig)),
+          submitAnswer(StartReturnPage(period, mockAppConfig), false),
           pageMustBe(NoOtherPeriodsAvailablePage)
         )
     }
@@ -37,8 +41,18 @@ class StartReturnsJourneySpec extends AnyFreeSpec with JourneyHelpers with SpecB
     "must ask user if they made eligible sales when they start the return for the available period" in {
       startingFrom(YourAccountPage, answers = UserAnswers(userAnswersId, iossNumber, period))
         .run(
-          goTo(StartReturnPage(period)),
-          submitAnswer(StartReturnPage(period), true),
+          goTo(StartReturnPage(period, mockAppConfig)),
+          submitAnswer(StartReturnPage(period, mockAppConfig), true),
+          pageMustBe(SoldGoodsPage)
+        )
+    }
+
+    "must ask user if they want to upload a file for the return for the available period" in {
+      when(mockAppConfig.intermediaryEnabled) thenReturn true
+      startingFrom(YourAccountPage, answers = UserAnswers(userAnswersId, iossNumber, period))
+        .run(
+          goTo(StartReturnPage(period, mockAppConfig)),
+          submitAnswer(StartReturnPage(period, mockAppConfig), true),
           pageMustBe(WantToUploadFilePage)
         )
     }

@@ -16,12 +16,13 @@
 
 package pages
 
+import config.FrontendAppConfig
 import controllers.routes
 import models.{Period, UserAnswers}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
-case class StartReturnPage(period: Period) extends QuestionPage[Boolean] {
+case class StartReturnPage(period: Period, frontendAppConfig: FrontendAppConfig) extends QuestionPage[Boolean] {
 
   override def path: JsPath = JsPath \ toString
 
@@ -31,8 +32,10 @@ case class StartReturnPage(period: Period) extends QuestionPage[Boolean] {
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
     answers.get(this).map {
-      case true =>
+      case true if frontendAppConfig.intermediaryEnabled =>
         WantToUploadFilePage
+      case true =>
+        SoldGoodsPage
       case false =>
         NoOtherPeriodsAvailablePage
     }.orRecover

@@ -19,6 +19,7 @@ package controllers.fileUpload
 import controllers.actions.*
 import forms.WantToUploadFileFormProvider
 import pages.{WantToUploadFilePage, Waypoints}
+import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -36,9 +37,9 @@ class WantToUploadFileController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  val form = formProvider()
+  val form: Form[Boolean] = formProvider()
 
-  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndRequireData() {
+  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndIntermediaryEnabled() {
     implicit request =>
 
       val period = request.userAnswers.period

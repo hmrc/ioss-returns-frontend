@@ -16,8 +16,9 @@
 
 package controllers
 
+import config.FrontendAppConfig
 import connectors.ReturnStatusConnector
-import controllers.actions._
+import controllers.actions.*
 import forms.StartReturnFormProvider
 import models.etmp.EtmpExclusion
 import models.etmp.EtmpExclusionReason.Reversal
@@ -44,7 +45,8 @@ class StartReturnController @Inject()(
                                        partialReturnPeriodService: PartialReturnPeriodService,
                                        returnStatusConnector: ReturnStatusConnector,
                                        view: StartReturnView,
-                                       clock: Clock
+                                       clock: Clock,
+                                       frontendAppConfig: FrontendAppConfig,
                                      )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
@@ -150,9 +152,9 @@ class StartReturnController @Inject()(
               } else {
                 Future.successful(())
               }
-              updatedAnswers <- Future.fromTry(answers.set(StartReturnPage(period), value))
+              updatedAnswers <- Future.fromTry(answers.set(StartReturnPage(period, frontendAppConfig), value))
               _ <- cc.sessionRepository.set(updatedAnswers)
-            } yield Redirect(StartReturnPage(period).navigate(waypoints, answers, updatedAnswers).route)
+            } yield Redirect(StartReturnPage(period, frontendAppConfig).navigate(waypoints, answers, updatedAnswers).route)
           }
         )
       }

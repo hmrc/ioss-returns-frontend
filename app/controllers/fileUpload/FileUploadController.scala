@@ -39,7 +39,7 @@ class FileUploadController @Inject()(
 
   val form: Form[String] = formProvider()
 
-  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndRequireData() {
+  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndIntermediaryEnabled() {
     implicit request =>
 
       val period = request.userAnswers.period
