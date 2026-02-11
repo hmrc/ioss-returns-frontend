@@ -60,11 +60,7 @@ class SavedProgressController @Inject()(
           val s4LRequest = SaveForLaterRequest(updatedAnswers, request.iossNumber, period)
           (for{
             maybeSavedExternalUrl <- vatReturnConnector.getSavedExternalEntry()
-            s4laterResult <- if (request.isIntermediary) {
-              connector.submitForIntermediary(s4LRequest)
-            } else {
-              connector.submit(s4LRequest)
-            }
+            s4laterResult <- connector.submit(s4LRequest)
           } yield {
             val externalUrl = maybeSavedExternalUrl.fold(_ => None, _.url)
             (s4laterResult, externalUrl)

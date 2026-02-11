@@ -49,7 +49,7 @@ class SaveForLaterConnectorSpec extends SpecBase
 
     ".submit" - {
 
-      val submitUrl: String = "/ioss-returns/save-for-later"
+      val submitUrl: String = s"/ioss-returns/save-for-later/$iossNumber"
 
       "must return Right(Some(SavedUserAnswers)) when the server responds with CREATED" in {
 
@@ -191,80 +191,6 @@ class SaveForLaterConnectorSpec extends SpecBase
             Left(UnexpectedResponseStatus(123, s"Unexpected response, status 123 returned"))
         }
 
-      }
-    }
-
-    ".submitForIntermediary" - {
-
-      val submitUrl: String = "/ioss-returns/intermediary-save-for-later"
-
-      "must return Right(SavedUserAnswers) when the server responds with CREATED" in {
-
-        running(application) {
-
-          val saveForLaterRequest = SaveForLaterRequest(iossNumber, period, Json.toJson("test"))
-          val expectedSavedUserAnswers =
-            SavedUserAnswers(
-              iossNumber, period, data = JsObject(Seq("test" -> Json.toJson("test"))),
-              Instant.now(stubClockAtArbitraryDate)
-            )
-
-          val responseJson = Json.toJson(expectedSavedUserAnswers)
-          val connector = application.injector.instanceOf[SaveForLaterConnector]
-
-          server.stubFor(
-            post(urlEqualTo(submitUrl))
-              .willReturn(aResponse()
-                .withStatus(CREATED)
-                .withBody(responseJson.toString()))
-          )
-
-          val result = connector.submitForIntermediary(saveForLaterRequest).futureValue
-
-          result `mustBe` Right(Some(expectedSavedUserAnswers))
-        }
-      }
-
-      "must return Left(ConflictFound) when the server response with CONFLICT" in {
-
-        running(application) {
-
-          val saveForLaterRequest = SaveForLaterRequest(iossNumber, period, Json.toJson("test"))
-
-          val connector = application.injector.instanceOf[SaveForLaterConnector]
-
-          server.stubFor(
-            post(urlEqualTo(submitUrl))
-              .willReturn(aResponse()
-                .withStatus(CONFLICT)
-              )
-          )
-
-          val result = connector.submitForIntermediary(saveForLaterRequest).futureValue
-
-          result `mustBe` Left(ConflictFound)
-        }
-      }
-
-      "must return Left(UnexpectedResponseStatus) when the server response with an error code" in {
-
-        running(application) {
-
-          val saveForLaterRequest = SaveForLaterRequest(iossNumber, period, Json.toJson("test"))
-
-          val connector = application.injector.instanceOf[SaveForLaterConnector]
-
-          server.stubFor(
-            post(urlEqualTo(submitUrl))
-              .willReturn(aResponse()
-                .withStatus(INTERNAL_SERVER_ERROR)
-              )
-          )
-
-          val result = connector.submitForIntermediary(saveForLaterRequest).futureValue
-
-          result `mustBe` Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "Unexpected response, status 500 returned"))
-        }
       }
     }
 

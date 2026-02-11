@@ -133,6 +133,23 @@ class GetRegistrationActionSpec extends SpecBase with MockitoSugar with EitherVa
     )
   }
 
+  def enrolmentsWithIossAndIntermediary(iossNumber: String, intermediaryNumber: String, config: FrontendAppConfig): Enrolments = {
+    Enrolments(
+      Set(
+        Enrolment(
+          key = config.iossEnrolment,
+          identifiers = Seq(EnrolmentIdentifier("IOSSNumber", iossNumber)),
+          state = "Activated"
+        ),
+        Enrolment(
+          key = config.intermediaryEnrolment,
+          identifiers = Seq(EnrolmentIdentifier("IntNumber", intermediaryNumber)),
+          state = "Activated"
+        )
+      )
+    )
+  }
+
   override def beforeEach(): Unit = {
     Mockito.reset(
       mockAccountService,
@@ -282,6 +299,65 @@ class GetRegistrationActionSpec extends SpecBase with MockitoSugar with EitherVa
           registrationWrapper,
           None
         ))
+      }
+
+      "when an IOSS enrolment and intermediary enrolment exists" - {
+        "and no requestedMaybeIossNumber is present" in {
+          when(mockAppConfig.iossEnrolment) thenReturn "HMRC-IOSS-ORG"
+          when(mockAppConfig.intermediaryEnrolment) thenReturn "HMRC-IOSS-INT"
+
+          val registrationWrapper = arbitraryRegistrationWrapper.arbitrary.sample.value.copy(
+            vatInfo = Some(arbitraryVatInfo.arbitrary.sample.value.copy(
+              desAddress = arbitraryDesAddress.arbitrary.sample.value.copy(
+                countryCode = ukCountryCodeAreaPrefix
+              ),
+              organisationName = Some("organisation name")
+            )),
+            registration = arbitraryEtmpDisplayRegistrationLegacy.arbitrary.sample.value.copy(
+              customerIdentification = EtmpCustomerIdentificationLegacy(vrn),
+              otherAddress = Some(arbitraryEtmpOtherAddress.arbitrary.sample.value.copy(
+                tradingName = Some("trading name")
+              ))
+            )
+          )
+
+          val intermediarySelectedIossNumber = IntermediarySelectedIossNumber(
+            userId = userAnswersId,
+            intermediaryNumber,
+            iossNumber
+          )
+
+          when(mockRegistrationConnector.get(any())(any())) thenReturn registrationWrapper.toFuture
+          when(mockIntermediarySelectedIossNumberRepository.get(any())) thenReturn Some(intermediarySelectedIossNumber).toFuture
+          when(mockIntermediarySelectedIossNumberRepository.keepAlive(any())) thenReturn true.toFuture
+          when(mockIntermediaryRegistrationConnector.get(any())(any())) thenReturn
+            intermediaryRegistrationWithClients(Seq(iossNumber)).toFuture
+
+          val request = IdentifierRequest(
+            FakeRequest(),
+            testCredentials,
+            vrn,
+            enrolmentsWithIossAndIntermediary(iossNumber, intermediaryNumber, mockAppConfig)
+          )
+
+          val action = new Harness(
+            mockAccountService,
+            mockIntermediaryRegistrationConnector,
+            mockRegistrationConnector,
+            mockAppConfig,
+            None,
+            mockIntermediarySelectedIossNumberRepository
+          )
+
+          val result = action.callRefine(request).futureValue
+
+          result mustBe Right(expectedRegistrationRequest(
+            request,
+            iossNumber,
+            registrationWrapper,
+            Some(intermediaryNumber)
+          ))
+        }
       }
 
       "when an IOSS enrolment does not exist" - {

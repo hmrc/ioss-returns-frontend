@@ -44,42 +44,55 @@ class GetRegistrationAction(
 
   override protected def refine[A](request: IdentifierRequest[A]): Future[Either[Result, RegistrationRequest[A]]] = {
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request.request, request.request.session)
-    findIossFromEnrolments(request.enrolments).flatMap {
-      case Some(iossNumber) =>
-        registrationConnector.get(iossNumber).map { registration =>
-          Right(RegistrationRequest(request.request, request.credentials, Some(request.vrn), registration.getCompanyName(),iossNumber, registration, None, request.enrolments))
-        }
-      case None if isIntermediary(request.enrolments) =>
-        findIntermediaryFromEnrolments(request.enrolments).flatMap { maybeIntermediaryNumber =>
-          (maybeIntermediaryNumber, requestedMaybeIossNumber) match {
-            case (Some(intermediaryNumber), Some(iossNumber)) =>
-              checkIntermediaryAccessAndFormRequest(intermediaryNumber, iossNumber, request)
-            case (Some(intermediaryNumber), None) =>
-              intermediarySelectedIossNumberRepository.get(request.userId).flatMap {
-                case Some(intermediarySelectedIossNumber) =>
-                  intermediarySelectedIossNumberRepository.keepAlive(request.userId).flatMap { _ =>
-                    checkIntermediaryAccessAndFormRequest(intermediaryNumber, intermediarySelectedIossNumber.iossNumber, request)
-                  }
-                case _ =>
-                  logger.warn(
-                    s"Intermediary $maybeIntermediaryNumber did not have a request iossNumber, nor one found in selector repository"
-                  )
-                  Left(Redirect(controllers.routes.NotRegisteredController.onPageLoad())).toFuture
+
+    val futureMaybeIossNumberFromEnrolments = findIossFromEnrolments(request.enrolments)
+    (for {
+      maybeIossNumberFromEnrolments <- futureMaybeIossNumberFromEnrolments
+      maybeIntermediaryNumber <- findIntermediaryFromEnrolments(request.enrolments)
+    } yield {
+      (maybeIntermediaryNumber, requestedMaybeIossNumber, maybeIossNumberFromEnrolments) match {
+        case (_, Some(requestedIossNumber), Some(iossNumberFromEnrolments)) if iossNumberFromEnrolments == requestedIossNumber =>
+          getIossRegistrationAndMakeRequest(requestedIossNumber, request)
+        case (Some(intermediaryNumber), Some(iossNumber), _) =>
+          checkIntermediaryAccessAndFormRequest(intermediaryNumber, iossNumber, request)
+        case (Some(intermediaryNumber), None, _) =>
+          intermediarySelectedIossNumberRepository.get(request.userId).flatMap {
+            case Some(intermediarySelectedIossNumber) =>
+              intermediarySelectedIossNumberRepository.keepAlive(request.userId).flatMap { _ =>
+                checkIntermediaryAccessAndFormRequest(intermediaryNumber, intermediarySelectedIossNumber.iossNumber, request)
               }
+            case _ if maybeIossNumberFromEnrolments.nonEmpty =>
+              getIossRegistrationAndMakeRequest(maybeIossNumberFromEnrolments.get, request)
             case _ =>
               logger.warn(
-                s"expected intermediary and ioss number didn't get one: $maybeIntermediaryNumber $requestedMaybeIossNumber"
+                s"Intermediary $maybeIntermediaryNumber did not have a request iossNumber, nor one found in selector repository"
               )
               Left(Redirect(controllers.routes.NotRegisteredController.onPageLoad())).toFuture
           }
-        }
-      case _ =>
-        Left(Redirect(controllers.routes.NotRegisteredController.onPageLoad())).toFuture
+        case (None, None, Some(iossNumberFromEnrolments)) =>
+          getIossRegistrationAndMakeRequest(iossNumberFromEnrolments, request)
+        case _ => Left(Redirect(controllers.routes.NotRegisteredController.onPageLoad())).toFuture
+      }
+    }).flatten
+  }
+
+  private def getIossRegistrationAndMakeRequest[A](iossNumber: String, request: IdentifierRequest[A])(implicit hc: HeaderCarrier) = {
+    registrationConnector.get(iossNumber).map { registration =>
+      Right(RegistrationRequest(
+        request.request,
+        request.credentials,
+        Some(request.vrn),
+        registration.getCompanyName(),
+        iossNumber,
+        registration,
+        None,
+        request.enrolments
+      ))
     }
   }
 
   private def checkIntermediaryAccessAndFormRequest[A](intermediaryNumber: String, iossNumber: String, request: IdentifierRequest[A])
-                                                   (implicit hc: HeaderCarrier) = {
+                                                      (implicit hc: HeaderCarrier) = {
 
     def buildRegistrationRequest(intermediaryNumber: String): Future[Either[Result, RegistrationRequest[A]]] = {
       registrationConnector.get(iossNumber).map { registrationWrapper =>
@@ -128,10 +141,10 @@ class GetRegistrationAction(
     }
 
     Future.sequence(intermediaryNumbers.map { intermediaryNumber =>
-      isAuthorisedToAccessIossClient(intermediaryNumber)
-        .map(isAuthorised => intermediaryNumber -> isAuthorised)
-    })
-      .map(_.collectFirst { case (intermediaryNumber, true) => intermediaryNumber})
+        isAuthorisedToAccessIossClient(intermediaryNumber)
+          .map(isAuthorised => intermediaryNumber -> isAuthorised)
+      })
+      .map(_.collectFirst { case (intermediaryNumber, true) => intermediaryNumber })
   }
 
   private def findIossFromEnrolments(enrolments: Enrolments)(implicit hc: HeaderCarrier): Future[Option[String]] = {
