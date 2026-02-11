@@ -96,7 +96,7 @@ class YourAccountController @Inject()(
   Future[(CurrentReturnsResponse, PrepareDataResponse, Option[UserAnswers])] = {
     for {
       currentReturns <- returnStatusConnector.getCurrentReturns(request.iossNumber)
-      currentPayments <- financialDataConnector.prepareFinancialData()
+      currentPayments <- financialDataConnector.prepareFinancialDataWithIossNumber(request.iossNumber)
       userAnswers <- getSavedAnswers()
     } yield {
       userAnswers.map(answers => sessionRepository.set(answers))
