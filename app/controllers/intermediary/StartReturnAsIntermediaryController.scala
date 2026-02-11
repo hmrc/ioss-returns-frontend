@@ -26,7 +26,7 @@ import pages.{EmptyWaypoints, Waypoints}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.IntermediarySelectedIossNumberRepository
-import services.VatReturnService
+import services.{PartialReturnPeriodService, VatReturnService}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax.FutureOps
@@ -41,6 +41,7 @@ class StartReturnAsIntermediaryController @Inject()(
                                                      vatReturnService: VatReturnService,
                                                      intermediarySelectedIossNumberRepository: IntermediarySelectedIossNumberRepository,
                                                      saveForLaterConnector: SaveForLaterConnector,
+                                                     partialReturnPeriodService: PartialReturnPeriodService,
                                                      config: FrontendAppConfig,
                                                      clock: Clock
                                                    )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
@@ -54,27 +55,28 @@ class StartReturnAsIntermediaryController @Inject()(
     if (config.intermediaryEnabled) {
       vatReturnService.getOldestDueReturn(iossNumber).flatMap {
         case Some(oldestReturn) =>
-          val defaultUserAnswers = UserAnswers(
-            userId = request.userId,
-            iossNumber = iossNumber,
-            period = oldestReturn.period,
-            lastUpdated = Instant.now(clock)
-          )
+          partialReturnPeriodService.getPartialReturnPeriod(request.iossNumber, request.registrationWrapper, oldestReturn.period).flatMap { maybePartialReturnPeriod =>
+            val defaultUserAnswers = UserAnswers(
+              userId = request.userId,
+              iossNumber = iossNumber,
+              period = maybePartialReturnPeriod.getOrElse(oldestReturn.period),
+              lastUpdated = Instant.now(clock)
+            )
 
-          val intermediaryNumber = request.intermediaryNumber.get //TODO make "IntermediaryRequiredAction" be a refiner that converts to an int number
-          
-          val intermediarySelectedIossNumber = IntermediarySelectedIossNumber(request.userId, intermediaryNumber, iossNumber)
+            val intermediaryNumber = request.intermediaryNumber.get //TODO make "IntermediaryRequiredAction" be a refiner that converts to an int number
 
-          for {
-            _ <- intermediarySelectedIossNumberRepository.set(intermediarySelectedIossNumber)
-            maybeUserAnswers <- getSessionOrSavedUserAnswers(request)
-            _ <- cc.sessionRepository.set(maybeUserAnswers.getOrElse(defaultUserAnswers))
-          } yield {
-            if(oldestReturn.inProgress) {
+            val intermediarySelectedIossNumber = IntermediarySelectedIossNumber(request.userId, intermediaryNumber, iossNumber)
 
-              Redirect(routes.ContinueReturnController.onPageLoad(oldestReturn.period))
-            } else {
-              Redirect(routes.StartReturnController.onPageLoad(EmptyWaypoints, oldestReturn.period))
+            for {
+              _ <- intermediarySelectedIossNumberRepository.set(intermediarySelectedIossNumber)
+              maybeUserAnswers <- getSessionOrSavedUserAnswers(request)
+              _ <- cc.sessionRepository.set(maybeUserAnswers.getOrElse(defaultUserAnswers))
+            } yield {
+              if(oldestReturn.inProgress) {
+                Redirect(routes.ContinueReturnController.onPageLoad(oldestReturn.period))
+              } else {
+                Redirect(routes.StartReturnController.onPageLoad(EmptyWaypoints, oldestReturn.period))
+              }
             }
           }
         case _ =>

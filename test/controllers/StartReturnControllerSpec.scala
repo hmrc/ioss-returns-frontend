@@ -588,6 +588,8 @@ class StartReturnControllerSpec
             .thenReturn(Future.successful(
               Right(emptyCurrentReturns.copy(returns = List(createReturn(submissionStatus, period))))
             ))
+          when(mockPartialReturnPeriodService.getPartialReturnPeriod(any(), any(), any())(any()))
+            .thenReturn(Future.successful(None))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
             .overrides(bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector))
@@ -621,6 +623,8 @@ class StartReturnControllerSpec
             .thenReturn(Future.successful(
               Right(emptyCurrentReturns.copy(returns = List(createReturn(submissionStatus, period))))
             ))
+          when(mockPartialReturnPeriodService.getPartialReturnPeriod(any(), any(), any())(any()))
+            .thenReturn(Future.successful(None))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
             .overrides(bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector))
@@ -714,11 +718,7 @@ class StartReturnControllerSpec
               Right(emptyCurrentReturns.copy(returns = List(createReturn(submissionStatus, period))))
             ))
 
-          when(mockPartialReturnPeriodService.getPartialReturnPeriod(
-            ArgumentMatchers.eq(iossNumber),
-            ArgumentMatchers.eq(registrationWrapper),
-            ArgumentMatchers.eq(period)
-          )(any()))
+          when(mockPartialReturnPeriodService.getPartialReturnPeriod(any(), any(), any())(any()))
             .thenReturn(Future.successful(None))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
@@ -757,9 +757,12 @@ class StartReturnControllerSpec
               Right(emptyCurrentReturns.copy(returns = List(createReturn(submissionStatus, period))))
             ))
 
+          when(mockPartialReturnPeriodService.getPartialReturnPeriod(any(), any(), any())(any()))
+            .thenReturn(Future.successful(None))
+
           val effectiveDate = Gen.choose(
-            period.lastDay.minusDays(1 + numberOfDays),
-            period.lastDay.minusDays(1)
+            period.firstDay.minusDays(1 + numberOfDays),
+            period.firstDay.minusDays(1)
           ).sample.value
 
           val noLongerSuppliesExclusion = EtmpExclusion(

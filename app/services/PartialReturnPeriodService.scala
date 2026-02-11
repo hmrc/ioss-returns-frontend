@@ -18,7 +18,7 @@ package services
 
 
 import connectors.ReturnStatusConnector
-import models.etmp.EtmpExclusionReason.TransferringMSID
+import models.etmp.EtmpExclusionReason.{NoLongerMeetsConditions, TransferringMSID}
 import models.etmp.SchemeType.{IOSSWithIntermediary, IOSSWithoutIntermediary}
 import models.etmp.{EtmpExclusion, EtmpExclusionReason, EtmpPreviousEuRegistrationDetails}
 import models.{PartialReturnPeriod, Period, PeriodWithStatus, RegistrationWrapper, StandardPeriod, SubmissionStatus}
@@ -50,7 +50,7 @@ class PartialReturnPeriodService @Inject()(
         getMaybeFirstPartialReturnPeriod(iossNumber, registrationWrapper)
       case Some(excludedTrader) =>
         excludedTrader.exclusionReason match {
-          case TransferringMSID =>
+          case TransferringMSID | NoLongerMeetsConditions =>
             if (isFinalReturn(maybeExclusion, period)) {
               Some(PartialReturnPeriod(
                 period.firstDay,
@@ -127,7 +127,7 @@ class PartialReturnPeriodService @Inject()(
 
   def isFinalReturn(maybeExclusion: Option[EtmpExclusion], period: Period): Boolean = {
     maybeExclusion match {
-      case Some(exclusion) if exclusion.exclusionReason == EtmpExclusionReason.TransferringMSID =>
+      case Some(exclusion) if Seq(EtmpExclusionReason.TransferringMSID, EtmpExclusionReason.NoLongerMeetsConditions).contains(exclusion.exclusionReason) =>
         isWithinPeriod(StandardPeriod.fromPeriod(period), exclusion.effectiveDate)
       case Some(exclusion) if exclusion.exclusionReason != EtmpExclusionReason.Reversal =>
         val nextPeriod = period.getNext.lastDay

@@ -165,8 +165,8 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
           val etmpExclusion: EtmpExclusion = EtmpExclusion(
             exclusionReason = TransferringMSID,
-            effectiveDate = period.firstDay,
-            decisionDate = period.firstDay,
+            effectiveDate = period.firstDay.plusDays(1),
+            decisionDate = period.firstDay.plusDays(1),
             quarantine = false
           )
 
