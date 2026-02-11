@@ -42,7 +42,7 @@ class ExcludedTraderServiceSpec extends SpecBase {
     "return false when TransferringMSID and period's first day is equal to effective date" in {
       val effectiveDate = period.firstDay
       val exclusion = EtmpExclusion(TransferringMSID, effectiveDate = effectiveDate, LocalDate.now, false)
-      excludedTraderService.isExcludedPeriod(exclusion, period) mustBe false
+      excludedTraderService.isExcludedPeriod(exclusion, period) mustBe true
     }
 
     "return true when NoLongerSupplies, VoluntarilyLeaves, CeasedTrade, NoLongerMeetsConditions, FailsToComply and " +
@@ -56,7 +56,7 @@ class ExcludedTraderServiceSpec extends SpecBase {
       ).map { exclusionReason =>
         val effectiveDate = period.lastDay.minusDays(1)
         val exclusion = EtmpExclusion(exclusionReason, effectiveDate = effectiveDate, LocalDate.now, false)
-        excludedTraderService.isExcludedPeriod(exclusion, period) mustBe true
+        excludedTraderService.isExcludedPeriod(exclusion, period) mustBe false
       }
     }
 
@@ -88,6 +88,12 @@ class ExcludedTraderServiceSpec extends SpecBase {
         val exclusion = EtmpExclusion(exclusionReason, effectiveDate = effectiveDate, LocalDate.now, false)
         excludedTraderService.isExcludedPeriod(exclusion, period) mustBe false
       }
+    }
+
+    "return false when Reversal" in {
+      val effectiveDate = period.firstDay
+      val exclusion = EtmpExclusion(Reversal, effectiveDate = effectiveDate, LocalDate.now, false)
+      excludedTraderService.isExcludedPeriod(exclusion, period) mustBe false
     }
   }
 }
