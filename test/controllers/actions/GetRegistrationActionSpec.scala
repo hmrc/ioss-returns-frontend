@@ -321,7 +321,17 @@ class GetRegistrationActionSpec extends SpecBase with MockitoSugar with EitherVa
             )
           )
 
+          val intermediarySelectedIossNumber = IntermediarySelectedIossNumber(
+            userId = userAnswersId,
+            intermediaryNumber,
+            iossNumber
+          )
+
           when(mockRegistrationConnector.get(any())(any())) thenReturn registrationWrapper.toFuture
+          when(mockIntermediarySelectedIossNumberRepository.get(any())) thenReturn Some(intermediarySelectedIossNumber).toFuture
+          when(mockIntermediarySelectedIossNumberRepository.keepAlive(any())) thenReturn true.toFuture
+          when(mockIntermediaryRegistrationConnector.get(any())(any())) thenReturn
+            intermediaryRegistrationWithClients(Seq(iossNumber)).toFuture
 
           val request = IdentifierRequest(
             FakeRequest(),

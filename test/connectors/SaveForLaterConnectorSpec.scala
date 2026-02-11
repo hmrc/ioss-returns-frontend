@@ -49,7 +49,7 @@ class SaveForLaterConnectorSpec extends SpecBase
 
     ".submit" - {
 
-      val submitUrl: String = "/ioss-returns/save-for-later"
+      val submitUrl: String = s"/ioss-returns/save-for-later/$iossNumber"
 
       "must return Right(Some(SavedUserAnswers)) when the server responds with CREATED" in {
 
