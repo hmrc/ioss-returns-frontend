@@ -20,10 +20,11 @@ import com.google.inject.{Inject, Singleton}
 import play.api.Configuration
 import play.api.i18n.Lang
 import play.api.mvc.RequestHeader
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import java.net.URI
 @Singleton
-class FrontendAppConfig @Inject() (configuration: Configuration) {
+class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig: ServicesConfig) {
 
   val host: String    = configuration.get[String]("host")
   val appName: String = configuration.get[String]("appName")
@@ -89,4 +90,8 @@ class FrontendAppConfig @Inject() (configuration: Configuration) {
   lazy val userResearchUrl1: String = configuration.get[String]("urls.userResearch1")
 
   lazy val userResearchUrl2: String = configuration.get[String]("urls.userResearch2")
+
+  lazy val initiateV2Url: String = servicesConfig.baseUrl("upscan-initiate") + "/upscan/v2/initiate"
+  lazy val maxFileSize: Int = configuration.get[Int]("upscan.maxUploadFileSizeMb") * 1024 * 1024
+  lazy val upscanCallbackUrl: String = configuration.get[String]("upscan.callback-url")
 }
