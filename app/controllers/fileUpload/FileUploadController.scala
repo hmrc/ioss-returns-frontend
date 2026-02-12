@@ -18,7 +18,7 @@ package controllers.fileUpload
 
 import controllers.actions.*
 import forms.FileUploadFormProvider
-import pages.{FileUploadPage, Waypoints}
+import pages.{FileUploadPage, FileUploadedPage, Waypoints}
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -63,8 +63,9 @@ class FileUploadController @Inject()(
         value =>
           for {
             updatedAnswers <- Future.fromTry(request.userAnswers.set(FileUploadPage, value))
-            _              <- cc.sessionRepository.set(updatedAnswers)
-          } yield Redirect(FileUploadPage.navigate(waypoints, request.userAnswers, updatedAnswers).route)
+            cleanup <- Future.fromTry(updatedAnswers.remove(FileUploadedPage))
+            _              <- cc.sessionRepository.set(cleanup)
+          } yield Redirect(FileUploadPage.navigate(waypoints, request.userAnswers, cleanup).route)
       )
   }
 }
