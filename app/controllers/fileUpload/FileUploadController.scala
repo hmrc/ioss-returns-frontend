@@ -16,9 +16,12 @@
 
 package controllers.fileUpload
 
+import config.FrontendAppConfig
+import connectors.UpscanInitiateConnector
 import controllers.actions.*
 import forms.FileUploadFormProvider
-import pages.{FileUploadPage, FileUploadedPage, Waypoints}
+import pages.fileUpload.{FileReferencePage, FileUploadPage, FileUploadedPage}
+import pages.Waypoints
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -32,21 +35,42 @@ class FileUploadController @Inject()(
                                          override val messagesApi: MessagesApi,
                                          cc: AuthenticatedControllerComponents,
                                          formProvider: FileUploadFormProvider,
-                                         view: FileUploadView
+                                         view: FileUploadView,
+                                         upscanInitiateConnector: UpscanInitiateConnector,
+                                         appConfig: FrontendAppConfig
                                  )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
   val form: Form[String] = formProvider()
 
-  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndIntermediaryEnabled() {
+  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndIntermediaryEnabled().async {
     implicit request =>
 
       val period = request.userAnswers.period
       val isIntermediary = request.isIntermediary
       val companyName = request.companyName
 
-      Ok(view(form, waypoints, period, isIntermediary, companyName))
+      upscanInitiateConnector.initiateV2(
+        redirectOnSuccess = Some(appConfig.successEndPointTarget),
+        redirectOnError = Some(appConfig.errorEndPointTarget)
+      ).flatMap { initiateResponse =>
+
+        val updatedAnswers = request.userAnswers
+          .set(FileReferencePage, initiateResponse.fileReference.reference).get
+
+        cc.sessionRepository.set(updatedAnswers).map { _ =>
+          Ok(view(
+            form = form,
+            waypoints = waypoints,
+            period = period,
+            isIntermediary = isIntermediary,
+            companyName = companyName,
+            postTarget = initiateResponse.postTarget,
+            formFields = initiateResponse.formFields
+          ))
+        }
+      }
   }
 
   def onSubmit(waypoints: Waypoints): Action[AnyContent] = cc.authAndRequireData().async {
@@ -58,7 +82,20 @@ class FileUploadController @Inject()(
       
       form.bindFromRequest().fold(
         formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, waypoints, period, isIntermediary, companyName))),
+          upscanInitiateConnector.initiateV2(
+            redirectOnSuccess = Some(appConfig.successEndPointTarget),
+            redirectOnError   = Some(appConfig.errorEndPointTarget)
+          ).map { initiateResponse =>
+            BadRequest(view(
+              formWithErrors,
+              waypoints,
+              period,
+              isIntermediary,
+              companyName,
+              postTarget = initiateResponse.postTarget,
+              formFields = initiateResponse.formFields
+            ))
+          },
 
         value =>
           for {

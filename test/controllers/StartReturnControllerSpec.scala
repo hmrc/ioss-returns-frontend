@@ -31,7 +31,7 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatest.prop.TableDrivenPropertyChecks
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import org.scalatestplus.mockito.MockitoSugar.mock
-import pages.{EmptyWaypoints, NoOtherPeriodsAvailablePage, WantToUploadFilePage}
+import pages.{EmptyWaypoints, NoOtherPeriodsAvailablePage, SoldGoodsPage}
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.test.FakeRequest
@@ -604,7 +604,7 @@ class StartReturnControllerSpec
             val result = route(application, request).value
 
             status(result) mustBe SEE_OTHER
-            redirectLocation(result).value mustBe WantToUploadFilePage.route(waypoints).url
+            redirectLocation(result).value mustBe SoldGoodsPage.route(waypoints).url
           }
         }
       }

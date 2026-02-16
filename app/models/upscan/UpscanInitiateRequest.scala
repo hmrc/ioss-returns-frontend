@@ -47,3 +47,9 @@ final case class UpscanInitiateResponse(
                                          postTarget: String,
                                          formFields: Map[String, String]
                                        )
+
+final case class FileUploadOutcome(fileName: String)
+
+object FileUploadOutcome {
+  implicit val format: Format[FileUploadOutcome] = Json.format[FileUploadOutcome]
+}

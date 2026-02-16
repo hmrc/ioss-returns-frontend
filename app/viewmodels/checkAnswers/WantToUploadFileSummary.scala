@@ -17,7 +17,8 @@
 package viewmodels.checkAnswers
 
 import models.UserAnswers
-import pages.{CheckAnswersPage, WantToUploadFilePage, Waypoints}
+import pages.fileUpload.WantToUploadFilePage
+import pages.{CheckAnswersPage, Waypoints}
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
 import viewmodels.govuk.summarylist.*

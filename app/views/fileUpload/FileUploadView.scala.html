@@ -24,7 +24,15 @@
     govukButton: GovukButton
 )
 
-@(form: Form[_], waypoints: Waypoints, period: Period, isIntermediary: Boolean, companyName: String, errorMessage: Option[String] = None)(implicit request: Request[_], messages: Messages)
+@(form: Form[_],
+    waypoints: Waypoints,
+    period: Period,
+    isIntermediary: Boolean,
+    companyName: String,
+    postTarget: String,
+    formFields: Map[String, String],
+    errorMessage: Option[String] = None
+)(implicit request: Request[_], messages: Messages)
 
 @caption = @{
     if(isIntermediary) {
@@ -36,25 +44,29 @@
 
 @layout(pageTitle = title(form, messages("fileUpload.title", period.displayText))) {
 
-    @formHelper(action = controllers.fileUpload.routes.FileUploadController.onSubmit(waypoints), Symbol("autoComplete") -> "off") {
+    @if(form.errors.nonEmpty) {
+        @govukErrorSummary(ErrorSummaryViewModel(form))
+    }
 
-        @if(form.errors.nonEmpty) {
-            @govukErrorSummary(ErrorSummaryViewModel(form))
+    <header class="hmrc-page-heading">
+        <p class="govuk-caption-l hmrc-caption-l">@caption</p>
+        <h1 class="govuk-heading-l">@messages("fileUpload.heading", period.displayText)</h1>
+    </header>
+
+    <p class="govuk-body">@messages("fileUpload.paragraph")</p>
+
+    <ol class="govuk-list govuk-list--number">
+        <li>@Html(messages("fileUpload.bullet1"))</li>
+        <li>@messages("fileUpload.bullet2")</li>
+        <li>@messages("fileUpload.bullet3")</li>
+
+    </ol>
+
+    <form action="@postTarget" method="POST" enctype="multipart/form-data">
+
+        @for((name, value) <- formFields) {
+            <input type="hidden" name="@name" value="@value">
         }
-
-        <header class="hmrc-page-heading">
-            <p class="govuk-caption-l hmrc-caption-l">@caption</p>
-            <h1 class="govuk-heading-l">@messages("fileUpload.heading", period.displayText)</h1>
-        </header>
-
-        <p class="govuk-body">@messages("fileUpload.paragraph")</p>
-
-        <ol class="govuk-list govuk-list--number">
-            <li>@Html(messages("fileUpload.bullet1"))</li>
-            <li>@messages("fileUpload.bullet2")</li>
-            <li>@messages("fileUpload.bullet3")</li>
-
-        </ol>
 
         <div id="file-upload-form-group">
 
@@ -74,5 +86,5 @@
             classes = "govuk-!-margin-right-1",
             content = Text(messages("fileUpload.button"))
         ))
-    }
+    </form>
 }

@@ -17,17 +17,19 @@
 package controllers.fileUpload
 
 import base.SpecBase
+import connectors.FileUploadOutcomeConnector
 import controllers.routes
 import forms.FileUploadedFormProvider
-import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
-import pages.FileUploadedPage
+import pages.fileUpload.{FileReferencePage, FileUploadedPage}
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import repositories.SessionRepository
+import uk.gov.hmrc.http.HeaderCarrier
 import views.html.fileUpload.FileUploadedView
 
 import scala.concurrent.Future
@@ -37,6 +39,10 @@ class FileUploadedControllerSpec extends SpecBase with MockitoSugar {
   val formProvider = new FileUploadedFormProvider()
   val form: Form[Boolean] = formProvider()
   private val fileName = "test.csv"
+  private val userAnswersWithRef = emptyUserAnswers.set(FileReferencePage, "fake-ref").success.value
+  private val mockOutcomeConnector = mock[FileUploadOutcomeConnector]
+
+  implicit val hc: HeaderCarrier = HeaderCarrier()
 
   lazy val fileUploadedRoute: String = controllers.fileUpload.routes.FileUploadedController.onPageLoad(waypoints).url
 
@@ -44,7 +50,11 @@ class FileUploadedControllerSpec extends SpecBase with MockitoSugar {
 
     "must return OK and the correct view for a GET" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      when(mockOutcomeConnector.getFileName(eqTo("fake-ref"))(any())).thenReturn(Future.successful(Some(fileName)))
+
+      val application = applicationBuilder(userAnswers = Some(userAnswersWithRef))
+        .overrides(bind[FileUploadOutcomeConnector].toInstance(mockOutcomeConnector))
+        .build()
 
       running(application) {
         val request = FakeRequest(GET, fileUploadedRoute)
@@ -60,9 +70,13 @@ class FileUploadedControllerSpec extends SpecBase with MockitoSugar {
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = emptyUserAnswers.set(FileUploadedPage, true).success.value
+      when(mockOutcomeConnector.getFileName(eqTo("fake-ref"))(any())).thenReturn(Future.successful(Some(fileName)))
 
-      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+      val userAnswers = userAnswersWithRef.set(FileUploadedPage, true).success.value
+
+      val application = applicationBuilder(userAnswers = Some(userAnswers))
+        .overrides(bind[FileUploadOutcomeConnector].toInstance(mockOutcomeConnector))
+        .build()
 
       running(application) {
         val request = FakeRequest(GET, fileUploadedRoute)
@@ -80,11 +94,13 @@ class FileUploadedControllerSpec extends SpecBase with MockitoSugar {
 
       val mockSessionRepository = mock[SessionRepository]
 
+      when(mockOutcomeConnector.getFileName(eqTo("fake-ref"))(any())).thenReturn(Future.successful(Some(fileName)))
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
       val application =
-        applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        applicationBuilder(userAnswers = Some(userAnswersWithRef))
           .overrides(
+            bind[FileUploadOutcomeConnector].toInstance(mockOutcomeConnector),
             bind[SessionRepository].toInstance(mockSessionRepository)
           )
           .build()
@@ -104,7 +120,11 @@ class FileUploadedControllerSpec extends SpecBase with MockitoSugar {
 
     "must return a Bad Request and errors when invalid data is submitted" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      when(mockOutcomeConnector.getFileName(eqTo("fake-ref"))(any())).thenReturn(Future.successful(Some(fileName)))
+
+      val application = applicationBuilder(userAnswers = Some(userAnswersWithRef))
+        .overrides(bind[FileUploadOutcomeConnector].toInstance(mockOutcomeConnector))
+        .build()
 
       running(application) {
         val request =

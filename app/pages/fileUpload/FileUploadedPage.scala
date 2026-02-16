@@ -14,30 +14,31 @@
  * limitations under the License.
  */
 
-package pages
+package pages.fileUpload
 
-import config.FrontendAppConfig
-import controllers.routes
-import models.{Period, UserAnswers}
-import pages.fileUpload.WantToUploadFilePage
+import models.UserAnswers
+import pages.corrections.CorrectPreviousReturnPage
+import pages.{CheckYourAnswersPage, Page, QuestionPage, RecoveryOps, Waypoints}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
-case class StartReturnPage(period: Period, frontendAppConfig: FrontendAppConfig) extends QuestionPage[Boolean] {
+case object FileUploadedPage extends QuestionPage[Boolean] {
 
   override def path: JsPath = JsPath \ toString
 
-  override def toString: String = "startReturn"
+  override def toString: String = "fileUploaded"
 
-  override def route(waypoints: Waypoints): Call = routes.StartReturnController.onPageLoad(waypoints, period)
+  override def route(waypoints: Waypoints): Call = controllers.fileUpload.routes.FileUploadedController.onPageLoad(waypoints)
 
-  override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
+  override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page = {
     answers.get(this).map {
-      case true if frontendAppConfig.intermediaryEnabled =>
-        WantToUploadFilePage
       case true =>
-        SoldGoodsPage
-      case false =>
-        NoOtherPeriodsAvailablePage
+        if (answers.isDefined(CorrectPreviousReturnPage(0))) {
+          CheckYourAnswersPage
+        } else {
+          CorrectPreviousReturnPage(0)
+        }
+      case false => FileUploadPage
     }.orRecover
+  }
 }

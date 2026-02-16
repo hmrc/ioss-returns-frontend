@@ -18,7 +18,8 @@ package controllers.fileUpload
 
 import controllers.actions.*
 import forms.WantToUploadFileFormProvider
-import pages.{WantToUploadFilePage, Waypoints}
+import pages.Waypoints
+import pages.fileUpload.WantToUploadFilePage
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
