@@ -37,7 +37,8 @@
         missingData: List[String],
         maybeExclusion: Option[EtmpExclusion],
         isFinalReturn: Boolean,
-        isIntermediary: Boolean
+        isIntermediary: Boolean,
+        hasAnsweredCorrectPreviousReturn: Boolean
 )(implicit request: Request[_], messages: Messages)
 
     @layout(pageTitle = titleNoForm(messages("checkYourAnswers.title"))) {
@@ -135,7 +136,7 @@
             ))
         }
 
-        @if(missingData.isEmpty) {
+        @if(missingData.isEmpty && hasAnsweredCorrectPreviousReturn) {
             @formHelper(action = routes.CheckYourAnswersController.onSubmit(waypoints, incompletePromptShown = false)) {
                 @button("site.submit", routes.CheckYourAnswersController.onPageLoad(waypoints).url, period, waypoints)
             }
