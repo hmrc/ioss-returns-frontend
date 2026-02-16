@@ -18,6 +18,7 @@ package connectors
 
 import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock.*
+import models.upscan.FileUploadOutcome
 import org.scalatest.matchers.must.Matchers
 import play.api.Application
 import play.api.http.Status.{INTERNAL_SERVER_ERROR, OK}
@@ -39,7 +40,8 @@ class FileUploadOutcomeConnectorSpec extends SpecBase with WireMockHelper with M
   private val fileUploadOutcomeJson =
     """
       |{
-      |  "fileName": "test.csv"
+      |  "fileName": "test.csv",
+      |  "status" : "READY"
       |}
       """.stripMargin
 
@@ -60,9 +62,15 @@ class FileUploadOutcomeConnectorSpec extends SpecBase with WireMockHelper with M
             )
         )
 
-        val result = connector.getFileName("fake-ref").futureValue
+        val result = connector.getOutcome("fake-ref").futureValue
 
-        result mustBe Some("test.csv")
+        result mustBe Some(
+          FileUploadOutcome(
+            fileName = Some("test.csv"),
+            status = "READY",
+            failureReason = None
+          )
+        )
       }
     }
 
@@ -79,7 +87,7 @@ class FileUploadOutcomeConnectorSpec extends SpecBase with WireMockHelper with M
             )
         )
 
-        val result = connector.getFileName("unknown-ref").futureValue
+        val result = connector.getOutcome("unknown-ref").futureValue
 
         result mustBe None
       }
@@ -99,7 +107,7 @@ class FileUploadOutcomeConnectorSpec extends SpecBase with WireMockHelper with M
             )
         )
 
-        val result = connector.getFileName("fail-ref").futureValue
+        val result = connector.getOutcome("fail-ref").futureValue
 
         result mustBe None
       }

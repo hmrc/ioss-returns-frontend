@@ -52,10 +52,10 @@ class FileUploadedController @Inject()(
 
       fileReference match {
         case Some(ref) =>
-          fileUploadOutcomeConnector.getFileName(ref).map { maybeFileName =>
+          fileUploadOutcomeConnector.getOutcome(ref).map { maybeOutcome =>
             val preparedForm = request.userAnswers.get(FileUploadedPage).fold(form)(form.fill)
 
-            Ok(view(preparedForm, waypoints, period, isIntermediary, companyName, maybeFileName))
+            Ok(view(preparedForm, waypoints, period, isIntermediary, companyName, maybeOutcome))
           }
         case None =>
           Future.successful(BadRequest("No file reference found in session."))
@@ -74,8 +74,8 @@ class FileUploadedController @Inject()(
         case Some(ref) =>
           form.bindFromRequest().fold(
             formWithErrors =>
-              fileUploadOutcomeConnector.getFileName(ref).map { maybeFileName =>
-                BadRequest(view(formWithErrors, waypoints, period, isIntermediary, companyName, maybeFileName))
+              fileUploadOutcomeConnector.getOutcome(ref).map { maybeOutcome =>
+                BadRequest(view(formWithErrors, waypoints, period, isIntermediary, companyName, maybeOutcome))
               },
             value =>
               for {

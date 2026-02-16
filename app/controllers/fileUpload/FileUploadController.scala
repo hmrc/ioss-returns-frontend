@@ -20,7 +20,7 @@ import config.FrontendAppConfig
 import connectors.UpscanInitiateConnector
 import controllers.actions.*
 import forms.FileUploadFormProvider
-import pages.fileUpload.{FileReferencePage, FileUploadPage, FileUploadedPage}
+import pages.fileUpload.FileReferencePage
 import pages.Waypoints
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
@@ -29,7 +29,7 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.fileUpload.FileUploadView
 
 import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class FileUploadController @Inject()(
                                          override val messagesApi: MessagesApi,
@@ -71,38 +71,5 @@ class FileUploadController @Inject()(
           ))
         }
       }
-  }
-
-  def onSubmit(waypoints: Waypoints): Action[AnyContent] = cc.authAndRequireData().async {
-    implicit request =>
-
-      val period = request.userAnswers.period
-      val isIntermediary = request.isIntermediary
-      val companyName = request.companyName
-      
-      form.bindFromRequest().fold(
-        formWithErrors =>
-          upscanInitiateConnector.initiateV2(
-            redirectOnSuccess = Some(appConfig.successEndPointTarget),
-            redirectOnError   = Some(appConfig.errorEndPointTarget)
-          ).map { initiateResponse =>
-            BadRequest(view(
-              formWithErrors,
-              waypoints,
-              period,
-              isIntermediary,
-              companyName,
-              postTarget = initiateResponse.postTarget,
-              formFields = initiateResponse.formFields
-            ))
-          },
-
-        value =>
-          for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(FileUploadPage, value))
-            cleanup <- Future.fromTry(updatedAnswers.remove(FileUploadedPage))
-            _              <- cc.sessionRepository.set(cleanup)
-          } yield Redirect(FileUploadPage.navigate(waypoints, request.userAnswers, cleanup).route)
-      )
   }
 }

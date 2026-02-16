@@ -32,14 +32,14 @@ class FileUploadOutcomeConnector @Inject()(
                                        )(implicit ec: ExecutionContext) {
 
 
-  def getFileName(reference: String)(implicit hc: HeaderCarrier): Future[Option[String]] = {
+  def getOutcome(reference: String)(implicit hc: HeaderCarrier): Future[Option[FileUploadOutcome]] = {
     
     val baseUrl = URI(s"${appConfig.fileUploadOutcome}/$reference").toURL
     
     httpClientV2
       .get(baseUrl)
       .execute[FileUploadOutcome]
-      .map(outcome => Some(outcome.fileName))
+      .map(outcome => Some(outcome))
       .recover {
         case _ => None
       }

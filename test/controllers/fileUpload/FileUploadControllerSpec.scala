@@ -123,107 +123,12 @@ class FileUploadControllerSpec extends SpecBase with MockitoSugar {
       }
     }
 
-    "must redirect to the next page when valid data is submitted" in {
-
-      val mockConnector = mock[UpscanInitiateConnector]
-      val mockSessionRepository = mock[SessionRepository]
-
-      when(mockConnector.initiateV2(any(), any())(any()))
-        .thenReturn(Future.successful(fakeInitiateResponse))
-      when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
-
-      val application =
-        applicationBuilder(userAnswers = Some(emptyUserAnswers))
-          .overrides(
-            bind[UpscanInitiateConnector].toInstance(mockConnector),
-            bind[SessionRepository].toInstance(mockSessionRepository)
-          ).build()
-
-      running(application) {
-        val request =
-          FakeRequest(POST, fileUploadRoute)
-            .withFormUrlEncodedBody(("file", csvFile))
-
-        val result = route(application, request).value
-
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.fileUpload.routes.FileUploadedController.onPageLoad(waypoints).url
-      }
-    }
-
-    "must return a Bad Request and errors when invalid data is submitted" in {
-
-      val mockConnector = mock[UpscanInitiateConnector]
-      val mockSessionRepository = mock[SessionRepository]
-
-      when(mockConnector.initiateV2(any(), any())(any()))
-        .thenReturn(Future.successful(fakeInitiateResponse))
-      when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
-
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-        .overrides(
-          bind[UpscanInitiateConnector].toInstance(mockConnector),
-          bind[SessionRepository].toInstance(mockSessionRepository)
-        ).build()
-
-      running(application) {
-        val request =
-          FakeRequest(POST, fileUploadRoute)
-            .withFormUrlEncodedBody(("value", ""))
-
-        val boundForm = form.bind(Map("value" -> ""))
-
-        val view = application.injector.instanceOf[FileUploadView]
-
-        val result = route(application, request).value
-
-        status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(
-          boundForm,
-          waypoints,
-          period,
-          false,
-          companyName,
-          postTarget = fakeInitiateResponse.postTarget,
-          formFields = fakeInitiateResponse.formFields,
-          None
-        )(request, messages(application)).toString
-      }
-    }
-
     "must redirect to Journey Recovery for a GET if no existing data is found" in {
 
       val application = applicationBuilder(userAnswers = None).build()
 
       running(application) {
         val request = FakeRequest(GET, fileUploadRoute)
-
-        val result = route(application, request).value
-
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
-      }
-    }
-
-    "must redirect to Journey Recovery for a POST if no existing data is found" in {
-
-      val mockConnector = mock[UpscanInitiateConnector]
-      val mockSessionRepository = mock[SessionRepository]
-
-      when(mockConnector.initiateV2(any(), any())(any()))
-        .thenReturn(Future.successful(fakeInitiateResponse))
-      when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
-
-      val application = applicationBuilder(userAnswers = None)
-        .overrides(
-          bind[UpscanInitiateConnector].toInstance(mockConnector),
-          bind[SessionRepository].toInstance(mockSessionRepository)
-        ).build()
-
-      running(application) {
-        val request =
-          FakeRequest(POST, fileUploadRoute)
-            .withFormUrlEncodedBody(("value", "true"))
 
         val result = route(application, request).value
 
