@@ -252,7 +252,8 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
               missingData = List.empty,
               maybeExclusion = Some(etmpExclusion),
               isFinalReturn = true,
-              isIntermediary = false
+              isIntermediary = false,
+              hasAnsweredCorrectPreviousReturn = true
             )(request, messages(application)).toString
           }
         }
@@ -397,7 +398,8 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
                 List.empty,
                 None,
                 isFinalReturn = false,
-                isIntermediary = false
+                isIntermediary = false,
+                hasAnsweredCorrectPreviousReturn = true
               )(request, messages(application)).toString
           }
         }
@@ -487,6 +489,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
         val answers = emptyUserAnswers
           .set(SoldGoodsPage, true).success.value
+          .set(CorrectPreviousReturnPage(0), false).success.value
 
         val app = applicationBuilder(Some(answers)).build()
 
@@ -503,6 +506,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
         val answers = emptyUserAnswers
           .set(SoldGoodsPage, true).success.value
+          .set(CorrectPreviousReturnPage(0), false).success.value
 
         val app = applicationBuilder(Some(answers)).build()
 
@@ -519,6 +523,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
         val answers = emptyUserAnswers
           .set(SoldGoodsPage, true).success.value
+          .set(CorrectPreviousReturnPage(0), false).success.value
           .set(SoldToCountryPage(index), Country.euCountries.head).success.value
 
         val app = applicationBuilder(Some(answers)).build()
@@ -536,6 +541,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
         val answers = emptyUserAnswers
           .set(SoldGoodsPage, true).success.value
+          .set(CorrectPreviousReturnPage(0), false).success.value
           .set(SoldToCountryPage(index), Country.euCountries.head).success.value
           .set(VatRatesFromCountryPage(index, index), List[VatRateFromCountry](vatRateFromCountry)).success.value
 
@@ -554,6 +560,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
         val answers = emptyUserAnswers
           .set(SoldGoodsPage, true).success.value
+          .set(CorrectPreviousReturnPage(0), false).success.value
           .set(SoldToCountryPage(index), Country.euCountries.head).success.value
           .set(VatRatesFromCountryPage(index, index), List[VatRateFromCountry](vatRateFromCountry)).success.value
           .set(SalesToCountryPage(index, index), salesValue).success.value

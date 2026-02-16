@@ -38,6 +38,7 @@ import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{CardTitle, Summar
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax.FutureOps
+import utils.CompletionChecks
 import viewmodels.checkAnswers.*
 import viewmodels.checkAnswers.corrections.{CorrectPreviousReturnSummary, CorrectionNoPaymentDueSummary, CorrectionReturnPeriodSummary}
 import viewmodels.govuk.summarylist.*
@@ -56,7 +57,8 @@ class CheckYourAnswersController @Inject()(
                                             saveForLaterConnector: SaveForLaterConnector,
                                             redirectService: RedirectService,
                                             frontendAppConfig: FrontendAppConfig
-                                          )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
+                                          )(implicit ec: ExecutionContext)
+  extends FrontendBaseController with I18nSupport with Logging with CompletionChecks {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
@@ -72,6 +74,8 @@ class CheckYourAnswersController @Inject()(
       val businessSummaryListFuture = getBusinessSummaryList(request, waypoints)
 
       val salesFromEuSummaryListFuture = getSalesFromEuSummaryList(request, waypoints)
+
+      val hasAnsweredCorrectPreviousReturn: Boolean = correctPreviousReturnAnswered()
 
       for {
         businessSummaryList <- businessSummaryListFuture
@@ -99,40 +103,46 @@ class CheckYourAnswersController @Inject()(
           errors.map(_.errorMessage),
           maybeExclusion,
           isFinalReturn,
-          isIntermediary
+          isIntermediary,
+          hasAnsweredCorrectPreviousReturn
         ))
       }
   }
 
   def onSubmit(waypoints: Waypoints, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
+      incompleteReturnsJourneyRedirect(waypoints) match {
+        case Some(result) => result.toFuture
+        case None =>
 
-      val userAnswers = request.userAnswers
 
-      val preferredPeriod = userAnswers.period
+          val userAnswers = request.userAnswers
 
-      val redirectToFirstError = redirectService.getRedirect(waypoints, redirectService.validate(preferredPeriod)).headOption
+          val preferredPeriod = userAnswers.period
 
-      (redirectToFirstError, incompletePromptShown) match {
-        case (Some(redirect), true) => Redirect(redirect).toFuture
-        case (Some(_), false) => Redirect(routes.CheckYourAnswersController.onPageLoad(waypoints)).toFuture
-        case _ =>
-          coreVatReturnService.submitCoreVatReturn(userAnswers).flatMap { remainingTotalAmountVatDueGBP =>
-            auditService.audit(ReturnsAuditModel.build(userAnswers, SubmissionResult.Success))
-            userAnswers.set(TotalAmountVatDueGBPQuery, remainingTotalAmountVatDueGBP) match {
-              case Failure(exception) =>
-                logger.error(s"Couldn't update users answers with remaining owed vat ${exception.getMessage}", exception)
-                Future.successful(Redirect(controllers.submissionResults.routes.ReturnSubmissionFailureController.onPageLoad().url))
-              case Success(updatedAnswers) =>
-                cc.sessionRepository.set(updatedAnswers).map(_ =>
-                  Redirect(controllers.submissionResults.routes.SuccessfullySubmittedController.onPageLoad().url)
-                )
-            }
-          }.recoverWith {
-            case e: Exception =>
-              logger.error(s"Error while submitting VAT return ${e.getMessage}", e)
-              auditService.audit(ReturnsAuditModel.build(userAnswers, SubmissionResult.Failure))
-              saveUserAnswersOnCoreError(controllers.submissionResults.routes.ReturnSubmissionFailureController.onPageLoad())
+          val redirectToFirstError = redirectService.getRedirect(waypoints, redirectService.validate(preferredPeriod)).headOption
+
+          (redirectToFirstError, incompletePromptShown) match {
+            case (Some(redirect), true) => Redirect(redirect).toFuture
+            case (Some(_), false) => Redirect(routes.CheckYourAnswersController.onPageLoad(waypoints)).toFuture
+            case _ =>
+              coreVatReturnService.submitCoreVatReturn(userAnswers).flatMap { remainingTotalAmountVatDueGBP =>
+                auditService.audit(ReturnsAuditModel.build(userAnswers, SubmissionResult.Success))
+                userAnswers.set(TotalAmountVatDueGBPQuery, remainingTotalAmountVatDueGBP) match {
+                  case Failure(exception) =>
+                    logger.error(s"Couldn't update users answers with remaining owed vat ${exception.getMessage}", exception)
+                    Future.successful(Redirect(controllers.submissionResults.routes.ReturnSubmissionFailureController.onPageLoad().url))
+                  case Success(updatedAnswers) =>
+                    cc.sessionRepository.set(updatedAnswers).map(_ =>
+                      Redirect(controllers.submissionResults.routes.SuccessfullySubmittedController.onPageLoad().url)
+                    )
+                }
+              }.recoverWith {
+                case e: Exception =>
+                  logger.error(s"Error while submitting VAT return ${e.getMessage}", e)
+                  auditService.audit(ReturnsAuditModel.build(userAnswers, SubmissionResult.Failure))
+                  saveUserAnswersOnCoreError(controllers.submissionResults.routes.ReturnSubmissionFailureController.onPageLoad())
+              }
           }
       }
   }

@@ -16,9 +16,13 @@
 
 package utils
 
+import controllers.routes
 import models.corrections.CorrectionToCountry
 import models.requests.DataRequest
 import models.{Country, Index, UserAnswers}
+import pages.{SoldGoodsPage, Waypoints}
+import pages.corrections.CorrectPreviousReturnPage
+import play.api.mvc.Results.Redirect
 import play.api.mvc.{AnyContent, Result}
 import queries.*
 
@@ -130,5 +134,27 @@ trait CompletionChecks {
       .getOrElse(List.empty).zipWithIndex
       .find(indexedCorrection => incompleteCountries.contains(indexedCorrection._1.country))
   }
+
+  def soldGoodsAnswered(implicit request: DataRequest[AnyContent]): Boolean = {
+  request.userAnswers.get(SoldGoodsPage).isDefined
+  }
+
+  def correctPreviousReturnAnswered()(implicit request: DataRequest[AnyContent]): Boolean = {
+    val numberOfExistingReturnPeriods = request.userAnswers.get(AllCorrectionPeriodsQuery).map(_.size).getOrElse(0)
+
+    request.userAnswers.get(CorrectPreviousReturnPage(numberOfExistingReturnPeriods)).isDefined
+  }
+  
+  def incompleteReturnsJourneyRedirect(waypoints: Waypoints)
+                                 (implicit request: DataRequest[AnyContent]): Option[Result] = {
+    if (!soldGoodsAnswered) {
+      Some(Redirect(routes.SoldGoodsController.onPageLoad(waypoints)))
+    } else if (!correctPreviousReturnAnswered()) {
+      Some(Redirect(controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(waypoints)))
+    } else {
+      None
+    }
+  }
+
 }
 
