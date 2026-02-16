@@ -148,7 +148,8 @@ trait SpecBase
         getRegistrationActionBind,
         bind[CheckBouncedEmailFilterProvider].toInstance(new FakeCheckBouncedEmailFilterProvider()),
         bind[CheckSubmittedReturnsFilterProvider].toInstance(new FakeCheckSubmittedReturnsFilterProvider()),
-        bind[IntermediaryRequiredFilter].toInstance(new FakeIntermediaryRequiredFilter())
+        bind[IntermediaryRequiredFilter].toInstance(new FakeIntermediaryRequiredFilter()),
+        bind[IntermediaryEnabledFilter].toInstance(new FakeIntermediaryEnabledFilter())
       )
   }
 

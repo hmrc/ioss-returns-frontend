@@ -16,27 +16,21 @@
 
 package pages
 
-import config.FrontendAppConfig
-import controllers.routes
-import models.{Period, UserAnswers}
+import models.UserAnswers
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
-case class StartReturnPage(period: Period, frontendAppConfig: FrontendAppConfig) extends QuestionPage[Boolean] {
+case object WantToUploadFilePage extends QuestionPage[Boolean] {
 
   override def path: JsPath = JsPath \ toString
 
-  override def toString: String = "startReturn"
+  override def toString: String = "wantToUploadFile"
 
-  override def route(waypoints: Waypoints): Call = routes.StartReturnController.onPageLoad(waypoints, period)
+  override def route(waypoints: Waypoints): Call = controllers.fileUpload.routes.WantToUploadFileController.onPageLoad(waypoints)
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
     answers.get(this).map {
-      case true if frontendAppConfig.intermediaryEnabled =>
-        WantToUploadFilePage
-      case true =>
-        SoldGoodsPage
-      case false =>
-        NoOtherPeriodsAvailablePage
+      case true => FileUploadPage
+      case false => SoldGoodsPage
     }.orRecover
 }

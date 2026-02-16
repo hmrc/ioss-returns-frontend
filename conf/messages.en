@@ -635,3 +635,38 @@ noLongerAbleToViewReturn.p = You cannot view returns that are over 6 years old.
 
 userResearch.heading = Help us improve the service
 userResearch.link.text = Sign up to take part in research about the One Stop Shop service.
+
+wantToUploadFile.title = Do you want to upload a file with these return details?
+wantToUploadFile.heading = Do you want to upload a file with these return details?
+wantToUploadFile.yes = Yes
+wantToUploadFile.no = No, enter them myself
+wantToUploadFile.checkYourAnswersLabel = Want to upload a file
+wantToUploadFile.error.required = Select yes if want to upload a file
+wantToUploadFile.change.hidden = WantToUploadFile
+
+fileUpload.title = Upload the {0} return
+fileUpload.heading = Upload the {0} return
+fileUpload.intermediary.caption = {0} {1}
+fileUpload.caption = {0} {1}
+fileUpload.paragraph = To upload the file:
+fileUpload.bullet1 = download the <a class="govuk-link" href="">latest version of the template</a>
+fileUpload.bullet2 = complete the details for all sales for the month and save the document as a CSV file
+fileUpload.bullet3 = upload the CSV file
+fileUpload.button = Upload
+fileUpload.checkYourAnswersLabel = file Upload
+fileUpload.error.required = No file selected
+fileUpload.change.hidden = Upload a file
+
+fileUploaded.title = Check this the correct file
+fileUploaded.heading = Check this is the correct file
+fileUploaded.intermediary.caption = {0} {1}
+fileUploaded.caption = {0} {1}
+fileUploaded.noFile =
+fileUploaded.status.uploading = Uploading
+fileUploaded.status.uploaded = Uploaded
+fileUploaded.subheading = Is this file correct?
+fileUploaded.yes = Yes
+fileUploaded.no = No, I want to upload a different file
+fileUploaded.checkYourAnswersLabel = file uploaded
+fileUploaded.error.required = Select yes if this is the correct file
+fileUploaded.change.hidden = File uploaded

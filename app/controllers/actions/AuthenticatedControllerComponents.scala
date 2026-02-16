@@ -56,6 +56,8 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
   def checkIsCurrentReturnPeriodFilter: CheckIsCurrentReturnPeriodFilter
 
   def intermediaryRequired: IntermediaryRequiredFilter
+  
+  def intermediaryEnabled: IntermediaryEnabledFilter
 
   def auth: ActionBuilder[IdentifierRequest, AnyContent] =
     actionBuilder andThen identify
@@ -87,6 +89,11 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
     authAndGetRegistration(Some(iossNumber)) andThen
       intermediaryRequired()
   }
+  
+  def authAndIntermediaryEnabled(): ActionBuilder[DataRequest, AnyContent] = {
+    authAndRequireData() andThen
+      intermediaryEnabled()
+  }
 
 }
 
@@ -111,5 +118,6 @@ case class DefaultAuthenticatedControllerComponents @Inject()(
                                                                checkCommencementDate: CheckCommencementDateFilter,
                                                                checkCommencementDateOptional: CheckCommencementDateOptionalFilter,
                                                                checkIsCurrentReturnPeriodFilter: CheckIsCurrentReturnPeriodFilter,
-                                                               intermediaryRequired: IntermediaryRequiredFilter
+                                                               intermediaryRequired: IntermediaryRequiredFilter,
+                                                               intermediaryEnabled: IntermediaryEnabledFilter
                                                              ) extends AuthenticatedControllerComponents
