@@ -44,7 +44,8 @@ class UpscanInitiateConnector @Inject()(
       successRedirect = redirectOnSuccess,
       errorRedirect = redirectOnError,
       minimumFileSize = Some(1),
-      maximumFileSize = Some(appConfig.maxFileSize)
+      maximumFileSize = Some(appConfig.maxFileSize),
+      expectedContentType = Some("text/csv")
     )
 
     initiate(url"${appConfig.initiateV2Url}", request)

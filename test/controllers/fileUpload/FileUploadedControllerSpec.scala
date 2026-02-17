@@ -181,5 +181,38 @@ class FileUploadedControllerSpec extends SpecBase with MockitoSugar {
         redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
       }
     }
+
+    "must display failed status when non-CSV file was uploaded" in {
+
+      val nonCsvOutcome = FileUploadOutcome(
+        fileName = Some("not-a-csv.pdf"),
+        status = "FAILED",
+        failureReason = Some("InvalidArgument")
+      )
+
+      when(mockOutcomeConnector.getOutcome(eqTo("fake-ref"))(any()))
+        .thenReturn(Future.successful(Some(nonCsvOutcome)))
+
+      val application = applicationBuilder(userAnswers = Some(userAnswersWithRef))
+        .overrides(bind[FileUploadOutcomeConnector].toInstance(mockOutcomeConnector))
+        .build()
+
+      running(application) {
+        val request = FakeRequest(GET, fileUploadedRoute)
+        val view = application.injector.instanceOf[FileUploadedView]
+
+        val result = route(application, request).value
+
+        status(result) mustEqual OK
+        contentAsString(result) mustEqual view(
+          form,
+          waypoints,
+          period,
+          false,
+          companyName,
+          Some(nonCsvOutcome)
+        )(request, messages(application)).toString
+      }
+    }
   }
 }

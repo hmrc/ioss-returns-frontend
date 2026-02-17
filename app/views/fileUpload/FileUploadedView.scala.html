@@ -69,12 +69,12 @@
                     </dt>
                     <dd class="govuk-summary-list__value">
                         <strong class="govuk-tag govuk-tag--red">@messages("fileUploaded.status.failed")</strong>
-                        @maybeOutcome.flatMap(_.failureReason).map { reason =>
-                            <p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-top-2 govuk-!-color-red">
-                                @messages(s"fileUploaded.status.error.${reason.toLowerCase}")
-                            </p>
-                        }
                     </dd>
+                    @maybeOutcome.flatMap(_.failureReason).map { reason =>
+                        <p class="govuk-error-message">
+                            @messages(s"fileUploaded.status.error.${reason.toLowerCase}")
+                        </p>
+                    }
                 } else {
                     <dt class="govuk-summary-list__key govuk-!-font-weight-regular">
                         @maybeOutcome.flatMap(_.fileName).getOrElse("")

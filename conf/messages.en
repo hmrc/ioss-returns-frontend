@@ -674,6 +674,7 @@ fileUploaded.change.hidden = File uploaded
 
 fileUploaded.status.error.quarantined = File failed virus scanning
 fileUploaded.status.error.rejected = File type or extension not allowed
+fileUploaded.status.error.invalid_argument = File type or extension not allowed
 fileUploaded.status.error.invalid = File is invalid or too large
 fileUploaded.status.error.unknown = An unknown error occurred with this file
 fileUploaded.status.error.default = File upload failed
