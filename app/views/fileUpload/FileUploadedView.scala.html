@@ -43,6 +43,10 @@
 
 @layout(pageTitle = title(form, messages("fileUploaded.title"))) {
 
+    @if(!maybeOutcome.exists(o => o.status == "UPLOADED" || o.status == "FAILED")) {
+        <meta http-equiv="refresh" content="1">
+    }
+
     @formHelper(action = controllers.fileUpload.routes.FileUploadedController.onSubmit(waypoints), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {

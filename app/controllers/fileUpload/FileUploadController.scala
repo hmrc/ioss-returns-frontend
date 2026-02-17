@@ -20,7 +20,7 @@ import config.FrontendAppConfig
 import connectors.UpscanInitiateConnector
 import controllers.actions.*
 import forms.FileUploadFormProvider
-import pages.fileUpload.FileReferencePage
+import pages.fileUpload.{FileReferencePage, FileUploadedPage}
 import pages.Waypoints
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
@@ -56,7 +56,8 @@ class FileUploadController @Inject()(
         redirectOnError = Some(appConfig.errorEndPointTarget)
       ).flatMap { initiateResponse =>
 
-        val updatedAnswers = request.userAnswers
+        val cleanedAnswers = request.userAnswers.remove(FileUploadedPage).get
+        val updatedAnswers = cleanedAnswers
           .set(FileReferencePage, initiateResponse.fileReference.reference).get
 
         cc.sessionRepository.set(updatedAnswers).map { _ =>
