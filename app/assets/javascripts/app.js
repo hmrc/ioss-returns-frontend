@@ -132,3 +132,36 @@ function showTheSpinner() {
     return false;
 }
 
+document.addEventListener("DOMContentLoaded", function() {
+    const continueButton = document.getElementById("file-upload-continue");
+    const radios = document.querySelectorAll('input[name="value"]');
+
+    if (!continueButton || radios.length === 0) return;
+
+    const status = continueButton.dataset.status;
+    if (status !== "UPLOADED") {
+        continueButton.setAttribute("disabled", "disabled");
+    } else {
+        continueButton.removeAttribute("disabled");
+    }
+
+   radios.forEach(radio => {
+        radio.addEventListener("change", function() {
+            if (status === "UPLOADED") {
+                // Always enabled if file uploaded
+                continueButton.removeAttribute("disabled");
+            } else if (status === "FAILED") {
+                // Only enable if user selects "false"
+                if (this.value === "false") {
+                    continueButton.removeAttribute("disabled");
+                } else {
+                    continueButton.setAttribute("disabled", "disabled");
+                }
+            } else {
+                // UPLOADING or any other state → always disabled
+                continueButton.setAttribute("disabled", "disabled");
+            }
+        });
+    });
+});
+

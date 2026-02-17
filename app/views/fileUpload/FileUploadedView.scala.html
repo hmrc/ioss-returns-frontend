@@ -103,10 +103,10 @@
             )
         )
 
-        @if(maybeOutcome.exists(_.status == "UPLOADED")) {
-            @govukButton(
-                ButtonViewModel(messages("site.continue")).withAttribute(("id", "continue"))
-            )
-        }
+        @govukButton(
+            ButtonViewModel(messages("site.continue"))
+                .withAttribute(("id", "file-upload-continue"))
+                .withAttribute(("data-status", maybeOutcome.map(_.status).getOrElse("UPLOADING")))
+        )
     }
 }
