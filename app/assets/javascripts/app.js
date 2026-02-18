@@ -145,8 +145,8 @@ document.addEventListener("DOMContentLoaded", function() {
         continueButton.removeAttribute("disabled");
     }
 
-   radios.forEach(radio => {
-        radio.addEventListener("change", function() {
+   for (var i = 0; i < radios.length; i++)  {
+        radios[i].addEventListener("change", function() {
             if (status === "UPLOADED") {
                 // Always enabled if file uploaded
                 continueButton.removeAttribute("disabled");
@@ -162,6 +162,6 @@ document.addEventListener("DOMContentLoaded", function() {
                 continueButton.setAttribute("disabled", "disabled");
             }
         });
-    });
+    }
 });
 
