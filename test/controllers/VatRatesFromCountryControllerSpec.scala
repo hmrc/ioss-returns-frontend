@@ -18,18 +18,19 @@ package controllers
 
 import base.SpecBase
 import forms.VatRatesFromCountryFormProvider
-import models.{Country, VatRateFromCountry}
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import models.{Country, VatOnSales, VatOnSalesChoice, VatRateFromCountry}
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.{reset, times, verify, when}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Gen
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
-import pages.{JourneyRecoveryPage, SoldToCountryPage, VatRatesFromCountryPage}
+import pages.{JourneyRecoveryPage, SalesToCountryPage, SoldToCountryPage, VatOnSalesPage, VatRatesFromCountryPage}
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
+import queries.{AllSalesByCountryQuery, VatRateWithOptionalSalesFromCountry}
 import repositories.SessionRepository
 import services.VatRateService
 import utils.FutureSyntax.FutureOps
@@ -56,9 +57,9 @@ class VatRatesFromCountryControllerSpec extends SpecBase with MockitoSugar with 
 
   "VatRatesFromCountry Controller" - {
 
-    "must save the answer and redirect to the correct next page for a GET when there's only one VAT rate remaining" in {
+    "must save the answer and redirect to the correct next page for a GET when there's only one VAT rate" in {
 
-      val vatRatesFromCountry = Gen.listOfN(2, arbitrary[VatRateFromCountry]).sample.value
+      val vatRatesFromCountry = Gen.listOfN(1, arbitrary[VatRateFromCountry]).sample.value
       val remainingVatRateForCountry = List(arbitrary[VatRateFromCountry].sample.value)
       val userAnswersWithCountry = emptyUserAnswers
         .set(SoldToCountryPage(index), country).success.value
@@ -68,6 +69,7 @@ class VatRatesFromCountryControllerSpec extends SpecBase with MockitoSugar with 
 
       when(mockSessionRepository.set(any())) thenReturn true.toFuture
       when(mockVatRateService.getRemainingVatRatesForCountry(any(), any(), any())(any())) thenReturn remainingVatRateForCountry.toFuture
+      when(mockVatRateService.vatRates(any(), any())(any())) thenReturn vatRatesFromCountry.toFuture
 
       val application = applicationBuilder(userAnswers = Some(userAnswersWithCountry))
         .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
@@ -81,38 +83,22 @@ class VatRatesFromCountryControllerSpec extends SpecBase with MockitoSugar with 
 
         status(result) mustBe SEE_OTHER
 
-        redirectLocation(result).value mustBe routes.RemainingVatRateFromCountryController.onPageLoad(waypoints, index, index. +(2)).url
-      }
-    }
-
-    "must redirect to the correct next page for a GET when there are no VAT rates remaining" in {
-
-      when(mockVatRateService.getRemainingVatRatesForCountry(any(), any(), any())(any())) thenReturn Seq.empty.toFuture
-
-      val application = applicationBuilder(userAnswers = Some(userAnswersWithCountry))
-        .overrides(bind[VatRateService].toInstance(mockVatRateService))
-        .build()
-
-      running(application) {
-        val request = FakeRequest(GET, vatRatesFromCountryRoute)
-
-        val result = route(application, request).value
-
-        status(result) mustBe SEE_OTHER
-
-        redirectLocation(result).value mustBe routes.CheckSalesController.onPageLoad(waypoints, index).url
+        redirectLocation(result).value mustBe routes.RemainingVatRateFromCountryController.onPageLoad(waypoints, index, index. +(1)).url
       }
     }
 
     "must return OK and the correct view for a GET when there are multiple VAT rates remaining" in {
 
       val vatRatesFromCountry = Gen.listOfN(3, arbitrary[VatRateFromCountry]).sample.value
-      val remainingVatRates = Gen.listOfN(2, arbitrary[VatRateFromCountry]).sample.value
+      val remainingVatRates = Gen.listOfN(2, arbitrary[VatRateFromCountry]).suchThat(x => !vatRatesFromCountry.contains(x)).sample.value
       val userAnswersWithCountry = emptyUserAnswers
         .set(SoldToCountryPage(index), country).success.value
         .set(VatRatesFromCountryPage(index, index), vatRatesFromCountry).success.value
 
       when(mockVatRateService.getRemainingVatRatesForCountry(any(), any(), any())(any())) thenReturn remainingVatRates.toFuture
+      when(mockVatRateService.vatRates(any(), any())(any())) thenReturn vatRatesFromCountry.toFuture
+
+      val preppedForm = formProvider(vatRatesFromCountry).fill(vatRatesFromCountry)
 
       val application = applicationBuilder(userAnswers = Some(userAnswersWithCountry))
         .overrides(bind[VatRateService].toInstance(mockVatRateService))
@@ -128,13 +114,14 @@ class VatRatesFromCountryControllerSpec extends SpecBase with MockitoSugar with 
         status(result) mustBe OK
 
         contentAsString(result) mustBe
-          view(form, waypoints, period, index, country, utils.ItemsHelper.checkboxItems(remainingVatRates), isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
+          view(preppedForm, waypoints, period, index, country, utils.ItemsHelper.checkboxItems(vatRatesFromCountry), isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
       when(mockVatRateService.getRemainingVatRatesForCountry(any(), any(), any())(any())) thenReturn vatRatesFromCountry.toFuture
+      when(mockVatRateService.vatRates(any(), any())(any())) thenReturn vatRatesFromCountry.toFuture
 
       val userAnswers = userAnswersWithCountry.set(VatRatesFromCountryPage(index, index), vatRatesFromCountry).success.value
 
@@ -166,6 +153,13 @@ class VatRatesFromCountryControllerSpec extends SpecBase with MockitoSugar with 
 
     "must save the answer and redirect to the next page when valid data is submitted" in {
 
+      val currentAnswers = userAnswersWithCountry
+        .set(VatRatesFromCountryPage(index, index), vatRatesFromCountry.tail).success.value
+        .set(SalesToCountryPage(index, index), BigDecimal(100)).success.value
+        .set(VatOnSalesPage(index, index), VatOnSales(VatOnSalesChoice.Standard, BigDecimal(50))).success.value
+        .set(SalesToCountryPage(index, index + 1), BigDecimal(2000)).success.value
+        .set(VatOnSalesPage(index, index + 1), VatOnSales(VatOnSalesChoice.Standard, BigDecimal(300))).success.value
+
       val remainingVatRate = Seq(
         VatRateFromCountry(
           rate = vatRatesFromCountry.head.rate,
@@ -178,10 +172,11 @@ class VatRatesFromCountryControllerSpec extends SpecBase with MockitoSugar with 
       val mockSessionRepository = mock[SessionRepository]
 
       when(mockVatRateService.getRemainingVatRatesForCountry(any(), any(), any())(any())) thenReturn remainingVatRate.toFuture
+      when(mockVatRateService.vatRates(any(), any())(any())) thenReturn vatRatesFromCountry.toFuture
       when(mockSessionRepository.set(any())) thenReturn true.toFuture
 
       val application =
-        applicationBuilder(userAnswers = Some(userAnswersWithCountry))
+        applicationBuilder(userAnswers = Some(currentAnswers))
           .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
           .overrides(bind[VatRateService].toInstance(mockVatRateService))
           .build()
@@ -189,15 +184,34 @@ class VatRatesFromCountryControllerSpec extends SpecBase with MockitoSugar with 
       running(application) {
         val request =
           FakeRequest(POST, vatRatesFromCountryRoute)
-            .withFormUrlEncodedBody(("value[0]", vatRatesFromCountry.head.rate.toString))
+            .withFormUrlEncodedBody(
+              ("value[0]", vatRatesFromCountry.head.rate.toString),
+              ("value[1]", vatRatesFromCountry(1).rate.toString),
+              ("value[2]", vatRatesFromCountry(2).rate.toString)
+            )
 
         val result = route(application, request).value
 
-        val expectedAnswers = userAnswersWithCountry
-          .set(VatRatesFromCountryPage(index, index. +(3)), vatRatesFromCountry ++ remainingVatRate).success.value
+        val currentVatRateAnswers = currentAnswers
+          .get(AllSalesByCountryQuery(index)).get
+
+        val currentVatRatesWithAmounts = currentVatRateAnswers.vatRatesFromCountry.toList.flatten
+
+        val additionVatRateOptionalValue = VatRateWithOptionalSalesFromCountry(
+          vatRatesFromCountry.head.rate,
+          vatRatesFromCountry.head.rateType,
+          vatRatesFromCountry.head.validFrom,
+          vatRatesFromCountry.head.validUntil,
+          salesAtVatRate = None
+        )
+
+        val expectedVatRatesAnswers = currentVatRateAnswers.copy(vatRatesFromCountry = Some(currentVatRatesWithAmounts ++ Seq(additionVatRateOptionalValue)))
+
+        val expectedAnswers = currentAnswers
+          .set(AllSalesByCountryQuery(index), expectedVatRatesAnswers).success.value
 
         status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe VatRatesFromCountryPage(index, index. +(3)).navigate(waypoints, userAnswersWithCountry, expectedAnswers).url
+        redirectLocation(result).value mustBe VatRatesFromCountryPage(index, index. +(2)).navigate(waypoints, currentAnswers, expectedAnswers).url
         verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
       }
     }
@@ -205,6 +219,7 @@ class VatRatesFromCountryControllerSpec extends SpecBase with MockitoSugar with 
     "must return a Bad Request and errors when invalid data is submitted" in {
 
       when(mockVatRateService.getRemainingVatRatesForCountry(any(), any(), any())(any())) thenReturn vatRatesFromCountry.toFuture
+      when(mockVatRateService.vatRates(any(), any())(any())) thenReturn vatRatesFromCountry.toFuture
 
       val application = applicationBuilder(userAnswers = Some(userAnswersWithCountry))
         .overrides(bind[VatRateService].toInstance(mockVatRateService))

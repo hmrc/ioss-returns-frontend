@@ -16,17 +16,18 @@
 
 package controllers
 
-import controllers.actions._
+import controllers.actions.*
 import forms.VatRatesFromCountryFormProvider
 import models.requests.DataRequest
 import models.{Index, VatRateFromCountry}
-import pages.{CheckSalesPage, RemainingVatRateFromCountryPage, VatRatesFromCountryPage, Waypoints}
+import pages.{CheckSalesPage, RemainingVatRateFromCountryPage, SalesToCountryPage, VatRatesFromCountryPage, Waypoints}
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import queries.{AllSalesByCountryQuery, SalesToCountryWithOptionalSales, VatRateWithOptionalSalesFromCountry}
 import services.VatRateService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.CompletionChecks
 import utils.FutureSyntax.FutureOps
 import views.html.VatRatesFromCountryView
 
@@ -39,7 +40,7 @@ class VatRatesFromCountryController @Inject()(
                                                formProvider: VatRatesFromCountryFormProvider,
                                                vatRateService: VatRateService,
                                                view: VatRatesFromCountryView
-                                             )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with GetCountry with GetVatRates {
+                                             )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with GetCountry with GetVatRates with CompletionChecks {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
@@ -50,22 +51,23 @@ class VatRatesFromCountryController @Inject()(
 
           val period = request.userAnswers.period
 
-          vatRateService.getRemainingVatRatesForCountry(period, country, currentVatRatesAnswers).flatMap { remainingVatRates =>
+          (for {
+            remainingVatRates <- vatRateService.getRemainingVatRatesForCountry(period, country, currentVatRatesAnswers)
+            allVatRates <- vatRateService.vatRates(period, country)
+          } yield {
 
             val nextVatRateIndex = Index(currentVatRatesAnswers.vatRatesFromCountry.map(_.size).getOrElse(0))
 
             val answers = request.userAnswers.get(VatRatesFromCountryPage(countryIndex, nextVatRateIndex))
 
-            val form: Form[List[VatRateFromCountry]] = formProvider(remainingVatRates.toList, request.isIntermediary)
+            val form: Form[List[VatRateFromCountry]] = formProvider(allVatRates, request.isIntermediary)
 
             val preparedForm = answers match {
               case None => form
               case Some(value) => form.fill(value)
             }
 
-            remainingVatRates.size match {
-              case 0 =>
-                Redirect(CheckSalesPage(countryIndex).route(waypoints)).toFuture
+            allVatRates.size match {
               case 1 =>
                 answers match {
                   case Some(_) =>
@@ -74,9 +76,10 @@ class VatRatesFromCountryController @Inject()(
                     addVatRateAndRedirect(currentVatRatesAnswers, remainingVatRates.toList, countryIndex, nextVatRateIndex, waypoints)
                 }
               case _ =>
-                Ok(view(preparedForm, waypoints, period, countryIndex, country, utils.ItemsHelper.checkboxItems(remainingVatRates), request.isIntermediary, request.companyName)).toFuture
+                Ok(view(preparedForm, waypoints, period, countryIndex, country, utils.ItemsHelper.checkboxItems(allVatRates), request.isIntermediary, request.companyName)).toFuture
             }
-          }
+
+          }).flatten
         }
       }
     }
@@ -89,9 +92,12 @@ class VatRatesFromCountryController @Inject()(
 
           val period = request.userAnswers.period
 
-          vatRateService.getRemainingVatRatesForCountry(period, country, currentVatRatesAnswers).flatMap { remainingVatRates =>
+          (for {
+            remainingVatRates <- vatRateService.getRemainingVatRatesForCountry(period, country, currentVatRatesAnswers)
+            allVatRates <- vatRateService.vatRates(period, country)
+          } yield {
 
-            val form = formProvider(remainingVatRates.toList, request.isIntermediary)
+            val form = formProvider(allVatRates, request.isIntermediary)
             form.bindFromRequest().fold(
               formWithErrors =>
                 BadRequest(view(formWithErrors, waypoints, period, countryIndex, country, utils.ItemsHelper.checkboxItems(remainingVatRates).toList, request.isIntermediary, request.companyName)).toFuture,
@@ -101,30 +107,48 @@ class VatRatesFromCountryController @Inject()(
                 addVatRateAndRedirect(currentVatRatesAnswers, value, countryIndex, nextVatRateIndex, waypoints)
               }
             )
-          }
+          }).flatten
         }
       }
   }
 
   private def addVatRateAndRedirect(
                                      currentVatRatesAnswers: SalesToCountryWithOptionalSales,
-                                     remainingVatRates: List[VatRateFromCountry],
+                                     submittedVatRates: List[VatRateFromCountry],
                                      countryIndex: Index,
                                      nextVatRateIndex: Index,
                                      waypoints: Waypoints
                                    )(implicit request: DataRequest[_]): Future[Result] = {
+    val currentVatRates = currentVatRatesAnswers.vatRatesFromCountry.toSeq.flatten.map(_.rate)
+    val additionalVatRates = submittedVatRates.map(_.rate).filterNot(currentVatRates.contains)
+    val removedVatRates = currentVatRates.filterNot(submittedVatRates.map(_.rate).contains)
+
     val allVatRates = currentVatRatesAnswers.copy(vatRatesFromCountry = {
       currentVatRatesAnswers.vatRatesFromCountry match {
         case Some(currentVatRatesFromCountry) =>
-          Some(currentVatRatesFromCountry ++ remainingVatRates.map(VatRateWithOptionalSalesFromCountry.fromVatRateFromCountry))
+
+          Some(
+            currentVatRatesFromCountry
+              .filterNot(x => removedVatRates.contains(x.rate)) ++
+            submittedVatRates
+              .filter(x => additionalVatRates.contains(x.rate))
+              .map(VatRateWithOptionalSalesFromCountry.fromVatRateFromCountry)
+          )
         case _ =>
-          Some(remainingVatRates.map(VatRateWithOptionalSalesFromCountry.fromVatRateFromCountry))
+          Some(submittedVatRates.map(VatRateWithOptionalSalesFromCountry.fromVatRateFromCountry))
       }
     })
 
     for {
       updatedAnswers <- Future.fromTry(request.userAnswers.set(AllSalesByCountryQuery(countryIndex), allVatRates))
+      firstIncompleteSales = getIncompleteVatRatesAndSalesFromUserAnswers(countryIndex, updatedAnswers).headOption.map(x => Index(x._2)).getOrElse(nextVatRateIndex)
       _ <- cc.sessionRepository.set(updatedAnswers)
-    } yield Redirect(VatRatesFromCountryPage(countryIndex, nextVatRateIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route)
+    } yield {
+      if(additionalVatRates.isEmpty) {
+        Redirect(CheckSalesPage(countryIndex, None).route(waypoints))
+      } else {
+        Redirect(VatRatesFromCountryPage(countryIndex, firstIncompleteSales).navigate(waypoints, request.userAnswers, updatedAnswers).route)
+      }
+    }
   }
 }
