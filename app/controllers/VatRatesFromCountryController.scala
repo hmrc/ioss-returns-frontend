@@ -141,13 +141,18 @@ class VatRatesFromCountryController @Inject()(
 
     for {
       updatedAnswers <- Future.fromTry(request.userAnswers.set(AllSalesByCountryQuery(countryIndex), allVatRates))
-      firstIncompleteSales = getIncompleteVatRatesAndSalesFromUserAnswers(countryIndex, updatedAnswers).headOption.map(x => Index(x._2)).getOrElse(nextVatRateIndex)
+      firstIncompleteSales = getIncompleteVatRatesAndSalesFromUserAnswers(countryIndex, updatedAnswers)
+        .headOption
+        .map(x => Index(x._2))
       _ <- cc.sessionRepository.set(updatedAnswers)
     } yield {
-      if(additionalVatRates.isEmpty) {
+      if(additionalVatRates.isEmpty && firstIncompleteSales.isEmpty) {
         Redirect(CheckSalesPage(countryIndex, None).route(waypoints))
       } else {
-        Redirect(VatRatesFromCountryPage(countryIndex, firstIncompleteSales).navigate(waypoints, request.userAnswers, updatedAnswers).route)
+        Redirect(
+          VatRatesFromCountryPage(countryIndex, firstIncompleteSales.getOrElse(nextVatRateIndex))
+          .navigate(waypoints, request.userAnswers, updatedAnswers).route
+        )
       }
     }
   }
