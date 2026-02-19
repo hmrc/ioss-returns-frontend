@@ -19,6 +19,7 @@ package controllers.fileUpload
 import connectors.FileUploadOutcomeConnector
 import controllers.actions.*
 import forms.FileUploadedFormProvider
+import models.upscan.UpscanRedirectError
 import pages.fileUpload.{FileReferencePage, FileUploadedPage}
 import pages.Waypoints
 import play.api.data.Form
@@ -49,13 +50,14 @@ class FileUploadedController @Inject()(
       val isIntermediary = request.isIntermediary
       val companyName = request.companyName
       val fileReference = request.userAnswers.get(FileReferencePage)
+      val redirectError = UpscanRedirectError.fromQuery(request)
 
       fileReference match {
         case Some(ref) =>
           fileUploadOutcomeConnector.getOutcome(ref).map { maybeOutcome =>
             val preparedForm = request.userAnswers.get(FileUploadedPage).fold(form)(form.fill)
 
-            Ok(view(preparedForm, waypoints, period, isIntermediary, companyName, maybeOutcome))
+            Ok(view(preparedForm, waypoints, period, isIntermediary, companyName, maybeOutcome, redirectError))
           }
         case None =>
           Future.successful(BadRequest("No file reference found in session."))
@@ -69,13 +71,14 @@ class FileUploadedController @Inject()(
       val isIntermediary = request.isIntermediary
       val companyName = request.companyName
       val fileReference = request.userAnswers.get(FileReferencePage)
+      val redirectError = UpscanRedirectError.fromQuery(request)
 
       fileReference match {
         case Some(ref) =>
           form.bindFromRequest().fold(
             formWithErrors =>
               fileUploadOutcomeConnector.getOutcome(ref).map { maybeOutcome =>
-                BadRequest(view(formWithErrors, waypoints, period, isIntermediary, companyName, maybeOutcome))
+                BadRequest(view(formWithErrors, waypoints, period, isIntermediary, companyName, maybeOutcome, redirectError))
               },
             value =>
               for {

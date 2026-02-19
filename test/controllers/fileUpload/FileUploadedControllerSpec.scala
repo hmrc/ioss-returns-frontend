@@ -33,6 +33,7 @@ import repositories.SessionRepository
 import uk.gov.hmrc.http.HeaderCarrier
 import views.html.fileUpload.FileUploadedView
 
+import java.net.URLEncoder
 import scala.concurrent.Future
 
 class FileUploadedControllerSpec extends SpecBase with MockitoSugar {
@@ -212,6 +213,29 @@ class FileUploadedControllerSpec extends SpecBase with MockitoSugar {
           companyName,
           Some(nonCsvOutcome)
         )(request, messages(application)).toString
+      }
+    }
+
+    "must display failed status and correct error message when upload failed" in {
+
+      when(mockOutcomeConnector.getOutcome(eqTo("fake-ref"))(any()))
+        .thenReturn(Future.successful(Some(failedOutcome)))
+
+      val application = applicationBuilder(userAnswers = Some(userAnswersWithRef))
+        .overrides(bind[FileUploadOutcomeConnector].toInstance(mockOutcomeConnector))
+        .build()
+
+      running(application) {
+        val request = FakeRequest(GET, fileUploadedRoute)
+
+        val result = route(application, request).value
+        val body = contentAsString(result)
+
+        status(result) mustEqual OK
+        
+        body must include(messages(application)("fileUploaded.status.failed"))
+        
+        body must include(messages(application)("fileUploaded.status.error.rejected"))
       }
     }
   }

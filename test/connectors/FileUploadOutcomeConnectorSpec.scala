@@ -21,9 +21,8 @@ import com.github.tomakehurst.wiremock.client.WireMock.*
 import models.upscan.FileUploadOutcome
 import org.scalatest.matchers.must.Matchers
 import play.api.Application
-import play.api.http.Status.{INTERNAL_SERVER_ERROR, OK}
 import play.api.test.Helpers.running
-import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
+import uk.gov.hmrc.http.HeaderCarrier
 
 class FileUploadOutcomeConnectorSpec extends SpecBase with WireMockHelper with Matchers {
 

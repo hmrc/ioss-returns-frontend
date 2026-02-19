@@ -139,6 +139,8 @@ document.addEventListener("DOMContentLoaded", function() {
     if (!continueButton || radios.length === 0) return;
 
     const status = continueButton.dataset.status;
+    const hasRedirectError = continueButton.dataset.redirectError === "true";
+
     if (status !== "UPLOADED") {
         continueButton.setAttribute("disabled", "disabled");
     } else {
@@ -150,7 +152,7 @@ document.addEventListener("DOMContentLoaded", function() {
             if (status === "UPLOADED") {
                 // Always enabled if file uploaded
                 continueButton.removeAttribute("disabled");
-            } else if (status === "FAILED") {
+            } else if (status === "FAILED" || hasRedirectError) {
                 // Only enable if user selects "false"
                 if (this.value === "false") {
                     continueButton.removeAttribute("disabled");

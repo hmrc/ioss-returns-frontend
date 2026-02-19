@@ -15,6 +15,7 @@
  *@
 
 @import models.upscan.FileUploadOutcome
+@import models.upscan.UpscanRedirectError
 
 @this(
     layout: templates.Layout,
@@ -30,7 +31,8 @@
     period: Period,
     isIntermediary: Boolean,
     companyName: String,
-    maybeOutcome: Option[FileUploadOutcome]
+    maybeOutcome: Option[FileUploadOutcome],
+    redirectError: Option[UpscanRedirectError] = None
 )(implicit request: Request[_], messages: Messages)
 
 @caption = @{
@@ -43,7 +45,7 @@
 
 @layout(pageTitle = title(form, messages("fileUploaded.title"))) {
 
-    @if(!maybeOutcome.exists(o => o.status == "UPLOADED" || o.status == "FAILED")) {
+    @if(redirectError.isEmpty && !maybeOutcome.exists(o => o.status == "UPLOADED" || o.status == "FAILED")) {
         <meta http-equiv="refresh" content="1">
     }
 
@@ -59,36 +61,65 @@
         </header>
 
         <dl class="govuk-summary-list govuk-summary-list--long-key">
-            <div class="govuk-summary-list__row">
-                @if(maybeOutcome.map(_.status).contains("UPLOADED")) {
-                    <dt class="govuk-summary-list__key govuk-!-font-weight-regular">
-                        @maybeOutcome.flatMap(_.fileName).getOrElse("")
-                    </dt>
-                    <dd class="govuk-summary-list__value">
-                        <strong class="govuk-tag govuk-tag--green">@messages("fileUploaded.status.uploaded")</strong>
-                    </dd>
-                } else if(maybeOutcome.map(_.status).contains("FAILED")) {
+            @if(redirectError.isDefined) {
+                <div class="govuk-summary-list__row govuk-summary-list__row--no-border">
                     <dt class="govuk-summary-list__key govuk-!-font-weight-regular">
                         @maybeOutcome.flatMap(_.fileName).getOrElse("")
                     </dt>
                     <dd class="govuk-summary-list__value">
                         <strong class="govuk-tag govuk-tag--red">@messages("fileUploaded.status.failed")</strong>
                     </dd>
-                    @maybeOutcome.flatMap(_.failureReason).map { reason =>
+                </div>
+                <div class="govuk-summary-list__row">
+                    @redirectError.map { err =>
                         <p class="govuk-error-message">
-                            @messages(s"fileUploaded.status.error.${reason.toLowerCase}")
+                            @if(err.code == "EntityTooLarge") {
+                                @messages("fileUploaded.status.error.too_large")
+                            } else {
+                                @messages("fileUploaded.redirectError.default")
+                            }
                         </p>
                     }
-                } else {
+                </div>
+            } else if(maybeOutcome.map(_.status).contains("UPLOADED")) {
+                <div class="govuk-summary-list__row">
+                    <dt class="govuk-summary-list__key govuk-!-font-weight-regular">
+                        @maybeOutcome.flatMap(_.fileName).getOrElse("")
+                    </dt>
+                    <dd class="govuk-summary-list__value">
+                        <strong class="govuk-tag govuk-tag--green">@messages("fileUploaded.status.uploaded")</strong>
+                    </dd>
+                </div>
+            } else if(maybeOutcome.map(_.status).contains("FAILED")) {
+                <div class="govuk-summary-list__row govuk-summary-list__row--no-border">
+                    <dt class="govuk-summary-list__key govuk-!-font-weight-regular">
+                        @maybeOutcome.flatMap(_.fileName).getOrElse("")
+                    </dt>
+                    <dd class="govuk-summary-list__value">
+                        <strong class="govuk-tag govuk-tag--red">@messages("fileUploaded.status.failed")</strong>
+                    </dd>
+                </div>
+                <div class="govuk-summary-list__row">
+                    <p class="govuk-error-message">
+                        @messages(
+                            maybeOutcome.flatMap(_.failureReason)
+                                .map(r => s"fileUploaded.status.error.${r.toLowerCase}")
+                                .getOrElse("fileUploaded.status.error.default")
+                        )
+                    </p>
+                </div>
+            } else {
+                <div class="govuk-summary-list__row">
                     <dt class="govuk-summary-list__key govuk-!-font-weight-regular">
                         @maybeOutcome.flatMap(_.fileName).getOrElse("")
                     </dt>
                     <dd class="govuk-summary-list__value">
                         <strong class="govuk-tag govuk-tag--yellow">@messages("fileUploaded.status.uploading")</strong>
                     </dd>
-                }
-            </div>
+                </div>
+            }
         </dl>
+
 
         @govukRadios(
             RadiosViewModel(
@@ -111,6 +142,7 @@
             ButtonViewModel(messages("site.continue"))
                 .withAttribute(("id", "file-upload-continue"))
                 .withAttribute(("data-status", maybeOutcome.map(_.status).getOrElse("UPLOADING")))
+                .withAttribute(("data-redirect-error", redirectError.isDefined.toString))
         )
     }
 }
