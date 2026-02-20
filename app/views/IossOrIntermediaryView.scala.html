@@ -28,39 +28,40 @@
 
 @layout(pageTitle = title(form, messages("iossOrIntermediary.title", totalNumberOfEnrolments))) {
 
-   @formHelper(action = controllers.intermediary.routes.IossOrIntermediaryController.onSubmit(), Symbol("autoComplete") -> "off")
+   @formHelper(action = controllers.intermediary.routes.IossOrIntermediaryController.onSubmit(), Symbol("autoComplete") -> "off") {
 
-   @if(form.errors.nonEmpty) {
-     @govukErrorSummary(ErrorSummaryViewModel(form))
-   }
-
-   <h1 class="govuk-heading-l">@messages("iossOrIntermediary.heading", totalNumberOfEnrolments)</h1>
-
-   @govukRadios(
-     RadiosViewModel(
-       field = form("value"),
-       legend = LegendViewModel(messages("iossOrIntermediary.heading", totalNumberOfEnrolments)).withCssClass("govuk-visually-hidden"),
-       items = numberOfEnrolments.map { enrolment =>
-         if (enrolment.value.startsWith("IM")) {
-
-             RadioItem(
-                 content = HtmlContent(Html(messages("iossOrIntermediary.option.ioss", enrolment.value))),
-                 value = Some(enrolment.value),
-                 id = Some(enrolment.value)
-             )
-         } else {
-
-             RadioItem(
-                 content = HtmlContent(Html(messages("iossOrIntermediary.option.intermediary", enrolment.value))),
-                 value = Some(enrolment.value),
-                 id = Some(enrolment.value)
-             )
-         }
+       @if(form.errors.nonEmpty) {
+           @govukErrorSummary(ErrorSummaryViewModel(form))
        }
-     )
-   )
 
-   @govukButton(
-       ButtonViewModel(messages("site.continue")).withAttribute("id", "continue")
-   )
+       <h1 class="govuk-heading-l">@messages("iossOrIntermediary.heading", totalNumberOfEnrolments)</h1>
+
+       @govukRadios(
+           RadiosViewModel(
+               field = form("value"),
+               legend = LegendViewModel(messages("iossOrIntermediary.heading", totalNumberOfEnrolments)).withCssClass("govuk-visually-hidden"),
+               items = numberOfEnrolments.map { enrolment =>
+                   if(enrolment.value.startsWith("IM")) {
+
+                       RadioItem(
+                           content = HtmlContent(Html(messages("iossOrIntermediary.option.ioss", enrolment.value))),
+                           value = Some(enrolment.value),
+                           id = Some(enrolment.value)
+                       )
+                   } else {
+
+                       RadioItem(
+                           content = HtmlContent(Html(messages("iossOrIntermediary.option.intermediary", enrolment.value))),
+                           value = Some(enrolment.value),
+                           id = Some(enrolment.value)
+                       )
+                   }
+               }
+           )
+       )
+
+       @govukButton(
+           ButtonViewModel(messages("site.continue")).withAttribute("id", "continue")
+       )
+   }
 }
