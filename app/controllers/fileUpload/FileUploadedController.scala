@@ -40,8 +40,6 @@ class FileUploadedController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  val form: Form[Boolean] = formProvider()
-
   def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndIntermediaryEnabled().async {
     implicit request =>
 
@@ -54,6 +52,7 @@ class FileUploadedController @Inject()(
         case Some(ref) =>
           fileUploadOutcomeConnector.getOutcome(ref).flatMap { maybeOutcome =>
             val status = maybeOutcome.map(_.status).getOrElse("UPLOADING")
+            val form = formForStatus(status)
             val preparedForm = request.userAnswers.get(FileUploadedPage).fold(form)(form.fill)
 
             for {
@@ -79,19 +78,26 @@ class FileUploadedController @Inject()(
 
       fileReference match {
         case Some(ref) =>
-          form.bindFromRequest().fold(
-            formWithErrors =>
-              fileUploadOutcomeConnector.getOutcome(ref).map { maybeOutcome =>
-                BadRequest(view(formWithErrors, waypoints, period, isIntermediary, companyName, maybeOutcome))
-              },
-            value =>
-              for {
-                updatedAnswers <- Future.fromTry(request.userAnswers.set(FileUploadedPage, value))
-                _              <- cc.sessionRepository.set(updatedAnswers)
-              } yield Redirect(FileUploadedPage.navigate(waypoints, request.userAnswers, updatedAnswers).route)
-          )
+          fileUploadOutcomeConnector.getOutcome(ref).flatMap { maybeOutcome =>
+            val status = maybeOutcome.map(_.status).getOrElse("UPLOADING")
+            val form = formForStatus(status)
+            form.bindFromRequest().fold(
+              formWithErrors =>
+                Future.successful(
+                  BadRequest(view(formWithErrors, waypoints, period, isIntermediary, companyName, maybeOutcome))
+                ),
+              value =>
+                for {
+                  updatedAnswers <- Future.fromTry(request.userAnswers.set(FileUploadedPage, value))
+                  _ <- cc.sessionRepository.set(updatedAnswers)
+                } yield Redirect(FileUploadedPage.navigate(waypoints, request.userAnswers, updatedAnswers).route)
+            )
+          }
         case None =>
           Future.successful(BadRequest("No file reference found in session."))
       }
   }
+
+  private def formForStatus(status: String): Form[Boolean] =
+    if (status == "FAILED") formProvider.failedForm else formProvider.successForm
 }

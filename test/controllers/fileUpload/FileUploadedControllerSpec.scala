@@ -33,13 +33,13 @@ import repositories.SessionRepository
 import uk.gov.hmrc.http.HeaderCarrier
 import views.html.fileUpload.FileUploadedView
 
-import java.net.URLEncoder
 import scala.concurrent.Future
 
 class FileUploadedControllerSpec extends SpecBase with MockitoSugar {
 
   val formProvider = new FileUploadedFormProvider()
-  val form: Form[Boolean] = formProvider()
+  val successForm: Form[Boolean] = formProvider.successForm
+  val failedForm: Form[Boolean] = formProvider.failedForm
   private val successfulOutcome = FileUploadOutcome(
     fileName = Some("test.csv"),
     status = "READY",
@@ -75,7 +75,7 @@ class FileUploadedControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[FileUploadedView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, waypoints, period, false, companyName, Some(successfulOutcome))(request, messages(application)).toString
+        contentAsString(result) mustEqual view(successForm, waypoints, period, false, companyName, Some(successfulOutcome))(request, messages(application)).toString
       }
     }
 
@@ -97,7 +97,7 @@ class FileUploadedControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(true), waypoints, period, false, companyName, Some(successfulOutcome))(request, messages(application)).toString
+        contentAsString(result) mustEqual view(successForm.fill(true), waypoints, period, false, companyName, Some(successfulOutcome))(request, messages(application)).toString
       }
     }
 
@@ -142,7 +142,7 @@ class FileUploadedControllerSpec extends SpecBase with MockitoSugar {
           FakeRequest(POST, fileUploadedRoute)
             .withFormUrlEncodedBody(("value", ""))
 
-        val boundForm = form.bind(Map("value" -> ""))
+        val boundForm = successForm.bind(Map("value" -> ""))
 
         val view = application.injector.instanceOf[FileUploadedView]
 
@@ -206,7 +206,7 @@ class FileUploadedControllerSpec extends SpecBase with MockitoSugar {
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(
-          form,
+          failedForm,
           waypoints,
           period,
           false,

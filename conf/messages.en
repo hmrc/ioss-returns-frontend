@@ -672,6 +672,7 @@ fileUploaded.no = No, I want to upload a different file
 fileUploaded.failed.no = No, enter the return manually
 fileUploaded.checkYourAnswersLabel = file uploaded
 fileUploaded.error.required = Select yes if this is the correct file
+fileUploaded.failed.error.required = Select yes if you want to try uploading it again
 fileUploaded.change.hidden = File uploaded
 fileUploaded.uploading = Your file is uploading. This page will update automatically.
 
