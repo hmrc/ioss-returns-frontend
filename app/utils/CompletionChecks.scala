@@ -30,13 +30,15 @@ import scala.concurrent.Future
 
 trait CompletionChecks {
 
-  def getIncompleteCorrectionsToCountry(periodIndex: Index, countryIndex: Index)(implicit request: DataRequest[AnyContent]): Option[CorrectionToCountry] = {
+  def getIncompleteCorrectionsToCountry(periodIndex: Index, countryIndex: Index)
+                                       (implicit request: DataRequest[AnyContent]): Option[CorrectionToCountry] = {
     request.userAnswers
       .get(CorrectionToCountryQuery(periodIndex, countryIndex))
       .find(_.countryVatCorrection.isEmpty)
   }
 
-  def getIncompleteCorrections(periodIndex: Index)(implicit request: DataRequest[AnyContent]): List[CorrectionToCountry] = {
+  def getIncompleteCorrections(periodIndex: Index)
+                              (implicit request: DataRequest[AnyContent]): List[CorrectionToCountry] = {
     request.userAnswers
       .get(AllCorrectionCountriesQuery(periodIndex))
       .map(_.filter(_.countryVatCorrection.isEmpty)).getOrElse(List.empty)
@@ -49,12 +51,10 @@ trait CompletionChecks {
       .find(indexedCorrection => incompleteCorrections.contains(indexedCorrection._1))
   }
 
-  def getIncompleteVatRateAndSales(countryIndex: Index)(implicit request: DataRequest[AnyContent]): Seq[(VatRateWithOptionalSalesFromCountry, Int)] = {
-    getIncompleteVatRatesAndSalesFromUserAnswers(countryIndex, request.userAnswers)
-  }
-
-  def getIncompleteVatRatesAndSalesFromUserAnswers(countryIndex: Index, userAnswers: UserAnswers): Seq[(VatRateWithOptionalSalesFromCountry, Int)] = {
-    val noSales = userAnswers
+  def getIncompleteVatRateAndSales(countryIndex: Index)
+                                  (implicit request: DataRequest[AnyContent])
+  : Seq[(VatRateWithOptionalSalesFromCountry, Int)] = {
+    val noSales = request.userAnswers
       .get(AllSalesWithOptionalVatQuery(countryIndex))
       .map(_.zipWithIndex
         .filter(_._1.salesAtVatRate.isEmpty)
@@ -85,7 +85,8 @@ trait CompletionChecks {
   }
 
   def firstIndexedIncompleteCountrySales(incompleteCountries: Seq[Country])
-                                        (implicit request: DataRequest[AnyContent]): Option[(SalesToCountryWithOptionalSales, Int)] = {
+                                        (implicit request: DataRequest[AnyContent])
+  : Option[(SalesToCountryWithOptionalSales, Int)] = {
     request.userAnswers.get(AllSalesWithTotalAndVatQuery)
       .getOrElse(List.empty).zipWithIndex
       .find(indexedCorrection => incompleteCountries.contains(indexedCorrection._1.country))
@@ -142,17 +143,6 @@ trait CompletionChecks {
                                         (onSuccess: => Future[Result]): Future[Result] = {
 
     val incomplete = data(index)
-    if (incomplete.isEmpty) {
-      onSuccess
-    } else {
-      onFailure(incomplete)
-    }
-  }
-
-  protected def withCompleteData[A](data: () => Seq[A], onFailure: Seq[A] => Result)
-                                   (onSuccess: => Result): Result = {
-
-    val incomplete = data()
     if (incomplete.isEmpty) {
       onSuccess
     } else {
