@@ -46,15 +46,5 @@ class StartReturnsJourneySpec extends AnyFreeSpec with JourneyHelpers with SpecB
           pageMustBe(SoldGoodsPage)
         )
     }
-
-    "must ask user if they want to upload a file for the return for the available period" in {
-      when(mockAppConfig.intermediaryEnabled) thenReturn true
-      startingFrom(YourAccountPage, answers = UserAnswers(userAnswersId, iossNumber, period))
-        .run(
-          goTo(StartReturnPage(period, mockAppConfig)),
-          submitAnswer(StartReturnPage(period, mockAppConfig), true),
-          pageMustBe(WantToUploadFilePage)
-        )
-    }
   }
 }

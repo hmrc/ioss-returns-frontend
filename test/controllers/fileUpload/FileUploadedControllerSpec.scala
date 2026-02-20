@@ -17,17 +17,20 @@
 package controllers.fileUpload
 
 import base.SpecBase
+import connectors.FileUploadOutcomeConnector
 import controllers.routes
 import forms.FileUploadedFormProvider
-import org.mockito.ArgumentMatchers.any
+import models.upscan.FileUploadOutcome
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
-import pages.FileUploadedPage
+import pages.fileUpload.{FileReferencePage, FileUploadedPage}
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import repositories.SessionRepository
+import uk.gov.hmrc.http.HeaderCarrier
 import views.html.fileUpload.FileUploadedView
 
 import scala.concurrent.Future
@@ -35,8 +38,22 @@ import scala.concurrent.Future
 class FileUploadedControllerSpec extends SpecBase with MockitoSugar {
 
   val formProvider = new FileUploadedFormProvider()
-  val form: Form[Boolean] = formProvider()
-  private val fileName = "test.csv"
+  val successForm: Form[Boolean] = formProvider.successForm
+  val failedForm: Form[Boolean] = formProvider.failedForm
+  private val successfulOutcome = FileUploadOutcome(
+    fileName = Some("test.csv"),
+    status = "READY",
+    failureReason = None
+  )
+  private val failedOutcome = FileUploadOutcome(
+    fileName = Some("test.csv"),
+    status = "FAILED",
+    failureReason = Some("REJECTED")
+  )
+  private val userAnswersWithRef = emptyUserAnswers.set(FileReferencePage, "fake-ref").success.value
+  private val mockOutcomeConnector = mock[FileUploadOutcomeConnector]
+
+  implicit val hc: HeaderCarrier = HeaderCarrier()
 
   lazy val fileUploadedRoute: String = controllers.fileUpload.routes.FileUploadedController.onPageLoad(waypoints).url
 
@@ -44,7 +61,11 @@ class FileUploadedControllerSpec extends SpecBase with MockitoSugar {
 
     "must return OK and the correct view for a GET" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      when(mockOutcomeConnector.getOutcome(eqTo("fake-ref"))(any())).thenReturn(Future.successful(Some(successfulOutcome)))
+
+      val application = applicationBuilder(userAnswers = Some(userAnswersWithRef))
+        .overrides(bind[FileUploadOutcomeConnector].toInstance(mockOutcomeConnector))
+        .build()
 
       running(application) {
         val request = FakeRequest(GET, fileUploadedRoute)
@@ -54,15 +75,19 @@ class FileUploadedControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[FileUploadedView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, waypoints, period, false, companyName, Some(fileName))(request, messages(application)).toString
+        contentAsString(result) mustEqual view(successForm, waypoints, period, false, companyName, Some(successfulOutcome))(request, messages(application)).toString
       }
     }
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = emptyUserAnswers.set(FileUploadedPage, true).success.value
+      when(mockOutcomeConnector.getOutcome(eqTo("fake-ref"))(any())).thenReturn(Future.successful(Some(successfulOutcome)))
 
-      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+      val userAnswers = userAnswersWithRef.set(FileUploadedPage, true).success.value
+
+      val application = applicationBuilder(userAnswers = Some(userAnswers))
+        .overrides(bind[FileUploadOutcomeConnector].toInstance(mockOutcomeConnector))
+        .build()
 
       running(application) {
         val request = FakeRequest(GET, fileUploadedRoute)
@@ -72,7 +97,7 @@ class FileUploadedControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(true), waypoints, period, false, companyName, Some(fileName))(request, messages(application)).toString
+        contentAsString(result) mustEqual view(successForm.fill(true), waypoints, period, false, companyName, Some(successfulOutcome))(request, messages(application)).toString
       }
     }
 
@@ -80,11 +105,13 @@ class FileUploadedControllerSpec extends SpecBase with MockitoSugar {
 
       val mockSessionRepository = mock[SessionRepository]
 
+      when(mockOutcomeConnector.getOutcome(eqTo("fake-ref"))(any())).thenReturn(Future.successful(Some(successfulOutcome)))
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
       val application =
-        applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        applicationBuilder(userAnswers = Some(userAnswersWithRef))
           .overrides(
+            bind[FileUploadOutcomeConnector].toInstance(mockOutcomeConnector),
             bind[SessionRepository].toInstance(mockSessionRepository)
           )
           .build()
@@ -104,21 +131,25 @@ class FileUploadedControllerSpec extends SpecBase with MockitoSugar {
 
     "must return a Bad Request and errors when invalid data is submitted" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      when(mockOutcomeConnector.getOutcome(eqTo("fake-ref"))(any())).thenReturn(Future.successful(Some(successfulOutcome)))
+
+      val application = applicationBuilder(userAnswers = Some(userAnswersWithRef))
+        .overrides(bind[FileUploadOutcomeConnector].toInstance(mockOutcomeConnector))
+        .build()
 
       running(application) {
         val request =
           FakeRequest(POST, fileUploadedRoute)
             .withFormUrlEncodedBody(("value", ""))
 
-        val boundForm = form.bind(Map("value" -> ""))
+        val boundForm = successForm.bind(Map("value" -> ""))
 
         val view = application.injector.instanceOf[FileUploadedView]
 
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, waypoints, period, false, companyName, Some(fileName))(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, waypoints, period, false, companyName, Some(successfulOutcome))(request, messages(application)).toString
       }
     }
 
@@ -149,6 +180,62 @@ class FileUploadedControllerSpec extends SpecBase with MockitoSugar {
 
         status(result) mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+      }
+    }
+
+    "must display failed status when non-CSV file was uploaded" in {
+
+      val nonCsvOutcome = FileUploadOutcome(
+        fileName = Some("not-a-csv.pdf"),
+        status = "FAILED",
+        failureReason = Some("InvalidArgument")
+      )
+
+      when(mockOutcomeConnector.getOutcome(eqTo("fake-ref"))(any()))
+        .thenReturn(Future.successful(Some(nonCsvOutcome)))
+
+      val application = applicationBuilder(userAnswers = Some(userAnswersWithRef))
+        .overrides(bind[FileUploadOutcomeConnector].toInstance(mockOutcomeConnector))
+        .build()
+
+      running(application) {
+        val request = FakeRequest(GET, fileUploadedRoute)
+        val view = application.injector.instanceOf[FileUploadedView]
+
+        val result = route(application, request).value
+
+        status(result) mustEqual OK
+        contentAsString(result) mustEqual view(
+          failedForm,
+          waypoints,
+          period,
+          false,
+          companyName,
+          Some(nonCsvOutcome)
+        )(request, messages(application)).toString
+      }
+    }
+
+    "must display failed status and correct error message when upload failed" in {
+
+      when(mockOutcomeConnector.getOutcome(eqTo("fake-ref"))(any()))
+        .thenReturn(Future.successful(Some(failedOutcome)))
+
+      val application = applicationBuilder(userAnswers = Some(userAnswersWithRef))
+        .overrides(bind[FileUploadOutcomeConnector].toInstance(mockOutcomeConnector))
+        .build()
+
+      running(application) {
+        val request = FakeRequest(GET, fileUploadedRoute)
+
+        val result = route(application, request).value
+        val body = contentAsString(result)
+
+        status(result) mustEqual OK
+        
+        body must include(messages(application)("fileUploaded.status.failed"))
+        
+        body must include(messages(application)("fileUploaded.status.error.rejected"))
       }
     }
   }

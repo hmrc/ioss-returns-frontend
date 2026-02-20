@@ -14,18 +14,19 @@
  * limitations under the License.
  */
 
-package forms
+package pages.fileUpload
 
-import javax.inject.Inject
+import pages.{QuestionPage, Waypoints}
+import play.api.libs.json.JsPath
+import play.api.mvc.Call
 
-import forms.mappings.Mappings
-import play.api.data.Form
+case object FileReferencePage extends QuestionPage[String] {
+  
+  override def path: JsPath = JsPath \ toString
+  
+  override def toString: String = "fileReference"
 
-class FileUploadedFormProvider @Inject() extends Mappings {
-
-  def successForm: Form[Boolean] =
-    Form("value" -> boolean("fileUploaded.error.required"))
-
-  def failedForm: Form[Boolean] =
-    Form("value" -> boolean("fileUploaded.failed.error.required"))
+  override def route(waypoints: Waypoints): Call =
+    controllers.fileUpload.routes.FileUploadController.onPageLoad(waypoints)
 }
+

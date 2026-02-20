@@ -14,18 +14,21 @@
  * limitations under the License.
  */
 
-package forms
+package pages.fileUpload
 
-import javax.inject.Inject
+import models.UserAnswers
+import pages.{Page, QuestionPage, Waypoints}
+import play.api.libs.json.JsPath
+import play.api.mvc.Call
 
-import forms.mappings.Mappings
-import play.api.data.Form
+case object FileUploadPage extends QuestionPage[String] {
 
-class FileUploadedFormProvider @Inject() extends Mappings {
+  override def path: JsPath = JsPath \ toString
 
-  def successForm: Form[Boolean] =
-    Form("value" -> boolean("fileUploaded.error.required"))
+  override def toString: String = "fileUpload"
 
-  def failedForm: Form[Boolean] =
-    Form("value" -> boolean("fileUploaded.failed.error.required"))
+  override def route(waypoints: Waypoints): Call = controllers.fileUpload.routes.FileUploadController.onPageLoad(waypoints)
+
+  override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
+    FileUploadedPage
 }

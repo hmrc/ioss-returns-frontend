@@ -31,7 +31,7 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatest.prop.TableDrivenPropertyChecks
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import org.scalatestplus.mockito.MockitoSugar.mock
-import pages.{EmptyWaypoints, NoOtherPeriodsAvailablePage, WantToUploadFilePage}
+import pages.{EmptyWaypoints, NoOtherPeriodsAvailablePage, SoldGoodsPage, WantToUploadFilePage}
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.test.FakeRequest
@@ -574,7 +574,7 @@ class StartReturnControllerSpec
     }
 
     "POST" - {
-      "must redirect to the next page when a YES is submitted for a current due or overdue period" in {
+      "must redirect to the next page when a YES is submitted for a current due or overdue period and Intermediary not enabled" in {
         val options = Table(
           "status",
           Due,
@@ -592,6 +592,47 @@ class StartReturnControllerSpec
             .thenReturn(Future.successful(None))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+            .configure(
+              "features.intermediary.enabled" -> false
+            )
+            .overrides(bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector))
+            .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
+            .build()
+
+          running(application) {
+            val request =
+              FakeRequest(POST, startReturnRoute)
+                .withFormUrlEncodedBody(("value", "true"))
+
+            val result = route(application, request).value
+
+            status(result) mustBe SEE_OTHER
+            redirectLocation(result).value mustBe SoldGoodsPage.route(waypoints).url
+          }
+        }
+      }
+
+      "must redirect to the next page when a YES is submitted for a current due or overdue period and Intermediary enabled" in {
+        val options = Table(
+          "status",
+          Due,
+          Overdue
+        )
+
+        forAll(options) { submissionStatus =>
+          resetMocks()
+
+          when(mockReturnStatusConnector.getCurrentReturns(ArgumentMatchers.eq(iossNumber))(any()))
+            .thenReturn(Future.successful(
+              Right(emptyCurrentReturns.copy(returns = List(createReturn(submissionStatus, period))))
+            ))
+          when(mockPartialReturnPeriodService.getPartialReturnPeriod(any(), any(), any())(any()))
+            .thenReturn(Future.successful(None))
+
+          val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+            .configure(
+              "features.intermediary.enabled" -> true
+            )
             .overrides(bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector))
             .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
             .build()

@@ -14,18 +14,19 @@
  * limitations under the License.
  */
 
-package forms
+package models.upscan
 
-import javax.inject.Inject
+import play.api.mvc.Request
 
-import forms.mappings.Mappings
-import play.api.data.Form
+final case class UpscanRedirectError(code: String, message: Option[String])
 
-class FileUploadedFormProvider @Inject() extends Mappings {
-
-  def successForm: Form[Boolean] =
-    Form("value" -> boolean("fileUploaded.error.required"))
-
-  def failedForm: Form[Boolean] =
-    Form("value" -> boolean("fileUploaded.failed.error.required"))
+object UpscanRedirectError {
+  def fromQuery(request: Request[_]): Option[UpscanRedirectError] =
+    request.getQueryString("errorCode").map { code =>
+      UpscanRedirectError(
+        code = code,
+        message = request.getQueryString("errorMessage")
+      )
+    }
 }
+

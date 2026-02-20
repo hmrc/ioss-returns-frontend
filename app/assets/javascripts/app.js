@@ -131,4 +131,3 @@ function showTheSpinner() {
 
     return false;
 }
-

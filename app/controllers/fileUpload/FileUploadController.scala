@@ -16,11 +16,15 @@
 
 package controllers.fileUpload
 
+import config.FrontendAppConfig
+import connectors.UpscanInitiateConnector
 import controllers.actions.*
 import forms.FileUploadFormProvider
-import pages.{FileUploadPage, FileUploadedPage, Waypoints}
+import models.upscan.UpscanRedirectError
+import pages.fileUpload.{FileReferencePage, FileUploadedPage}
+import pages.Waypoints
 import play.api.data.Form
-import play.api.i18n.{I18nSupport, MessagesApi}
+import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.fileUpload.FileUploadView
@@ -32,40 +36,73 @@ class FileUploadController @Inject()(
                                          override val messagesApi: MessagesApi,
                                          cc: AuthenticatedControllerComponents,
                                          formProvider: FileUploadFormProvider,
-                                         view: FileUploadView
+                                         view: FileUploadView,
+                                         upscanInitiateConnector: UpscanInitiateConnector,
+                                         appConfig: FrontendAppConfig
                                  )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
   val form: Form[String] = formProvider()
 
-  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndIntermediaryEnabled() {
+  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndIntermediaryEnabled().async {
     implicit request =>
 
       val period = request.userAnswers.period
       val isIntermediary = request.isIntermediary
       val companyName = request.companyName
+      val redirectError = UpscanRedirectError.fromQuery(request)
 
-      Ok(view(form, waypoints, period, isIntermediary, companyName))
+      redirectError match {
+        case Some(redirectErr) =>
+          val msg = errorMessage(Some(redirectErr)).getOrElse("")
+          Future.successful(Redirect(routes.FileUploadController.onPageLoad(waypoints)).flashing("upscanError" -> msg))
+
+        case None =>
+          val errorMsg: Option[String] = request.flash.get("upscanError").filter(_.nonEmpty)
+
+          upscanInitiateConnector.initiateV2(
+            redirectOnSuccess = Some(appConfig.successEndPointTarget),
+            redirectOnError = Some(appConfig.errorEndPointTarget)
+          ).flatMap { initiateResponse =>
+
+            for {
+              cleanedAnswers <- Future.fromTry(request.userAnswers.remove(FileUploadedPage))
+              updatedAnswers <- Future.fromTry(
+                cleanedAnswers.set(FileReferencePage, initiateResponse.fileReference.reference)
+              )
+              _ <- cc.sessionRepository.set(updatedAnswers)
+            } yield {
+            Ok(view(
+              form = form,
+              waypoints = waypoints,
+              period = period,
+              isIntermediary = isIntermediary,
+              companyName = companyName,
+              postTarget = initiateResponse.postTarget,
+              formFields = initiateResponse.formFields,
+              errorMessage = errorMsg
+            ))
+          }
+        }
+      }
   }
 
-  def onSubmit(waypoints: Waypoints): Action[AnyContent] = cc.authAndRequireData().async {
-    implicit request =>
+  private def errorMessage(
+                            redirectError: Option[UpscanRedirectError]
+                          )(implicit messages: Messages): Option[String] =
+    redirectError.map {
 
-      val period = request.userAnswers.period
-      val isIntermediary = request.isIntermediary
-      val companyName = request.companyName
-      
-      form.bindFromRequest().fold(
-        formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, waypoints, period, isIntermediary, companyName))),
+      case UpscanRedirectError("EntityTooLarge", _) =>
+        messages("fileUploaded.redirectError.EntityTooLarge")
 
-        value =>
-          for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(FileUploadPage, value))
-            cleanup <- Future.fromTry(updatedAnswers.remove(FileUploadedPage))
-            _              <- cc.sessionRepository.set(cleanup)
-          } yield Redirect(FileUploadPage.navigate(waypoints, request.userAnswers, cleanup).route)
-      )
-  }
+      case UpscanRedirectError("InvalidArgument",  Some(msg)) if msg.toLowerCase.contains("file") && msg.toLowerCase.contains("not found") =>
+        messages("fileUpload.redirectError.fileNotFound")
+
+      case UpscanRedirectError("InvalidArgument", _) =>
+        messages("fileUpload.redirectError.invalidType")
+
+      case _ =>
+        messages("fileUploaded.redirectError.default")
+    }
 }
