@@ -18,7 +18,7 @@ package utils
 
 import models.corrections.CorrectionToCountry
 import models.requests.DataRequest
-import models.{Country, Index}
+import models.{Country, Index, UserAnswers}
 import play.api.mvc.{AnyContent, Result}
 import queries.*
 
@@ -90,13 +90,17 @@ trait CompletionChecks {
   }
 
   def getIncompleteVatRateAndSales(countryIndex: Index)(implicit request: DataRequest[AnyContent]): Seq[(VatRateWithOptionalSalesFromCountry, Int)] = {
-    val noSales = request.userAnswers
+    getIncompleteVatRatesAndSalesFromUserAnswers(countryIndex, request.userAnswers)
+  }
+  
+  def getIncompleteVatRatesAndSalesFromUserAnswers(countryIndex: Index, userAnswers: UserAnswers): Seq[(VatRateWithOptionalSalesFromCountry, Int)] = {
+    val noSales = userAnswers
       .get(AllSalesWithOptionalVatQuery(countryIndex))
       .map(_.zipWithIndex
         .filter(_._1.salesAtVatRate.isEmpty)
       ).getOrElse(List.empty)
 
-    val noVat = request.userAnswers
+    val noVat = userAnswers
       .get(AllSalesWithOptionalVatQuery(countryIndex))
       .map(_.zipWithIndex
         .filter(_._1.salesAtVatRate

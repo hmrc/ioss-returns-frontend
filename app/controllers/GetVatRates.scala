@@ -18,7 +18,7 @@ package controllers
 
 import models.requests.DataRequest
 import models.{Index, VatRateFromCountry}
-import pages.{JourneyRecoveryPage, Waypoints}
+import pages.{CheckSalesPage, JourneyRecoveryPage, Waypoints}
 import play.api.mvc.Results.Redirect
 import play.api.mvc.{AnyContent, Result}
 import queries.{AllSalesByCountryQuery, SalesToCountryWithOptionalSales, VatRateFromCountryQuery}
@@ -34,7 +34,7 @@ trait GetVatRates {
     request.userAnswers
       .get(VatRateFromCountryQuery(countryIndex, vatRateIndex))
       .map(block(_))
-      .getOrElse(Redirect(JourneyRecoveryPage.route(waypoints).url).toFuture)
+      .getOrElse(Redirect(CheckSalesPage(countryIndex).route(waypoints).url).toFuture)
   }
 
   protected def getAllVatRatesFromCountry(waypoints: Waypoints, countryIndex: Index)
