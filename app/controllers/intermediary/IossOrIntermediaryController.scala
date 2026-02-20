@@ -21,9 +21,9 @@ import config.FrontendAppConfig
 import forms.IossOrIntermediaryFormProvider
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.auth.core.Enrolments
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.IossOrIntermediaryView
+import utils.EnrolmentIdentifiers.*
 import utils.FutureSyntax.FutureOps
 
 import javax.inject.Inject
@@ -61,15 +61,4 @@ class IossOrIntermediaryController @Inject()(
       )
   }
 
-  private def findIossFromEnrolments(enrolments: Enrolments): Seq[String] = {
-    enrolments.enrolments
-      .filter(_.key == "HMRC-IOSS-ORG")
-      .flatMap(_.identifiers.find(id => id.key == "IOSSNumber" && id.value.nonEmpty).map(_.value)).toSeq
-  }
-
-  private def findIntermediaryFromEnrolments(enrolments: Enrolments): Seq[String] = {
-    enrolments.enrolments
-      .filter(_.key == "HMRC-IOSS-INT")
-      .flatMap(_.identifiers.find(id => id.key == "IntNumber" && id.value.nonEmpty).map(_.value)).toSeq
-  }
 }
