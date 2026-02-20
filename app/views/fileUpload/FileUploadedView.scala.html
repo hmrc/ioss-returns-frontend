@@ -120,7 +120,7 @@
 
             @govukButton(
                 ButtonViewModel(messages("site.continue"))
-                    .withAttribute(("id", "file-upload-continue"))
+                    .withAttribute(("id", "continue"))
             )
         } else if(maybeOutcome.map(_.status).contains("FAILED")) {
             @govukRadios(
