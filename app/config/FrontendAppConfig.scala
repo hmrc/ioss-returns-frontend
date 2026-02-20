@@ -96,4 +96,5 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
   lazy val upscanCallbackUrl: String = configuration.get[String]("upscan.callback-url")
   lazy val successEndPointTarget: String = configuration.get[String]("upscan.success-endpoint")
   lazy val errorEndPointTarget: String = configuration.get[String]("upscan.error-endpoint")
+  val downloadTemplateUrl: String = configuration.get[String]("urls.downloadTemplateUrl")
 }

@@ -14,6 +14,7 @@
  * limitations under the License.
  *@
 
+@import config.FrontendAppConfig
 @import components.FileUpload
 
 @this(
@@ -21,72 +22,76 @@
     formHelper: FormWithCSRF,
     govukErrorSummary: GovukErrorSummary,
     fileUpload: FileUpload,
-    govukButton: GovukButton
-)@(form: Form[_],
-waypoints: Waypoints,
-period: Period,
-isIntermediary: Boolean,
-companyName: String,
-postTarget: String,
-formFields: Map[String, String],
-errorMessage: Option[String] = None
+    govukButton: GovukButton,
+    appConfig: FrontendAppConfig
+)
+
+@(
+    form: Form[_],
+    waypoints: Waypoints,
+    period: Period,
+    isIntermediary: Boolean,
+    companyName: String,
+    postTarget: String,
+    formFields: Map[String, String],
+    errorMessage: Option[String] = None
 )(implicit request: Request[_], messages: Messages)
 
 @caption = @{
-if(isIntermediary) {
-messages("fileUpload.intermediary.caption", companyName, period.displayText)
-} else {
-messages("fileUpload.caption", period.displayText)
-}
+    if(isIntermediary) {
+        messages("fileUpload.intermediary.caption", companyName, period.displayText)
+    } else {
+        messages("fileUpload.caption", period.displayText)
+    }
 }
 
 @layout(pageTitle = title(form, messages("fileUpload.title", period.displayText))) {
 
-@defining(errorMessage.map(msg => form.withError("file", msg)).getOrElse(form)) { formWithUpscanError =>
-@if(formWithUpscanError.errors.nonEmpty) {
-@govukErrorSummary(ErrorSummaryViewModel(formWithUpscanError))
-}
+    @defining(errorMessage.map(msg => form.withError("file", msg)).getOrElse(form)) { formWithUpscanError =>
+        @if(formWithUpscanError.errors.nonEmpty) {
+            @govukErrorSummary(ErrorSummaryViewModel(formWithUpscanError))
+        }
 
-<header class="hmrc-page-heading">
-    <p class="govuk-caption-l hmrc-caption-l">@caption</p>
-    <h1 class="govuk-heading-l">@messages("fileUpload.heading", period.displayText)</h1>
-</header>
+        <header class="hmrc-page-heading">
+            <p class="govuk-caption-l hmrc-caption-l">@caption</p>
+            <h1 class="govuk-heading-l">@messages("fileUpload.heading", period.displayText)</h1>
+        </header>
 
-<p class="govuk-body">@messages("fileUpload.paragraph")</p>
+        <p class="govuk-body">@messages("fileUpload.paragraph")</p>
 
-<ol class="govuk-list govuk-list--number">
-    <li>@Html(messages("fileUpload.bullet1"))</li>
-    <li>@messages("fileUpload.bullet2")</li>
-    <li>@messages("fileUpload.bullet3")</li>
+        <ol class="govuk-list govuk-list--number">
+            <li>@Html(messages("fileUpload.bullet1", appConfig.downloadTemplateUrl))</li>
+            <li>@messages("fileUpload.bullet2")</li>
+            <li>@messages("fileUpload.bullet3")</li>
 
-</ol>
+        </ol>
 
-<form action="@postTarget" method="POST" enctype="multipart/form-data">
+        <form action="@postTarget" method="POST" enctype="multipart/form-data">
 
-    @for((name, value) <- formFields) {
-    <input type="hidden" name="@name" value="@value">
+            @for((name, value) <- formFields) {
+                <input type="hidden" name="@name" value="@value">
+            }
+
+            <div id="file-upload-form-group" class="govuk-form-group">
+
+                @fileUpload(
+                    form = formWithUpscanError,
+                    errorMessage = errorMessage,
+                    name = "file",
+                    id = "file",
+                    label = "file",
+                    isPageHeading = false,
+                    attributes = Map("accept" -> ".csv")
+                )
+            </div>
+
+            @govukButton(Button(
+                attributes = Map("id" -> "file-upload-button"),
+                classes = "govuk-!-margin-right-1",
+                content = Text(messages("fileUpload.button"))
+            ))
+        </form>
     }
-
-    <div id="file-upload-form-group" class="govuk-form-group">
-
-        @fileUpload(
-        form = formWithUpscanError,
-        errorMessage = errorMessage,
-        name = "file",
-        id = "file",
-        label = "file",
-        isPageHeading = false,
-        attributes = Map("accept" -> ".csv")
-        )
-    </div>
-
-    @govukButton(Button(
-    attributes = Map("id" -> "file-upload-button"),
-    classes = "govuk-!-margin-right-1",
-    content = Text(messages("fileUpload.button"))
-    ))
-</form>
-}
 }
 
 
