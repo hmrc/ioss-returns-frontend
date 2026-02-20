@@ -30,50 +30,6 @@ import scala.concurrent.Future
 
 trait CompletionChecks {
 
-  protected def withCompleteData[A](index: Index, data: Index => Seq[A], onFailure: Seq[A] => Result)
-                                   (onSuccess: => Result): Result = {
-    val incomplete = data(index)
-    if (incomplete.isEmpty) {
-      onSuccess
-    } else {
-      onFailure(incomplete)
-    }
-  }
-
-  protected def withCompleteDataAsync[A](index: Index, data: Index => Seq[A], onFailure: Seq[A] => Future[Result])
-                                        (onSuccess: => Future[Result]): Future[Result] = {
-
-    val incomplete = data(index)
-    if (incomplete.isEmpty) {
-      onSuccess
-    } else {
-      onFailure(incomplete)
-    }
-  }
-
-
-  protected def withCompleteData[A](data: () => Seq[A], onFailure: Seq[A] => Result)
-                                   (onSuccess: => Result): Result = {
-
-    val incomplete = data()
-    if (incomplete.isEmpty) {
-      onSuccess
-    } else {
-      onFailure(incomplete)
-    }
-  }
-
-  protected def withCompleteDataAsync[A](data: () => Seq[A], onFailure: Seq[A] => Future[Result])
-                                        (onSuccess: => Future[Result]): Future[Result] = {
-
-    val incomplete = data()
-    if (incomplete.isEmpty) {
-      onSuccess
-    } else {
-      onFailure(incomplete)
-    }
-  }
-
   def getIncompleteCorrectionsToCountry(periodIndex: Index, countryIndex: Index)(implicit request: DataRequest[AnyContent]): Option[CorrectionToCountry] = {
     request.userAnswers
       .get(CorrectionToCountryQuery(periodIndex, countryIndex))
@@ -96,7 +52,7 @@ trait CompletionChecks {
   def getIncompleteVatRateAndSales(countryIndex: Index)(implicit request: DataRequest[AnyContent]): Seq[(VatRateWithOptionalSalesFromCountry, Int)] = {
     getIncompleteVatRatesAndSalesFromUserAnswers(countryIndex, request.userAnswers)
   }
-  
+
   def getIncompleteVatRatesAndSalesFromUserAnswers(countryIndex: Index, userAnswers: UserAnswers): Seq[(VatRateWithOptionalSalesFromCountry, Int)] = {
     val noSales = userAnswers
       .get(AllSalesWithOptionalVatQuery(countryIndex))
@@ -135,16 +91,31 @@ trait CompletionChecks {
       .find(indexedCorrection => incompleteCountries.contains(indexedCorrection._1.country))
   }
 
-  def soldGoodsAnswered(implicit request: DataRequest[AnyContent]): Boolean = {
-  request.userAnswers.get(SoldGoodsPage).isDefined
+  def incompleteReturnsJourneyRedirect(waypoints: Waypoints, numberOfFulfilledObligations: Int)
+                                      (implicit request: DataRequest[AnyContent]): Option[Result] = {
+    if (!soldGoodsAnswered) {
+      Some(Redirect(routes.SoldGoodsController.onPageLoad(waypoints)))
+    } else if (!correctPreviousReturnAnswered(numberOfFulfilledObligations)) {
+      Some(Redirect(controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(waypoints)))
+    } else {
+      None
+    }
   }
 
-  def correctPreviousReturnAnswered()(implicit request: DataRequest[AnyContent]): Boolean = {
+  def soldGoodsAnswered(implicit request: DataRequest[AnyContent]): Boolean = {
+    request.userAnswers.get(SoldGoodsPage).isDefined
+  }
+
+  def correctPreviousReturnAnswered(
+                                     numberOfFulfilledObligations: Int
+                                   )(implicit request: DataRequest[AnyContent]): Boolean = {
     val numberOfExistingReturnPeriods = request.userAnswers.get(AllCorrectionPeriodsQuery).map(_.size).getOrElse(0)
 
-    request.userAnswers.get(CorrectPreviousReturnPage(numberOfExistingReturnPeriods)).isDefined
+    numberOfFulfilledObligations > 1 && request.userAnswers
+        .get(CorrectPreviousReturnPage(numberOfExistingReturnPeriods))
+        .isDefined
   }
-  
+
   def incompleteReturnsJourneyRedirect(waypoints: Waypoints)
                                  (implicit request: DataRequest[AnyContent]): Option[Result] = {
     if (!soldGoodsAnswered) {
@@ -153,6 +124,50 @@ trait CompletionChecks {
       Some(Redirect(controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(waypoints)))
     } else {
       None
+    }
+  }
+
+
+  protected def withCompleteData[A](index: Index, data: Index => Seq[A], onFailure: Seq[A] => Result)
+                                   (onSuccess: => Result): Result = {
+    val incomplete = data(index)
+    if (incomplete.isEmpty) {
+      onSuccess
+    } else {
+      onFailure(incomplete)
+    }
+  }
+
+  protected def withCompleteDataAsync[A](index: Index, data: Index => Seq[A], onFailure: Seq[A] => Future[Result])
+                                        (onSuccess: => Future[Result]): Future[Result] = {
+
+    val incomplete = data(index)
+    if (incomplete.isEmpty) {
+      onSuccess
+    } else {
+      onFailure(incomplete)
+    }
+  }
+
+  protected def withCompleteData[A](data: () => Seq[A], onFailure: Seq[A] => Result)
+                                   (onSuccess: => Result): Result = {
+
+    val incomplete = data()
+    if (incomplete.isEmpty) {
+      onSuccess
+    } else {
+      onFailure(incomplete)
+    }
+  }
+
+  protected def withCompleteDataAsync[A](data: () => Seq[A], onFailure: Seq[A] => Future[Result])
+                                        (onSuccess: => Future[Result]): Future[Result] = {
+
+    val incomplete = data()
+    if (incomplete.isEmpty) {
+      onSuccess
+    } else {
+      onFailure(incomplete)
     }
   }
 
