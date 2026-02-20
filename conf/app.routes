@@ -182,3 +182,5 @@ POST        /file-upload                                                        
 GET         /file-uploaded                                                            controllers.fileUpload.FileUploadedController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
 POST        /file-uploaded                                                            controllers.fileUpload.FileUploadedController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints)
 
+GET         /select-account                                                           controllers.intermediary.IossOrIntermediaryController.onPageLoad()
+POST        /select-account                                                           controllers.intermediary.IossOrIntermediaryController.onSubmit()
