@@ -666,18 +666,23 @@ fileUploaded.status.uploading = Uploading
 fileUploaded.status.uploaded = Uploaded
 fileUploaded.status.failed = Failed
 fileUploaded.subheading = Is this file correct?
+fileUploaded.failed.subheading = Do you want to try uploading it again?
 fileUploaded.yes = Yes
 fileUploaded.no = No, I want to upload a different file
+fileUploaded.failed.no = No, enter the return manually
 fileUploaded.checkYourAnswersLabel = file uploaded
 fileUploaded.error.required = Select yes if this is the correct file
 fileUploaded.change.hidden = File uploaded
+fileUploaded.uploading = Your file is uploading. This page will update automatically.
 
 fileUploaded.redirectError.EntityTooLarge = The selected file must be smaller than 2MB
+fileUpload.redirectError.fileNotFound = No file selected
+fileUpload.redirectError.invalidType = The selected file must be a CSV
+fileUploaded.redirectError.default = The selected file could not be uploaded – try again
 
-fileUploaded.status.error.quarantine = The selected file contains a virus
-fileUploaded.status.error.rejected = The selected file must be a CSV
+fileUploaded.status.error.quarantine = The selected file you have uploaded has been flagged as malicious
+fileUploaded.status.error.rejected = The selected file could not be uploaded – try again
 fileUploaded.status.error.unknown = The selected file could not be uploaded – try again
-fileUploaded.status.error.invalid_argument = The selected file is invalid or too large
 
 fileUploaded.status.error.not_csv = The selected file must be a CSV
 fileUploaded.status.error.default = The selected file could not be uploaded – try again

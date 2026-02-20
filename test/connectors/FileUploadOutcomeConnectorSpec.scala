@@ -30,9 +30,7 @@ class FileUploadOutcomeConnectorSpec extends SpecBase with WireMockHelper with M
 
   private def application: Application = {
     applicationBuilder()
-      .configure(
-        "upscan.file-upload-outcome" -> s"http://localhost:${server.port}/ioss-returns/file-upload-outcome"
-      )
+      .configure("microservice.services.ioss-returns.port" -> server.port)
       .build()
   }
 
@@ -47,6 +45,8 @@ class FileUploadOutcomeConnectorSpec extends SpecBase with WireMockHelper with M
     
   "FileUploadOutcomeConnector.get" - {
 
+    def url = s"/ioss-returns/file-upload-outcome/fake-ref"
+
     "must return Some(fileName) when backend returns 200" in {
       val app = application
 
@@ -54,7 +54,7 @@ class FileUploadOutcomeConnectorSpec extends SpecBase with WireMockHelper with M
         val connector = app.injector.instanceOf[FileUploadOutcomeConnector]
 
         server.stubFor(
-          get(urlPathEqualTo("/ioss-returns/file-upload-outcome/fake-ref"))
+          get(urlEqualTo(url))
             .willReturn(aResponse()
               .withStatus(200)
               .withBody(fileUploadOutcomeJson)

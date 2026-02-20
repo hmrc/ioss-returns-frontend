@@ -19,8 +19,7 @@ package controllers.fileUpload
 import connectors.FileUploadOutcomeConnector
 import controllers.actions.*
 import forms.FileUploadedFormProvider
-import models.upscan.UpscanRedirectError
-import pages.fileUpload.{FileReferencePage, FileUploadedPage}
+import pages.fileUpload.{FileReferencePage, FileUploadStatusPage, FileUploadedPage}
 import pages.Waypoints
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
@@ -50,15 +49,21 @@ class FileUploadedController @Inject()(
       val isIntermediary = request.isIntermediary
       val companyName = request.companyName
       val fileReference = request.userAnswers.get(FileReferencePage)
-      val redirectError = UpscanRedirectError.fromQuery(request)
 
       fileReference match {
         case Some(ref) =>
-          fileUploadOutcomeConnector.getOutcome(ref).map { maybeOutcome =>
+          fileUploadOutcomeConnector.getOutcome(ref).flatMap { maybeOutcome =>
+            val status = maybeOutcome.map(_.status).getOrElse("UPLOADING")
             val preparedForm = request.userAnswers.get(FileUploadedPage).fold(form)(form.fill)
 
-            Ok(view(preparedForm, waypoints, period, isIntermediary, companyName, maybeOutcome, redirectError))
+            for {
+              updatedAnswers <- Future.fromTry(request.userAnswers.set(FileUploadStatusPage, status))
+              _ <- cc.sessionRepository.set(updatedAnswers)
+            } yield {
+              Ok(view(preparedForm, waypoints, period, isIntermediary, companyName, maybeOutcome))
+            }
           }
+
         case None =>
           Future.successful(BadRequest("No file reference found in session."))
       }
@@ -71,14 +76,13 @@ class FileUploadedController @Inject()(
       val isIntermediary = request.isIntermediary
       val companyName = request.companyName
       val fileReference = request.userAnswers.get(FileReferencePage)
-      val redirectError = UpscanRedirectError.fromQuery(request)
 
       fileReference match {
         case Some(ref) =>
           form.bindFromRequest().fold(
             formWithErrors =>
               fileUploadOutcomeConnector.getOutcome(ref).map { maybeOutcome =>
-                BadRequest(view(formWithErrors, waypoints, period, isIntermediary, companyName, maybeOutcome, redirectError))
+                BadRequest(view(formWithErrors, waypoints, period, isIntermediary, companyName, maybeOutcome))
               },
             value =>
               for {

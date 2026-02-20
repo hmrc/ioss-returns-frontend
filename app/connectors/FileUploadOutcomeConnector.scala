@@ -16,28 +16,27 @@
 
 package connectors
 
-import config.FrontendAppConfig
+import config.Service
 import models.upscan.*
+import play.api.Configuration
 import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 
-import java.net.URI
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class FileUploadOutcomeConnector @Inject()(
-                                         appConfig: FrontendAppConfig,
-                                         httpClientV2: HttpClientV2
-                                       )(implicit ec: ExecutionContext) {
+                                            config: Configuration,
+                                            httpClientV2: HttpClientV2
+                                          )(implicit ec: ExecutionContext) {
 
+  private val baseUrl = config.get[Service]("microservice.services.ioss-returns")
 
   def getOutcome(reference: String)(implicit hc: HeaderCarrier): Future[Option[FileUploadOutcome]] = {
     
-    val baseUrl = URI(s"${appConfig.fileUploadOutcome}/$reference").toURL
-    
     httpClientV2
-      .get(baseUrl)
+      .get(url"$baseUrl/file-upload-outcome/$reference")
       .execute[FileUploadOutcome]
       .map(outcome => Some(outcome))
       .recover {

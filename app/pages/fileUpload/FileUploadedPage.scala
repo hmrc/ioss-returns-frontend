@@ -18,7 +18,7 @@ package pages.fileUpload
 
 import models.UserAnswers
 import pages.corrections.CorrectPreviousReturnPage
-import pages.{CheckYourAnswersPage, Page, QuestionPage, RecoveryOps, Waypoints}
+import pages.{CheckYourAnswersPage, Page, QuestionPage, RecoveryOps, SoldGoodsPage, Waypoints}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
@@ -31,14 +31,25 @@ case object FileUploadedPage extends QuestionPage[Boolean] {
   override def route(waypoints: Waypoints): Call = controllers.fileUpload.routes.FileUploadedController.onPageLoad(waypoints)
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page = {
-    answers.get(this).map {
-      case true =>
+    val status = answers.get(FileUploadStatusPage).map(_.toUpperCase)
+    (status, answers.get(this)) match {
+      case (Some("UPLOADED"), Some(true)) =>
         if (answers.isDefined(CorrectPreviousReturnPage(0))) {
           CheckYourAnswersPage
         } else {
           CorrectPreviousReturnPage(0)
         }
-      case false => FileUploadPage
-    }.orRecover
+      case (Some("UPLOADED"), Some(false)) =>
+        FileUploadPage
+
+      case (Some("FAILED"), Some(true)) =>
+        FileUploadPage
+
+      case (Some("FAILED"), Some(false)) =>
+        SoldGoodsPage
+
+      case _ =>
+        this
+    }
   }
 }

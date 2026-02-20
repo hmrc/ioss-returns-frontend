@@ -22,69 +22,71 @@
     govukErrorSummary: GovukErrorSummary,
     fileUpload: FileUpload,
     govukButton: GovukButton
-)
-
-@(form: Form[_],
-    waypoints: Waypoints,
-    period: Period,
-    isIntermediary: Boolean,
-    companyName: String,
-    postTarget: String,
-    formFields: Map[String, String],
-    errorMessage: Option[String] = None
+)@(form: Form[_],
+waypoints: Waypoints,
+period: Period,
+isIntermediary: Boolean,
+companyName: String,
+postTarget: String,
+formFields: Map[String, String],
+errorMessage: Option[String] = None
 )(implicit request: Request[_], messages: Messages)
 
 @caption = @{
-    if(isIntermediary) {
-        messages("fileUpload.intermediary.caption", companyName, period.displayText)
-    } else {
-        messages("fileUpload.caption", period.displayText)
-    }
+if(isIntermediary) {
+messages("fileUpload.intermediary.caption", companyName, period.displayText)
+} else {
+messages("fileUpload.caption", period.displayText)
+}
 }
 
 @layout(pageTitle = title(form, messages("fileUpload.title", period.displayText))) {
 
-    @if(form.errors.nonEmpty) {
-        @govukErrorSummary(ErrorSummaryViewModel(form))
+@defining(errorMessage.map(msg => form.withError("file", msg)).getOrElse(form)) { formWithUpscanError =>
+@if(formWithUpscanError.errors.nonEmpty) {
+@govukErrorSummary(ErrorSummaryViewModel(formWithUpscanError))
+}
+
+<header class="hmrc-page-heading">
+    <p class="govuk-caption-l hmrc-caption-l">@caption</p>
+    <h1 class="govuk-heading-l">@messages("fileUpload.heading", period.displayText)</h1>
+</header>
+
+<p class="govuk-body">@messages("fileUpload.paragraph")</p>
+
+<ol class="govuk-list govuk-list--number">
+    <li>@Html(messages("fileUpload.bullet1"))</li>
+    <li>@messages("fileUpload.bullet2")</li>
+    <li>@messages("fileUpload.bullet3")</li>
+
+</ol>
+
+<form action="@postTarget" method="POST" enctype="multipart/form-data">
+
+    @for((name, value) <- formFields) {
+    <input type="hidden" name="@name" value="@value">
     }
 
-    <header class="hmrc-page-heading">
-        <p class="govuk-caption-l hmrc-caption-l">@caption</p>
-        <h1 class="govuk-heading-l">@messages("fileUpload.heading", period.displayText)</h1>
-    </header>
+    <div id="file-upload-form-group" class="govuk-form-group">
 
-    <p class="govuk-body">@messages("fileUpload.paragraph")</p>
+        @fileUpload(
+        form = formWithUpscanError,
+        errorMessage = errorMessage,
+        name = "file",
+        id = "file",
+        label = "file",
+        isPageHeading = false,
+        attributes = Map("accept" -> ".csv")
+        )
+    </div>
 
-    <ol class="govuk-list govuk-list--number">
-        <li>@Html(messages("fileUpload.bullet1"))</li>
-        <li>@messages("fileUpload.bullet2")</li>
-        <li>@messages("fileUpload.bullet3")</li>
-
-    </ol>
-
-    <form action="@postTarget" method="POST" enctype="multipart/form-data">
-
-        @for((name, value) <- formFields) {
-            <input type="hidden" name="@name" value="@value">
-        }
-
-        <div id="file-upload-form-group">
-
-            @fileUpload(
-                form = form,
-                errorMessage = errorMessage,
-                name = "file",
-                id = "file",
-                label = "file",
-                isPageHeading = false,
-                attributes = Map("accept" -> ".csv", "required" -> "required")
-            )
-        </div>
-
-        @govukButton(Button(
-            attributes = Map("id" -> "file-upload-button"),
-            classes = "govuk-!-margin-right-1",
-            content = Text(messages("fileUpload.button"))
-        ))
-    </form>
+    @govukButton(Button(
+    attributes = Map("id" -> "file-upload-button"),
+    classes = "govuk-!-margin-right-1",
+    content = Text(messages("fileUpload.button"))
+    ))
+</form>
 }
+}
+
+

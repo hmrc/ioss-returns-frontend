@@ -31,8 +31,7 @@
     period: Period,
     isIntermediary: Boolean,
     companyName: String,
-    maybeOutcome: Option[FileUploadOutcome],
-    redirectError: Option[UpscanRedirectError] = None
+    maybeOutcome: Option[FileUploadOutcome]
 )(implicit request: Request[_], messages: Messages)
 
 @caption = @{
@@ -45,7 +44,7 @@
 
 @layout(pageTitle = title(form, messages("fileUploaded.title"))) {
 
-    @if(redirectError.isEmpty && !maybeOutcome.exists(o => o.status == "UPLOADED" || o.status == "FAILED")) {
+    @if(!maybeOutcome.exists(o => o.status == "UPLOADED" || o.status == "FAILED")) {
         <meta http-equiv="refresh" content="1">
     }
 
@@ -61,27 +60,7 @@
         </header>
 
         <dl class="govuk-summary-list govuk-summary-list--long-key">
-            @if(redirectError.isDefined) {
-                <div class="govuk-summary-list__row govuk-summary-list__row--no-border">
-                    <dt class="govuk-summary-list__key govuk-!-font-weight-regular">
-                        @maybeOutcome.flatMap(_.fileName).getOrElse("")
-                    </dt>
-                    <dd class="govuk-summary-list__value">
-                        <strong class="govuk-tag govuk-tag--red">@messages("fileUploaded.status.failed")</strong>
-                    </dd>
-                </div>
-                <div class="govuk-summary-list__row">
-                    @redirectError.map { err =>
-                        <p class="govuk-error-message">
-                            @if(err.code == "EntityTooLarge") {
-                                @messages("fileUploaded.status.error.too_large")
-                            } else {
-                                @messages("fileUploaded.redirectError.default")
-                            }
-                        </p>
-                    }
-                </div>
-            } else if(maybeOutcome.map(_.status).contains("UPLOADED")) {
+            @if(maybeOutcome.map(_.status).contains("UPLOADED")) {
                 <div class="govuk-summary-list__row">
                     <dt class="govuk-summary-list__key govuk-!-font-weight-regular">
                         @maybeOutcome.flatMap(_.fileName).getOrElse("")
@@ -121,28 +100,53 @@
         </dl>
 
 
-        @govukRadios(
-            RadiosViewModel(
-                field = form("value"),
-                legend = LegendViewModel(messages("fileUploaded.subheading")).withCssClass("govuk-fieldset__legend govuk-fieldset__legend--m"),
-                items = Seq(
-                    RadioItem(
-                        value   = Some("true"),
-                        content = Text(messages("fileUploaded.yes"))
-                    ),
-                    RadioItem(
-                        value   = Some("false"),
-                        content = Text(messages("fileUploaded.no"))
+        @if(maybeOutcome.map(_.status).contains("UPLOADED")) {
+            @govukRadios(
+                RadiosViewModel(
+                    field = form("value"),
+                    legend = LegendViewModel(messages("fileUploaded.subheading")).withCssClass("govuk-fieldset__legend govuk-fieldset__legend--m"),
+                    items = Seq(
+                        RadioItem(
+                            value   = Some("true"),
+                            content = Text(messages("fileUploaded.yes"))
+                        ),
+                        RadioItem(
+                            value   = Some("false"),
+                            content = Text(messages("fileUploaded.no"))
+                        )
                     )
                 )
             )
-        )
 
-        @govukButton(
-            ButtonViewModel(messages("site.continue"))
+            @govukButton(
+                ButtonViewModel(messages("site.continue"))
+                    .withAttribute(("id", "file-upload-continue"))
+            )
+        } else if(maybeOutcome.map(_.status).contains("FAILED")) {
+            @govukRadios(
+                RadiosViewModel(
+                    field = form("value"),
+                    legend = LegendViewModel(messages("fileUploaded.failed.subheading")).withCssClass("govuk-fieldset__legend govuk-fieldset__legend--m"),
+                    items = Seq(
+                        RadioItem(
+                            value   = Some("true"),
+                            content = Text(messages("fileUploaded.yes"))
+                        ),
+                        RadioItem(
+                            value   = Some("false"),
+                            content = Text(messages("fileUploaded.failed.no"))
+                        )
+                    )
+                )
+            )
+
+            @govukButton(
+                ButtonViewModel(messages("site.continue"))
                 .withAttribute(("id", "file-upload-continue"))
-                .withAttribute(("data-status", maybeOutcome.map(_.status).getOrElse("UPLOADING")))
-                .withAttribute(("data-redirect-error", redirectError.isDefined.toString))
-        )
+            )
+        } else {
+            <p class="govuk-body">@messages("fileUploaded.uploading")</p>
+
+        }
     }
 }

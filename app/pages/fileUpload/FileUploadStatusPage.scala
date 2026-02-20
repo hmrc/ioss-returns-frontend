@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-package models.upscan
+package pages.fileUpload
 
-import play.api.mvc.Request
+import pages.{QuestionPage, Waypoints}
+import play.api.libs.json.JsPath
+import play.api.mvc.Call
 
-final case class UpscanRedirectError(code: String, message: Option[String])
+case object FileUploadStatusPage extends QuestionPage[String] {
+  
+  override def path: JsPath = JsPath \ toString
+  
+  override def toString: String = "fileUploadStatus"
 
-object UpscanRedirectError {
-  def fromQuery(request: Request[_]): Option[UpscanRedirectError] =
-    request.getQueryString("errorCode").map { code =>
-      UpscanRedirectError(
-        code = code,
-        message = request.getQueryString("errorMessage")
-      )
-    }
+  override def route(waypoints: Waypoints): Call =
+    controllers.fileUpload.routes.FileUploadedController.onPageLoad(waypoints)
 }
 
