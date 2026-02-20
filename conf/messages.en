@@ -725,3 +725,9 @@ dataError.errorMessage.genericErrors.bullet2 = uses correct number formats for V
 dataError.errorMessage.genericErrors.bullet3 = does not contain any inappropriate characters or symbols
 dataError.errorMessage.genericErrors.bullet4 = does not have any blank cells or rows between entries
 dataError.errorMessage.genericErrors.p3 = You can check the notes page on the template for more information.
+
+iossOrIntermediary.title = You are registered on {0} IOSS services, which do you want to view?
+iossOrIntermediary.heading = You are registered on {0} IOSS services, which do you want to view?
+iossOrIntermediary.error.required = Select an IOSS service
+iossOrIntermediary.option.ioss = Standard IOSS service ({0})
+iossOrIntermediary.option.intermediary = Intermediaries IOSS service ({0})

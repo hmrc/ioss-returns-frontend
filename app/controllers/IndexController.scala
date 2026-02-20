@@ -18,9 +18,11 @@ package controllers
 
 import config.FrontendAppConfig
 import controllers.actions.AuthenticatedControllerComponents
+import controllers.intermediary.routes
 import pages.EmptyWaypoints
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import uk.gov.hmrc.auth.core.Enrolments
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import javax.inject.Inject
@@ -33,10 +35,26 @@ class IndexController @Inject()(
   protected val controllerComponents: MessagesControllerComponents = cc
 
   def onPageLoad: Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced { implicit request =>
-    if(request.isIntermediary) {
-      Redirect(appConfig.intermediaryDashboardUrl)
-    } else {
-      Redirect(routes.YourAccountController.onPageLoad(waypoints = EmptyWaypoints))
+
+    val iossEnrolmentsExist: Boolean = findIossFromEnrolments(request.enrolments).nonEmpty
+    val intermediaryEnrolmentsExist: Boolean = findIntermediaryFromEnrolments(request.enrolments).nonEmpty
+    
+    (request.isIntermediary, intermediaryEnrolmentsExist, iossEnrolmentsExist) match {
+      case (true, true, true) => Redirect(routes.IossOrIntermediaryController.onPageLoad())
+      case (true, true, false) => Redirect(appConfig.intermediaryDashboardUrl)
+      case _ => Redirect(controllers.routes.YourAccountController.onPageLoad(waypoints = EmptyWaypoints))
     }
+  }
+
+  private def findIossFromEnrolments(enrolments: Enrolments): Seq[String] = {
+    enrolments.enrolments
+      .filter(_.key == "HMRC-IOSS-ORG")
+      .flatMap(_.identifiers.find(id => id.key == "IOSSNumber" && id.value.nonEmpty).map(_.value)).toSeq
+  }
+
+  private def findIntermediaryFromEnrolments(enrolments: Enrolments): Seq[String] = {
+    enrolments.enrolments
+      .filter(_.key == "HMRC-IOSS-INT")
+      .flatMap(_.identifiers.find(id => id.key == "IntNumber" && id.value.nonEmpty).map(_.value)).toSeq
   }
 }
