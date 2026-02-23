@@ -19,8 +19,10 @@ package controllers.intermediary
 import controllers.actions.AuthenticatedControllerComponents
 import config.FrontendAppConfig
 import forms.IossOrIntermediaryFormProvider
+import pages.EmptyWaypoints
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import uk.gov.hmrc.auth.core.Enrolments
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.IossOrIntermediaryView
 import utils.EnrolmentIdentifiers.*
@@ -41,24 +43,38 @@ class IossOrIntermediaryController @Inject()(
   def onPageLoad(): Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced {
     implicit request =>
 
-      val numberOfIossEnrolments: Seq[String] = findIossFromEnrolments(request.enrolments)
-      val numberOfIntermediaryEnrolments: Seq[String] = findIntermediaryFromEnrolments(request.enrolments)
-      val allEnrolments: Seq[String] = numberOfIossEnrolments ++ numberOfIntermediaryEnrolments
-      val totalNumberOfEnrolments: Int = (numberOfIossEnrolments ++ numberOfIntermediaryEnrolments).size
+      val allEnrolments: Seq[String] = findAllEnrolments(request.enrolments)
+      val totalNumberOfEnrolments: Int = allEnrolments.size
 
       Ok(view(form, allEnrolments, totalNumberOfEnrolments))
   }
 
-  def onSubmit(): Action[AnyContent] = cc.authAndGetOptionalData().async {
+  def onSubmit(): Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced.async {
     implicit request =>
+
+      val intermediaryNumber = request.intermediaryNumber.getOrElse("")
+      val allEnrolments: Seq[String] = findAllEnrolments(request.enrolments)
+      val totalNumberOfEnrolments: Int = allEnrolments.size
 
       form.bindFromRequest().fold(
         formWithErrors =>
-          BadRequest(view(formWithErrors, numberOfEnrolments = Seq.empty, totalNumberOfEnrolments = 0)).toFuture,
+          BadRequest(view(formWithErrors, allEnrolments, totalNumberOfEnrolments)).toFuture,
 
         value =>
-          Redirect(frontendAppConfig.intermediaryDashboardUrl).toFuture
+
+          if (value == intermediaryNumber) {
+            Redirect(frontendAppConfig.intermediaryDashboardUrl).toFuture
+          } else {
+            Redirect(controllers.routes.YourAccountController.onPageLoad(waypoints = EmptyWaypoints)).toFuture
+          }
       )
   }
 
+  private def findAllEnrolments(enrolments: Enrolments): Seq[String] = {
+
+    val numberOfIossEnrolments: Seq[String] = findIossFromEnrolments(enrolments)
+    val numberOfIntermediaryEnrolments: Seq[String] = findIntermediaryFromEnrolments(enrolments)
+
+    numberOfIossEnrolments ++ numberOfIntermediaryEnrolments
+  }
 }

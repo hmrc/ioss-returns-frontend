@@ -16,15 +16,30 @@
 
 package forms
 
-import forms.mappings.Mappings
-import play.api.data.Form
+import forms.behaviours.FieldBehaviours
+import play.api.data.{Form, FormError}
 
-import javax.inject.Inject
+class IossOrIntermediaryFormProviderSpec extends FieldBehaviours {
 
-class IossOrIntermediaryFormProvider @Inject extends Mappings {
+  private val requiredKey = "iossOrIntermediary.error.required"
+  private val intermediaryNumber = "IN9001234567"
 
-  def apply(): Form[String] =
-    Form(
-      "value" -> text("iossOrIntermediary.error.required")
+  private val form: Form[String] = new IossOrIntermediaryFormProvider()()
+
+  ".value" - {
+
+    val fieldName = "value"
+
+    behave like fieldThatBindsValidData(
+      form,
+      fieldName,
+      intermediaryNumber
     )
+
+    behave like mandatoryField(
+      form,
+      fieldName,
+      requiredError = FormError(fieldName, requiredKey)
+    )
+  }
 }
