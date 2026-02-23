@@ -55,6 +55,7 @@ trait SpecBase
   val userAnswersId: String = "12345-credId"
 
   val iossEnrolmentKey = "HMRC-IOSS-ORG"
+  val intermediaryEnrolmentKey = "HMRC-IOSS-INT"
   val enrolments: Enrolments = Enrolments(Set(Enrolment(iossEnrolmentKey, Seq.empty, "test", None)))
   val testCredentials: Credentials = Credentials(userAnswersId, "GGW")
   val vrn: Vrn = Vrn("123456789")

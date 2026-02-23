@@ -18,9 +18,10 @@ package controllers
 
 import base.SpecBase
 import config.FrontendAppConfig
-import controllers.actions.FakeIntermediaryIdentifierAction
+import controllers.actions.FakeGetRegistrationActionProvider
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
+import uk.gov.hmrc.auth.core.{Enrolment, EnrolmentIdentifier, Enrolments}
 
 class IndexControllerSpec extends SpecBase {
 
@@ -40,23 +41,87 @@ class IndexControllerSpec extends SpecBase {
       }
     }
 
-    "must return OK and the correct view for an intermediary and redirect to the intermediary dashboard" in {
+    "when an intermediary is present" - {
 
-      val application = applicationBuilder(
-        userAnswers = None,
-        getIdentifierAction = Some(new FakeIntermediaryIdentifierAction()),
-        maybeIntermediaryNumber = Some(intermediaryNumber)
-      ).build()
+     "must redirect to IossOrIntermediary page if both ioss and intermediary enrolments are present" in {
 
-      running(application) {
-        val config = application.injector.instanceOf[FrontendAppConfig]
+       val bothIossAndIntermediaryEnrolments: Enrolments = Enrolments(
+         Set(
+           Enrolment(
+             key = iossEnrolmentKey,
+             identifiers = Seq(
+               EnrolmentIdentifier("IOSSNumber", iossNumber)
+             ),
+             state = "Activated"
+           ),
+           Enrolment(
+             key = intermediaryEnrolmentKey,
+             identifiers = Seq(
+               EnrolmentIdentifier("IntNumber", intermediaryNumber)
+             ),
+             state = "Activated"
+           )
+         )
+       )
 
-        val request = FakeRequest(GET, routes.IndexController.onPageLoad.url)
+       val fakeProvider =
+         new FakeGetRegistrationActionProvider(
+           registrationWrapper,
+           maybeIntermediaryNumber = Some(intermediaryNumber),
+           enrolments = Some(bothIossAndIntermediaryEnrolments)
+         )
 
-        val result = route(application, request).value
+       val application = applicationBuilder(
+         getRegistrationAction = Some(fakeProvider)
+       ).build()
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual config.intermediaryDashboardUrl
+       running(application) {
+
+         val request = FakeRequest(GET, routes.IndexController.onPageLoad.url)
+
+         val result = route(application, request).value
+
+         status(result) mustEqual SEE_OTHER
+         redirectLocation(result).value mustEqual
+           controllers.intermediary.routes.IossOrIntermediaryController.onPageLoad().url
+       }
+     }
+
+      "must redirect to the intermediary dashboard if there are no ioss enrolments" in {
+
+        val onlyIntermediaryEnrolment: Enrolments = Enrolments(
+          Set(
+            Enrolment(
+              key = intermediaryEnrolmentKey,
+              identifiers = Seq(
+                EnrolmentIdentifier("IntNumber", intermediaryNumber)
+              ),
+              state = "Activated"
+            )
+          )
+        )
+
+        val fakeProvider =
+          new FakeGetRegistrationActionProvider(
+            registrationWrapper,
+            maybeIntermediaryNumber = Some(intermediaryNumber),
+            enrolments = Some(onlyIntermediaryEnrolment)
+          )
+
+        val application = applicationBuilder(
+          getRegistrationAction = Some(fakeProvider)
+        ).build()
+
+        running(application) {
+          val config = application.injector.instanceOf[FrontendAppConfig]
+
+          val request = FakeRequest(GET, routes.IndexController.onPageLoad.url)
+
+          val result = route(application, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual config.intermediaryDashboardUrl
+        }
       }
     }
   }
