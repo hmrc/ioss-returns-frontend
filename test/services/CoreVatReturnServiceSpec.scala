@@ -43,6 +43,7 @@ class CoreVatReturnServiceSpec extends SpecBase with BeforeAndAfterEach {
 
   implicit private lazy val request: DataRequest[AnyContent] = DataRequest(
     FakeRequest(),
+    enrolments,
     Credentials("providerID", "providerTYPE"),
     Some(vrn),
     iossNumber,

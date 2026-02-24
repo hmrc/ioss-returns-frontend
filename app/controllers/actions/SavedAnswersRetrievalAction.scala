@@ -54,6 +54,7 @@ class SavedAnswersRetrievalAction (repository: SessionRepository, saveForLaterCo
     userAnswers.map {
       OptionalDataRequest(
         request.request,
+        request.enrolments,
         request.credentials,
         request.vrn,
         request.iossNumber,

@@ -559,6 +559,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
               val request =
                 OptionalDataRequest(
                   FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoad(waypoints, exceededPeriod).url),
+                  enrolments,
                   testCredentials,
                   Some(vrn),
                   iossNumber,
@@ -675,6 +676,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
               val request =
                 OptionalDataRequest(
                   FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoad(waypoints, exceededPeriod).url),
+                  enrolments,
                   testCredentials,
                   Some(vrn),
                   iossNumber,
@@ -1255,6 +1257,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
               val request =
                 OptionalDataRequest(
                   FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoadForIossNumber(waypoints, exceededPeriod, iossNumber).url),
+                  enrolments,
                   testCredentials,
                   Some(vrn),
                   iossNumber,
@@ -1373,6 +1376,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
               val request =
                 OptionalDataRequest(
                   FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoadForIossNumber(waypoints, exceededPeriod, iossNumber).url),
+                  enrolments,
                   testCredentials,
                   Some(vrn),
                   iossNumber,
