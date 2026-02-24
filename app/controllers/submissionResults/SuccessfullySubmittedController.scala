@@ -25,6 +25,7 @@ import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import queries.TotalAmountVatDueGBPQuery
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.EnrolmentIdentifiers.{findIntermediaryFromEnrolments, findIossFromEnrolments}
 import utils.Formatters.generateVatReturnReference
 import views.html.submissionResults.SuccessfullySubmittedView
 
@@ -86,7 +87,15 @@ class SuccessfullySubmittedController @Inject()(
           _.url
         )
 
-        val intermediaryDashboardUrl = frontendAppConfig.intermediaryDashboardUrl
+        val iossEnrolmentsExist: Boolean = findIossFromEnrolments(request.enrolments).nonEmpty
+        val intermediaryEnrolmentsExist: Boolean = findIntermediaryFromEnrolments(request.enrolments).nonEmpty
+
+        val appropriateDashboardUrl: String =
+          (isIntermediary, intermediaryEnrolmentsExist, iossEnrolmentsExist) match {
+            case (true, true, true) => controllers.intermediary.routes.IossOrIntermediaryController.onPageLoad().url
+            case (true, true, false) => frontendAppConfig.intermediaryDashboardUrl
+            case _ => controllers.routes.YourAccountController.onPageLoad().url
+          }
 
         Ok(view(
           returnReference,
@@ -97,7 +106,7 @@ class SuccessfullySubmittedController @Inject()(
           userResearchUrl,
           isIntermediary = isIntermediary,
           clientName = clientName,
-          intermediaryDashboardUrl = intermediaryDashboardUrl
+          appropriateDashboardUrl = appropriateDashboardUrl
         ))
       }
   }

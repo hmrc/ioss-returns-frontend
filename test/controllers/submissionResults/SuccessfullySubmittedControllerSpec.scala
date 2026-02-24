@@ -78,7 +78,7 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
             "https://test-url.com",
             isIntermediary = false,
             clientName = "Mr Tufftys Tuffs",
-            intermediaryDashboardUrl = config.intermediaryDashboardUrl
+            appropriateDashboardUrl = controllers.routes.YourAccountController.onPageLoad().url
           )(request, messages(application)).toString
           verify(mockSessionRepository, times(1)).clear(any(), any())
         }
@@ -137,7 +137,7 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
               "https://test-url.com",
               isIntermediary = false,
               clientName = "Mr Tufftys Tuffs",
-              intermediaryDashboardUrl = config.intermediaryDashboardUrl
+              appropriateDashboardUrl = controllers.routes.YourAccountController.onPageLoad().url
             )(request, messages(application)).toString
             verify(mockSessionRepository, times(1)).clear(any(), any())
           }
@@ -172,7 +172,7 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
           "https://test-url.com",
           isIntermediary = false,
           clientName = "Mr Tufftys Tuffs",
-          intermediaryDashboardUrl = config.intermediaryDashboardUrl
+          appropriateDashboardUrl = controllers.routes.YourAccountController.onPageLoad().url
         )(request, messages(application)).toString
         verify(mockSessionRepository, times(1)).clear(any(), any())
       }
