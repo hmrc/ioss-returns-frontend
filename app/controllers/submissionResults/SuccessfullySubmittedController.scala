@@ -24,6 +24,7 @@ import pages.corrections.CorrectPreviousReturnPage
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import queries.TotalAmountVatDueGBPQuery
+import services.intermediary.DashboardNavigationService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.EnrolmentIdentifiers.{findIntermediaryFromEnrolments, findIossFromEnrolments}
 import utils.Formatters.generateVatReturnReference
@@ -38,7 +39,8 @@ class SuccessfullySubmittedController @Inject()(
                                                  vatReturnConnector: VatReturnConnector,
                                                  frontendAppConfig: FrontendAppConfig,
                                                  intermediaryRegistrationConnector: IntermediaryRegistrationConnector,
-                                                 view: SuccessfullySubmittedView
+                                                 view: SuccessfullySubmittedView,
+                                                 dashboardNavigationService: DashboardNavigationService
                                                )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
@@ -91,11 +93,9 @@ class SuccessfullySubmittedController @Inject()(
         val intermediaryEnrolmentsExist: Boolean = findIntermediaryFromEnrolments(request.enrolments).nonEmpty
 
         val appropriateDashboardUrl: String =
-          (isIntermediary, intermediaryEnrolmentsExist, iossEnrolmentsExist) match {
-            case (true, true, true) => controllers.intermediary.routes.IossOrIntermediaryController.onPageLoad().url
-            case (true, true, false) => frontendAppConfig.intermediaryDashboardUrl
-            case _ => controllers.routes.YourAccountController.onPageLoad().url
-          }
+          dashboardNavigationService.getAppropriateDashboardUrl(
+            isIntermediary, intermediaryEnrolmentsExist, iossEnrolmentsExist
+          )
 
         Ok(view(
           returnReference,

@@ -19,6 +19,7 @@ package controllers
 import base.SpecBase
 import config.FrontendAppConfig
 import connectors.{SaveForLaterConnector, VatReturnConnector}
+import controllers.actions.FakeGetRegistrationActionProvider
 import models.external.ExternalEntryUrl
 import models.responses.{ConflictFound, UnexpectedResponseStatus}
 import models.saveForLater.SavedUserAnswers
@@ -31,6 +32,7 @@ import play.api.inject.bind
 import play.api.libs.json.{JsObject, Json}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
+import uk.gov.hmrc.auth.core.{Enrolment, EnrolmentIdentifier, Enrolments}
 import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl
 import utils.FutureSyntax.FutureOps
 import views.html.SavedProgressView
@@ -199,6 +201,25 @@ class SavedProgressControllerSpec extends SpecBase with BeforeAndAfterEach {
 
     "for an Intermediary" - {
 
+      val onlyIntermediaryEnrolment: Enrolments = Enrolments(
+        Set(
+          Enrolment(
+            key = intermediaryEnrolmentKey,
+            identifiers = Seq(
+              EnrolmentIdentifier("IntNumber", intermediaryNumber)
+            ),
+            state = "Activated"
+          )
+        )
+      )
+
+      val fakeProvider =
+        new FakeGetRegistrationActionProvider(
+          registrationWrapper,
+          maybeIntermediaryNumber = Some(intermediaryNumber),
+          enrolments = Some(onlyIntermediaryEnrolment)
+        )
+
       "must return OK and the correct view for a GET and clear user-answers after return submitted" in {
 
         val instantDate: Instant = Instant.now()
@@ -220,6 +241,7 @@ class SavedProgressControllerSpec extends SpecBase with BeforeAndAfterEach {
 
         val app = applicationBuilder(
           userAnswers = Some(completeUserAnswers.copy(lastUpdated = instantDate)),
+          getRegistrationAction = Some(fakeProvider),
           maybeIntermediaryNumber = Some(intermediaryNumber)
         )
           .overrides(
@@ -249,6 +271,7 @@ class SavedProgressControllerSpec extends SpecBase with BeforeAndAfterEach {
 
         val app = applicationBuilder(
           userAnswers = Some(completeUserAnswers),
+          getRegistrationAction = Some(fakeProvider),
           maybeIntermediaryNumber = Some(intermediaryNumber)
         )
           .overrides(

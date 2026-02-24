@@ -473,7 +473,6 @@ successfullySubmitted.payNow =  Pay now
 successfullySubmitted.payDeadline = You must pay by {0}.
 successfullySubmitted.euLatePaymentWarning = EU countries can charge you interest or penalties for late payments.
 successfullySubmitted.next.info.returnToAccount = Back to your account
-successfullySubmitted.next.info.returnToIntermediaryAccount = <a class="govuk-link" href={0} id="back-to-your-account" class="govuk-link govuk-link--no-visited-state">Back to your account</a>
 
 returnSubmissionFailure.title = We have a problem with our service right now
 returnSubmissionFailure.heading = We have not received this return
@@ -579,7 +578,6 @@ cannotStartExcludedReturn.title = You can no longer complete this return on the 
 cannotStartExcludedReturn.heading =You can no longer complete this return on the IOSS service
 cannotStartExcludedReturn.p1 =You must complete it with the countries where you made your sales.
 cannotStartExcludedReturn.backToYourAccount = <a class="govuk-link" id="back-to-your-account" href={0}>Back to your account</a>
-cannotStartExcludedReturn.returnToIntermediaryAccount = <a class="govuk-link" id="back-to-your-account" href={0}>Back to your account</a>
 
 cannotStartReturn.title = You cannot start this return yet
 cannotStartReturn.heading =You cannot start this return yet

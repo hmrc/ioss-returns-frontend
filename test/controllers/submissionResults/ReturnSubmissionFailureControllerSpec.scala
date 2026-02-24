@@ -18,9 +18,11 @@ package controllers.submissionResults
 
 import base.SpecBase
 import config.FrontendAppConfig
+import controllers.actions.FakeGetRegistrationActionProvider
 import controllers.routes as baseRoutes
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
+import uk.gov.hmrc.auth.core.{Enrolment, EnrolmentIdentifier, Enrolments}
 import views.html.submissionResults.ReturnSubmissionFailureView
 
 class ReturnSubmissionFailureControllerSpec extends SpecBase {
@@ -47,8 +49,28 @@ class ReturnSubmissionFailureControllerSpec extends SpecBase {
 
     "must return OK and the correct view for a GET when the user is an Intermediary" in {
 
+      val onlyIntermediaryEnrolment: Enrolments = Enrolments(
+        Set(
+          Enrolment(
+            key = intermediaryEnrolmentKey,
+            identifiers = Seq(
+              EnrolmentIdentifier("IntNumber", intermediaryNumber)
+            ),
+            state = "Activated"
+          )
+        )
+      )
+
+      val fakeProvider =
+        new FakeGetRegistrationActionProvider(
+          registrationWrapper,
+          maybeIntermediaryNumber = Some(intermediaryNumber),
+          enrolments = Some(onlyIntermediaryEnrolment)
+        )
+
       val application = applicationBuilder(
         userAnswers = Some(emptyUserAnswers),
+        getRegistrationAction = Some(fakeProvider),
         maybeIntermediaryNumber = Some(intermediaryNumber)
       ).build()
 

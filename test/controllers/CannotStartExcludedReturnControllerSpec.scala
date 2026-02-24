@@ -45,14 +45,14 @@ class CannotStartExcludedReturnControllerSpec extends SpecBase {
       running(application) {
         val request = FakeRequest(GET, routes.CannotStartExcludedReturnController.onPageLoad().url)
 
-        val config = application.injector.instanceOf[FrontendAppConfig]
-
         val result = route(application, request).value
 
         val view = application.injector.instanceOf[CannotStartExcludedReturnView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(isIntermediary = false, config.intermediaryDashboardUrl)(request, messages(application)).toString
+        contentAsString(result) mustEqual
+          view(appropriateDashboardUrl = controllers.routes.YourAccountController.onPageLoad().url)
+            (request, messages(application)).toString
       }
     }
   }
