@@ -513,7 +513,7 @@ submittedReturnForPeriod.totalVat.title = Total VAT payable
 whichVatPeriodToPay.title = Which month would you like to make a payment for?
 whichVatPeriodToPay.heading = Which month would you like to make a payment for?
 whichVatPeriodToPay.amountKnown = {0}
-whichVatPeriodToPay.amountKnown.withAmount = <span class="govuk-!-font-weight-bold">{0}</span> owed for {1}
+whichVatPeriodToPay.amountKnown.withAmount = {1} - <span class="govuk-!-font-weight-bold">{0}</span> owed
 whichVatPeriodToPay.error.required = Select a month to pay
 
 notificationBanner.title = Important
