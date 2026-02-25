@@ -116,7 +116,13 @@ class CsvParserService @Inject()() {
   }
 
   private def parseValue(valueFromCsv: String): BigDecimal = {
-    BigDecimal(valueFromCsv.replace("£", "").replace(",", "").trim)
+    val cleaned =
+      valueFromCsv
+        .replace("Â", "")
+        .replace("£", "")
+        .replace(",", "")
+        .trim
+    BigDecimal(cleaned)
   }
 
   private def countryFromName(countryName: String): Country = {

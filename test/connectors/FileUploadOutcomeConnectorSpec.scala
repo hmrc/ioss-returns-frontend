@@ -18,11 +18,14 @@ package connectors
 
 import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock.*
+import models.responses.*
 import models.upscan.FileUploadOutcome
 import org.scalatest.matchers.must.Matchers
 import play.api.Application
 import play.api.test.Helpers.running
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
+
+import java.nio.charset.StandardCharsets
 
 class FileUploadOutcomeConnectorSpec extends SpecBase with WireMockHelper with Matchers {
 
@@ -109,6 +112,94 @@ class FileUploadOutcomeConnectorSpec extends SpecBase with WireMockHelper with M
         val result = connector.getOutcome("fail-ref").futureValue
 
         result mustBe None
+      }
+    }
+  }
+
+  "FileUploadOutcomeConnector.getCsv" - {
+
+    def url = s"/ioss-returns/file-upload-csv/fake-ref"
+
+    "must return a csv when backend returns 200" in {
+      val app = application
+
+      val validCSVContent: String =
+        """"HM Revenue and Customs logo","","",""
+          |"Import One Stop Shop VAT return","","",""
+          |"Country","VAT % rate","Total eligible sales","Total VAT due"
+          |"Germany","12.50%","£1200","£140"
+          |"France","15","33,333","£4423"
+          |"France","10%","150.01","£15"
+          |""".stripMargin
+
+      running(app) {
+        val connector = app.injector.instanceOf[FileUploadOutcomeConnector]
+
+        server.stubFor(
+          get(urlEqualTo(url))
+            .willReturn(aResponse()
+              .withStatus(200)
+              .withHeader("Content-Type", "text/csv; charset=utf-8")
+              .withBody(validCSVContent.getBytes(StandardCharsets.UTF_8))
+            )
+        )
+
+        val result = connector.getCsv("fake-ref").futureValue
+
+        result mustBe Right(validCSVContent)
+      }
+    }
+
+    "must return Left(NotFound) when backend returns 404" in {
+      val app = application
+
+      running(app) {
+        val connector = app.injector.instanceOf[FileUploadOutcomeConnector]
+
+        server.stubFor(
+          get(urlEqualTo("/ioss-returns/file-upload-csv/unknown-ref"))
+            .willReturn(aResponse()
+              .withStatus(404)
+            )
+        )
+
+        val result = connector.getCsv("unknown-ref").futureValue
+
+        result mustBe Left(NotFound)
+      }
+    }
+
+    "must return Left(ConflictFound) when backend returns 409" in {
+      val app = application
+
+      running(app) {
+        val connector = app.injector.instanceOf[FileUploadOutcomeConnector]
+
+        server.stubFor(
+          get(urlEqualTo("/ioss-returns/file-upload-csv/conflict-ref"))
+            .willReturn(aResponse().withStatus(409).withBody("Upload was not completed. Status = READY"))
+        )
+
+        val result = connector.getCsv("conflict-ref").futureValue
+
+        result mustBe Left(ConflictFound)
+      }
+    }
+
+    "must return Left(InternalServerError) when backend returns 500" in {
+      val app = application
+
+      running(app) {
+        val connector = app.injector.instanceOf[FileUploadOutcomeConnector]
+
+        server.stubFor(
+          get(urlEqualTo("/ioss-returns/file-upload-csv/fail-ref"))
+            .willReturn(aResponse().withStatus(500).withBody("Server error"))
+        )
+
+        val result = connector.getCsv("fail-ref").futureValue
+
+        result mustBe Left(InternalServerError)
       }
     }
   }

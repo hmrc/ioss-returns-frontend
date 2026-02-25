@@ -17,6 +17,7 @@
 package connectors
 
 import config.Service
+import connectors.CsvHttpParser.{FileUploadCsvResponse, FileUploadCsvReads}
 import models.upscan.*
 import play.api.Configuration
 import uk.gov.hmrc.http.HttpReads.Implicits.*
@@ -42,5 +43,11 @@ class FileUploadOutcomeConnector @Inject()(
       .recover {
         case _ => None
       }
+  }
+
+  def getCsv(reference: String)(implicit hc: HeaderCarrier): Future[FileUploadCsvResponse] = {
+    httpClientV2
+      .get(url"$baseUrl/file-upload-csv/$reference")
+      .execute[FileUploadCsvResponse]
   }
 }
