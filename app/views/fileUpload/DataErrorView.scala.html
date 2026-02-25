@@ -31,8 +31,8 @@
     isIntermediary: Boolean,
     companyName: String,
     csvErrors: Seq[CsvError],
-    paragraphs: Seq[String],
-    bullets: Seq[String]
+    errorMessage: Seq[String],
+    hasMultipleTypes: Boolean
 )(implicit request: Request[_], messages: Messages)
 
 @caption = @{
@@ -56,16 +56,19 @@
             <h1 class="govuk-heading-l">@messages("dataError.heading", period.displayText)</h1>
         </header>
 
-        @for(p <- paragraphs) {
+        @for(p <- errorMessage) {
             <p class="govuk-body">@p</p>
         }
 
-        @if(bullets.nonEmpty) {
+        @if(hasMultipleTypes) {
             <ul class="govuk-list govuk-list--bullet">
-                @for(b <- bullets) {
-                <li>@b</li>
-                }
+                <li>@messages("dataError.errorMessage.genericErrors.bullet1")</li>
+                <li>@messages("dataError.errorMessage.genericErrors.bullet2")</li>
+                <li>@messages("dataError.errorMessage.genericErrors.bullet3")</li>
+                <li>@messages("dataError.errorMessage.genericErrors.bullet4")</li>
             </ul>
+
+            <p class="govuk-body">@messages("dataError.errorMessage.genericErrors.p3")</p>
         }
 
         @govukRadios(

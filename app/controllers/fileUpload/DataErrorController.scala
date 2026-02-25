@@ -48,14 +48,14 @@ class DataErrorController @Inject()(
       val isIntermediary = request.isIntermediary
       val companyName = request.companyName
       val errors: Seq[CsvError] = request.userAnswers.get(CsvValidationErrorsPage).getOrElse(Nil)
-      val (paragraphs, bullets) = errorMessages(errors)
+      val (errorMessage, hasMultipleTypes) = errorMessages(errors)
 
       val preparedForm = request.userAnswers.get(DataErrorPage) match {
         case None => form
         case Some(value) => form.fill(value)
       }
 
-      Ok(view(preparedForm, waypoints, period, isIntermediary, companyName, errors, paragraphs, bullets))
+      Ok(view(preparedForm, waypoints, period, isIntermediary, companyName, errors, errorMessage, hasMultipleTypes))
   }
 
   def onSubmit(waypoints: Waypoints): Action[AnyContent] = cc.authAndRequireData().async {
@@ -65,11 +65,11 @@ class DataErrorController @Inject()(
       val isIntermediary = request.isIntermediary
       val companyName = request.companyName
       val errors: Seq[CsvError] = request.userAnswers.get(CsvValidationErrorsPage).getOrElse(Nil)
-      val (paragraphs, bullets) = errorMessages(errors)
+      val (errorMessage, hasMultipleTypes) = errorMessages(errors)
       
       form.bindFromRequest().fold(
         formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, waypoints, period, isIntermediary, companyName, errors, paragraphs, bullets))),
+          Future.successful(BadRequest(view(formWithErrors, waypoints, period, isIntermediary, companyName, errors, errorMessage, hasMultipleTypes))),
 
         value =>
           for {
@@ -79,59 +79,78 @@ class DataErrorController @Inject()(
       )
   }
 
-  private def errorMessages(errors: Seq[CsvError])(implicit messages: Messages): (Seq[String], Seq[String]) = {
+  private def errorMessages(errors: Seq[CsvError])(implicit messages: Messages): (Seq[String], Boolean) = {
 
     val errorType = errors.map(_.getClass.getSimpleName).distinct
     val cells = errors.map(_.cellRef).distinct.sorted.mkString(", ")
+    val hasMultipleTypes = errorType.size >= 2
 
-    if (errorType.size >= 2) {
+    if (hasMultipleTypes) {
       (
         Seq(
           messages("dataError.errorMessage.genericError.p1"),
-          messages("dataError.errorMessage.genericErrors.p2"),
-          messages("dataError.errorMessage.genericErrors.p3")
+          messages("dataError.errorMessage.genericErrors.p2")
         ),
-        Seq(
-          messages("dataError.errorMessage.genericErrors.bullet1"),
-          messages("dataError.errorMessage.genericErrors.bullet2"),
-          messages("dataError.errorMessage.genericErrors.bullet3"),
-          messages("dataError.errorMessage.genericErrors.bullet4")
-        )
+        true
       )
     } else {
-      errors.headOption match {
+      val count = errors.size
+      
+      val errorMessage: Seq[String] = errors.headOption match {
 
         case Some(_: CsvError.InvalidCountry) =>
-          (
+          if (count > 1) {
+            Seq(
+              messages("dataError.errorMessage.incorrectCountry.p1.plural"),
+              messages("dataError.errorMessage.incorrectCountry.p2.plural")
+            )
+          } else {
             Seq(
               messages("dataError.errorMessage.incorrectCountry.p1", cells),
               messages("dataError.errorMessage.incorrectCountry.p2")
-            ),
-            Nil
-          )
+            )
+          }
 
         case Some(_: CsvError.InvalidCharacter) =>
-          (Seq(messages("dataError.errorMessage.invalidCharacter.p1", cells)), Nil)
+          if (count > 1) {
+            Seq(messages("dataError.errorMessage.invalidCharacter.p1.plural"))
+          } else {
+            Seq(messages("dataError.errorMessage.invalidCharacter.p1", cells))
+          }
 
         case Some(_: CsvError.InvalidNumberFormat) =>
-          (Seq(messages("dataError.errorMessage.invalidNumber.p1", cells)), Nil)
+          if (count > 1) {
+            Seq(messages("dataError.errorMessage.invalidNumber.p1.plural"))
+          } else {
+            Seq(messages("dataError.errorMessage.invalidNumber.p1", cells))
+          }
 
         case Some(_: CsvError.NegativeNumber) =>
-          (Seq(messages("dataError.errorMessage.negativeNumber.p1", cells)), Nil)
-
+          if (count > 1) {
+            Seq(messages("dataError.errorMessage.negativeNumber.p1.plural"))
+          } else {
+            Seq(messages("dataError.errorMessage.negativeNumber.p1", cells))
+          }
         case Some(_: CsvError.BlankCell) =>
-          (Seq(messages("dataError.errorMessage.blankCell.p1", cells)), Nil)
-
+          if (count > 1) {
+            Seq(messages("dataError.errorMessage.blankCell.p1.plural"))
+          } else {
+            Seq(messages("dataError.errorMessage.blankCell.p1", cells))
+          }
         case Some(_: CsvError.VatRateNotAllowed) =>
           val countries =
             errors.collect { case e: CsvError.VatRateNotAllowed => e.country }
               .distinct.sorted.mkString(", ")
-
-          (Seq(messages("dataError.errorMessage.incorrectVatRate.p1", countries)), Nil)
+          if (count > 1) {
+            Seq(messages("dataError.errorMessage.incorrectVatRate.p1.plural"))
+          } else {
+            Seq(messages("dataError.errorMessage.incorrectVatRate.p1", countries))
+          }
 
         case _ =>
-          (Seq(messages("dataError.errorMessage.genericError.p1")), Nil)
+          Seq(messages("dataError.errorMessage.genericError.p1"))
       }
+      (errorMessage, false)
     }
   }
 

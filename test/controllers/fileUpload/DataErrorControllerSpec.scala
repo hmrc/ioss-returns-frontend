@@ -59,8 +59,6 @@ class DataErrorControllerSpec extends SpecBase with MockitoSugar {
         val expectedParagraphs: Seq[String] =
           Seq(msgs("dataError.errorMessage.blankCell.p1", "C4"))
 
-        val expectedBullets: Seq[String] = Nil
-
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(
           form,
@@ -70,7 +68,7 @@ class DataErrorControllerSpec extends SpecBase with MockitoSugar {
           companyName,
           csvErrors,
           expectedParagraphs,
-          expectedBullets
+          false
         )(request, messages(application)).toString
       }
     }
@@ -93,8 +91,6 @@ class DataErrorControllerSpec extends SpecBase with MockitoSugar {
         val expectedParagraphs: Seq[String] =
           Seq(msgs("dataError.errorMessage.blankCell.p1", "C4"))
 
-        val expectedBullets: Seq[String] = Nil
-
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(
           form.fill(true),
@@ -104,7 +100,7 @@ class DataErrorControllerSpec extends SpecBase with MockitoSugar {
           companyName,
           csvErrors,
           expectedParagraphs,
-          expectedBullets
+          false
         )(request, messages(application)).toString
       }
     }
@@ -155,8 +151,6 @@ class DataErrorControllerSpec extends SpecBase with MockitoSugar {
         val expectedParagraphs: Seq[String] =
           Seq(msgs("dataError.errorMessage.blankCell.p1", "C4"))
 
-        val expectedBullets: Seq[String] = Nil
-
         status(result) mustEqual BAD_REQUEST
         contentAsString(result) mustEqual view(
           boundForm,
@@ -166,7 +160,7 @@ class DataErrorControllerSpec extends SpecBase with MockitoSugar {
           companyName,
           csvErrors,
           expectedParagraphs,
-          expectedBullets
+          false
         )(request, messages(application)).toString
       }
     }

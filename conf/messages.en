@@ -698,13 +698,22 @@ dataError.no = No, enter the return manually
 dataError.error.required = Select yes if you want to try uploading it again
 dataError.change.hidden = error in the file you uploaded
 
-dataError.errorMessage.incorrectCountry.p1 = You have added a country with the wrong name in cell {0}
+dataError.errorMessage.incorrectCountry.p1 = The country in cell {0} has the wrong name.
 dataError.errorMessage.incorrectCountry.p2 = The country names must be the same as those in the notes section of the template document.
-dataError.errorMessage.invalidCharacter.p1 = You have added an invalid character in cell {0}
-dataError.errorMessage.invalidNumber.p1 = You have added an invalid value in cell {0}
-dataError.errorMessage.negativeNumber.p1 = You have added an negative value in cell {0}
-dataError.errorMessage.blankCell.p1 = You have an empty value in cell {0}
-dataError.errorMessage.incorrectVatRate.p1 = You have added incorrect VAT rates for {0}
+dataError.errorMessage.invalidCharacter.p1 = Cell {0} contains an invalid character.
+dataError.errorMessage.invalidNumber.p1 = Cell {0} contains an amount in the wrong format.
+dataError.errorMessage.negativeNumber.p1 = Cell {0} has a negative amount.
+dataError.errorMessage.blankCell.p1 = Cell {0} is empty.
+dataError.errorMessage.incorrectVatRate.p1 = {0} has an incorrect VAT rate.
+
+dataError.errorMessage.incorrectCountry.p1.plural = There are multiple countries that have the wrong name.
+dataError.errorMessage.incorrectCountry.p2.plural = The countries names must be the same as those in the notes section of the template document.
+dataError.errorMessage.invalidCharacter.p1.plural = Multiple cells contain invalid characters.
+dataError.errorMessage.invalidNumber.p1.plural = Multiple cells contain amounts in the wrong format.
+dataError.errorMessage.negativeNumber.p1.plural= Multiple cells have negative amounts.
+dataError.errorMessage.blankCell.p1.plural = Multiple cells are empty.
+dataError.errorMessage.incorrectVatRate.p1.plural = Multiple countries have incorrect VAT rates.
+
 dataError.errorMessage.genericError.p1 = We cannot process your file because there are multiple errors.
 dataError.errorMessage.genericErrors.p2 = Make sure the file:
 dataError.errorMessage.genericErrors.bullet1 = has country names in the correct format
