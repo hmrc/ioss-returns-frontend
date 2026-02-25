@@ -19,10 +19,9 @@ package journey
 import base.SpecBase
 import config.FrontendAppConfig
 import models.UserAnswers
-import org.mockito.Mockito.when
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatestplus.mockito.MockitoSugar.mock
-import pages.{NoOtherPeriodsAvailablePage, SoldGoodsPage, StartReturnPage, WantToUploadFilePage, YourAccountPage}
+import pages.{NoOtherPeriodsAvailablePage, SoldGoodsPage, StartReturnPage, YourAccountPage}
 
 class StartReturnsJourneySpec extends AnyFreeSpec with JourneyHelpers with SpecBase {
 

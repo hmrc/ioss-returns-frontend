@@ -18,13 +18,12 @@ package services.fileUpload
 
 import base.SpecBase
 import models.upscan.{CsvError, CsvValidationException}
-import models.{Country, Index, VatRateFromCountry, VatRateType}
+import models.{Country, VatRateFromCountry, VatRateType}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.mockito.MockitoSugar
 import org.mockito.ArgumentMatchers.{any, argThat, eq as eqTo}
-import org.mockito.Mockito.{reset, times, verify, when}
-import pages.*
+import org.mockito.Mockito.{reset, when}
 import services.VatRateService
 import uk.gov.hmrc.http.HeaderCarrier
 

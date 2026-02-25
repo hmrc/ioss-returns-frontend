@@ -23,7 +23,7 @@ import models.upscan.FileUploadOutcome
 import org.scalatest.matchers.must.Matchers
 import play.api.Application
 import play.api.test.Helpers.running
-import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
+import uk.gov.hmrc.http.HeaderCarrier
 
 import java.nio.charset.StandardCharsets
 

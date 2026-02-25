@@ -19,7 +19,6 @@ package services.saveForLater
 import base.SpecBase
 import connectors.SaveForLaterConnector
 import models.Period
-import models.requests.SaveForLaterRequest
 import models.responses.{ErrorResponse, InternalServerError}
 import models.saveForLater.SavedUserAnswers
 import org.mockito.ArgumentMatchers.{any, eq as eqTo}
