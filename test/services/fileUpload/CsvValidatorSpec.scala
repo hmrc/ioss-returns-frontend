@@ -110,6 +110,46 @@ class CsvValidatorSpec extends SpecBase with MockitoSugar with Matchers with Bef
       |""".stripMargin
   }
 
+  private val invalidDuplicateVatRate: String = {
+    """"HM Revenue and Customs logo","","",""
+      |"Import One Stop Shop VAT return","","",""
+      |"Country","VAT % rate","Total eligible sales","Total VAT due"
+      |"Germany","19%","£1200","£140"
+      |"France","13","33,333","£4423"
+      |"France","13%","150.01","£15"
+      |""".stripMargin
+  }
+
+  private val invalidContentWrongPlace: String = {
+    """"HM Revenue and Customs logo","","",""
+      |"Import One Stop Shop VAT return","","",""
+      |"Country","VAT % rate","Total eligible sales","Total VAT due"
+      |"Germany","19%","£1200","£140"
+      |"13","France","33,333","£4423"
+      |"France","10%","150.01","£15"
+      |""".stripMargin
+  }
+
+  private val invalidColumnSize: String = {
+    """"HM Revenue and Customs logo","","",""
+      |"Import One Stop Shop VAT return","","",""
+      |"Country","VAT % rate","Total eligible sales","Total VAT due"
+      |"Germany","19%","£1200","£140","45"
+      |"France","13","33,333","£4423"
+      |"France","10%","150.01","£15"
+      |""".stripMargin
+  }
+
+  private val invalidVatRateTwoDecimalPlaces: String = {
+    """"HM Revenue and Customs logo","","",""
+      |"Import One Stop Shop VAT return","","",""
+      |"Country","VAT % rate","Total eligible sales","Total VAT due"
+      |"Germany","19.00567%","£1200","£140",
+      |"France","13","33,333","£4423"
+      |"France","10%","150.01","£15"
+      |""".stripMargin
+  }
+
   override def beforeEach(): Unit = {
     reset(mockVatRateService)
     super.beforeEach()
@@ -199,6 +239,57 @@ class CsvValidatorSpec extends SpecBase with MockitoSugar with Matchers with Bef
           val errors = ex.asInstanceOf[CsvValidationException].errors
 
           errors.collect { case e: CsvError.VatRateNotAllowed => e.cellRef } must contain("B4")
+        }
+
+      }
+
+      "fail with DuplicateVatRate when VAT rate is duplicated for same country" in {
+
+        val validatorError = validator.validateOrThrow(rows(invalidDuplicateVatRate), period)
+
+        whenReady(validatorError.failed) { ex =>
+          ex mustBe a[CsvValidationException]
+          val errors = ex.asInstanceOf[CsvValidationException].errors
+
+          errors.collect { case e: CsvError.DuplicateVatRate => e.cellRef } must contain("B6")
+        }
+
+      }
+
+      "fail with multiple errors when data in wrong position" in {
+
+        val validatorError = validator.validateOrThrow(rows(invalidContentWrongPlace), period)
+
+        whenReady(validatorError.failed) { ex =>
+          ex mustBe a[CsvValidationException]
+          val errors = ex.asInstanceOf[CsvValidationException].errors
+
+          errors.map(_.cellRef) must contain allOf("A5", "B5")
+        }
+      }
+
+      "fail with TooManyColumns when there is more than 4 columns" in {
+
+        val validatorError = validator.validateOrThrow(rows(invalidColumnSize), period)
+
+        whenReady(validatorError.failed) { ex =>
+          ex mustBe a[CsvValidationException]
+          val errors = ex.asInstanceOf[CsvValidationException].errors
+
+          errors.collect { case e: CsvError.TooManyColumns => e.cellRef } must contain("D4")
+        }
+
+      }
+
+      "fail with InvalidNumberFormat for VAT rate with more than two decimal places" in {
+
+        val validatorError = validator.validateOrThrow(rows(invalidVatRateTwoDecimalPlaces), period)
+
+        whenReady(validatorError.failed) { ex =>
+          ex mustBe a[CsvValidationException]
+          val errors = ex.asInstanceOf[CsvValidationException].errors
+
+          errors.collect { case e: CsvError.InvalidNumberFormat => e.cellRef } must contain("B4")
         }
 
       }

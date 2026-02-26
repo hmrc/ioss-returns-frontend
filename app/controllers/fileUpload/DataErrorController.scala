@@ -146,6 +146,18 @@ class DataErrorController @Inject()(
           } else {
             Seq(messages("dataError.errorMessage.incorrectVatRate.p1", countries))
           }
+        case Some(_: CsvError.DuplicateVatRate) =>
+          if (count > 1) {
+            Seq(messages("dataError.errorMessage.duplicateVatRate.p1.plural"))
+          } else {
+            Seq(messages("dataError.errorMessage.duplicateVatRate.p1", cells))
+          }
+        case Some(_: CsvError.TooManyColumns) =>
+          if (count > 1) {
+            Seq(messages("dataError.errorMessage.tooManyColumns.p1.plural"))
+          } else {
+            Seq(messages("dataError.errorMessage.tooManyColumns.p1", cells))
+          }
 
         case _ =>
           Seq(messages("dataError.errorMessage.genericError.p1"))

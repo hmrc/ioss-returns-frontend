@@ -36,6 +36,8 @@ object CsvError {
   final case class NegativeNumber(row: Int, column: CsvColumn, value: BigDecimal) extends CsvError
   final case class BlankCell(row: Int, column: CsvColumn) extends CsvError
   final case class VatRateNotAllowed(row: Int, column: CsvColumn, country: String, value: String) extends CsvError
+  final case class DuplicateVatRate(row: Int, column: CsvColumn, country: String, value: String) extends CsvError
+  final case class TooManyColumns(row: Int, column: CsvColumn, actualColumns: Int) extends CsvError
 }
 
 final case class CsvValidationException(errors: Seq[CsvError])
@@ -59,6 +61,8 @@ implicit val csvErrorFormat: Format[CsvError] = {
   val negative = Json.format[CsvError.NegativeNumber]
   val blank = Json.format[CsvError.BlankCell]
   val vat = Json.format[CsvError.VatRateNotAllowed]
+  val duplicateVatRate = Json.format[CsvError.DuplicateVatRate]
+  val tooManyColumns = Json.format[CsvError.TooManyColumns]
 
   new Format[CsvError] {
 
@@ -69,6 +73,8 @@ implicit val csvErrorFormat: Format[CsvError] = {
       case e: CsvError.NegativeNumber      => negative.writes(e) + ("type" -> JsString("NegativeNumber"))
       case e: CsvError.BlankCell           => blank.writes(e) + ("type" -> JsString("BlankCell"))
       case e: CsvError.VatRateNotAllowed   => vat.writes(e) + ("type" -> JsString("VatRateNotAllowed"))
+      case e: CsvError.DuplicateVatRate    => duplicateVatRate.writes(e) + ("type" -> JsString("DuplicateVatRate"))
+      case e: CsvError.TooManyColumns      => tooManyColumns.writes(e) + ("type" -> JsString("TooManyColumns"))
     }
 
     def reads(json: JsValue): JsResult[CsvError] =
@@ -79,6 +85,8 @@ implicit val csvErrorFormat: Format[CsvError] = {
         case "NegativeNumber"      => negative.reads(json)
         case "BlankCell"           => blank.reads(json)
         case "VatRateNotAllowed"   => vat.reads(json)
+        case "DuplicateVatRate"    => duplicateVatRate.reads(json)
+        case "TooManyColumns"      => tooManyColumns.reads(json)
         case other                 => JsError(s"Unknown type $other")
       }
   }

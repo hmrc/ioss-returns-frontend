@@ -30,6 +30,7 @@ class CsvValidator @Inject()(vatRateService: VatRateService)(implicit ec: Execut
 
   private val VatRateRegex = """^\s*-?\d+(?:\.\d{1,2})?\s*%?\s*$""".r
   private val CountryAllowedCharsRegex = """^[\p{L}\p{M}\s'.-]+$""".r
+  private val MaxColumns = 4
 
   def validateOrThrow(
                        rows: Seq[Array[String]],
@@ -59,8 +60,11 @@ class CsvValidator @Inject()(vatRateService: VatRateService)(implicit ec: Execut
           validateRow(csvRowNumber, row)
         }
 
+      val duplicateErrors: Seq[CsvError] =
+        validateDuplicateCountryVatRate(dataRows, headerIndex)
+
       validateVatRatesAllowed(dataRows, headerIndex, period).map { vatRateErrors =>
-        basicErrors ++ vatRateErrors
+        basicErrors ++ duplicateErrors ++ vatRateErrors
       }
     }
   }
@@ -72,7 +76,8 @@ class CsvValidator @Inject()(vatRateService: VatRateService)(implicit ec: Execut
     val salesRaw   = cell(row, 2)
     val vatRaw     = cell(row, 3)
 
-    validateCountry(csvRowNumber, countryRaw) ++
+    validateColumnCount(csvRowNumber, row) ++
+      validateCountry(csvRowNumber, countryRaw) ++
       validateVatRate(csvRowNumber, vatRateRaw) ++
       validateMoney(csvRowNumber, CsvColumn.C, salesRaw) ++
       validateMoney(csvRowNumber, CsvColumn.D, vatRaw)
@@ -162,11 +167,66 @@ class CsvValidator @Inject()(vatRateService: VatRateService)(implicit ec: Execut
     }.map(_.flatten)
   }
 
+  private def validateDuplicateCountryVatRate(
+                                               dataRows: Seq[Array[String]],
+                                               headerIndex: Int
+                                             ): Seq[CsvError] = {
+
+    type CountryWithRate = (String, BigDecimal)
+
+    val (_, errors) = dataRows.zipWithIndex.foldLeft(Map.empty[CountryWithRate, Int] -> Vector.empty[CsvError]) {
+      case ((seen, errs), (row, index0)) =>
+        val csvRowNumber = (headerIndex +2) + index0
+        val countryRaw = cell(row, 0)
+        val vatRateRaw = cell(row, 1)
+
+        val countryOpt = Country.euCountries.find(_.name.equalsIgnoreCase(countryRaw)).map(_.name)
+
+        val vatRateOpt = parseRate(vatRateRaw)
+          .toOption
+          .filter(_ >= 0)
+          .map(_.bigDecimal.stripTrailingZeros())
+          .map(BigDecimal(_))
+
+        (countryOpt, vatRateOpt) match {
+          case (Some(country), Some(vatRate)) =>
+            val countryRow: CountryWithRate = (country, vatRate)
+
+            if (seen.contains(countryRow)) {
+              seen -> (errs :+ CsvError.DuplicateVatRate(csvRowNumber, CsvColumn.B, country, vatRateRaw))
+            } else {
+              seen.updated(countryRow, csvRowNumber) -> errs
+            }
+
+          case _ =>
+            seen -> errs
+        }
+    }
+    errors
+  }
+
+  private def validateColumnCount(rowNum: Int, row: Array[String]): Seq[CsvError] = {
+    val hasExtraNonEmpty =
+      row.drop(MaxColumns).exists(cell => cell.replace("\"", "").trim.nonEmpty)
+
+    if (hasExtraNonEmpty) {
+      Seq(CsvError.TooManyColumns(rowNum, CsvColumn.D, actualColumns = row.length))
+    } else {
+      Nil
+    }
+  }
+
+  
   private def parseRate(raw: String): Either[Unit, BigDecimal] = {
     if (raw.trim.isEmpty) {
       Left(())
+    } else if (!VatRateRegex.matches(raw.trim)) {
+      Left(())
     } else {
-      Try(BigDecimal(raw.replace("%", "").trim)).toEither.left.map(_ => ())
+      Try(BigDecimal(raw.replace("%", "").trim)).toEither match {
+        case Right(rate) if rate >= 0 => Right(rate)
+        case _ => Left(())
+      }
     }
   }
 
