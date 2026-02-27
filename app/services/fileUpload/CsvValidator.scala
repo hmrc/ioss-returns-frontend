@@ -89,7 +89,7 @@ class CsvValidator @Inject()(vatRateService: VatRateService)(implicit ec: Execut
     } else if (!CountryAllowedCharsRegex.matches(countryRaw)) {
       Seq(CsvError.InvalidCharacter(row, CsvColumn.A, countryRaw))
     } else {
-      val exists = Country.euCountries.exists(_.name.equalsIgnoreCase(countryRaw))
+      val exists = Country.euCountriesWithNI.exists(_.name.equalsIgnoreCase(countryRaw))
       if (!exists) Seq(CsvError.InvalidCountry(row, CsvColumn.A, countryRaw)) else Nil
     }
   }
@@ -138,7 +138,7 @@ class CsvValidator @Inject()(vatRateService: VatRateService)(implicit ec: Execut
         case (row, index0) =>
           val countryRaw = cell(row, 0)
 
-          Country.euCountries
+          Country.euCountriesWithNI
             .find(_.name.equalsIgnoreCase(countryRaw))
             .map {country =>
               val csvRowNumber = (headerIndex + 2) + index0
@@ -180,7 +180,7 @@ class CsvValidator @Inject()(vatRateService: VatRateService)(implicit ec: Execut
         val countryRaw = cell(row, 0)
         val vatRateRaw = cell(row, 1)
 
-        val countryOpt = Country.euCountries.find(_.name.equalsIgnoreCase(countryRaw)).map(_.name)
+        val countryOpt = Country.euCountriesWithNI.find(_.name.equalsIgnoreCase(countryRaw)).map(_.name)
 
         val vatRateOpt = parseRate(vatRateRaw)
           .toOption

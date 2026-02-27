@@ -126,7 +126,7 @@ class CsvParserService @Inject()() {
   }
 
   private def countryFromName(countryName: String): Country = {
-    Country.euCountries.find(_.name == countryName)
+    Country.euCountriesWithNI.find(_.name == countryName)
       .getOrElse(throw new IllegalArgumentException(s"Unknown country: '$countryName'"))
   }
 
