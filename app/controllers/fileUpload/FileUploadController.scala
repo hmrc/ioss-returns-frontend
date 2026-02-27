@@ -21,7 +21,7 @@ import connectors.UpscanInitiateConnector
 import controllers.actions.*
 import forms.FileUploadFormProvider
 import models.upscan.UpscanRedirectError
-import pages.fileUpload.{FileReferencePage, FileUploadedPage}
+import pages.fileUpload.{DataErrorPage, FileReferencePage, FileUploadedPage}
 import pages.Waypoints
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
@@ -68,8 +68,9 @@ class FileUploadController @Inject()(
 
             for {
               cleanedAnswers <- Future.fromTry(request.userAnswers.remove(FileUploadedPage))
+              dataErrorAnswers <- Future.fromTry(cleanedAnswers.remove(DataErrorPage))
               updatedAnswers <- Future.fromTry(
-                cleanedAnswers.set(FileReferencePage, initiateResponse.fileReference.reference)
+                dataErrorAnswers.set(FileReferencePage, initiateResponse.fileReference.reference)
               )
               _ <- cc.sessionRepository.set(updatedAnswers)
             } yield {
