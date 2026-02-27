@@ -102,7 +102,7 @@ class CsvParserService @Inject()() {
         .collect {
           case Array(country, vatRate, sales, vat) =>
             VatRow(
-              country = country,
+              country = aliasCountry(country),
               vatRate = parseVatRate(vatRate),
               salesToCountry = parseValue(sales),
               vatOnSales = parseValue(vat)
@@ -143,5 +143,14 @@ class CsvParserService @Inject()() {
       choice = VatOnSalesChoice.Standard,
       amount = amount
     )
+  }
+
+  private def aliasCountry(raw: String): String = {
+    val cleaned = raw.replace("\"", "").trim
+    if (cleaned.equalsIgnoreCase("Czechia")) {
+      "Czech Republic"
+    } else {
+      cleaned
+    }
   }
 }
