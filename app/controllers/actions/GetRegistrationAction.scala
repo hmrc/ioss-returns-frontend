@@ -176,12 +176,6 @@ class GetRegistrationAction(
       .filter(_.key == "HMRC-IOSS-INT")
       .flatMap(_.identifiers.find(id => id.key == "IntNumber" && id.value.nonEmpty).map(_.value)).toSeq
   }
-
-  private def isIntermediary(enrolments: Enrolments): Boolean = {
-    enrolments
-      .enrolments
-      .exists(_.key == config.intermediaryEnrolment)
-  }
 }
 
 class GetRegistrationActionProvider @Inject(
