@@ -51,10 +51,12 @@ trait CompletionChecks {
       .find(indexedCorrection => incompleteCorrections.contains(indexedCorrection._1))
   }
 
-  def getIncompleteVatRateAndSales(countryIndex: Index)
-                                  (implicit request: DataRequest[AnyContent])
-  : Seq[(VatRateWithOptionalSalesFromCountry, Int)] = {
-    val noSales = request.userAnswers
+  def getIncompleteVatRateAndSales(countryIndex: Index)(implicit request: DataRequest[AnyContent]): Seq[(VatRateWithOptionalSalesFromCountry, Int)] = {
+    getIncompleteVatRatesAndSalesFromUserAnswers(countryIndex, request.userAnswers)
+  }
+  
+  def getIncompleteVatRatesAndSalesFromUserAnswers(countryIndex: Index, userAnswers: UserAnswers): Seq[(VatRateWithOptionalSalesFromCountry, Int)] = {
+    val noSales = userAnswers
       .get(AllSalesWithOptionalVatQuery(countryIndex))
       .map(_.zipWithIndex
         .filter(_._1.salesAtVatRate.isEmpty)
@@ -92,16 +94,6 @@ trait CompletionChecks {
       .find(indexedCorrection => incompleteCountries.contains(indexedCorrection._1.country))
   }
 
-  def incompleteReturnsJourneyRedirect(waypoints: Waypoints, numberOfFulfilledObligations: Int)
-                                      (implicit request: DataRequest[AnyContent]): Option[Result] = {
-    if (!soldGoodsAnswered) {
-      Some(Redirect(routes.SoldGoodsController.onPageLoad(waypoints)))
-    } else if (!correctPreviousReturnAnswered(numberOfFulfilledObligations)) {
-      Some(Redirect(controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(waypoints)))
-    } else {
-      None
-    }
-  }
 
   def soldGoodsAnswered(implicit request: DataRequest[AnyContent]): Boolean = {
     request.userAnswers.get(SoldGoodsPage).isDefined
@@ -117,11 +109,11 @@ trait CompletionChecks {
         .isDefined
   }
 
-  def incompleteReturnsJourneyRedirect(waypoints: Waypoints)
-                                 (implicit request: DataRequest[AnyContent]): Option[Result] = {
+  def incompleteReturnsJourneyRedirect(waypoints: Waypoints, numberOfFulfilledObligations: Int)
+                                      (implicit request: DataRequest[AnyContent]): Option[Result] = {
     if (!soldGoodsAnswered) {
       Some(Redirect(routes.SoldGoodsController.onPageLoad(waypoints)))
-    } else if (!correctPreviousReturnAnswered()) {
+    } else if (!correctPreviousReturnAnswered(numberOfFulfilledObligations)) {
       Some(Redirect(controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(waypoints)))
     } else {
       None
