@@ -230,7 +230,7 @@ class CheckYourAnswersController @Inject()(
           case Right(None) =>
             logger.error("Unexpected result on submit")
             Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
-            
+
           case Left(ConflictFound) if request.isIntermediary =>
             Redirect(frontendAppConfig.intermediaryDashboardUrl).toFuture
 

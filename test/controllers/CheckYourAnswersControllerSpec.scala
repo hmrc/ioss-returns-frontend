@@ -18,6 +18,7 @@ package controllers
 
 import base.SpecBase
 import config.Constants.{maxCurrencyAmount, minCurrencyAmount}
+import config.FrontendAppConfig
 import connectors.SaveForLaterConnector
 import models.audit.{ReturnsAuditModel, SubmissionResult}
 import models.etmp.EtmpExclusionReason.TransferringMSID
@@ -25,6 +26,7 @@ import models.etmp.intermediary.EtmpCustomerIdentificationNew
 import models.etmp.intermediary.EtmpIdType.{FTR, NINO, UTR}
 import models.etmp.{EtmpDisplayRegistration, EtmpExclusion, EtmpObligationDetails, EtmpObligationsFulfilmentStatus}
 import models.requests.DataRequest
+import models.responses.ConflictFound
 import models.saveForLater.SavedUserAnswers
 import models.{Country, RegistrationWrapper, TotalVatToCountry, UserAnswers, VatRateFromCountry}
 import org.mockito.ArgumentMatchers.{any, eq as eqTo}
@@ -43,6 +45,7 @@ import queries.corrections.{PreviouslyDeclaredCorrectionAmount, PreviouslyDeclar
 import services.*
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{Card, CardTitle, SummaryList, SummaryListRow}
+import uk.gov.hmrc.play.bootstrap.http.ErrorResponse
 import utils.FutureSyntax.FutureOps
 import viewmodels.checkAnswers.*
 import viewmodels.checkAnswers.corrections.{CorrectPreviousReturnSummary, CorrectionNoPaymentDueSummary, CorrectionReturnPeriodSummary}
@@ -122,8 +125,8 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
             val result = route(application, request).value
 
             val expectedVatString = registrationWrapper.registration.customerIdentification match
-              case EtmpCustomerIdentificationNew(idType, idValue) if idType == UTR || idType == FTR => "Tax reference"
-              case EtmpCustomerIdentificationNew(idType, idValue) if idType == NINO => "National Insurance number"
+              case EtmpCustomerIdentificationNew(idType, idValue) if idType == UTR || idType == FTR=> "Tax reference"
+              case EtmpCustomerIdentificationNew(idType, idValue) if idType == NINO=> "National Insurance number"
               case _ => "UK VAT registration number"
 
             status(result) `mustBe` OK
@@ -507,8 +510,8 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           when(mockCoreVatReturnService.submitCoreVatReturn(any())(any())) thenReturn
             Future.failed(new RuntimeException("Failed submission"))
 
-          when(mockSaveForLaterConnector.submitForIntermediary(any())(any())) thenReturn
-            Right(Some(mock[SavedUserAnswers])).toFuture
+          when(mockSaveForLaterConnector.submit(any())(any())) thenReturn
+            Future.successful(Right(Some(mock[SavedUserAnswers])))
 
           when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn
             etmpObligationDetails.toFuture
@@ -537,7 +540,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
             status(result) `mustBe` SEE_OTHER
             redirectLocation(result).value `mustBe` controllers.submissionResults.routes.ReturnSubmissionFailureController.onPageLoad().url
             verify(mockAuditService, times(1)).audit(eqTo(expectedAuditEvent))(any(), any())
-            verify(mockSaveForLaterConnector, times(1)).submitForIntermediary(any())(any())
+            verify(mockSaveForLaterConnector, times(1)).submit(any())(any())
           }
         }
 
@@ -546,8 +549,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           when(mockCoreVatReturnService.submitCoreVatReturn(any())(any())) thenReturn
             Future.failed(new RuntimeException("Failed submission"))
 
-          when(mockSaveForLaterConnector.submitForIntermediary(any())(any())) thenReturn
-            Left(ConflictFound).toFuture
+          when(mockSaveForLaterConnector.submit(any())(any())) thenReturn Left(ConflictFound).toFuture
 
           when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn
             etmpObligationDetails.toFuture
@@ -578,7 +580,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
             status(result) `mustBe` SEE_OTHER
             redirectLocation(result).value `mustBe` config.intermediaryDashboardUrl
             verify(mockAuditService, times(1)).audit(eqTo(expectedAuditEvent))(any(), any())
-            verify(mockSaveForLaterConnector, times(1)).submitForIntermediary(any())(any())
+            verify(mockSaveForLaterConnector, times(1)).submit(any())(any())
           }
         }
       }
