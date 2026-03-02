@@ -19,7 +19,6 @@ package controllers
 import com.google.inject.Inject
 import config.FrontendAppConfig
 import connectors.SaveForLaterConnector
-import connectors.SaveForLaterHttpParser.SaveForLaterResponse
 import controllers.actions.AuthenticatedControllerComponents
 import logging.Logging
 import models.ValidationError

@@ -20,7 +20,7 @@ import controllers.actions.*
 import forms.VatRatesFromCountryFormProvider
 import models.requests.DataRequest
 import models.{Index, VatRateFromCountry}
-import pages.{CheckSalesPage, RemainingVatRateFromCountryPage, SalesToCountryPage, VatRatesFromCountryPage, Waypoints}
+import pages.{CheckSalesPage, RemainingVatRateFromCountryPage, VatRatesFromCountryPage, Waypoints}
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}

@@ -689,3 +689,39 @@ fileUploaded.status.error.not_csv = The selected file must be a CSV
 fileUploaded.status.error.default = The selected file could not be uploaded – try again
 fileUploaded.status.error.too_large = The selected file must be smaller than 2MB
 fileUploaded.status.error.invalid_file_type = You must save your file as a CSV before uploading
+
+dataError.title = There is an error in the file you uploaded
+dataError.heading = There is an error in the file you uploaded
+dataError.subheading = Do you want to try uploading it again?
+dataError.yes = Yes
+dataError.no = No, enter the return manually
+dataError.error.required = Select yes if you want to try uploading it again
+dataError.change.hidden = error in the file you uploaded
+
+dataError.errorMessage.incorrectCountry.p1 = The country in cell {0} has the wrong name.
+dataError.errorMessage.incorrectCountry.p2 = The country names must be the same as those in the notes section of the template document.
+dataError.errorMessage.invalidCharacter.p1 = Cell {0} contains an invalid character.
+dataError.errorMessage.invalidNumber.p1 = Cell {0} contains an amount in the wrong format.
+dataError.errorMessage.negativeNumber.p1 = Cell {0} has a negative amount.
+dataError.errorMessage.blankCell.p1 = Cell {0} is empty.
+dataError.errorMessage.incorrectVatRate.p1 = {0} has an incorrect VAT rate.
+dataError.errorMessage.duplicateVatRate.p1 = Check {0} the same country and VAT rate is entered more than once.
+dataError.errorMessage.tooManyColumns.p1 = Row {0} has more than 4 columns.
+dataError.errorMessage.tooManyColumns.p1.plural = Some rows have more than 4 columns.
+
+dataError.errorMessage.incorrectCountry.p1.plural = There are multiple countries that have the wrong name.
+dataError.errorMessage.incorrectCountry.p2.plural = The countries names must be the same as those in the notes section of the template document.
+dataError.errorMessage.invalidCharacter.p1.plural = Multiple cells contain invalid characters.
+dataError.errorMessage.invalidNumber.p1.plural = Multiple cells contain amounts in the wrong format.
+dataError.errorMessage.negativeNumber.p1.plural= Multiple cells have negative amounts.
+dataError.errorMessage.blankCell.p1.plural = Multiple cells are empty.
+dataError.errorMessage.incorrectVatRate.p1.plural = Multiple countries have incorrect VAT rates.
+dataError.errorMessage.duplicateVatRate.p1.plural = The same country and VAT rate has been entered more than once.
+
+dataError.errorMessage.genericError.p1 = We cannot process your file because there are multiple errors.
+dataError.errorMessage.genericErrors.p2 = Make sure the file:
+dataError.errorMessage.genericErrors.bullet1 = has country names in the correct format
+dataError.errorMessage.genericErrors.bullet2 = uses correct number formats for VAT rates and cash values
+dataError.errorMessage.genericErrors.bullet3 = does not contain any inappropriate characters or symbols
+dataError.errorMessage.genericErrors.bullet4 = does not have any blank cells or rows between entries
+dataError.errorMessage.genericErrors.p3 = You can check the notes page on the template for more information.

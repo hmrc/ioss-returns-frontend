@@ -102,7 +102,7 @@ class CsvParserService @Inject()() {
         .collect {
           case Array(country, vatRate, sales, vat) =>
             VatRow(
-              country = country,
+              country = aliasCountry(country),
               vatRate = parseVatRate(vatRate),
               salesToCountry = parseValue(sales),
               vatOnSales = parseValue(vat)
@@ -116,11 +116,17 @@ class CsvParserService @Inject()() {
   }
 
   private def parseValue(valueFromCsv: String): BigDecimal = {
-    BigDecimal(valueFromCsv.replace("£", "").replace(",", "").trim)
+    val cleaned =
+      valueFromCsv
+        .replace("Â", "")
+        .replace("£", "")
+        .replace(",", "")
+        .trim
+    BigDecimal(cleaned)
   }
 
   private def countryFromName(countryName: String): Country = {
-    Country.euCountries.find(_.name == countryName)
+    Country.euCountriesWithNI.find(_.name == countryName)
       .getOrElse(throw new IllegalArgumentException(s"Unknown country: '$countryName'"))
   }
 
@@ -137,5 +143,14 @@ class CsvParserService @Inject()() {
       choice = VatOnSalesChoice.Standard,
       amount = amount
     )
+  }
+
+  private def aliasCountry(raw: String): String = {
+    val cleaned = raw.replace("\"", "").trim
+    if (cleaned.equalsIgnoreCase("Czechia")) {
+      "Czech Republic"
+    } else {
+      cleaned
+    }
   }
 }

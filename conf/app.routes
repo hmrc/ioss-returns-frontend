@@ -181,3 +181,7 @@ GET         /file-upload                                                        
 GET         /file-uploaded                                                            controllers.fileUpload.FileUploadedController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
 POST        /file-uploaded                                                            controllers.fileUpload.FileUploadedController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints)
 
+
+GET        /csv-data-error                                                            controllers.fileUpload.DataErrorController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
+POST       /csv-data-error                                                            controllers.fileUpload.DataErrorController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints)
+

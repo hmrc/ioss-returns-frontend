@@ -19,24 +19,32 @@ package controllers.fileUpload
 import connectors.FileUploadOutcomeConnector
 import controllers.actions.*
 import forms.FileUploadedFormProvider
-import pages.fileUpload.{FileReferencePage, FileUploadStatusPage, FileUploadedPage}
+import logging.Logging
+import models.upscan.*
+import models.UserAnswers
+import models.requests.DataRequest
+import pages.fileUpload.{CsvValidationErrorsPage, FileReferencePage, FileUploadStatusPage, FileUploadedPage}
 import pages.Waypoints
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
+import services.fileUpload.{CsvParserService, CsvValidator}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.fileUpload.FileUploadedView
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success, Try}
 
 class FileUploadedController @Inject()(
                                          override val messagesApi: MessagesApi,
                                          cc: AuthenticatedControllerComponents,
                                          formProvider: FileUploadedFormProvider,
                                          view: FileUploadedView,
-                                         fileUploadOutcomeConnector: FileUploadOutcomeConnector
-                                 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                         fileUploadOutcomeConnector: FileUploadOutcomeConnector,
+                                         csvParser: CsvParserService,
+                                         csvValidator: CsvValidator,
+                                 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
@@ -90,7 +98,12 @@ class FileUploadedController @Inject()(
                 for {
                   updatedAnswers <- Future.fromTry(request.userAnswers.set(FileUploadedPage, value))
                   _ <- cc.sessionRepository.set(updatedAnswers)
-                } yield Redirect(FileUploadedPage.navigate(waypoints, request.userAnswers, updatedAnswers).route)
+                  result <- if (status == "UPLOADED" && value) {
+                    parseCsvAndUpdateAnswers(waypoints, ref, updatedAnswers)
+                  } else {
+                    Future.successful(Redirect(FileUploadedPage.navigate(waypoints, request.userAnswers, updatedAnswers).route))
+                  }
+                } yield result
             )
           }
         case None =>
@@ -98,6 +111,46 @@ class FileUploadedController @Inject()(
       }
   }
 
-  private def formForStatus(status: String): Form[Boolean] =
+  private def formForStatus(status: String): Form[Boolean] = {
     if (status == "FAILED") formProvider.failedForm else formProvider.successForm
+  }
+
+  private def parseCsvAndUpdateAnswers(
+                                        waypoints: Waypoints,
+                                        reference: String,
+                                        answers: UserAnswers)
+                                      (implicit request: DataRequest[_]): Future[Result] = {
+
+    fileUploadOutcomeConnector.getCsv(reference).flatMap {
+
+      case Right(csv) =>
+        val rows = CsvParserService.split(csv)
+        val period = request.userAnswers.period
+        csvValidator.validateOrThrow(rows, period).flatMap { _ =>
+          Try(csvParser.populateUserAnswersFromCsv(answers, csv)).flatten match {
+            case Success(updatedAnswers) =>
+              cc.sessionRepository.set(updatedAnswers).map { _ =>
+                Redirect(FileUploadedPage.navigate(waypoints, request.userAnswers, updatedAnswers).route)
+              }
+            case Failure(e) =>
+              logger.warn(s"CSV parsing failed", e)
+              Future.successful(Redirect(controllers.fileUpload.routes.DataErrorController.onPageLoad()))
+          }
+        }.recoverWith {
+          case CsvValidationException(errs) =>
+            val uaWithErrors = answers.set(CsvValidationErrorsPage, errs)
+            Future.fromTry(uaWithErrors).flatMap { uaWithErrors =>
+              cc.sessionRepository.set(uaWithErrors).map { _ =>
+                Redirect(controllers.fileUpload.routes.DataErrorController.onPageLoad(waypoints))
+              }
+            }
+        }
+
+      case Left(_) =>
+        Future.successful(
+          Redirect(controllers.fileUpload.routes.DataErrorController.onPageLoad())
+        )
+    }
+
+  }
 }

@@ -19,7 +19,6 @@ package services.saveForLater
 import connectors.SaveForLaterConnector
 import logging.Logging
 import models.Period
-import models.requests.SaveForLaterRequest
 import models.saveForLater.SavedUserAnswers
 import uk.gov.hmrc.http.HeaderCarrier
 import utils.FutureSyntax.FutureOps
