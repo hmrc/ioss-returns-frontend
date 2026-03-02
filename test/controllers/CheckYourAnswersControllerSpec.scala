@@ -45,7 +45,6 @@ import queries.corrections.{PreviouslyDeclaredCorrectionAmount, PreviouslyDeclar
 import services.*
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{Card, CardTitle, SummaryList, SummaryListRow}
-import uk.gov.hmrc.play.bootstrap.http.ErrorResponse
 import utils.FutureSyntax.FutureOps
 import viewmodels.checkAnswers.*
 import viewmodels.checkAnswers.corrections.{CorrectPreviousReturnSummary, CorrectionNoPaymentDueSummary, CorrectionReturnPeriodSummary}
