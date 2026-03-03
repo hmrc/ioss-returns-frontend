@@ -110,8 +110,8 @@ yourAccount.paragraph = You can correct a previous return when you submit your n
 
 yourAccount.deregistered = You are no longer VAT registered. You must re-register for VAT to use the Import One Stop Shop service.
 
-checkYourAnswers.title = Check Your Answers
-checkYourAnswers.heading = Check Your Answers
+checkYourAnswers.title = Check your answers
+checkYourAnswers.heading = Check your answers
 checkYourAnswers.label.iossNumber = IOSS number
 checkYourAnswers.label.businessName = Business name
 checkYourAnswers.label.businessVrn = UK VAT registration number
