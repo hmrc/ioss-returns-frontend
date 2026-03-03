@@ -647,7 +647,7 @@ wantToUploadFile.change.hidden = WantToUploadFile
 fileUpload.title = Upload the {0} return
 fileUpload.heading = Upload the {0} return
 fileUpload.intermediary.caption = {0} {1}
-fileUpload.caption = {0} {1}
+fileUpload.caption = {0}
 fileUpload.paragraph = To upload the file:
 fileUpload.bullet1 = download the <a class="govuk-link" href="{0}">latest version of the template</a>
 fileUpload.bullet2 = complete the details for all sales for the month and save the document as a CSV file
@@ -660,7 +660,7 @@ fileUpload.change.hidden = Upload a file
 fileUploaded.title = Check this the correct file
 fileUploaded.heading = Check this is the correct file
 fileUploaded.intermediary.caption = {0} {1}
-fileUploaded.caption = {0} {1}
+fileUploaded.caption = {0}
 fileUploaded.noFile =
 fileUploaded.status.uploading = Uploading
 fileUploaded.status.uploaded = Uploaded
