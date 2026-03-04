@@ -114,8 +114,12 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           )(any()))
             .thenReturn(Future.successful(None))
 
+          when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn
+            etmpObligationDetails.toFuture
+
           val application = applicationBuilder(userAnswers = Some(completeUserAnswers.set(CorrectPreviousReturnPage(0), false).success.value))
             .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
+            .overrides(bind[ObligationsService].toInstance(mockObligationsService))
             .build()
 
           running(application) {
@@ -150,8 +154,12 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           )(any()))
             .thenReturn(Future.successful(None))
 
+          when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn
+            etmpObligationDetails.toFuture
+
           val application = applicationBuilder(userAnswers = Some(completeUserAnswers.set(CorrectPreviousReturnPage(0), false).success.value))
             .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
+            .overrides(bind[ObligationsService].toInstance(mockObligationsService))
             .build()
 
           running(application) {
@@ -197,6 +205,8 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           when(mockSalesAtVatRateService.getTotalVatOnSales(any())) thenReturn None
           when(mockSalesAtVatRateService.getVatOwedToCountries(any())) thenReturn List.empty
           when(mockSalesAtVatRateService.getTotalVatOwedAfterCorrections(any())) thenReturn BigDecimal(0)
+          when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn
+            etmpObligationDetails.toFuture
 
           val answers: UserAnswers = completeUserAnswers
             .set(SoldGoodsPage, false).success.value
@@ -205,6 +215,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           val application = applicationBuilder(userAnswers = Some(answers), registration = updatedRegistrationWrapper)
             .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
             .overrides(bind[SalesAtVatRateService].toInstance(mockSalesAtVatRateService))
+            .overrides(bind[ObligationsService].toInstance(mockObligationsService))
             .build()
 
           running(application) {
@@ -286,8 +297,12 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           )(any()))
             .thenReturn(Future.successful(None))
 
+          when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn
+            etmpObligationDetails.toFuture
+
           val application = applicationBuilder(userAnswers = Some(completeUserAnswers.set(CorrectPreviousReturnPage(0), true).success.value))
             .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
+            .overrides(bind[ObligationsService].toInstance(mockObligationsService))
             .build()
 
           running(application) {
@@ -345,10 +360,14 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
             ArgumentMatchers.eq(period)
           )(any()))
             .thenReturn(Future.successful(None))
+          when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn
+            etmpObligationDetails.toFuture
+
 
           val application = applicationBuilder(userAnswers = Some(userAnswersWithCorrections))
             .overrides(bind[SalesAtVatRateService].toInstance(mockSalesAtVatRateService))
             .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
+            .overrides(bind[ObligationsService].toInstance(mockObligationsService))
             .build()
 
           running(application) {

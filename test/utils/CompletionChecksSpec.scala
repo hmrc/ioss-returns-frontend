@@ -452,11 +452,11 @@ class CompletionChecksSpec extends SpecBase with MockitoSugar {
 
           val result = TestCompletionChecks.correctPreviousReturnAnswered(numberOfFulfilledObligations = 2)
 
-          result mustBe true
+          result mustBe Some(true)
         }
       }
 
-      "must return false if CorrectPreviousReturn page has been answered but there are no fulfilled obligations" in {
+      "must return none if CorrectPreviousReturn page has been answered but there are no fulfilled obligations" in {
 
         val userAnswers = emptyUserAnswers
           .set(CorrectPreviousReturnPage(0), true).success.value
@@ -468,7 +468,7 @@ class CompletionChecksSpec extends SpecBase with MockitoSugar {
 
           val result = TestCompletionChecks.correctPreviousReturnAnswered(numberOfFulfilledObligations = 0)
 
-          result mustBe false
+          result mustBe empty
         }
       }
 
@@ -483,7 +483,7 @@ class CompletionChecksSpec extends SpecBase with MockitoSugar {
 
           val result = TestCompletionChecks.correctPreviousReturnAnswered(numberOfFulfilledObligations = 2)
 
-          result mustBe false
+          result mustBe Some(false)
         }
       }
 

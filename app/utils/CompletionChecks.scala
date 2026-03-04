@@ -101,25 +101,26 @@ trait CompletionChecks {
 
   def correctPreviousReturnAnswered(
                                      numberOfFulfilledObligations: Int
-                                   )(implicit request: DataRequest[AnyContent]): Boolean = {
+                                   )(implicit request: DataRequest[AnyContent]): Option[Boolean] = {
     val numberOfExistingReturnPeriods = request.userAnswers.get(AllCorrectionPeriodsQuery).map(_.size).getOrElse(0)
 
-    numberOfFulfilledObligations > 1 && request.userAnswers
-        .get(CorrectPreviousReturnPage(numberOfExistingReturnPeriods))
-        .isDefined
+    if (numberOfFulfilledObligations > 1) {
+      Some(request.userAnswers.get(CorrectPreviousReturnPage(numberOfExistingReturnPeriods)).isDefined)
+    } else {
+      None
+    }
   }
 
   def incompleteReturnsJourneyRedirect(waypoints: Waypoints, numberOfFulfilledObligations: Int)
                                       (implicit request: DataRequest[AnyContent]): Option[Result] = {
     if (!soldGoodsAnswered) {
       Some(Redirect(routes.SoldGoodsController.onPageLoad(waypoints)))
-    } else if (!correctPreviousReturnAnswered(numberOfFulfilledObligations)) {
+    } else if (correctPreviousReturnAnswered(numberOfFulfilledObligations).contains(false)) {
       Some(Redirect(controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(waypoints)))
     } else {
       None
     }
   }
-
 
   protected def withCompleteData[A](index: Index, data: Index => Seq[A], onFailure: Seq[A] => Result)
                                    (onSuccess: => Result): Result = {

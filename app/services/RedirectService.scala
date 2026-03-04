@@ -39,18 +39,24 @@ class RedirectService @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def validate(period: Period)(implicit request: DataRequest[AnyContent]): List[ValidationError] = {
+  def validate(period: Period,
+               numberOfFulfilledObligations: Int
+              )(implicit request: DataRequest[AnyContent]): List[ValidationError] = {
 
     val validateVatReturnRequest = vatReturnService.fromUserAnswers(request.userAnswers, request.vrn, period)
 
-    val validateCorrectionRequest = correctionService.fromUserAnswers(request.userAnswers, request.vrn, period)
+    val maybeValidateCorrectionRequest =
+      if (numberOfFulfilledObligations > 1)
+        Some(correctionService.fromUserAnswers(request.userAnswers, request.vrn, period))
+      else
+        None
 
-    (validateVatReturnRequest, validateCorrectionRequest) match {
-      case (Invalid(vatReturnErrors), Invalid(correctionErrors)) =>
+    (validateVatReturnRequest, maybeValidateCorrectionRequest) match {
+      case (Invalid(vatReturnErrors), Some(Invalid(correctionErrors))) =>
         (vatReturnErrors ++ correctionErrors).toChain.toList
       case (Invalid(errors), _) =>
         errors.toChain.toList
-      case (_, Invalid(errors)) =>
+      case (_, Some(Invalid(errors))) =>
         errors.toChain.toList
       case _ => List.empty[ValidationError]
     }
