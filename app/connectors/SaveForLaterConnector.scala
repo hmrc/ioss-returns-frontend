@@ -21,8 +21,6 @@ import connectors.SaveForLaterHttpParser.*
 import models.Period
 import models.requests.SaveForLaterRequest
 import play.api.Configuration
-import play.api.libs.json.Json
-import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpErrorFunctions, StringContextOps}
 
@@ -41,15 +39,11 @@ class SaveForLaterConnector @Inject()(
   private val intermediaryUrl: URL = url"$baseUrl/intermediary-save-for-later"
 
   def submit(s4lRequest: SaveForLaterRequest)(implicit hc: HeaderCarrier): Future[SaveForLaterResponse] = {
-    httpClientV2.post(url).withBody(Json.toJson(s4lRequest)).execute[SaveForLaterResponse]
+    httpClientV2.post(url"$url/${s4lRequest.iossNumber}").execute[SaveForLaterResponse]
   }
 
   def get(iossNumber: String)(implicit hc: HeaderCarrier): Future[SaveForLaterResponse] = {
     httpClientV2.get(url"$url/$iossNumber").execute[SaveForLaterResponse]
-  }
-
-  def submitForIntermediary(s4lRequest: SaveForLaterRequest)(implicit hc: HeaderCarrier): Future[SaveForLaterResponse] = {
-    httpClientV2.post(intermediaryUrl).withBody(Json.toJson(s4lRequest)).execute[SaveForLaterResponse]
   }
 
   def getForIntermediary()(implicit hc: HeaderCarrier): Future[IntermediarySaveForLaterResponse] = {
