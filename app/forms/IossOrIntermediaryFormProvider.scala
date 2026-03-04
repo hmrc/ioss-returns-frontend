@@ -1,4 +1,4 @@
-@*
+/*
  * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,23 +12,19 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *@
+ */
 
-@import pages.EmptyWaypoints
-@import pages.YourAccountPage
+package forms
 
-@this(
-        layout: templates.Layout,
-        govukButton: GovukButton
-)
+import forms.mappings.Mappings
+import play.api.data.Form
 
-@(appropriateDashboardUrl: String)(implicit request: Request[_], messages: Messages)
+import javax.inject.Inject
 
-@layout(pageTitle = titleNoForm(messages("cannotStartExcludedReturn.title"))) {
+class IossOrIntermediaryFormProvider @Inject extends Mappings {
 
-    <h1 class="govuk-heading-l">@messages("cannotStartExcludedReturn.heading")</h1>
-
-    <p class="govuk-body">@messages("cannotStartExcludedReturn.p1")</p>
-
-    <p class="govuk-body"> @Html(messages("cannotStartExcludedReturn.backToYourAccount", appropriateDashboardUrl))</p>
+  def apply(): Form[String] =
+    Form(
+      "value" -> text("iossOrIntermediary.error.required")
+    )
 }

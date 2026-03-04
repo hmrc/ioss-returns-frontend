@@ -35,6 +35,7 @@ class DataRequiredActionImpl @Inject()(implicit val executionContext: ExecutionC
       case Some(data) =>
         Right(DataRequest(
           request.request,
+          request.enrolments,
           request.credentials,
           request.vrn,
           request.iossNumber,

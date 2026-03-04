@@ -16,12 +16,13 @@
 
 package controllers
 
-import config.FrontendAppConfig
 import controllers.actions.*
-import pages.{Waypoints, YourAccountPage}
+import pages.Waypoints
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import services.intermediary.DashboardNavigationService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.EnrolmentIdentifiers.{findIntermediaryFromEnrolments, findIossFromEnrolments}
 import views.html.NoOtherPeriodsAvailableView
 
 import javax.inject.Inject
@@ -29,8 +30,8 @@ import javax.inject.Inject
 class NoOtherPeriodsAvailableController @Inject()(
                                                    override val messagesApi: MessagesApi,
                                                    cc: AuthenticatedControllerComponents,
-                                                   frontendAppConfig: FrontendAppConfig,
-                                                   view: NoOtherPeriodsAvailableView
+                                                   view: NoOtherPeriodsAvailableView,
+                                                   dashboardNavigationService: DashboardNavigationService
                                                  ) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
@@ -40,11 +41,12 @@ class NoOtherPeriodsAvailableController @Inject()(
 
       val companyName = request.registrationWrapper.getCompanyName()
 
-      val redirectUrl: String = if (request.isIntermediary) {
-        frontendAppConfig.intermediaryDashboardUrl
-      } else {
-        YourAccountPage.route(waypoints).url
-      }
+      val iossEnrolmentsExist: Boolean = findIossFromEnrolments(request.enrolments).nonEmpty
+      val intermediaryEnrolmentsExist: Boolean = findIntermediaryFromEnrolments(request.enrolments).nonEmpty
+
+      val redirectUrl: String = dashboardNavigationService.getAppropriateDashboardUrl(
+        request.isIntermediary, intermediaryEnrolmentsExist, iossEnrolmentsExist
+      )
 
       Ok(view(waypoints, request.isIntermediary, companyName, redirectUrl))
   }

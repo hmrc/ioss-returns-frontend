@@ -30,6 +30,7 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl.*
 import uk.gov.hmrc.play.bootstrap.binders.{OnlyRelative, RedirectUrl}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.EnrolmentIdentifiers.{findIntermediaryFromEnrolments, findIossFromEnrolments}
 import utils.FutureSyntax.FutureOps
 import views.html.SavedProgressView
 
@@ -44,7 +45,7 @@ class SavedProgressController @Inject()(
                                          view: SavedProgressView,
                                          connector: SaveForLaterConnector,
                                          vatReturnConnector: VatReturnConnector,
-                                         appConfig: FrontendAppConfig,
+                                         appConfig: FrontendAppConfig
                                        )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
@@ -55,6 +56,9 @@ class SavedProgressController @Inject()(
       val answersExpiry = request.userAnswers.lastUpdated.plus(appConfig.saveForLaterTtl, ChronoUnit.DAYS)
         .atZone(ZoneId.systemDefault()).toLocalDate.format(dateTimeFormatter)
       val safeContinueUrl = continueUrl.get(OnlyRelative).url
+
+      val iossEnrolmentsExist: Boolean = findIossFromEnrolments(request.enrolments).nonEmpty
+      val intermediaryEnrolmentsExist: Boolean = findIntermediaryFromEnrolments(request.enrolments).nonEmpty
 
       Future.fromTry(request.userAnswers.set(SavedProgressPage, safeContinueUrl)).flatMap { updatedAnswers =>
           val s4LRequest = SaveForLaterRequest(updatedAnswers, request.iossNumber, period)
@@ -69,16 +73,19 @@ class SavedProgressController @Inject()(
               for {
                 _ <- cc.sessionRepository.set(updatedAnswers)
               } yield {
-                val determinedRedirect = if (request.isIntermediary) {
-                  Some(appConfig.intermediaryDashboardUrl)
-                } else {
-                  externalUrl
+
+                val determinedRedirect = (request.isIntermediary, intermediaryEnrolmentsExist, iossEnrolmentsExist) match {
+                  case (true, true, true) => Some(controllers.intermediary.routes.IossOrIntermediaryController.onPageLoad().url)
+                  case (true, true, false) => Some(appConfig.intermediaryDashboardUrl)
+                  case _ => externalUrl
                 }
+
                 Ok(view(period, answersExpiry, safeContinueUrl, determinedRedirect))
               }
 
-            case (Left(ConflictFound), externalUrl) if request.isIntermediary =>
-              Redirect(appConfig.intermediaryDashboardUrl).toFuture
+            case (Left(ConflictFound), externalUrl)
+              if request.isIntermediary && intermediaryEnrolmentsExist && !iossEnrolmentsExist =>
+                Redirect(appConfig.intermediaryDashboardUrl).toFuture
 
             case (Left(ConflictFound), externalUrl) =>
               Redirect(externalUrl.getOrElse(routes.YourAccountController.onPageLoad().url)).toFuture

@@ -64,6 +64,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
   private val salesValue: BigDecimal = Gen.chooseNum(minCurrencyAmount, maxCurrencyAmount).sample.value
   private def createDummyDataRequest(request: FakeRequest[_]) = DataRequest(
     request = request,
+    enrolments = enrolments,
     credentials = testCredentials,
     vrn = Some(vrn),
     iossNumber = iossNumber,
@@ -438,7 +439,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           val result = route(application, request).value
 
           implicit val dataRequest: DataRequest[_] =
-            DataRequest(request, testCredentials, Some(vrn), userAnswersId, companyName, registrationWrapper, None, userAnswers)
+            DataRequest(request, enrolments, testCredentials, Some(vrn), userAnswersId, companyName, registrationWrapper, None, userAnswers)
 
           val expectedAuditEvent = ReturnsAuditModel.build(userAnswers, SubmissionResult.Success)
 
@@ -468,7 +469,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           val result = route(application, request).value
 
           implicit val dataRequest: DataRequest[_] =
-            DataRequest(request, testCredentials, Some(vrn), userAnswersId, companyName, registrationWrapper, None, userAnswers)
+            DataRequest(request, enrolments, testCredentials, Some(vrn), userAnswersId, companyName, registrationWrapper, None, userAnswers)
 
           val expectedAuditEvent = ReturnsAuditModel.build(userAnswers, SubmissionResult.Failure)
 

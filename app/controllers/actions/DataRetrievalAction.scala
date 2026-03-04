@@ -31,6 +31,7 @@ class DataRetrievalAction(sessionRepository: SessionRepository)
     sessionRepository.get(request.userId, request.iossNumber).map { maybeUserAnswers =>
       OptionalDataRequest(
         request.request,
+        request.enrolments,
         request.credentials,
         request.vrn,
         request.iossNumber,

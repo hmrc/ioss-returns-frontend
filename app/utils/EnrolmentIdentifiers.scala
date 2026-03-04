@@ -1,4 +1,4 @@
-@*
+/*
  * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,23 +12,23 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *@
+ */
 
-@import pages.EmptyWaypoints
-@import pages.YourAccountPage
+package utils
 
-@this(
-        layout: templates.Layout,
-        govukButton: GovukButton
-)
+import uk.gov.hmrc.auth.core.Enrolments
 
-@(appropriateDashboardUrl: String)(implicit request: Request[_], messages: Messages)
+object EnrolmentIdentifiers {
+  
+  def findIossFromEnrolments(enrolments: Enrolments): Seq[String] = {
+    enrolments.enrolments
+      .filter(_.key == "HMRC-IOSS-ORG")
+      .flatMap(_.identifiers.find(id => id.key == "IOSSNumber" && id.value.nonEmpty).map(_.value)).toSeq
+  }
 
-@layout(pageTitle = titleNoForm(messages("cannotStartExcludedReturn.title"))) {
-
-    <h1 class="govuk-heading-l">@messages("cannotStartExcludedReturn.heading")</h1>
-
-    <p class="govuk-body">@messages("cannotStartExcludedReturn.p1")</p>
-
-    <p class="govuk-body"> @Html(messages("cannotStartExcludedReturn.backToYourAccount", appropriateDashboardUrl))</p>
+  def findIntermediaryFromEnrolments(enrolments: Enrolments): Seq[String] = {
+    enrolments.enrolments
+      .filter(_.key == "HMRC-IOSS-INT")
+      .flatMap(_.identifiers.find(id => id.key == "IntNumber" && id.value.nonEmpty).map(_.value)).toSeq
+  }
 }

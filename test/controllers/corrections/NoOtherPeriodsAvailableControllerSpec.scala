@@ -18,6 +18,7 @@ package controllers.corrections
 
 import base.SpecBase
 import config.FrontendAppConfig
+import controllers.actions.FakeGetRegistrationActionProvider
 import controllers.routes
 import models.RegistrationWrapper
 import models.etmp.VatCustomerInfo
@@ -29,6 +30,7 @@ import play.api.inject.*
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import repositories.SessionRepository
+import uk.gov.hmrc.auth.core.{Enrolment, EnrolmentIdentifier, Enrolments}
 import views.html.NoOtherPeriodsAvailableView
 
 import scala.concurrent.Future
@@ -65,9 +67,28 @@ class NoOtherPeriodsAvailableControllerSpec extends SpecBase {
       val registration: RegistrationWrapper = registrationWrapper.copy(vatInfo = Some(vatInfo))
       val companyName: String = registration.getCompanyName()
 
+      val onlyIntermediaryEnrolment: Enrolments = Enrolments(
+        Set(
+          Enrolment(
+            key = intermediaryEnrolmentKey,
+            identifiers = Seq(
+              EnrolmentIdentifier("IntNumber", intermediaryNumber)
+            ),
+            state = "Activated"
+          )
+        )
+      )
+
+      val fakeProvider =
+        new FakeGetRegistrationActionProvider(
+          registration,
+          maybeIntermediaryNumber = Some(intermediaryNumber),
+          enrolments = Some(onlyIntermediaryEnrolment)
+        )
+
       val application = applicationBuilder(
         userAnswers = Some(emptyUserAnswers),
-        registration = registration,
+        getRegistrationAction = Some(fakeProvider),
         maybeIntermediaryNumber = Some(intermediaryNumber)
       ).build()
 

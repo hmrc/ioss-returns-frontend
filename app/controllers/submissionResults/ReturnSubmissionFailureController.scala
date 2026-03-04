@@ -16,13 +16,12 @@
 
 package controllers.submissionResults
 
-import config.FrontendAppConfig
 import controllers.actions.*
-import controllers.routes
-import pages.EmptyWaypoints
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import services.intermediary.DashboardNavigationService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.EnrolmentIdentifiers.{findIntermediaryFromEnrolments, findIossFromEnrolments}
 import views.html.submissionResults.ReturnSubmissionFailureView
 
 import javax.inject.Inject
@@ -31,19 +30,21 @@ class ReturnSubmissionFailureController @Inject()(
                                                    override val messagesApi: MessagesApi,
                                                    cc: AuthenticatedControllerComponents,
                                                    view: ReturnSubmissionFailureView,
-                                                   frontendAppConfig: FrontendAppConfig
+                                                   dashboardNavigationService: DashboardNavigationService
                                                  ) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
   def onPageLoad: Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced {
     implicit request =>
-      
-      val determineRedirect: String = if (request.isIntermediary) {
-        frontendAppConfig.intermediaryDashboardUrl
-      } else {
-        routes.YourAccountController.onPageLoad(EmptyWaypoints).url
-      }
+
+      val iossEnrolmentsExist: Boolean = findIossFromEnrolments(request.enrolments).nonEmpty
+      val intermediaryEnrolmentsExist: Boolean = findIntermediaryFromEnrolments(request.enrolments).nonEmpty
+
+      val determineRedirect: String =
+        dashboardNavigationService.getAppropriateDashboardUrl(
+          request.isIntermediary, intermediaryEnrolmentsExist, iossEnrolmentsExist
+        )
 
       Ok(view(determineRedirect))
   }

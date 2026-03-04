@@ -24,7 +24,9 @@ import pages.corrections.CorrectPreviousReturnPage
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import queries.TotalAmountVatDueGBPQuery
+import services.intermediary.DashboardNavigationService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.EnrolmentIdentifiers.{findIntermediaryFromEnrolments, findIossFromEnrolments}
 import utils.Formatters.generateVatReturnReference
 import views.html.submissionResults.SuccessfullySubmittedView
 
@@ -37,7 +39,8 @@ class SuccessfullySubmittedController @Inject()(
                                                  vatReturnConnector: VatReturnConnector,
                                                  frontendAppConfig: FrontendAppConfig,
                                                  intermediaryRegistrationConnector: IntermediaryRegistrationConnector,
-                                                 view: SuccessfullySubmittedView
+                                                 view: SuccessfullySubmittedView,
+                                                 dashboardNavigationService: DashboardNavigationService
                                                )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
@@ -86,7 +89,13 @@ class SuccessfullySubmittedController @Inject()(
           _.url
         )
 
-        val intermediaryDashboardUrl = frontendAppConfig.intermediaryDashboardUrl
+        val iossEnrolmentsExist: Boolean = findIossFromEnrolments(request.enrolments).nonEmpty
+        val intermediaryEnrolmentsExist: Boolean = findIntermediaryFromEnrolments(request.enrolments).nonEmpty
+
+        val appropriateDashboardUrl: String =
+          dashboardNavigationService.getAppropriateDashboardUrl(
+            isIntermediary, intermediaryEnrolmentsExist, iossEnrolmentsExist
+          )
 
         Ok(view(
           returnReference,
@@ -97,7 +106,7 @@ class SuccessfullySubmittedController @Inject()(
           userResearchUrl,
           isIntermediary = isIntermediary,
           clientName = clientName,
-          intermediaryDashboardUrl = intermediaryDashboardUrl
+          appropriateDashboardUrl = appropriateDashboardUrl
         ))
       }
   }

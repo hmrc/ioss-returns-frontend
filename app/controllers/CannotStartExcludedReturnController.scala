@@ -16,12 +16,13 @@
 
 package controllers
 
-import config.FrontendAppConfig
 import controllers.actions.*
 import logging.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import services.intermediary.DashboardNavigationService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.EnrolmentIdentifiers.{findIntermediaryFromEnrolments, findIossFromEnrolments}
 import views.html.CannotStartExcludedReturnView
 
 import javax.inject.Inject
@@ -29,8 +30,8 @@ import scala.concurrent.Future
 
 class CannotStartExcludedReturnController @Inject()(
                                                      cc: AuthenticatedControllerComponents,
-                                                     frontendAppConfig: FrontendAppConfig,
-                                                     view: CannotStartExcludedReturnView
+                                                     view: CannotStartExcludedReturnView,
+                                                     dashboardNavigationService: DashboardNavigationService
                                                    ) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
@@ -38,9 +39,14 @@ class CannotStartExcludedReturnController @Inject()(
   def onPageLoad(): Action[AnyContent] = cc.authAndGetOptionalData().async {
     implicit request =>
 
-      val isIntermediary = request.isIntermediary
-      val intermediaryDashboardUrl = frontendAppConfig.intermediaryDashboardUrl
-      
-      Future.successful(Ok(view(isIntermediary, intermediaryDashboardUrl)))
+      val iossEnrolmentsExist: Boolean = findIossFromEnrolments(request.enrolments).nonEmpty
+      val intermediaryEnrolmentsExist: Boolean = findIntermediaryFromEnrolments(request.enrolments).nonEmpty
+
+      val appropriateDashboardUrl: String =
+        dashboardNavigationService.getAppropriateDashboardUrl(
+          request.isIntermediary, intermediaryEnrolmentsExist, iossEnrolmentsExist
+        )
+
+      Future.successful(Ok(view(appropriateDashboardUrl)))
   }
 }

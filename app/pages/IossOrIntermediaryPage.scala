@@ -1,4 +1,4 @@
-@*
+/*
  * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,23 +12,14 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *@
+ */
 
-@import pages.EmptyWaypoints
-@import pages.YourAccountPage
+package pages
 
-@this(
-        layout: templates.Layout,
-        govukButton: GovukButton
-)
+import play.api.mvc.Call
 
-@(appropriateDashboardUrl: String)(implicit request: Request[_], messages: Messages)
+object IossOrIntermediaryPage extends Page {
 
-@layout(pageTitle = titleNoForm(messages("cannotStartExcludedReturn.title"))) {
-
-    <h1 class="govuk-heading-l">@messages("cannotStartExcludedReturn.heading")</h1>
-
-    <p class="govuk-body">@messages("cannotStartExcludedReturn.p1")</p>
-
-    <p class="govuk-body"> @Html(messages("cannotStartExcludedReturn.backToYourAccount", appropriateDashboardUrl))</p>
+  override def route(waypoints: Waypoints): Call =
+    controllers.intermediary.routes.IossOrIntermediaryController.onPageLoad()
 }
