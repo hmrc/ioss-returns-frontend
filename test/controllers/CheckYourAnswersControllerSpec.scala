@@ -18,13 +18,15 @@ package controllers
 
 import base.SpecBase
 import config.Constants.{maxCurrencyAmount, minCurrencyAmount}
+import config.FrontendAppConfig
 import connectors.SaveForLaterConnector
 import models.audit.{ReturnsAuditModel, SubmissionResult}
 import models.etmp.EtmpExclusionReason.TransferringMSID
 import models.etmp.intermediary.EtmpCustomerIdentificationNew
 import models.etmp.intermediary.EtmpIdType.{FTR, NINO, UTR}
-import models.etmp.{EtmpDisplayRegistration, EtmpExclusion}
+import models.etmp.{EtmpDisplayRegistration, EtmpExclusion, EtmpObligationDetails, EtmpObligationsFulfilmentStatus}
 import models.requests.DataRequest
+import models.responses.ConflictFound
 import models.saveForLater.SavedUserAnswers
 import models.{Country, RegistrationWrapper, TotalVatToCountry, UserAnswers, VatRateFromCountry}
 import org.mockito.ArgumentMatchers.{any, eq as eqTo}
@@ -40,7 +42,7 @@ import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import queries.corrections.{PreviouslyDeclaredCorrectionAmount, PreviouslyDeclaredCorrectionAmountQuery}
-import services.{AuditService, CoreVatReturnService, PartialReturnPeriodService, SalesAtVatRateService}
+import services.*
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{Card, CardTitle, SummaryList, SummaryListRow}
 import utils.FutureSyntax.FutureOps
@@ -57,20 +59,26 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
   private val mockSalesAtVatRateService = mock[SalesAtVatRateService]
   private val mockCoreVatReturnService = mock[CoreVatReturnService]
+  private val mockObligationsService = mock[ObligationsService]
   private val mockPartialReturnPeriodService = mock[PartialReturnPeriodService]
   private val mockAuditService = mock[AuditService]
   private val mockSaveForLaterConnector = mock[SaveForLaterConnector]
   private val vatRateFromCountry: VatRateFromCountry = arbitraryVatRateFromCountry.arbitrary.sample.value
   private val salesValue: BigDecimal = Gen.chooseNum(minCurrencyAmount, maxCurrencyAmount).sample.value
-  private def createDummyDataRequest(request: FakeRequest[_]) = DataRequest(
-    request = request,
-    credentials = testCredentials,
-    vrn = Some(vrn),
-    iossNumber = iossNumber,
-    companyName = companyName,
-    registrationWrapper = registrationWrapper,
-    intermediaryNumber = Some(intermediaryNumber),
-    userAnswers = completeUserAnswers)
+  private val etmpObligationDetails: Seq[EtmpObligationDetails] = Seq(
+    EtmpObligationDetails(
+      status = EtmpObligationsFulfilmentStatus.Fulfilled,
+      periodKey = "23AL"
+    ),
+    EtmpObligationDetails(
+      status = EtmpObligationsFulfilmentStatus.Fulfilled,
+      periodKey = "23AK"
+    ),
+    EtmpObligationDetails(
+      status = EtmpObligationsFulfilmentStatus.Fulfilled,
+      periodKey = "22AK"
+    )
+  )
 
   override def beforeEach(): Unit = {
     Mockito.reset(mockSalesAtVatRateService)
@@ -80,6 +88,16 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
     Mockito.reset(mockSaveForLaterConnector)
     super.beforeEach()
   }
+
+  private def createDummyDataRequest(request: FakeRequest[_]) = DataRequest(
+    request = request,
+    credentials = testCredentials,
+    vrn = Some(vrn),
+    iossNumber = iossNumber,
+    companyName = companyName,
+    registrationWrapper = registrationWrapper,
+    intermediaryNumber = Some(intermediaryNumber),
+    userAnswers = completeUserAnswers)
 
   "Check Your Answers Controller" - {
 
@@ -96,8 +114,12 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           )(any()))
             .thenReturn(Future.successful(None))
 
+          when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn
+            etmpObligationDetails.toFuture
+
           val application = applicationBuilder(userAnswers = Some(completeUserAnswers.set(CorrectPreviousReturnPage(0), false).success.value))
             .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
+            .overrides(bind[ObligationsService].toInstance(mockObligationsService))
             .build()
 
           running(application) {
@@ -132,8 +154,12 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           )(any()))
             .thenReturn(Future.successful(None))
 
+          when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn
+            etmpObligationDetails.toFuture
+
           val application = applicationBuilder(userAnswers = Some(completeUserAnswers.set(CorrectPreviousReturnPage(0), false).success.value))
             .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
+            .overrides(bind[ObligationsService].toInstance(mockObligationsService))
             .build()
 
           running(application) {
@@ -179,6 +205,8 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           when(mockSalesAtVatRateService.getTotalVatOnSales(any())) thenReturn None
           when(mockSalesAtVatRateService.getVatOwedToCountries(any())) thenReturn List.empty
           when(mockSalesAtVatRateService.getTotalVatOwedAfterCorrections(any())) thenReturn BigDecimal(0)
+          when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn
+            etmpObligationDetails.toFuture
 
           val answers: UserAnswers = completeUserAnswers
             .set(SoldGoodsPage, false).success.value
@@ -187,6 +215,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           val application = applicationBuilder(userAnswers = Some(answers), registration = updatedRegistrationWrapper)
             .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
             .overrides(bind[SalesAtVatRateService].toInstance(mockSalesAtVatRateService))
+            .overrides(bind[ObligationsService].toInstance(mockObligationsService))
             .build()
 
           running(application) {
@@ -251,7 +280,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
               missingData = List.empty,
               maybeExclusion = Some(etmpExclusion),
               isFinalReturn = true,
-              isIntermediary = false
+              isIntermediary = false,
             )(request, messages(application)).toString
           }
         }
@@ -268,8 +297,12 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           )(any()))
             .thenReturn(Future.successful(None))
 
+          when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn
+            etmpObligationDetails.toFuture
+
           val application = applicationBuilder(userAnswers = Some(completeUserAnswers.set(CorrectPreviousReturnPage(0), true).success.value))
             .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
+            .overrides(bind[ObligationsService].toInstance(mockObligationsService))
             .build()
 
           running(application) {
@@ -327,10 +360,14 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
             ArgumentMatchers.eq(period)
           )(any()))
             .thenReturn(Future.successful(None))
+          when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn
+            etmpObligationDetails.toFuture
+
 
           val application = applicationBuilder(userAnswers = Some(userAnswersWithCorrections))
             .overrides(bind[SalesAtVatRateService].toInstance(mockSalesAtVatRateService))
             .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
+            .overrides(bind[ObligationsService].toInstance(mockObligationsService))
             .build()
 
           running(application) {
@@ -396,7 +433,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
                 List.empty,
                 None,
                 isFinalReturn = false,
-                isIntermediary = false
+                isIntermediary = false,
               )(request, messages(application)).toString
           }
         }
@@ -425,11 +462,13 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
         when(mockCoreVatReturnService.submitCoreVatReturn(any())(any())) thenReturn
           Future.successful(remainingAmount)
+        when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
 
         val userAnswers = completeUserAnswers
         val application = applicationBuilder(userAnswers = Some(userAnswers))
           .overrides(bind[CoreVatReturnService].toInstance(mockCoreVatReturnService))
           .overrides(bind[AuditService].toInstance(mockAuditService))
+          .overrides(bind[ObligationsService].toInstance(mockObligationsService))
           .build()
 
         running(application) {
@@ -452,6 +491,9 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         when(mockCoreVatReturnService.submitCoreVatReturn(any())(any())) thenReturn
           Future.failed(new RuntimeException("Failed submission"))
 
+        when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn
+          etmpObligationDetails.toFuture
+
         when(mockSaveForLaterConnector.submit(any())(any())) thenReturn
           Future.successful(Right(Some(mock[SavedUserAnswers])))
 
@@ -460,6 +502,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           .overrides(bind[CoreVatReturnService].toInstance(mockCoreVatReturnService))
           .overrides(bind[AuditService].toInstance(mockAuditService))
           .overrides(bind[SaveForLaterConnector].toInstance(mockSaveForLaterConnector))
+          .overrides(bind[ObligationsService].toInstance(mockObligationsService))
           .build()
 
         running(application) {
@@ -478,16 +521,101 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         }
       }
 
+      "when the user is an intermediary and has answered all necessary data and submission of the return fails" - {
+
+        "must redirect to Return Submission Failure Controller" in {
+
+          when(mockCoreVatReturnService.submitCoreVatReturn(any())(any())) thenReturn
+            Future.failed(new RuntimeException("Failed submission"))
+
+          when(mockSaveForLaterConnector.submit(any())(any())) thenReturn
+            Future.successful(Right(Some(mock[SavedUserAnswers])))
+
+          when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn
+            etmpObligationDetails.toFuture
+
+          val userAnswers = completeUserAnswers
+          val application = applicationBuilder(
+            userAnswers = Some(userAnswers),
+            maybeIntermediaryNumber = Some(intermediaryNumber)
+          )
+            .overrides(bind[CoreVatReturnService].toInstance(mockCoreVatReturnService))
+            .overrides(bind[AuditService].toInstance(mockAuditService))
+            .overrides(bind[SaveForLaterConnector].toInstance(mockSaveForLaterConnector))
+            .overrides(bind[ObligationsService].toInstance(mockObligationsService))
+            .build()
+
+          running(application) {
+            val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, incompletePromptShown = false).url)
+
+            val result = route(application, request).value
+
+            implicit val dataRequest: DataRequest[_] =
+              DataRequest(request, testCredentials, Some(vrn), userAnswersId, companyName, registrationWrapper, Some(intermediaryNumber), userAnswers)
+
+            val expectedAuditEvent = ReturnsAuditModel.build(userAnswers, SubmissionResult.Failure)
+
+            status(result) `mustBe` SEE_OTHER
+            redirectLocation(result).value `mustBe` controllers.submissionResults.routes.ReturnSubmissionFailureController.onPageLoad().url
+            verify(mockAuditService, times(1)).audit(eqTo(expectedAuditEvent))(any(), any())
+            verify(mockSaveForLaterConnector, times(1)).submit(any())(any())
+          }
+        }
+
+        "must redirect to the Intermediary Dashboard frontends' Your Account Controller when Save for Later connector returns Conflict Found" in {
+
+          when(mockCoreVatReturnService.submitCoreVatReturn(any())(any())) thenReturn
+            Future.failed(new RuntimeException("Failed submission"))
+
+          when(mockSaveForLaterConnector.submit(any())(any())) thenReturn Left(ConflictFound).toFuture
+
+          when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn
+            etmpObligationDetails.toFuture
+
+          val userAnswers = completeUserAnswers
+          val application = applicationBuilder(
+            userAnswers = Some(userAnswers),
+            maybeIntermediaryNumber = Some(intermediaryNumber)
+          )
+            .overrides(bind[CoreVatReturnService].toInstance(mockCoreVatReturnService))
+            .overrides(bind[AuditService].toInstance(mockAuditService))
+            .overrides(bind[SaveForLaterConnector].toInstance(mockSaveForLaterConnector))
+            .overrides(bind[ObligationsService].toInstance(mockObligationsService))
+            .build()
+
+          running(application) {
+            val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, incompletePromptShown = false).url)
+
+            val result = route(application, request).value
+
+            val config = application.injector.instanceOf[FrontendAppConfig]
+
+            implicit val dataRequest: DataRequest[_] =
+              DataRequest(request, testCredentials, Some(vrn), userAnswersId, companyName, registrationWrapper, Some(intermediaryNumber), userAnswers)
+
+            val expectedAuditEvent = ReturnsAuditModel.build(userAnswers, SubmissionResult.Failure)
+
+            status(result) `mustBe` SEE_OTHER
+            redirectLocation(result).value `mustBe` config.intermediaryDashboardUrl
+            verify(mockAuditService, times(1)).audit(eqTo(expectedAuditEvent))(any(), any())
+            verify(mockSaveForLaterConnector, times(1)).submit(any())(any())
+          }
+        }
+      }
     }
 
     "when the user has not answered" - {
 
       "a question but the missing data prompt has not been shown, must refresh page" in {
 
+        when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
+
         val answers = emptyUserAnswers
           .set(SoldGoodsPage, true).success.value
+          .set(CorrectPreviousReturnPage(0), false).success.value
 
-        val app = applicationBuilder(Some(answers)).build()
+        val app = applicationBuilder(Some(answers))
+          .overrides(bind[ObligationsService].toInstance(mockObligationsService)).build()
 
         running(app) {
           val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, incompletePromptShown = false).url)
@@ -498,12 +626,54 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         }
       }
 
-      "country of consumption must redirect to SoldToCountryController" in {
+      "soldGoods page, must redirect to soldGoodsController" in {
+
+        when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
+
+        val answers = emptyUserAnswers
+
+        val app = applicationBuilder(Some(answers))
+          .overrides(bind[ObligationsService].toInstance(mockObligationsService)).build()
+
+        running(app) {
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, incompletePromptShown = true).url)
+          val result = route(app, request).value
+
+          status(result) `mustBe` SEE_OTHER
+          redirectLocation(result).value `mustBe` routes.SoldGoodsController.onPageLoad(waypoints).url
+        }
+      }
+
+      "CorrectPreviousReturn page, must redirect to CorrectPreviousReturnController" in {
+
+        when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
 
         val answers = emptyUserAnswers
           .set(SoldGoodsPage, true).success.value
 
-        val app = applicationBuilder(Some(answers)).build()
+        val app = applicationBuilder(Some(answers))
+          .overrides(bind[ObligationsService].toInstance(mockObligationsService)).build()
+
+        running(app) {
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, incompletePromptShown = true).url)
+          val result = route(app, request).value
+
+          status(result) `mustBe` SEE_OTHER
+          redirectLocation(result).value `mustBe`
+            controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(waypoints).url
+        }
+      }
+
+      "country of consumption must redirect to SoldToCountryController" in {
+
+        when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
+
+        val answers = emptyUserAnswers
+          .set(SoldGoodsPage, true).success.value
+          .set(CorrectPreviousReturnPage(0), false).success.value
+
+        val app = applicationBuilder(Some(answers))
+          .overrides(bind[ObligationsService].toInstance(mockObligationsService)).build()
 
         running(app) {
           val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, incompletePromptShown = true).url)
@@ -516,11 +686,15 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
       "vat rates, must redirect to VatRatesFromCountryController" in {
 
+        when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
+
         val answers = emptyUserAnswers
           .set(SoldGoodsPage, true).success.value
+          .set(CorrectPreviousReturnPage(0), false).success.value
           .set(SoldToCountryPage(index), Country.euCountries.head).success.value
 
-        val app = applicationBuilder(Some(answers)).build()
+        val app = applicationBuilder(Some(answers))
+          .overrides(bind[ObligationsService].toInstance(mockObligationsService)).build()
 
         running(app) {
           val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, incompletePromptShown = true).url)
@@ -533,12 +707,16 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
       "net value of sales must redirect to SalesToCountryController" in {
 
+        when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
+
         val answers = emptyUserAnswers
           .set(SoldGoodsPage, true).success.value
+          .set(CorrectPreviousReturnPage(0), false).success.value
           .set(SoldToCountryPage(index), Country.euCountries.head).success.value
           .set(VatRatesFromCountryPage(index, index), List[VatRateFromCountry](vatRateFromCountry)).success.value
 
-        val app = applicationBuilder(Some(answers)).build()
+        val app = applicationBuilder(Some(answers))
+          .overrides(bind[ObligationsService].toInstance(mockObligationsService)).build()
 
         running(app) {
           val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, incompletePromptShown = true).url)
@@ -551,13 +729,17 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
       "vat on sales must redirect to VatOnSalesController" in {
 
+        when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
+
         val answers = emptyUserAnswers
           .set(SoldGoodsPage, true).success.value
+          .set(CorrectPreviousReturnPage(0), false).success.value
           .set(SoldToCountryPage(index), Country.euCountries.head).success.value
           .set(VatRatesFromCountryPage(index, index), List[VatRateFromCountry](vatRateFromCountry)).success.value
           .set(SalesToCountryPage(index, index), salesValue).success.value
 
-        val app = applicationBuilder(Some(answers)).build()
+        val app = applicationBuilder(Some(answers))
+          .overrides(bind[ObligationsService].toInstance(mockObligationsService)).build()
 
         running(app) {
           val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, incompletePromptShown = true).url)
@@ -570,11 +752,14 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
       "year of correct must redirect to CorrectionReturnYearController" in {
 
+        when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
+
         val answers = emptyUserAnswers
           .set(SoldGoodsPage, false).success.value
           .set(CorrectPreviousReturnPage(0), true).success.value
 
-        val app = applicationBuilder(Some(answers)).build()
+        val app = applicationBuilder(Some(answers))
+          .overrides(bind[ObligationsService].toInstance(mockObligationsService)).build()
 
         running(app) {
           val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, incompletePromptShown = true).url)
@@ -587,13 +772,16 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
       "country of correction must redirect to CorrectionCountryController" in {
 
+        when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
+
         val answers = emptyUserAnswers
           .set(SoldGoodsPage, false).success.value
           .set(CorrectPreviousReturnPage(0), true).success.value
           .set(CorrectionReturnYearPage(index), period.year).success.value
           .set(CorrectionReturnPeriodPage(index), period).success.value
 
-        val app = applicationBuilder(Some(answers)).build()
+        val app = applicationBuilder(Some(answers))
+          .overrides(bind[ObligationsService].toInstance(mockObligationsService)).build()
 
         running(app) {
           val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, incompletePromptShown = true).url)
@@ -606,13 +794,16 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
       "amount of correction must redirect to VatAmountCorrectionCountryController" in {
 
+        when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
+
         val answers = emptyUserAnswers
           .set(SoldGoodsPage, false).success.value
           .set(CorrectPreviousReturnPage(0), true).success.value
           .set(CorrectionReturnPeriodPage(index), period).success.value
           .set(CorrectionCountryPage(index, index), Country.euCountries.head).success.value
 
-        val app = applicationBuilder(Some(answers)).build()
+        val app = applicationBuilder(Some(answers))
+          .overrides(bind[ObligationsService].toInstance(mockObligationsService)).build()
 
         running(app) {
           val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, incompletePromptShown = true).url)

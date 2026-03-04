@@ -23,7 +23,6 @@ import controllers.corrections.routes as correctionsRoutes
 import logging.Logging
 import models.requests.DataRequest
 import models.{DataMissingError, Index, Period, ValidationError}
-import pages.corrections.CorrectPreviousReturnPage
 import pages.{VatRatesFromCountryPage, Waypoints}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{AnyContent, Call, MessagesControllerComponents}
@@ -40,14 +39,19 @@ class RedirectService @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def validate(period: Period)(implicit request: DataRequest[AnyContent]): List[ValidationError] = {
+  def validate(period: Period,
+               numberOfFulfilledObligations: Int
+              )(implicit request: DataRequest[AnyContent]): List[ValidationError] = {
 
     val validateVatReturnRequest = vatReturnService.fromUserAnswers(request.userAnswers, request.vrn, period)
 
-    val validateCorrectionRequest = request.userAnswers.get(CorrectPreviousReturnPage(0)).map(_ =>
-      correctionService.fromUserAnswers(request.userAnswers, request.vrn, period))
+    val maybeValidateCorrectionRequest =
+      if (numberOfFulfilledObligations > 1)
+        Some(correctionService.fromUserAnswers(request.userAnswers, request.vrn, period))
+      else
+        None
 
-    (validateVatReturnRequest, validateCorrectionRequest) match {
+    (validateVatReturnRequest, maybeValidateCorrectionRequest) match {
       case (Invalid(vatReturnErrors), Some(Invalid(correctionErrors))) =>
         (vatReturnErrors ++ correctionErrors).toChain.toList
       case (Invalid(errors), _) =>

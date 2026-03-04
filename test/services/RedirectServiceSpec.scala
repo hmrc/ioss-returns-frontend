@@ -41,7 +41,8 @@ class RedirectServiceSpec extends SpecBase with BeforeAndAfterEach {
   private val mockCorrectionService: CorrectionService = mock[CorrectionService]
 
   private implicit val dataRequest: DataRequest[AnyContent] = DataRequest[AnyContent](FakeRequest(), testCredentials, Some(vrn), iossNumber, companyName, registrationWrapper, None, completedUserAnswersWithCorrections)
-
+  private val numberOfFulfilledObligations: Int = 2
+  
   override def beforeEach(): Unit = {
     reset(mockVatReturnService)
     reset(mockCorrectionService)
@@ -70,7 +71,7 @@ class RedirectServiceSpec extends SpecBase with BeforeAndAfterEach {
 
           val service = new RedirectService(cc, mockCorrectionService, mockVatReturnService)
 
-          val result = service.validate(period)
+          val result = service.validate(period, numberOfFulfilledObligations)
 
           result `mustBe` List(validationError)
         }
@@ -94,7 +95,7 @@ class RedirectServiceSpec extends SpecBase with BeforeAndAfterEach {
 
           val service = new RedirectService(cc, mockCorrectionService, mockVatReturnService)
 
-          val result = service.validate(period)
+          val result = service.validate(period, numberOfFulfilledObligations)
 
           result `mustBe` List(validationError)
         }
@@ -120,7 +121,7 @@ class RedirectServiceSpec extends SpecBase with BeforeAndAfterEach {
 
           val service = new RedirectService(cc, mockCorrectionService, mockVatReturnService)
 
-          val result = service.validate(period)
+          val result = service.validate(period, numberOfFulfilledObligations)
 
           result `mustBe` List(vatReturnValidationError, correctionValidationError)
         }
@@ -142,7 +143,7 @@ class RedirectServiceSpec extends SpecBase with BeforeAndAfterEach {
 
           val service = new RedirectService(cc, mockCorrectionService, mockVatReturnService)
 
-          val result = service.validate(period)
+          val result = service.validate(period, numberOfFulfilledObligations)
 
           result `mustBe` List.empty
         }
