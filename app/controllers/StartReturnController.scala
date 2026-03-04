@@ -51,8 +51,8 @@ class StartReturnController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(waypoints: Waypoints, period: Period): Action[AnyContent] = (
-    cc.authAndGetOptionalData()
+  def onPageLoad(waypoints: Waypoints, iossNumber: String, period: Period): Action[AnyContent] = (
+    cc.authAndGetOptionalData(iossNumber)
       andThen cc.checkExcludedTraderOptional(period)
       andThen cc.checkCommencementDateOptional(period)
       andThen cc.checkIsCurrentReturnPeriodFilter(period)).async {
@@ -86,13 +86,13 @@ class StartReturnController @Inject()(
               .sortBy(r => (r.period.year, r.period.month.getValue))
           case Left(_) => Seq.empty
         }
-        Ok(view(form, waypoints, period, maybeExclusion, isFinalReturn, maybePartialReturnPeriod, isIntermediary, companyName, overdueReturns))
+        Ok(view(form, waypoints, request.iossNumber, period, maybeExclusion, isFinalReturn, maybePartialReturnPeriod, isIntermediary, companyName, overdueReturns))
       }
 
   }
 
-  def onSubmit(waypoints: Waypoints, period: Period): Action[AnyContent] = (
-    cc.authAndGetOptionalData()
+  def onSubmit(waypoints: Waypoints, iossNumber: String, period: Period): Action[AnyContent] = (
+    cc.authAndGetOptionalData(iossNumber)
       andThen cc.checkExcludedTraderOptional(period)
       andThen cc.checkCommencementDateOptional(period)
       andThen cc.checkIsCurrentReturnPeriodFilter(period)).async {
@@ -128,7 +128,7 @@ class StartReturnController @Inject()(
                     .sortBy(r => (r.period.year, r.period.month.getValue))
                 case Left(_) => Seq.empty
               }
-              BadRequest(view(formWithErrors, waypoints, period, maybeExclusion, isFinalReturn, maybePartialReturnPeriod, isIntermediary, companyName, overdueReturns))
+              BadRequest(view(formWithErrors, waypoints, request.iossNumber, period, maybeExclusion, isFinalReturn, maybePartialReturnPeriod, isIntermediary, companyName, overdueReturns))
             },
 
           value => {
@@ -152,9 +152,9 @@ class StartReturnController @Inject()(
               } else {
                 Future.successful(())
               }
-              updatedAnswers <- Future.fromTry(answers.set(StartReturnPage(period, frontendAppConfig), value))
+              updatedAnswers <- Future.fromTry(answers.set(StartReturnPage(request.iossNumber, period, frontendAppConfig), value))
               _ <- cc.sessionRepository.set(updatedAnswers)
-            } yield Redirect(StartReturnPage(period, frontendAppConfig).navigate(waypoints, answers, updatedAnswers).route)
+            } yield Redirect(StartReturnPage(request.iossNumber, period, frontendAppConfig).navigate(waypoints, answers, updatedAnswers).route)
           }
         )
       }

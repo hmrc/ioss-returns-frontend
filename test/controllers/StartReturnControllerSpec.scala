@@ -31,7 +31,8 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatest.prop.TableDrivenPropertyChecks
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import org.scalatestplus.mockito.MockitoSugar.mock
-import pages.{EmptyWaypoints, NoOtherPeriodsAvailablePage, SoldGoodsPage, WantToUploadFilePage}
+import pages.{EmptyWaypoints, NoOtherPeriodsAvailablePage, SoldGoodsPage}
+import pages.fileUpload.WantToUploadFilePage
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.test.FakeRequest

@@ -64,7 +64,7 @@ class CsvParserService @Inject()() {
   def populateUserAnswersFromCsv(userAnswers: UserAnswers, csvContent: String): Try[UserAnswers] = {
     val rawRows: Seq[Array[String]] = CsvParserService.split(csvContent)
     val parsedRows: Seq[VatRow] = extractVatRows(rawRows)
-    val soldGoodsAnswer: Try[UserAnswers] = userAnswers.set(SoldGoodsPage, true)
+    val soldGoodsAnswer: Try[UserAnswers] = userAnswers.set(SoldGoodsPage(userAnswers.iossNumber), true)
     val groupedByCountry: Seq[(String, Seq[VatRow])] = parsedRows.groupBy(_.country).toSeq.sortBy(_._1)
 
     groupedByCountry.zipWithIndex.foldLeft(soldGoodsAnswer) {

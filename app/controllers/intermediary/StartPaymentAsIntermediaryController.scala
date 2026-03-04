@@ -37,7 +37,7 @@ class StartPaymentAsIntermediaryController @Inject()(
 
   def startPaymentAsIntermediary(waypoints: Waypoints, iossNumber: String): Action[AnyContent] = (
     cc.authAndIntermediaryRequired(iossNumber) andThen
-      cc.getData()).async { implicit request =>
+      cc.getData(iossNumber)).async { implicit request =>
 
     val intermediaryNumber = request.intermediaryNumber.get //TODO make "IntermediaryRequiredAction" be a refiner that converts to an int number
 

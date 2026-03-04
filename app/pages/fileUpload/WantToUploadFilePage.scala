@@ -21,17 +21,17 @@ import pages.{Page, QuestionPage, RecoveryOps, SoldGoodsPage, Waypoints}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
-case object WantToUploadFilePage extends QuestionPage[Boolean] {
+case class WantToUploadFilePage(iossNumber: String) extends QuestionPage[Boolean] {
 
   override def path: JsPath = JsPath \ toString
 
   override def toString: String = "wantToUploadFile"
 
-  override def route(waypoints: Waypoints): Call = controllers.fileUpload.routes.WantToUploadFileController.onPageLoad(waypoints)
+  override def route(waypoints: Waypoints): Call = controllers.fileUpload.routes.WantToUploadFileController.onPageLoad(waypoints, iossNumber)
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
     answers.get(this).map {
-      case true => FileUploadPage
-      case false => SoldGoodsPage
+      case true => FileUploadPage(answers.iossNumber)
+      case false => SoldGoodsPage(answers.iossNumber)
     }.orRecover
 }

@@ -41,7 +41,7 @@ class ContinueReturnController @Inject()(
       request.userAnswers.get(SavedProgressPage).map(
         _ => Ok(view(form, request.userAnswers.period, request.isIntermediary, request.companyName))
       ).getOrElse(
-        Redirect(controllers.routes.StartReturnController.onPageLoad(period = period))
+        Redirect(controllers.routes.StartReturnController.onPageLoad(iossNumber = request.iossNumber, period = period))
       )
 
   }

@@ -27,7 +27,7 @@ import viewmodels.implicits.*
 object WantToUploadFileSummary  {
 
   def row(answers: UserAnswers, waypoints: Waypoints, sourcePage: CheckAnswersPage)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(WantToUploadFilePage).map {
+    answers.get(WantToUploadFilePage(answers.iossNumber)).map {
       answer =>
 
         val value = if (answer) "site.yes" else "site.no"
@@ -36,7 +36,7 @@ object WantToUploadFileSummary  {
           key     = "wantToUploadFile.checkYourAnswersLabel",
           value   = ValueViewModel(value),
           actions = Seq(
-            ActionItemViewModel("site.change", WantToUploadFilePage.changeLink(waypoints, sourcePage).url)
+            ActionItemViewModel("site.change", WantToUploadFilePage(answers.iossNumber).changeLink(waypoints, sourcePage).url)
               .withVisuallyHiddenText(messages("wantToUploadFile.change.hidden"))
           )
         )

@@ -28,6 +28,7 @@ import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.fileUpload.FileUploadView
+import utils.FutureSyntax.FutureOps
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -45,7 +46,7 @@ class FileUploadController @Inject()(
 
   val form: Form[String] = formProvider()
 
-  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndIntermediaryEnabled().async {
+  def onPageLoad(waypoints: Waypoints, iossNumber: String): Action[AnyContent] = cc.authAndIntermediaryEnabled(iossNumber).async {
     implicit request =>
 
       val period = request.userAnswers.period
@@ -56,21 +57,21 @@ class FileUploadController @Inject()(
       redirectError match {
         case Some(redirectErr) =>
           val msg = errorMessage(Some(redirectErr)).getOrElse("")
-          Future.successful(Redirect(routes.FileUploadController.onPageLoad(waypoints)).flashing("upscanError" -> msg))
+          Redirect(routes.FileUploadController.onPageLoad(waypoints, iossNumber)).flashing("upscanError" -> msg).toFuture
 
         case None =>
           val errorMsg: Option[String] = request.flash.get("upscanError").filter(_.nonEmpty)
 
           upscanInitiateConnector.initiateV2(
-            redirectOnSuccess = Some(appConfig.successEndPointTarget),
-            redirectOnError = Some(appConfig.errorEndPointTarget)
+            redirectOnSuccess = Some(appConfig.successEndPointTarget(iossNumber)), // TODO -> Needs iossNumber in url config
+            redirectOnError = Some(appConfig.errorEndPointTarget(iossNumber)) // TODO -> Needs iossNumber in url config
           ).flatMap { initiateResponse =>
 
             for {
-              cleanedAnswers <- Future.fromTry(request.userAnswers.remove(FileUploadedPage))
+              cleanedAnswers <- Future.fromTry(request.userAnswers.remove(FileUploadedPage(iossNumber)))
               dataErrorAnswers <- Future.fromTry(cleanedAnswers.remove(DataErrorPage))
               updatedAnswers <- Future.fromTry(
-                dataErrorAnswers.set(FileReferencePage, initiateResponse.fileReference.reference)
+                dataErrorAnswers.set(FileReferencePage(iossNumber), initiateResponse.fileReference.reference)
               )
               _ <- cc.sessionRepository.set(updatedAnswers)
             } yield {

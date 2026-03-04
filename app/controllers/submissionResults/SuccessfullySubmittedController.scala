@@ -67,7 +67,7 @@ class SuccessfullySubmittedController @Inject()(
         }
 
       val returnReference = generateVatReturnReference(request.iossNumber, request.userAnswers.period)
-      val hasSoldGoodsPage = request.userAnswers.get(SoldGoodsPage)
+      val hasSoldGoodsPage = request.userAnswers.get(SoldGoodsPage(request.iossNumber))
       val hasCorrectedPreviousReturn = request.userAnswers.get(CorrectPreviousReturnPage(0))
 
       val nilReturn = (hasSoldGoodsPage, hasCorrectedPreviousReturn) match {

@@ -19,6 +19,7 @@ package viewmodels.yourAccount
 import controllers.CheckCorrectionsTimeLimit.isOlderThanThreeYears
 import models.StandardPeriod
 import models.SubmissionStatus.{Due, Expired, Next, Overdue}
+import models.requests.RegistrationRequest
 import pages.{EmptyWaypoints, Waypoints}
 import play.api.i18n.Messages
 import viewmodels.{LinkModel, Paragraph, ParagraphSimple, ParagraphWithId}
@@ -33,7 +34,7 @@ case class ReturnsViewModel(
 
 object ReturnsViewModel {
 
-  def apply(returns: Seq[Return], excludedReturns: Seq[Return], clock: Clock)(implicit messages: Messages): ReturnsViewModel = {
+  def apply(returns: Seq[Return], excludedReturns: Seq[Return], clock: Clock)(implicit messages: Messages, request: RegistrationRequest[_]): ReturnsViewModel = {
     val inProgress = returns.find(_.inProgress)
     val returnDue = returns.find(_.submissionStatus == Due)
     val nextReturn = returns.find(_.submissionStatus == Next)
@@ -54,19 +55,19 @@ object ReturnsViewModel {
     )
   }
 
-  private def startDueReturnLink(waypoints: Waypoints, period: StandardPeriod)(implicit messages: Messages) = {
+  private def startDueReturnLink(waypoints: Waypoints, iossNumber: String, period: StandardPeriod)(implicit messages: Messages) = {
     LinkModel(
       linkText = messages("yourAccount.yourReturns.dueReturn.startReturn"),
       id = "start-your-return",
-      url = controllers.routes.StartReturnController.onPageLoad(waypoints, period).url
+      url = controllers.routes.StartReturnController.onPageLoad(waypoints, iossNumber, period).url
     )
   }
 
-  private def startOverdueReturnLink(waypoints: Waypoints, period: StandardPeriod)(implicit messages: Messages) =
+  private def startOverdueReturnLink(waypoints: Waypoints, iossNumber: String, period: StandardPeriod)(implicit messages: Messages) =
     LinkModel(
       linkText = messages("yourAccount.yourReturns.startReturn", period.displayShortText),
       id = "start-your-return",
-      url = controllers.routes.StartReturnController.onPageLoad(waypoints, period).url
+      url = controllers.routes.StartReturnController.onPageLoad(waypoints, iossNumber, period).url
     )
 
   private def continueDueReturnLink(period: StandardPeriod)(implicit messages: Messages) =
@@ -118,7 +119,12 @@ object ReturnsViewModel {
       "next-period"
     )
 
-  private def dueReturnsModel(overdueReturns: Seq[Return], excludedReturns: Seq[Return], currentReturn: Option[Return], dueReturn: Option[Return])(implicit messages: Messages): ReturnsViewModel = {
+  private def dueReturnsModel(
+                               overdueReturns: Seq[Return],
+                               excludedReturns: Seq[Return],
+                               currentReturn: Option[Return],
+                               dueReturn: Option[Return]
+                             )(implicit messages: Messages, request: RegistrationRequest[_]): ReturnsViewModel = {
     val waypoints = EmptyWaypoints
 
     val returnsViewModel = (overdueReturns.size, currentReturn, dueReturn) match {
@@ -131,7 +137,7 @@ object ReturnsViewModel {
       case (0, None, Some(dueReturn)) =>
         ReturnsViewModel(
           contents = Seq(returnDueParagraph(dueReturn.period)),
-          linkToStart = Some(startDueReturnLink(waypoints, dueReturn.period))
+          linkToStart = Some(startDueReturnLink(waypoints, request.iossNumber, dueReturn.period))
         )
 
       case (0, Some(_), Some(dueReturn)) =>
@@ -145,7 +151,7 @@ object ReturnsViewModel {
           Seq(returnOverdueSingularParagraph(), returnDueParagraph(dueReturn.period))).getOrElse(Seq(returnDueParagraph(overdueReturns.head.period)))
         ReturnsViewModel(
           contents = contents,
-          linkToStart = Some(startDueReturnLink(waypoints, overdueReturns.head.period))
+          linkToStart = Some(startDueReturnLink(waypoints, request.iossNumber, overdueReturns.head.period))
         )
 
       case (1, Some(inProgress), _) =>
@@ -163,7 +169,7 @@ object ReturnsViewModel {
           .getOrElse(Seq(onlyReturnsOverdueParagraph(x)))
         ReturnsViewModel(
           contents = contents,
-          linkToStart = Some(startOverdueReturnLink(waypoints, overdueReturns.minBy(_.period.lastDay.toEpochDay).period))
+          linkToStart = Some(startOverdueReturnLink(waypoints, request.iossNumber,  overdueReturns.minBy(_.period.lastDay.toEpochDay).period))
         )
 
       case (x, Some(inProgress), _) =>
