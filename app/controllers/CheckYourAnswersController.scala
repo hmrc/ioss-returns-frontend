@@ -70,20 +70,24 @@ class CheckYourAnswersController @Inject()(
 
       val period = request.userAnswers.period
 
-      val errors: List[ValidationError] = redirectService.validate(period)
-
       val businessSummaryListFuture = getBusinessSummaryList(request, waypoints)
 
       val salesFromEuSummaryListFuture = getSalesFromEuSummaryList(request, waypoints)
 
       for {
+        numberOfFulfilledObligations <- obligationService.getFulfilledObligations(request.iossNumber).map(_.size)
+
         businessSummaryList <- businessSummaryListFuture
         summaryLists = getAllSummaryLists(request, businessSummaryList, salesFromEuSummaryListFuture, waypoints)
       } yield {
 
+        val errors: List[ValidationError] = redirectService.validate(period, numberOfFulfilledObligations)
+
         val containsCorrections = request.userAnswers.get(AllCorrectionPeriodsQuery).isDefined
 
-        val (noPaymentDueCountries, totalVatToCountries) = salesAtVatRateService.getVatOwedToCountries(request.userAnswers).partition(vat => vat.totalVat <= 0)
+        val (noPaymentDueCountries, totalVatToCountries) = salesAtVatRateService.getVatOwedToCountries(
+          request.userAnswers
+        ).partition(vat => vat.totalVat <= 0)
 
         val totalVatOnSales = salesAtVatRateService.getTotalVatOwedAfterCorrections(request.userAnswers)
 
@@ -187,7 +191,10 @@ class CheckYourAnswersController @Inject()(
 
               val preferredPeriod = userAnswers.period
 
-              val redirectToFirstError = redirectService.getRedirect(waypoints, redirectService.validate(preferredPeriod)).headOption
+              val redirectToFirstError = redirectService.getRedirect(
+                waypoints,
+                redirectService.validate(preferredPeriod, fulfilledObligations)
+              ).headOption
 
               (redirectToFirstError, incompletePromptShown) match {
                 case (Some(redirect), true) => Redirect(redirect).toFuture
