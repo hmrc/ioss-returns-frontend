@@ -38,7 +38,7 @@ class StartOutstandingReturnController @Inject()(
     implicit request =>
       vatReturnService.getOldestDueReturn(request.iossNumber).map {
         case Some(oldestReturn) =>
-          Redirect(routes.StartReturnController.onPageLoad(EmptyWaypoints, oldestReturn.period))
+          Redirect(routes.StartReturnController.onPageLoad(EmptyWaypoints, request.iossNumber, oldestReturn.period))
         case _ =>
           Redirect(routes.NoReturnsDueController.onPageLoad())
       }

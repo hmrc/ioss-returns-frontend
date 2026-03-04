@@ -31,6 +31,6 @@ case class DeleteSoldToCountryPage(index: Index) extends Page {
       case Some(n) if n > 0 =>
         SoldToCountryListPage()
       case _ =>
-        SoldGoodsPage
+        SoldGoodsPage(answers.iossNumber)
     }
 }

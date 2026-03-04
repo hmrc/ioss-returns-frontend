@@ -54,6 +54,7 @@ class IdentifierAction @Inject()(
   //noinspection ScalaStyle
   override def refine[A](request: Request[A]): IdentifierActionResult[A] = {
 
+    // TODO -> Have url ioss number in here somewhere and then won't need the ioss number in reg action, can use ioss number from this request
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
 
     authorised(

@@ -211,11 +211,11 @@ class YourAccountController @Inject()(
   }
 
   private def hasDeregisteredFromVat(request: RegistrationRequest[AnyContent]): Boolean = {
-      request.registrationWrapper.vatInfo match {
-        case Some(vatInfo) if vatInfo.deregistrationDecisionDate.isDefined =>
-          true
-        case _ =>
-          false
-      }
+    request.registrationWrapper.vatInfo match {
+      case Some(vatInfo) if vatInfo.deregistrationDecisionDate.isDefined =>
+        true
+      case _ =>
+        false
+    }
   }
 }

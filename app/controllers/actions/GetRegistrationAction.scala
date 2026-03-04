@@ -50,6 +50,7 @@ class GetRegistrationAction(
       maybeIossNumberFromEnrolments <- futureMaybeIossNumberFromEnrolments
       maybeIntermediaryNumber <- findIntermediaryFromEnrolments(request.enrolments)
     } yield {
+      // TODO this might need refactoring to use the url one for other controller that are non-intermediary endpoints
       (maybeIntermediaryNumber, requestedMaybeIossNumber, maybeIossNumberFromEnrolments) match {
         case (_, Some(requestedIossNumber), Some(iossNumberFromEnrolments)) if iossNumberFromEnrolments == requestedIossNumber =>
           getIossRegistrationAndMakeRequest(requestedIossNumber, request)
@@ -71,6 +72,10 @@ class GetRegistrationAction(
           }
         case (None, None, Some(iossNumberFromEnrolments)) =>
           getIossRegistrationAndMakeRequest(iossNumberFromEnrolments, request)
+
+        case (None, Some(iossNumberFromUrl), None) =>
+          getIossRegistrationAndMakeRequest(iossNumberFromUrl, request)
+
         case _ => Left(Redirect(controllers.routes.NotRegisteredController.onPageLoad())).toFuture
       }
     }).flatten
