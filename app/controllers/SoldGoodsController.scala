@@ -40,21 +40,21 @@ class SoldGoodsController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndRequireData() {
+  def onPageLoad(waypoints: Waypoints, iossNumber: String): Action[AnyContent] = cc.authAndRequireData(iossNumber) {
     implicit request =>
 
       val form: Form[Boolean] = formProvider(request.isIntermediary)
       val period = request.userAnswers.period
 
-      val preparedForm = request.userAnswers.get(SoldGoodsPage) match {
+      val preparedForm = request.userAnswers.get(SoldGoodsPage(request.iossNumber)) match {
         case None => form
         case Some(value) => form.fill(value)
       }
 
-      Ok(view(preparedForm, waypoints, period, request.isIntermediary, request.companyName))
+      Ok(view(preparedForm, waypoints, request.iossNumber, period, request.isIntermediary, request.companyName))
   }
 
-  def onSubmit(waypoints: Waypoints): Action[AnyContent] = cc.authAndRequireData().async {
+  def onSubmit(waypoints: Waypoints, iossNumber: String): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
     implicit request =>
 
       val form: Form[Boolean] = formProvider(request.isIntermediary)
@@ -62,20 +62,20 @@ class SoldGoodsController @Inject()(
 
       form.bindFromRequest().fold(
         formWithErrors =>
-          BadRequest(view(formWithErrors, waypoints, period, request.isIntermediary, request.companyName)).toFuture,
+          BadRequest(view(formWithErrors, waypoints, request.iossNumber, period, request.isIntermediary, request.companyName)).toFuture,
 
         success = value =>
           for {
             updatedAnswers <- Future.fromTry {
                 for {
-                  updateSoldGoodsPageAnswer <- request.userAnswers.set(SoldGoodsPage, value)
+                  updateSoldGoodsPageAnswer <- request.userAnswers.set(SoldGoodsPage(request.iossNumber), value)
                   maybeUpdateSalesAnswer <- {
                     if (value) Try(updateSoldGoodsPageAnswer) else updateSoldGoodsPageAnswer.remove(AllSalesQuery)
                   }
                 } yield maybeUpdateSalesAnswer
               }
             _ <- cc.sessionRepository.set(updatedAnswers)
-          } yield Redirect(SoldGoodsPage.navigate(waypoints, request.userAnswers, updatedAnswers).route)
+          } yield Redirect(SoldGoodsPage(request.iossNumber).navigate(waypoints, request.userAnswers, updatedAnswers).route)
       )
   }
 }

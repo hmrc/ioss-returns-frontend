@@ -19,12 +19,13 @@ package controllers.fileUpload
 import connectors.FileUploadOutcomeConnector
 import controllers.actions.*
 import forms.FileUploadedFormProvider
-import pages.fileUpload.{FileReferencePage, FileUploadStatusPage, FileUploadedPage}
 import pages.Waypoints
+import pages.fileUpload.{FileReferencePage, FileUploadStatusPage, FileUploadedPage}
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.FutureSyntax.FutureOps
 import views.html.fileUpload.FileUploadedView
 
 import javax.inject.Inject
@@ -40,41 +41,41 @@ class FileUploadedController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndIntermediaryEnabled().async {
+  def onPageLoad(waypoints: Waypoints, iossNumber: String): Action[AnyContent] = cc.authAndIntermediaryEnabled(iossNumber).async {
     implicit request =>
 
       val period = request.userAnswers.period
       val isIntermediary = request.isIntermediary
       val companyName = request.companyName
-      val fileReference = request.userAnswers.get(FileReferencePage)
+      val fileReference = request.userAnswers.get(FileReferencePage(iossNumber))
 
       fileReference match {
         case Some(ref) =>
           fileUploadOutcomeConnector.getOutcome(ref).flatMap { maybeOutcome =>
             val status = maybeOutcome.map(_.status).getOrElse("UPLOADING")
             val form = formForStatus(status)
-            val preparedForm = request.userAnswers.get(FileUploadedPage).fold(form)(form.fill)
+            val preparedForm = request.userAnswers.get(FileUploadedPage(iossNumber)).fold(form)(form.fill)
 
             for {
-              updatedAnswers <- Future.fromTry(request.userAnswers.set(FileUploadStatusPage, status))
+              updatedAnswers <- Future.fromTry(request.userAnswers.set(FileUploadStatusPage(iossNumber), status))
               _ <- cc.sessionRepository.set(updatedAnswers)
             } yield {
-              Ok(view(preparedForm, waypoints, period, isIntermediary, companyName, maybeOutcome))
+              Ok(view(preparedForm, waypoints, iossNumber, period, isIntermediary, companyName, maybeOutcome))
             }
           }
 
         case None =>
-          Future.successful(BadRequest("No file reference found in session."))
+          BadRequest("No file reference found in session.").toFuture
       }
   }
 
-  def onSubmit(waypoints: Waypoints): Action[AnyContent] = cc.authAndRequireData().async {
+  def onSubmit(waypoints: Waypoints, iossNumber: String): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
     implicit request =>
 
       val period = request.userAnswers.period
       val isIntermediary = request.isIntermediary
       val companyName = request.companyName
-      val fileReference = request.userAnswers.get(FileReferencePage)
+      val fileReference = request.userAnswers.get(FileReferencePage(iossNumber))
 
       fileReference match {
         case Some(ref) =>
@@ -83,21 +84,20 @@ class FileUploadedController @Inject()(
             val form = formForStatus(status)
             form.bindFromRequest().fold(
               formWithErrors =>
-                Future.successful(
-                  BadRequest(view(formWithErrors, waypoints, period, isIntermediary, companyName, maybeOutcome))
-                ),
+                  BadRequest(view(formWithErrors, waypoints, iossNumber, period, isIntermediary, companyName, maybeOutcome)).toFuture,
               value =>
                 for {
-                  updatedAnswers <- Future.fromTry(request.userAnswers.set(FileUploadedPage, value))
+                  updatedAnswers <- Future.fromTry(request.userAnswers.set(FileUploadedPage(iossNumber), value))
                   _ <- cc.sessionRepository.set(updatedAnswers)
-                } yield Redirect(FileUploadedPage.navigate(waypoints, request.userAnswers, updatedAnswers).route)
+                } yield Redirect(FileUploadedPage(iossNumber).navigate(waypoints, request.userAnswers, updatedAnswers).route)
             )
           }
         case None =>
-          Future.successful(BadRequest("No file reference found in session."))
+          BadRequest("No file reference found in session.").toFuture
       }
   }
 
-  private def formForStatus(status: String): Form[Boolean] =
+  private def formForStatus(status: String): Form[Boolean] = {
     if (status == "FAILED") formProvider.failedForm else formProvider.successForm
+  }
 }

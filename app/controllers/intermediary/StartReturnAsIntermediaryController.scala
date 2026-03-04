@@ -50,7 +50,7 @@ class StartReturnAsIntermediaryController @Inject()(
 
   def startReturnAsIntermediary(waypoints: Waypoints, iossNumber: String): Action[AnyContent] = (
     cc.authAndIntermediaryRequired(iossNumber) andThen
-      cc.getData()).async { implicit request =>
+      cc.getData(iossNumber)).async { implicit request =>
 
     if (config.intermediaryEnabled) {
       vatReturnService.getOldestDueReturn(iossNumber).flatMap {
@@ -75,7 +75,7 @@ class StartReturnAsIntermediaryController @Inject()(
               if(oldestReturn.inProgress) {
                 Redirect(routes.ContinueReturnController.onPageLoad(oldestReturn.period))
               } else {
-                Redirect(routes.StartReturnController.onPageLoad(EmptyWaypoints, oldestReturn.period))
+                Redirect(routes.StartReturnController.onPageLoad(EmptyWaypoints, request.iossNumber, oldestReturn.period))
               }
             }
           }

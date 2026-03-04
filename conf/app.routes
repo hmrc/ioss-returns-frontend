@@ -25,15 +25,15 @@ GET         /cannot-use-not-registered                                          
 
 GET         /your-account                                                             controllers.YourAccountController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
 
-GET         /:period/start-return                                                     controllers.StartReturnController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, period: Period)
-POST        /:period/start-return                                                     controllers.StartReturnController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, period: Period)
+GET         /:iossNumber/:period/start-return                                         controllers.StartReturnController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, iossNumber: String, period: Period)
+POST        /:iossNumber/:period/start-return                                         controllers.StartReturnController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, iossNumber: String, period: Period)
 
 GET         /start-return-as-intermediary/:iossNumber                                 controllers.intermediary.StartReturnAsIntermediaryController.startReturnAsIntermediary(waypoints: Waypoints ?= EmptyWaypoints, iossNumber: String)
 GET         /start-returns-history-as-intermediary/:iossNumber                        controllers.intermediary.StartReturnsHistoryAsIntermediaryController.startReturnsHistoryAsIntermediary(waypoints: Waypoints ?= EmptyWaypoints, iossNumber: String)
 GET         /start-payment-as-intermediary/:iossNumber                                controllers.intermediary.StartPaymentAsIntermediaryController.startPaymentAsIntermediary(waypoints: Waypoints ?= EmptyWaypoints, iossNumber: String)
 
-GET         /sold-goods                                                               controllers.SoldGoodsController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
-POST        /sold-goods                                                               controllers.SoldGoodsController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints)
+GET         /:iossNumber/sold-goods                                                   controllers.SoldGoodsController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, iossNumber: String)
+POST        /:iossNumber/sold-goods                                                   controllers.SoldGoodsController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, iossNumber: String)
 
 GET         /sold-to-country/:index                                                   controllers.SoldToCountryController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, index: Index)
 POST        /sold-to-country/:index                                                   controllers.SoldToCountryController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, index: Index)
@@ -172,12 +172,12 @@ GET         /no-longer-able-to-view-return                                      
 
 GET         /start-intermediary-save-for-later-return/:iossNumber/:period             controllers.intermediary.StartIntermediarySaveForLaterReturnController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, iossNumber: String, period: Period)
 
-GET         /want-to-upload-file                                                      controllers.fileUpload.WantToUploadFileController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
-POST        /want-to-upload-file                                                      controllers.fileUpload.WantToUploadFileController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints)
+GET         /:iossNumber/want-to-upload-file                                          controllers.fileUpload.WantToUploadFileController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, iossNumber: String)
+POST        /:iossNumber/want-to-upload-file                                          controllers.fileUpload.WantToUploadFileController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, iossNumber: String)
 
 
-GET         /file-upload                                                              controllers.fileUpload.FileUploadController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
+GET         /:iossNumber/file-upload                                                  controllers.fileUpload.FileUploadController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, iossNumber: String)
 
-GET         /file-uploaded                                                            controllers.fileUpload.FileUploadedController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
-POST        /file-uploaded                                                            controllers.fileUpload.FileUploadedController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints)
+GET         /:iossNumber/file-uploaded                                                controllers.fileUpload.FileUploadedController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, iossNumber: String)
+POST        /:iossNumber/file-uploaded                                                controllers.fileUpload.FileUploadedController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, iossNumber: String)
 

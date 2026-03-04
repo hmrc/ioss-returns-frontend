@@ -22,7 +22,8 @@ import models.UserAnswers
 import org.mockito.Mockito.when
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatestplus.mockito.MockitoSugar.mock
-import pages.{NoOtherPeriodsAvailablePage, SoldGoodsPage, StartReturnPage, WantToUploadFilePage, YourAccountPage}
+import pages.{NoOtherPeriodsAvailablePage, SoldGoodsPage, StartReturnPage, YourAccountPage}
+import pages.fileUpload.WantToUploadFilePage
 
 class StartReturnsJourneySpec extends AnyFreeSpec with JourneyHelpers with SpecBase {
 

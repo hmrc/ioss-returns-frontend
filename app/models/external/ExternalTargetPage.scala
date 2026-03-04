@@ -28,7 +28,7 @@ sealed trait ParameterlessUrl {
 }
 
 sealed trait UrlWithPeriod {
-  def url(period: Period) : String
+  def url(iossNumber: String, period: Period) : String
 }
 
 sealed trait UrlWithPeriodAndAmount {
@@ -47,12 +47,12 @@ case object ReturnsHistory extends ExternalTargetPage with ParameterlessUrl {
 
 case object StartReturn extends ExternalTargetPage with UrlWithPeriod {
   override val name: String = "start-your-return"
-  override def url(period: Period): String = controllers.routes.StartReturnController.onPageLoad(EmptyWaypoints, period).url
+  override def url(iossNumber: String, period: Period): String = controllers.routes.StartReturnController.onPageLoad(EmptyWaypoints, iossNumber, period).url
 }
 
 case object ContinueReturn extends ExternalTargetPage with UrlWithPeriod {
   override val name: String = "continue-your-return"
-  override def url(period: Period): String = controllers.routes.YourAccountController.onPageLoad().url // TODO - implement when save and come back exists
+  override def url(iossNumber: String, period: Period): String = controllers.routes.ContinueReturnController.onPageLoad(period).url
 }
 
 case object Payment extends ExternalTargetPage with ParameterlessUrl {

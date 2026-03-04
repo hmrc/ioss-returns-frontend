@@ -40,7 +40,7 @@ class StartReturnsHistoryAsIntermediaryController @Inject()(
   protected val controllerComponents: MessagesControllerComponents = cc
   
   def startReturnsHistoryAsIntermediary(waypoints: Waypoints, iossNumber: String): Action[AnyContent] = (
-    cc.authAndIntermediaryRequired(iossNumber) andThen cc.getData()).async { implicit request =>
+    cc.authAndIntermediaryRequired(iossNumber) andThen cc.getData(iossNumber)).async { implicit request =>
     
     if (config.intermediaryEnabled) {
 

@@ -57,13 +57,13 @@ class VatReturnService @Inject()(
   }
 
   private def getSales(answers: UserAnswers): ValidationResult[List[SalesToCountry]] =
-    answers.get(SoldGoodsPage) match {
+    answers.get(SoldGoodsPage(answers.iossNumber)) match {
       case Some(true) =>
         processSales(answers)
       case Some(false) =>
         List.empty[SalesToCountry].validNec
       case None =>
-        DataMissingError(SoldGoodsPage).invalidNec
+        DataMissingError(SoldGoodsPage(answers.iossNumber)).invalidNec
     }
 
   private def processSales(answers: UserAnswers): ValidationResult[List[SalesToCountry]] = {
