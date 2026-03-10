@@ -68,7 +68,8 @@ class DataErrorControllerSpec extends SpecBase with MockitoSugar {
           companyName,
           csvErrors,
           expectedParagraphs,
-          false
+          false,
+          Nil
         )(request, messages(application)).toString
       }
     }
@@ -100,7 +101,8 @@ class DataErrorControllerSpec extends SpecBase with MockitoSugar {
           companyName,
           csvErrors,
           expectedParagraphs,
-          false
+          false,
+          Nil
         )(request, messages(application)).toString
       }
     }
@@ -160,7 +162,8 @@ class DataErrorControllerSpec extends SpecBase with MockitoSugar {
           companyName,
           csvErrors,
           expectedParagraphs,
-          false
+          false,
+          Nil
         )(request, messages(application)).toString
       }
     }

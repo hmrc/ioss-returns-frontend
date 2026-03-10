@@ -32,8 +32,27 @@
     companyName: String,
     csvErrors: Seq[CsvError],
     errorMessage: Seq[String],
-    hasMultipleTypes: Boolean
+    hasMultipleTypes: Boolean,
+    errorSummaries: Seq[String]
 )(implicit request: Request[_], messages: Messages)
+
+@errorCount = @{
+    csvErrors.map(_.cellRef).distinct.size
+}
+
+@titleText = @{
+    errorCount match {
+        case 1 => messages("dataError.title")
+        case i => messages("dataError.title.plural", i)
+    }
+}
+
+@headingText = @{
+    errorCount match {
+        case 1 => messages("dataError.heading")
+        case i => messages("dataError.heading.plural", i)
+    }
+}
 
 @caption = @{
     if(isIntermediary) {
@@ -43,7 +62,7 @@
     }
 }
 
-@layout(pageTitle = title(form, messages("dataError.title"))) {
+@layout(pageTitle = title(form, titleText)) {
 
     @formHelper(action = controllers.fileUpload.routes.DataErrorController.onSubmit(waypoints), Symbol("autoComplete") -> "off") {
 
@@ -53,8 +72,19 @@
 
         <header class="hmrc-page-heading">
             <p class="govuk-caption-l hmrc-caption-l">@caption</p>
-            <h1 class="govuk-heading-l">@messages("dataError.heading", period.displayText)</h1>
+            <h1 class="govuk-heading-l">@headingText</h1>
         </header>
+
+        @if(hasMultipleTypes) {
+
+            @if(errorSummaries.nonEmpty) {
+                <ul class="govuk-list govuk-list--bullet">
+                    @for(summary <- errorSummaries) {
+                    <li>@summary</li>
+                    }
+                </ul>
+            }
+        }
 
         @for(p <- errorMessage) {
             <p class="govuk-body">@p</p>
