@@ -553,7 +553,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
             val result = route(application, request).value
 
             implicit val dataRequest: DataRequest[_] =
-              DataRequest(request, testCredentials, Some(vrn), userAnswersId, companyName, registrationWrapper, Some(intermediaryNumber), userAnswers)
+              DataRequest(request, enrolments, testCredentials, Some(vrn), userAnswersId, companyName, registrationWrapper, Some(intermediaryNumber), userAnswers)
 
             val expectedAuditEvent = ReturnsAuditModel.build(userAnswers, SubmissionResult.Failure)
 
@@ -593,7 +593,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
             val config = application.injector.instanceOf[FrontendAppConfig]
 
             implicit val dataRequest: DataRequest[_] =
-              DataRequest(request, testCredentials, Some(vrn), userAnswersId, companyName, registrationWrapper, Some(intermediaryNumber), userAnswers)
+              DataRequest(request, enrolments, testCredentials, Some(vrn), userAnswersId, companyName, registrationWrapper, Some(intermediaryNumber), userAnswers)
 
             val expectedAuditEvent = ReturnsAuditModel.build(userAnswers, SubmissionResult.Failure)
 

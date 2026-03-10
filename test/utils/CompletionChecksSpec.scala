@@ -52,6 +52,7 @@ class CompletionChecksSpec extends SpecBase with MockitoSugar {
 
   private def dataRequest(userAnswers: UserAnswers): DataRequest[AnyContent] = DataRequest(
     FakeRequest(),
+    enrolments,
     testCredentials,
     Some(vrn),
     iossNumber,
