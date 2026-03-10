@@ -193,10 +193,13 @@ class DataErrorController @Inject()(
             Seq(messages("dataError.errorMessage.incorrectVatRate.p1", countries))
           }
         case Some(_: CsvError.DuplicateVatRate) =>
+          val countries =
+            errors.collect { case e: CsvError.DuplicateVatRate => e.country }
+              .distinct.sorted.mkString(", ")
           if (count > 1) {
             Seq(messages("dataError.errorMessage.duplicateVatRate.p1.plural", count))
           } else {
-            Seq(messages("dataError.errorMessage.duplicateVatRate.p1", cells))
+            Seq(messages("dataError.errorMessage.duplicateVatRate.p1", countries))
           }
         case Some(_: CsvError.TooManyColumns) =>
           if (count > 1) {
