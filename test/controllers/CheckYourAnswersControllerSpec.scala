@@ -39,6 +39,7 @@ import pages.corrections.*
 import pages.{CheckYourAnswersPage, SalesToCountryPage, SoldGoodsPage, SoldToCountryPage, VatRatesFromCountryPage}
 import play.api.i18n.Messages
 import play.api.inject.bind
+import play.api.libs.json.JsString
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import queries.corrections.{PreviouslyDeclaredCorrectionAmount, PreviouslyDeclaredCorrectionAmountQuery}
@@ -603,6 +604,67 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           }
         }
       }
+
+      "must redirect to JourneyRecovery when saveForLater returns Right(None)" in {
+
+        when(mockCoreVatReturnService.submitCoreVatReturn(any())(any()))
+          .thenReturn(Future.failed(new RuntimeException("fail")))
+
+        when(mockSaveForLaterConnector.submit(any())(any()))
+          .thenReturn(Future.successful(Right(None)))
+
+        when(mockObligationsService.getFulfilledObligations(any())(any()))
+          .thenReturn(etmpObligationDetails.toFuture)
+
+        val app = applicationBuilder(Some(completeUserAnswers))
+          .overrides(bind[CoreVatReturnService].toInstance(mockCoreVatReturnService))
+          .overrides(bind[SaveForLaterConnector].toInstance(mockSaveForLaterConnector))
+          .overrides(bind[ObligationsService].toInstance(mockObligationsService))
+          .build()
+
+        running(app) {
+
+          val request =
+            FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, false).url)
+
+          val result = route(app, request).value
+
+          status(result) mustBe SEE_OTHER
+          redirectLocation(result).value mustBe routes.JourneyRecoveryController.onPageLoad().url
+        }
+      }
+
+      "must redirect to YourAccount when saveForLater returns ConflictFound" in {
+
+        when(mockCoreVatReturnService.submitCoreVatReturn(any())(any()))
+          .thenReturn(Future.failed(new RuntimeException("fail")))
+
+        when(mockSaveForLaterConnector.submit(any())(any()))
+          .thenReturn(Future.successful(Left(ConflictFound)))
+
+        when(mockObligationsService.getFulfilledObligations(any())(any()))
+          .thenReturn(etmpObligationDetails.toFuture)
+
+
+
+        val app = applicationBuilder(Some(completeUserAnswers))
+          .overrides(bind[CoreVatReturnService].toInstance(mockCoreVatReturnService))
+          .overrides(bind[SaveForLaterConnector].toInstance(mockSaveForLaterConnector))
+          .overrides(bind[ObligationsService].toInstance(mockObligationsService))
+          .build()
+
+        running(app) {
+
+          val request =
+            FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, false).url)
+
+          val result = route(app, request).value
+
+          status(result) mustBe SEE_OTHER
+          redirectLocation(result).value mustBe routes.YourAccountController.onPageLoad().url
+        }
+      }
+
     }
 
     "when the user has not answered" - {
