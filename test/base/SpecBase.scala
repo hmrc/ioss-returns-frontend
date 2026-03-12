@@ -93,6 +93,7 @@ trait SpecBase
 
   def completeUserAnswers: UserAnswers = emptyUserAnswers
     .set(SoldGoodsPage, true).success.value
+    .set(CorrectPreviousReturnPage(0), false).success.value
     .set(SoldToCountryPage(index), Country("HR", "Croatia")).success.value
     .set(VatRatesFromCountryPage(index, index), vatRates).success.value
     .set(SalesToCountryPage(index, index), BigDecimal(100)).success.value
