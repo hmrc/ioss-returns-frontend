@@ -280,9 +280,9 @@ noOtherPeriodsAvailable.intermediary.heading = You cannot start any other return
 noOtherPeriodsAvailable.p1 = You can only start returns for months that have ended.
 noOtherPeriodsAvailable.backToYourAccount = <a class="govuk-link" id="back-to-your-account" href={0}>Back to your account</a>
 
-soldToCountryList.title.singular = You added sales to 1 country
+soldToCountryList.title.singular = You added sales to one country
 soldToCountryList.title.plural = You added sales to {0} countries
-soldToCountryList.heading.singular = You added sales to 1 country
+soldToCountryList.heading.singular = You added sales to one country
 soldToCountryList.heading.plural = You added sales to {0} countries
 soldToCountryList.addAnother = Add sales to another country?
 soldToCountryList.maximumReached = You have added details for every country
@@ -417,10 +417,10 @@ undeclaredCountryCorrection.intermediary.caption = {0}Correction month: {1}
 undeclaredCountryCorrection.legend = Do you want to add a correction to this country?
 undeclaredCountryCorrection.error.required = Select yes if you want to add a correction to this country
 
-correctionListCountries.title.singular = You have corrected the VAT amount for 1 country
+correctionListCountries.title.singular = You have corrected the VAT amount for one country
 correctionListCountries.title.plural = You have corrected the VAT amount for {0} countries
 correctionListCountries.heading = You have not corrected the VAT amount for any countries
-correctionListCountries.heading.singular = You have corrected the VAT amount for 1 country
+correctionListCountries.heading.singular = You have corrected the VAT amount for one country
 correctionListCountries.heading.plural = You have corrected the VAT amount for {0} countries
 correctionListCountries.section = Correction month: {0}
 correctionListCountries.intermediary.section = {0}Correction month: {1}
