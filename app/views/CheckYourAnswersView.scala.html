@@ -62,7 +62,7 @@
             }
             @govukSummaryList(summaryList)
         }
-        
+
         @if(containsCorrections) {
             @if(noPaymentDueSummaryList.nonEmpty) {
                 <div class="govuk-summary-card">
@@ -104,11 +104,12 @@
                 <div class="govuk-summary-card__content ">
                     <dl class="govuk-summary-list">
                     @for(totalVatToCountry <- totalVatToCountries) {
-                        <div class="govuk-summary-list__row ">
+                        <div class="govuk-summary-list__row">
                             <dt class="govuk-summary-list__key"><strong>@totalVatToCountry.country.name</strong></dt>
                             <dd class="govuk-summary-list__value govuk-table__cell--numeric govuk-!-padding-right-9">
-                            @Html(currencyFormat(totalVatToCountry.totalVat))
+                                @Html(currencyFormat(totalVatToCountry.totalVat))
                             </dd>
+                            <dd class="govuk-summary-list__actions"></dd>
                         </div>
                     }
                     </dl>
@@ -119,10 +120,10 @@
         <dl class="govuk-summary-list govuk-!-margin-bottom-9 govuk-summary-card">
             <div class="govuk-summary-card__title-wrapper" style="padding-bottom: 2px">
                 <dd class="govuk-summary-list__key govuk-heading-m govuk-!-width-one-third">
-                @messages("checkYourAnswers.totalVatPayable.heading")
+                    @messages("checkYourAnswers.totalVatPayable.heading")
                 </dd>
                 <dd class="govuk-summary-list__value govuk-!-padding-right-0 govuk-!-font-size-24">
-                @Html(currencyFormatWithAccuracy(totalVatOnSales))
+                    @Html(currencyFormatWithAccuracy(totalVatOnSales))
                 </dd>
                 <dd></dd>
             </div>
