@@ -19,8 +19,9 @@ package services
 import base.SpecBase
 import connectors.ReturnStatusConnector
 import models.core.{Match, TraderId}
-import models.etmp.EtmpExclusion
+import models.etmp.{EtmpExclusion, EtmpPreviousEuRegistrationDetails}
 import models.etmp.EtmpExclusionReason.*
+import models.etmp.SchemeType.IOSSWithoutIntermediary
 import models.{PartialReturnPeriod, Period, PeriodWithStatus, RegistrationWrapper, StandardPeriod, SubmissionStatus}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
@@ -66,8 +67,17 @@ class PartialReturnPeriodServiceSpec extends SpecBase with BeforeAndAfterEach {
 
       val registrationWrapperWithExclusions: RegistrationWrapper = {
         val updatedSchemeDetails = registrationWrapper.registration.schemeDetails.copy(
-          commencementDate = commencementDate
+          commencementDate = commencementDate,
+          previousEURegistrationDetails = Seq(
+            EtmpPreviousEuRegistrationDetails(
+              issuedBy = "DE",
+              registrationNumber = "DE123456789",
+              schemeType = IOSSWithoutIntermediary,
+              intermediaryNumber = None
+            )
+          )
         )
+
 
         val updatedRegistration = registrationWrapper.registration.copy(
           exclusions = Seq.empty,
