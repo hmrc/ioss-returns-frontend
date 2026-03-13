@@ -66,7 +66,7 @@ trait SpecBase
   val index: Index = Index(0)
   val vatRateIndex: Index = Index(0)
   val companyName: String = "Test Company Name"
-  val vatRates = List(VatRateFromCountry(BigDecimal(20), VatRateType.Standard, LocalDate.of(2023, 3, 1), None))
+  val vatRates: List[VatRateFromCountry] = List(VatRateFromCountry(BigDecimal(20), VatRateType.Standard, LocalDate.of(2023, 3, 1), None))
   val twentyPercentVatRate = VatRateFromCountry(20, VatRateType.Reduced, arbitrary[LocalDate].sample.value)
   val fivePercentVatRate = VatRateFromCountry(5, VatRateType.Reduced, arbitrary[LocalDate].sample.value)
 
@@ -92,7 +92,7 @@ trait SpecBase
   def emptyUserAnswers: UserAnswers = UserAnswers(userAnswersId, iossNumber, period, lastUpdated = arbitraryInstant)
 
   def completeUserAnswers: UserAnswers = emptyUserAnswers
-    .set(SoldGoodsPage, true).success.value
+    .set(SoldGoodsPage(iossNumber), true).success.value
     .set(CorrectPreviousReturnPage(0), false).success.value
     .set(SoldToCountryPage(index), Country("HR", "Croatia")).success.value
     .set(VatRatesFromCountryPage(index, index), vatRates).success.value
@@ -125,20 +125,20 @@ trait SpecBase
                                     registration: RegistrationWrapper = registrationWrapper,
                                     getRegistrationAction: Option[GetRegistrationActionProvider] = None,
                                     maybeIntermediaryNumber: Option[String] = None,
-                                    getIdentifierAction: Option[IdentifierAction] = None
+                                    getIdentifierAction: Option[IdentifierActionProvider] = None
                                   ): GuiceApplicationBuilder = {
     val clockToBind = clock.getOrElse(stubClockAtArbitraryDate)
 
-    val getRegistrationActionBind = if(getRegistrationAction.nonEmpty) {
+    val getRegistrationActionBind = if (getRegistrationAction.nonEmpty) {
       bind[GetRegistrationActionProvider].toInstance(getRegistrationAction.get)
     } else {
       bind[GetRegistrationActionProvider].toInstance(new FakeGetRegistrationActionProvider(registration, maybeIntermediaryNumber))
     }
 
-    val getIdentifierActionBind = if(getIdentifierAction.nonEmpty) {
-      bind[IdentifierAction].to[FakeIntermediaryIdentifierAction]
+    val getIdentifierActionBind = if (getIdentifierAction.nonEmpty) {
+      bind[IdentifierActionProvider].to[FakeIntermediaryIdentifierAction]
     } else {
-      bind[IdentifierAction].to[FakeIdentifierAction]
+      bind[IdentifierActionProvider].to[FakeIdentifierAction]
     }
 
     new GuiceApplicationBuilder()

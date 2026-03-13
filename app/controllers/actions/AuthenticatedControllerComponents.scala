@@ -31,7 +31,7 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
 
   def sessionRepository: SessionRepository
 
-  def identify: IdentifierAction
+  def identify: IdentifierActionProvider
 
   def getRegistration: GetRegistrationActionProvider
 
@@ -59,14 +59,17 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
   
   def intermediaryEnabled: IntermediaryEnabledFilter
 
-  def auth: ActionBuilder[IdentifierRequest, AnyContent] =
-    actionBuilder andThen identify
+  // TODO -> Pass in iossNumber, if it's there populate request, if not do what it's doing?
+  def auth(iossNumber: Option[String] = None): ActionBuilder[IdentifierRequest, AnyContent] =
+    actionBuilder andThen identify(iossNumber)
 
+  // TODO -> iossNu,ber redundant here for getRegistration? Not used where invoked
   def authAndGetRegistration(iossNumber: Option[String] = None): ActionBuilder[RegistrationRequest, AnyContent] = {
-    auth andThen
+    auth(iossNumber) andThen
       getRegistration(iossNumber)
   }
 
+  // TODO -> Need iossNumber for authAndGetRegistration()?
   def authAndGetRegistrationAndCheckBounced: ActionBuilder[RegistrationRequest, AnyContent] = {
     authAndGetRegistration() andThen
       checkBouncedEmail()
@@ -108,7 +111,7 @@ case class DefaultAuthenticatedControllerComponents @Inject()(
                                                                fileMimeTypes: FileMimeTypes,
                                                                executionContext: ExecutionContext,
                                                                sessionRepository: SessionRepository,
-                                                               identify: IdentifierAction,
+                                                               identify: IdentifierActionProvider,
                                                                getRegistration: GetRegistrationActionProvider,
                                                                getData: DataRetrievalActionProvider,
                                                                requireData: DataRequiredAction,

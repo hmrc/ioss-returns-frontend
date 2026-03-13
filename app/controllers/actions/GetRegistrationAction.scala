@@ -37,7 +37,7 @@ class GetRegistrationAction(
                              intermediaryRegistrationConnector: IntermediaryRegistrationConnector,
                              registrationConnector: RegistrationConnector,
                              config: FrontendAppConfig,
-                             requestedMaybeIossNumber: Option[String],
+                             maybeRequestedIossNumber: Option[String],
                              intermediarySelectedIossNumberRepository: IntermediarySelectedIossNumberRepository
                            )(implicit val executionContext: ExecutionContext)
   extends ActionRefiner[IdentifierRequest, RegistrationRequest] with Logging {
@@ -45,13 +45,27 @@ class GetRegistrationAction(
   override protected def refine[A](request: IdentifierRequest[A]): Future[Either[Result, RegistrationRequest[A]]] = {
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request.request, request.request.session)
 
+
+    maybeRequestedIossNumber match {
+      case Some(requestedIossNumber) =>
+        // case 1: is this their own IOSS number -> check IOSS number enrolment
+        // case 2: not their own IOSS number -> check is intermediary -> check intermediary has access to this IOSS number
+      case None =>
+        // case 1: are they intermediary
+    }
+
+
+
     val futureMaybeIossNumberFromEnrolments = findIossFromEnrolments(request.enrolments)
+    val maybeUrlIossNumber: Option[String] = request.maybeUrlIossNumber
     (for {
       maybeIossNumberFromEnrolments <- futureMaybeIossNumberFromEnrolments
       maybeIntermediaryNumber <- findIntermediaryFromEnrolments(request.enrolments)
     } yield {
+      println(s"WAZZA 1 -> maybeIossNumberFromEnrolments: $maybeIossNumberFromEnrolments")
+      println(s"WAZZA 2 -> maybeIntermediaryNumber: $maybeIntermediaryNumber")
       // TODO this might need refactoring to use the url one for other controller that are non-intermediary endpoints
-      (maybeIntermediaryNumber, requestedMaybeIossNumber, maybeIossNumberFromEnrolments) match {
+      (maybeIntermediaryNumber, maybeRequestedIossNumber, maybeIossNumberFromEnrolments) match {
         case (_, Some(requestedIossNumber), Some(iossNumberFromEnrolments)) if iossNumberFromEnrolments == requestedIossNumber =>
           getIossRegistrationAndMakeRequest(requestedIossNumber, request)
         case (Some(intermediaryNumber), Some(iossNumber), _) =>
@@ -70,11 +84,11 @@ class GetRegistrationAction(
               )
               Left(Redirect(controllers.routes.NotRegisteredController.onPageLoad())).toFuture
           }
-        case (None, None, Some(iossNumberFromEnrolments)) =>
+        case (None, Some(iossNumberFromEnrolments), _) =>
           getIossRegistrationAndMakeRequest(iossNumberFromEnrolments, request)
 
-        case (None, Some(iossNumberFromUrl), None) =>
-          getIossRegistrationAndMakeRequest(iossNumberFromUrl, request)
+        case (None, None, Some(urlIossNumber)) =>
+          getIossRegistrationAndMakeRequest(urlIossNumber, request)
 
         case _ => Left(Redirect(controllers.routes.NotRegisteredController.onPageLoad())).toFuture
       }
