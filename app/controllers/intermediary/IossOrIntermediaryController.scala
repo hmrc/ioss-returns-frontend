@@ -40,7 +40,7 @@ class IossOrIntermediaryController @Inject()(
   protected val controllerComponents: MessagesControllerComponents = cc
   private val form = formProvider()
   
-  def onPageLoad(): Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced {
+  def onPageLoad(): Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced() {
     implicit request =>
 
       val allEnrolments: Seq[String] = findAllEnrolments(request.enrolments)
@@ -49,7 +49,7 @@ class IossOrIntermediaryController @Inject()(
       Ok(view(form, allEnrolments, totalNumberOfEnrolments))
   }
 
-  def onSubmit(): Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced.async {
+  def onSubmit(): Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced().async {
     implicit request =>
 
       val intermediaryNumber = request.intermediaryNumber.getOrElse("")

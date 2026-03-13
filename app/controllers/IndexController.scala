@@ -34,7 +34,8 @@ class IndexController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad: Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced { implicit request =>
+  def onPageLoad: Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced() {
+    implicit request =>
 
     val iossEnrolmentsExist: Boolean = findIossFromEnrolments(request.enrolments).nonEmpty
     val intermediaryEnrolmentsExist: Boolean = findIntermediaryFromEnrolments(request.enrolments).nonEmpty

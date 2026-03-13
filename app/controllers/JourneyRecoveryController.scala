@@ -37,7 +37,7 @@ class JourneyRecoveryController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(continueUrl: Option[RedirectUrl] = None): Action[AnyContent] = cc.auth() {
+  def onPageLoad(continueUrl: Option[RedirectUrl] = None): Action[AnyContent] = cc.auth {
     implicit request =>
 
      val hasIntermediaryEnrolment: Boolean =  request.enrolments.getEnrolment("HMRC-IOSS-INT").nonEmpty

@@ -21,20 +21,20 @@ import pages.{Page, QuestionPage, RecoveryOps, SoldGoodsPage, Waypoints}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
-case object DataErrorPage extends QuestionPage[Boolean] {
+case class DataErrorPage(iossNumber: String) extends QuestionPage[Boolean] {
 
   override def path: JsPath = JsPath \ toString
 
   override def toString: String = "dataError"
 
-  override def route(waypoints: Waypoints): Call = controllers.fileUpload.routes.DataErrorController.onPageLoad(waypoints)
+  override def route(waypoints: Waypoints): Call = controllers.fileUpload.routes.DataErrorController.onPageLoad(waypoints, iossNumber)
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page = {
     answers.get(this).map {
       case true =>
-        FileUploadPage
+        FileUploadPage(answers.iossNumber)
       case false =>
-        SoldGoodsPage
+        SoldGoodsPage(answers.iossNumber)
     }.orRecover
   }
 }

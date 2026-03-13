@@ -38,9 +38,9 @@ object CheckSalesSummary {
             case (vatRateFromCountry, vatRateIndex) =>
 
               val rows = SalesToCountrySummary
-                .row(answers, waypoints, countryIndex, Index(vatRateIndex), vatRateFromCountry, CheckSalesPage(countryIndex, Some(Index(vatRateIndex)))).toList ++
+                .row(answers, waypoints, countryIndex, Index(vatRateIndex), vatRateFromCountry, CheckSalesPage(countryIndex, answers.iossNumber, Some(Index(vatRateIndex)))).toList ++
                 VatOnSalesSummary
-                  .row(answers, waypoints, countryIndex, Index(vatRateIndex), CheckSalesPage(countryIndex, Some(Index(vatRateIndex)))).toList
+                  .row(answers, waypoints, countryIndex, Index(vatRateIndex), CheckSalesPage(countryIndex, answers.iossNumber, Some(Index(vatRateIndex)))).toList
 
               SummaryListViewModel(
                 rows = rows

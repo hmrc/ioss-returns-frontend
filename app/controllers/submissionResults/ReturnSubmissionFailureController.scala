@@ -35,7 +35,7 @@ class ReturnSubmissionFailureController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad: Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced {
+  def onPageLoad: Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced() {
     implicit request =>
 
       val iossEnrolmentsExist: Boolean = findIossFromEnrolments(request.enrolments).nonEmpty

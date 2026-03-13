@@ -62,20 +62,23 @@ class RedirectService @Inject()(
     }
   }
 
-  def getRedirect(waypoints: Waypoints, errors: List[ValidationError]): List[Call] = {
+  def getRedirect(
+                   waypoints: Waypoints,
+                   errors: List[ValidationError]
+                 )(implicit request: DataRequest[AnyContent]): List[Call] = {
     errors.flatMap {
       case DataMissingError(AllSalesQuery) =>
         logger.error(s"Data missing - no data provided for sales")
-        Some(routes.SoldToCountryController.onPageLoad(waypoints, Index(0)))
-      case DataMissingError(VatRatesFromCountryPage(countryIndex, vatRateIndex)) =>
+        Some(routes.SoldToCountryController.onPageLoad(waypoints, Index(0), request.iossNumber))
+      case DataMissingError(VatRatesFromCountryPage(countryIndex, vatRateIndex, iossNumber)) =>
         logger.error(s"Data missing - vat rates with index ${vatRateIndex.position}")
-        Some(routes.VatRatesFromCountryController.onPageLoad(waypoints, countryIndex))
+        Some(routes.VatRatesFromCountryController.onPageLoad(waypoints, countryIndex, iossNumber))
       case DataMissingError(SalesAtVatRateQuery(countryIndex, vatRateIndex)) =>
         logger.error(s"Data missing - vat rates with index ${vatRateIndex.position} for country ${countryIndex.position}")
-        Some(routes.SalesToCountryController.onPageLoad(waypoints, countryIndex, vatRateIndex))
+        Some(routes.SalesToCountryController.onPageLoad(waypoints, countryIndex, vatRateIndex, request.iossNumber))
       case DataMissingError(VatOnSalesFromQuery(countryIndex, vatRateIndex)) =>
         logger.error(s"Data missing - vat charged on sales at vat rate ${vatRateIndex.position} for country ${countryIndex.position}")
-        Some(routes.VatOnSalesController.onPageLoad(waypoints, countryIndex, vatRateIndex))
+        Some(routes.VatOnSalesController.onPageLoad(waypoints, countryIndex, vatRateIndex, request.iossNumber))
 
       case DataMissingError(AllCorrectionPeriodsQuery) =>
         logger.error(s"Data missing - no data provided for corrections")

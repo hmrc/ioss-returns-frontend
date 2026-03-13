@@ -45,6 +45,7 @@ class SoldToCountryListController @Inject()(
 
   val form: Form[Boolean] = formProvider()
 
+  // TODO -> URL IOSS NUMBER
   def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndRequireData().async {
     implicit request =>
 
@@ -80,9 +81,9 @@ class SoldToCountryListController @Inject()(
             firstIndexedIncompleteCountrySales(incompleteCountries) match {
               case Some(incompleteCountry) =>
                 if (incompleteCountry._1.vatRatesFromCountry.isEmpty) {
-                  Redirect(routes.VatRatesFromCountryController.onPageLoad(waypoints, Index(incompleteCountry._2))).toFuture
+                  Redirect(routes.VatRatesFromCountryController.onPageLoad(waypoints, Index(incompleteCountry._2), request.iossNumber)).toFuture
                 } else {
-                  Redirect(routes.CheckSalesController.onPageLoad(waypoints, Index(incompleteCountry._2))).toFuture
+                  Redirect(routes.CheckSalesController.onPageLoad(waypoints, Index(incompleteCountry._2), request.iossNumber)).toFuture
                 }
               case None =>
                 Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture

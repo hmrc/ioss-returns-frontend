@@ -32,7 +32,7 @@ case class SoldGoodsPage(iossNumber: String) extends QuestionPage[Boolean] {
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
     answers.get(this).map {
-      case true => SoldToCountryPage(Index(0))
+      case true => SoldToCountryPage(Index(0), answers.iossNumber)
       case false => CorrectPreviousReturnPage(0)
     }.orRecover
 }

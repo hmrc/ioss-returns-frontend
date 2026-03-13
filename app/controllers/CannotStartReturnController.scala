@@ -33,7 +33,7 @@ class CannotStartReturnController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(): Action[AnyContent] = cc.auth().async {
+  def onPageLoad(): Action[AnyContent] = cc.auth.async {
     implicit request =>
       Future.successful(Ok(view()))
   }

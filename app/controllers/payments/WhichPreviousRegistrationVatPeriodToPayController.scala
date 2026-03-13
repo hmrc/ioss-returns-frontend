@@ -49,7 +49,7 @@ class WhichPreviousRegistrationVatPeriodToPayController @Inject()(
   protected val controllerComponents: MessagesControllerComponents = cc
   val form: Form[Period] = formProvider()
 
-  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced.async {
+  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced().async {
     implicit request =>
 
       selectedIossNumberRepository.get(request.userId).flatMap { maybeSelectedIossNumber =>
@@ -71,7 +71,7 @@ class WhichPreviousRegistrationVatPeriodToPayController @Inject()(
       }
   }
 
-  def onSubmit(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced.async {
+  def onSubmit(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced().async {
     implicit request =>
 
       selectedIossNumberRepository.get(request.userId).flatMap { maybeSelectedIossNumber =>

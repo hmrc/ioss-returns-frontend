@@ -34,7 +34,7 @@ class StartOutstandingReturnController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad: Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced.async {
+  def onPageLoad: Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced().async {
     implicit request =>
       vatReturnService.getOldestDueReturn(request.iossNumber).map {
         case Some(oldestReturn) =>

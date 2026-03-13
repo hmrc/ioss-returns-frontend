@@ -27,6 +27,7 @@
 @(
     form: Form[_],
     waypoints: Waypoints,
+    iossNumber: String,
     period: Period,
     isIntermediary: Boolean,
     companyName: String,
@@ -64,7 +65,7 @@
 
 @layout(pageTitle = title(form, titleText)) {
 
-    @formHelper(action = controllers.fileUpload.routes.DataErrorController.onSubmit(waypoints), Symbol("autoComplete") -> "off") {
+    @formHelper(action = controllers.fileUpload.routes.DataErrorController.onSubmit(waypoints, iossNumber), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))

@@ -37,12 +37,11 @@ import utils.FutureSyntax.FutureOps
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class IdentifierAction(
-                        override val authConnector: AuthConnector,
-                        config: FrontendAppConfig,
-                        urlBuilderService: UrlBuilderService,
-                        maybeUrlIossNumber: Option[String]
-                      )(implicit val executionContext: ExecutionContext)
+class IdentifierAction @Inject()(
+                                  override val authConnector: AuthConnector,
+                                  config: FrontendAppConfig,
+                                  urlBuilderService: UrlBuilderService
+                                )(implicit val executionContext: ExecutionContext)
   extends ActionRefiner[Request, IdentifierRequest]
     with AuthorisedFunctions with Logging {
 
@@ -53,7 +52,6 @@ class IdentifierAction(
   //noinspection ScalaStyle
   override def refine[A](request: Request[A]): IdentifierActionResult[A] = {
 
-    // TODO -> Have url ioss number in here somewhere and then won't need the ioss number in reg action, can use ioss number from this request
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
 
     authorised(
@@ -68,18 +66,18 @@ class IdentifierAction(
       case Some(credentials) ~ enrolments ~ Some(Organisation) ~ _ =>
         findVrnFromEnrolments(enrolments) match {
           case Some(vrn) if hasIossEnrolment(enrolments) =>
-            getSuccessfulResponse(request, credentials, vrn, enrolments, maybeUrlIossNumber).toFuture
+            getSuccessfulResponse(request, credentials, vrn, enrolments).toFuture
           case Some(vrn) if hasIntermediaryEnrolment(enrolments) =>
-            getSuccessfulResponse(request, credentials, vrn, enrolments, maybeUrlIossNumber).toFuture
+            getSuccessfulResponse(request, credentials, vrn, enrolments).toFuture
           case _ => throw InsufficientEnrolments()
         }
 
       case Some(credentials) ~ enrolments ~ Some(Individual) ~ confidence =>
         findVrnFromEnrolments(enrolments) match {
           case Some(vrn) if hasIossEnrolment(enrolments) =>
-            checkConfidenceAndGetResponse(request, credentials, vrn, confidence, enrolments, maybeUrlIossNumber).toFuture
+            checkConfidenceAndGetResponse(request, credentials, vrn, confidence, enrolments).toFuture
           case Some(vrn) if hasIntermediaryEnrolment(enrolments) =>
-            checkConfidenceAndGetResponse(request, credentials, vrn, confidence, enrolments, maybeUrlIossNumber).toFuture
+            checkConfidenceAndGetResponse(request, credentials, vrn, confidence, enrolments).toFuture
           case _ =>
             throw InsufficientEnrolments()
         }
@@ -104,11 +102,10 @@ class IdentifierAction(
                                         request: Request[A],
                                         credentials: Credentials,
                                         vrn: Vrn,
-                                        enrolments: Enrolments,
-                                        maybeUrlIossNumber: Option[String]
+                                        enrolments: Enrolments
                                       ): Either[Result, IdentifierRequest[A]] = {
 
-    val identifierRequest = IdentifierRequest(request, credentials, vrn, enrolments, maybeUrlIossNumber)
+    val identifierRequest = IdentifierRequest(request, credentials, vrn, enrolments)
     Right(identifierRequest)
   }
 
@@ -117,11 +114,10 @@ class IdentifierAction(
                                                 credentials: Credentials,
                                                 vrn: Vrn,
                                                 confidence: ConfidenceLevel,
-                                                enrolments: Enrolments,
-                                                maybeUrlIossNumber: Option[String]
+                                                enrolments: Enrolments
                                               ): Either[Result, IdentifierRequest[A]] = {
     if (confidence >= ConfidenceLevel.L250) {
-      getSuccessfulResponse(request, credentials, vrn, enrolments, maybeUrlIossNumber)
+      getSuccessfulResponse(request, credentials, vrn, enrolments)
     } else {
       throw InsufficientConfidenceLevel()
     }
@@ -157,16 +153,5 @@ class IdentifierAction(
         "failureURL" -> Seq(urlBuilderService.ivFailureUrl(request))
       )
     )).toFuture
-  }
-}
-
-class IdentifierActionProvider @Inject(
-                                        authConnector: AuthConnector,
-                                        config: FrontendAppConfig,
-                                        urlBuilderService: UrlBuilderService
-                                      )(implicit val executionContext: ExecutionContext) {
-
-  def apply(maybeUrlIossNumber: Option[String]): IdentifierAction = {
-    new IdentifierAction(authConnector, config, urlBuilderService, maybeUrlIossNumber)
   }
 }

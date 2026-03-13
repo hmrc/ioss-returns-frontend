@@ -35,7 +35,7 @@ class NoMoreWelshController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(redirectUrl: Option[RedirectUrl] = None): Action[AnyContent] = cc.auth() {
+  def onPageLoad(redirectUrl: Option[RedirectUrl] = None): Action[AnyContent] = cc.auth {
     implicit request =>
 
       val safeUrl: Option[String] = redirectUrl.flatMap {

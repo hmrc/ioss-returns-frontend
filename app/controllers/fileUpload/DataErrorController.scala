@@ -41,30 +41,30 @@ class DataErrorController @Inject()(
 
   val form: Form[Boolean] = formProvider()
 
-  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndRequireData() {
+  def onPageLoad(waypoints: Waypoints, iossNumber: String): Action[AnyContent] = cc.authAndRequireData(iossNumber) {
     implicit request =>
 
       val period = request.userAnswers.period
       val isIntermediary = request.isIntermediary
       val companyName = request.companyName
-      val errors: Seq[CsvError] = request.userAnswers.get(CsvValidationErrorsPage).getOrElse(Nil)
+      val errors: Seq[CsvError] = request.userAnswers.get(CsvValidationErrorsPage(request.iossNumber)).getOrElse(Nil)
       val (errorMessage, hasMultipleTypes, errorSummaries) = errorMessages(errors)
 
-      val preparedForm = request.userAnswers.get(DataErrorPage) match {
+      val preparedForm = request.userAnswers.get(DataErrorPage(request.iossNumber)) match {
         case None => form
         case Some(value) => form.fill(value)
       }
 
-      Ok(view(preparedForm, waypoints, period, isIntermediary, companyName, errors, errorMessage, hasMultipleTypes, errorSummaries))
+      Ok(view(preparedForm, waypoints, request.iossNumber, period, isIntermediary, companyName, errors, errorMessage, hasMultipleTypes, errorSummaries))
   }
 
-  def onSubmit(waypoints: Waypoints): Action[AnyContent] = cc.authAndRequireData().async {
+  def onSubmit(waypoints: Waypoints, iossNumber: String): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
     implicit request =>
       
       val period = request.userAnswers.period
       val isIntermediary = request.isIntermediary
       val companyName = request.companyName
-      val errors: Seq[CsvError] = request.userAnswers.get(CsvValidationErrorsPage).getOrElse(Nil)
+      val errors: Seq[CsvError] = request.userAnswers.get(CsvValidationErrorsPage(request.iossNumber)).getOrElse(Nil)
       val (errorMessage, hasMultipleTypes, errorSummaries) = errorMessages(errors)
       
       form.bindFromRequest().fold(
@@ -72,6 +72,7 @@ class DataErrorController @Inject()(
           Future.successful(BadRequest(view(
             formWithErrors,
             waypoints,
+            request.iossNumber,
             period,
             isIntermediary,
             companyName,
@@ -83,9 +84,9 @@ class DataErrorController @Inject()(
 
         value =>
           for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(DataErrorPage, value))
+            updatedAnswers <- Future.fromTry(request.userAnswers.set(DataErrorPage(request.iossNumber), value))
             _              <- cc.sessionRepository.set(updatedAnswers)
-          } yield Redirect(DataErrorPage.navigate(waypoints, request.userAnswers, updatedAnswers).route)
+          } yield Redirect(DataErrorPage(request.iossNumber).navigate(waypoints, request.userAnswers, updatedAnswers).route)
       )
   }
 
@@ -214,5 +215,5 @@ class DataErrorController @Inject()(
       (errorMessage, false, Nil)
     }
   }
-
 }
+

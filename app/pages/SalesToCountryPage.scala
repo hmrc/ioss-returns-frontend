@@ -24,19 +24,19 @@ import play.api.mvc.Call
 
 import scala.util.Try
 
-case class SalesToCountryPage(countryIndex: Index, vatRateIndex: Index) extends QuestionPage[BigDecimal] {
+case class SalesToCountryPage(countryIndex: Index, vatRateIndex: Index, iossNumber: String) extends QuestionPage[BigDecimal] {
 
   override def path: JsPath = JsPath \ sales \ countryIndex.position \ vatRates \ vatRateIndex.position \ salesAtVatRate \ toString
 
   override def toString: String = netValueOfSales
 
   override def route(waypoints: Waypoints): Call =
-    routes.SalesToCountryController.onPageLoad(waypoints, countryIndex, vatRateIndex)
+    routes.SalesToCountryController.onPageLoad(waypoints, countryIndex, vatRateIndex, iossNumber)
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page = {
-    VatOnSalesPage(countryIndex, vatRateIndex)
+    VatOnSalesPage(countryIndex, vatRateIndex, answers.iossNumber)
   }
 
   override def cleanup(value: Option[BigDecimal], userAnswers: UserAnswers): Try[UserAnswers] =
-    userAnswers.remove(VatOnSalesPage(countryIndex, vatRateIndex))
+    userAnswers.remove(VatOnSalesPage(countryIndex, vatRateIndex, userAnswers.iossNumber))
 }

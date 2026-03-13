@@ -56,7 +56,7 @@ class WhichPreviousRegistrationToPayController @Inject()(
 
   val form: Form[String] = formProvider()
 
-  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced.async {
+  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced().async {
     implicit request =>
 
       previousRegistrationService.getPreviousRegistrationPrepareFinancialData(request.isIntermediary).flatMap { preparedDataList =>
@@ -64,7 +64,7 @@ class WhichPreviousRegistrationToPayController @Inject()(
       }
   }
 
-  def onSubmit(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced.async {
+  def onSubmit(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced().async {
     implicit request =>
 
       previousRegistrationService.getPreviousRegistrationPrepareFinancialData(request.isIntermediary).flatMap { preparedDataList =>

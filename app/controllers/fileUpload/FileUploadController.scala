@@ -69,7 +69,7 @@ class FileUploadController @Inject()(
 
             for {
               cleanedAnswers <- Future.fromTry(request.userAnswers.remove(FileUploadedPage(iossNumber)))
-              dataErrorAnswers <- Future.fromTry(cleanedAnswers.remove(DataErrorPage))
+              dataErrorAnswers <- Future.fromTry(cleanedAnswers.remove(DataErrorPage(iossNumber)))
               updatedAnswers <- Future.fromTry(
                 dataErrorAnswers.set(FileReferencePage(iossNumber), initiateResponse.fileReference.reference)
               )

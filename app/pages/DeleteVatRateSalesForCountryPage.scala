@@ -29,16 +29,16 @@ case class DeleteVatRateSalesForCountryPage(countryIndex: Index, vatRateIndex: I
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
     answers.get(DeriveNumberOfVatRatesFromCountry(countryIndex)) match {
       case Some(n) if n > 0 =>
-        CheckSalesPage(countryIndex)
+        CheckSalesPage(countryIndex, answers.iossNumber)
       case _ =>
-        VatRatesFromCountryPage(countryIndex, vatRateIndex)
+        VatRatesFromCountryPage(countryIndex, vatRateIndex, answers.iossNumber)
     }
 
   override protected def nextPageCheckMode(waypoints: NonEmptyWaypoints, answers: UserAnswers): Page =
     answers.get(DeriveNumberOfVatRatesFromCountry(countryIndex)) match {
       case Some(n) if n > 0 =>
-        CheckSalesPage(countryIndex)
+        CheckSalesPage(countryIndex, answers.iossNumber)
       case _ =>
-        VatRatesFromCountryPage(countryIndex, vatRateIndex)
+        VatRatesFromCountryPage(countryIndex, vatRateIndex, answers.iossNumber)
     }
 }
