@@ -25,7 +25,7 @@
     button: ButtonGroup
 )
 
-@(form: Form[_], waypoints: Waypoints, period: Period, index: Index, country: Country, checkboxItems: Seq[CheckboxItem], isIntermediary:Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, iossNumber: String, period: Period, index: Index, country: Country, checkboxItems: Seq[CheckboxItem], isIntermediary:Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, if(isIntermediary) {
     messages("vatRatesFromCountry.intermediary.title")
@@ -33,7 +33,7 @@
     messages("vatRatesFromCountry.title")
 })) {
 
-    @formHelper(action = routes.VatRatesFromCountryController.onSubmit(waypoints, index), Symbol("autoComplete") -> "off") {
+    @formHelper(action = routes.VatRatesFromCountryController.onSubmit(waypoints, index, iossNumber), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form, errorLinkOverrides = Map("value" -> "value_0")))
@@ -61,7 +61,7 @@
         )
 
         @button(
-            "site.continue", routes.VatRatesFromCountryController.onPageLoad(waypoints, index).url, period, waypoints
+            "site.continue", routes.VatRatesFromCountryController.onPageLoad(waypoints, index, iossNumber).url, period, waypoints
         )
     }
 }

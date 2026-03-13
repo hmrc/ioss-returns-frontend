@@ -31,7 +31,7 @@ class NoLongerAbleToViewReturnController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad: Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced  {
+  def onPageLoad: Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced()  {
     implicit request =>
       Ok(view())
   }

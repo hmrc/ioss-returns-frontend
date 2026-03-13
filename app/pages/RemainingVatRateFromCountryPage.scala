@@ -34,9 +34,9 @@ case class RemainingVatRateFromCountryPage(countryIndex: Index, vatRateIndex: In
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
     answers.get(this) match {
       case Some(true) =>
-        SalesToCountryPage(countryIndex, vatRateIndex)
+        SalesToCountryPage(countryIndex, vatRateIndex, answers.iossNumber)
       case Some(false) =>
-        CheckSalesPage(countryIndex)
+        CheckSalesPage(countryIndex, answers.iossNumber)
       case _ =>
         JourneyRecoveryPage
     }

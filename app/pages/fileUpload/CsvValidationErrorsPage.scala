@@ -21,11 +21,11 @@ import pages.{QuestionPage, Waypoints}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
-case object CsvValidationErrorsPage extends QuestionPage[Seq[CsvError]] {
+case class CsvValidationErrorsPage(iossNumber: String) extends QuestionPage[Seq[CsvError]] {
 
   override def path: JsPath = JsPath \ "fileUpload" \ "csvValidationErrors"
 
   override def toString: String = "dataError"
 
-  override def route(waypoints: Waypoints): Call = controllers.fileUpload.routes.DataErrorController.onPageLoad(waypoints)
+  override def route(waypoints: Waypoints): Call = controllers.fileUpload.routes.DataErrorController.onPageLoad(waypoints, iossNumber)
 }

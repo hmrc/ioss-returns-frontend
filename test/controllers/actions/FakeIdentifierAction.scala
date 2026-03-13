@@ -28,7 +28,7 @@ import utils.FutureSyntax.FutureOps
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class FakeIdentifierAction extends IdentifierActionProvider(
+class FakeIdentifierAction extends IdentifierAction(
   mock[AuthConnector],
   mock[FrontendAppConfig],
   mock[UrlBuilderService]
@@ -42,7 +42,6 @@ class FakeIdentifierAction extends IdentifierActionProvider(
       request,
       Credentials("12345-credId", "GGW"),
       Vrn("123456789"),
-      enrolments,
-      None // TODO
+      enrolments
     )).toFuture
 }

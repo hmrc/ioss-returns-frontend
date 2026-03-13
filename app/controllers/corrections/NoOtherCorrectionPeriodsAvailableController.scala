@@ -39,7 +39,7 @@ class NoOtherCorrectionPeriodsAvailableController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.auth() {
+  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.auth {
     implicit request =>
       Ok(view(waypoints))
   }

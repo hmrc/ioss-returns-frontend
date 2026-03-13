@@ -30,7 +30,7 @@ object VatOnSalesSummary {
 
   def row(answers: UserAnswers, waypoints: Waypoints, countryIndex: Index, vatRateIndex: Index, sourcePage: AddItemPage)
          (implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(VatOnSalesPage(countryIndex, vatRateIndex)).flatMap { answer =>
+    answers.get(VatOnSalesPage(countryIndex, vatRateIndex, answers.iossNumber)).flatMap { answer =>
       answers.get(VatRateFromCountryQuery(countryIndex, vatRateIndex)).map { vatRate =>
 
         val value = ValueViewModel(
@@ -43,7 +43,7 @@ object VatOnSalesSummary {
           key = "vatOnSales.checkYourAnswersLabel",
           value = value,
           actions = Seq(
-            ActionItemViewModel("site.change", VatOnSalesPage(countryIndex, vatRateIndex).changeLink(waypoints, sourcePage).url)
+            ActionItemViewModel("site.change", VatOnSalesPage(countryIndex, vatRateIndex, answers.iossNumber).changeLink(waypoints, sourcePage).url)
               .withVisuallyHiddenText(messages("vatOnSales.change.hidden", vatRate.rateForDisplay))
           )
         )

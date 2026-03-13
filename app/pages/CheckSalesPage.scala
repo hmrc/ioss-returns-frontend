@@ -24,7 +24,7 @@ import play.api.mvc.Call
 import queries.{Derivable, DeriveNumberOfVatRatesFromCountry, RemainingVatRatesFromCountryQuery}
 
 
-final case class CheckSalesPage(countryIndex: Index, vatRateIndex: Option[Index] = None)
+final case class CheckSalesPage(countryIndex: Index, iossNumber: String, vatRateIndex: Option[Index] = None)
   extends AddItemPage(vatRateIndex) with QuestionPage[Boolean] with Logging {
 
   override def isTheSamePage(other: Page): Boolean = other match {
@@ -37,7 +37,7 @@ final case class CheckSalesPage(countryIndex: Index, vatRateIndex: Option[Index]
   override def toString: String = "checkSales"
 
   override def route(waypoints: Waypoints): Call =
-    routes.CheckSalesController.onPageLoad(waypoints, countryIndex)
+    routes.CheckSalesController.onPageLoad(waypoints, countryIndex, iossNumber)
 
   override val normalModeUrlFragment: String = CheckSalesPage.normalModeUrlFragment(countryIndex)
   override val checkModeUrlFragment: String = CheckSalesPage.checkModeUrlFragment(countryIndex)
@@ -66,7 +66,7 @@ final case class CheckSalesPage(countryIndex: Index, vatRateIndex: Option[Index]
       case vatRatesFromCountry if vatRatesFromCountry.size == 1 =>
         Some(RemainingVatRateFromCountryPage(countryIndex, vatRateIndex))
       case vatRatesFromCountry if vatRatesFromCountry.size > 1 =>
-        Some(VatRatesFromCountryPage(countryIndex, vatRateIndex))
+        Some(VatRatesFromCountryPage(countryIndex, vatRateIndex, answers.iossNumber))
       case vatRatesFromCountry if vatRatesFromCountry.isEmpty =>
         val exception = new IllegalStateException("VAT rate missing")
         logger.error(exception.getMessage, exception)
@@ -85,16 +85,17 @@ object CheckSalesPage {
   def checkModeUrlFragment(countryIndex: Index): String = s"change-check-sales-${countryIndex.display}"
 
   def waypointFromString(s: String): Option[Waypoint] = {
-
+    
+//    """^(?i)(IM)\d{10}$"""
     val normalModePattern = """check-sales-(\d{1,3})""".r.anchored
     val checkModePattern = """change-check-sales-(\d{1,3})""".r.anchored
 
     s match {
       case normalModePattern(indexDisplay) =>
-        Some(CheckSalesPage(Index(indexDisplay.toInt - 1), None).waypoint(NormalMode))
+        Some(CheckSalesPage(Index(indexDisplay.toInt - 1), "", None).waypoint(NormalMode)) // TODO -> iossNumber
 
       case checkModePattern(indexDisplay) =>
-        Some(CheckSalesPage(Index(indexDisplay.toInt - 1), None).waypoint(CheckMode))
+        Some(CheckSalesPage(Index(indexDisplay.toInt - 1), "", None).waypoint(CheckMode)) // TODO -> iossNumber
 
       case _ =>
         None

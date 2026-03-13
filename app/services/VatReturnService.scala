@@ -84,15 +84,19 @@ class VatReturnService @Inject()(
     }
   }
 
-  private def processSalesToCountry(answers: UserAnswers, countryIndex: Index, vatRateIndex: Index): ValidationResult[List[SalesDetails]] =
-    answers.get(VatRatesFromCountryPage(countryIndex, vatRateIndex)) match {
+  private def processSalesToCountry(
+                                     answers: UserAnswers,
+                                     countryIndex: Index,
+                                     vatRateIndex: Index
+                                   ): ValidationResult[List[SalesDetails]] =
+    answers.get(VatRatesFromCountryPage(countryIndex, vatRateIndex, answers.iossNumber)) match {
       case Some(list) if list.nonEmpty =>
         list.zipWithIndex.map {
           case (vatRate, index) =>
             processSalesAtVatRate(answers, countryIndex, Index(index), vatRate)
         }.sequence
       case _ =>
-        DataMissingError(VatRatesFromCountryPage(countryIndex, vatRateIndex)).invalidNec
+        DataMissingError(VatRatesFromCountryPage(countryIndex, vatRateIndex, answers.iossNumber)).invalidNec
     }
 
   private def processSalesAtVatRate(

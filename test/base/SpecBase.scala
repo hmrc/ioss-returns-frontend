@@ -125,7 +125,7 @@ trait SpecBase
                                     registration: RegistrationWrapper = registrationWrapper,
                                     getRegistrationAction: Option[GetRegistrationActionProvider] = None,
                                     maybeIntermediaryNumber: Option[String] = None,
-                                    getIdentifierAction: Option[IdentifierActionProvider] = None
+                                    getIdentifierAction: Option[IdentifierAction] = None
                                   ): GuiceApplicationBuilder = {
     val clockToBind = clock.getOrElse(stubClockAtArbitraryDate)
 
@@ -136,9 +136,9 @@ trait SpecBase
     }
 
     val getIdentifierActionBind = if (getIdentifierAction.nonEmpty) {
-      bind[IdentifierActionProvider].to[FakeIntermediaryIdentifierAction]
+      bind[IdentifierAction].to[FakeIntermediaryIdentifierAction]
     } else {
-      bind[IdentifierActionProvider].to[FakeIdentifierAction]
+      bind[IdentifierAction].to[FakeIdentifierAction]
     }
 
     new GuiceApplicationBuilder()

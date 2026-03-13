@@ -23,13 +23,13 @@ import play.api.libs.json.JsPath
 import play.api.mvc.Call
 import queries.Gettable
 
-case class VatOnSalesPage(countryIndex: Index, vatRateIndex: Index) extends QuestionPage[VatOnSales] {
+case class VatOnSalesPage(countryIndex: Index, vatRateIndex: Index, iossNumber: String) extends QuestionPage[VatOnSales] {
 
   override def path: JsPath = JsPath \ PageConstants.sales \ countryIndex.position \ PageConstants.vatRates \ vatRateIndex.position \ salesAtVatRate \ toString
 
   override def toString: String = "vatOnSales"
 
-  override def route(waypoints: Waypoints): Call = routes.VatOnSalesController.onPageLoad(waypoints, countryIndex, vatRateIndex)
+  override def route(waypoints: Waypoints): Call = routes.VatOnSalesController.onPageLoad(waypoints, countryIndex, vatRateIndex, iossNumber)
 
 
   override protected def nextPageCheckMode(waypoints: NonEmptyWaypoints, answers: UserAnswers): Page = {
@@ -51,16 +51,16 @@ case class VatOnSalesPage(countryIndex: Index, vatRateIndex: Index) extends Ques
   }
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page = {
-    answers.get(VatRatesFromCountryPage(countryIndex, vatRateIndex)).map { rates =>
+    answers.get(VatRatesFromCountryPage(countryIndex, vatRateIndex, answers.iossNumber)).map { rates =>
         if (rates.size > vatRateIndex.position + 1) {
-          val targetPage: SalesToCountryPage = SalesToCountryPage(countryIndex, vatRateIndex + 1)
+          val targetPage: SalesToCountryPage = SalesToCountryPage(countryIndex, vatRateIndex + 1, answers.iossNumber)
           if (answers.get(targetPage).isDefined) {
-            CheckSalesPage(countryIndex)
+            CheckSalesPage(countryIndex, answers.iossNumber)
           } else {
             targetPage
           }
         } else {
-          CheckSalesPage(countryIndex)
+          CheckSalesPage(countryIndex, answers.iossNumber)
         }
     }.getOrElse(JourneyRecoveryPage)
   }

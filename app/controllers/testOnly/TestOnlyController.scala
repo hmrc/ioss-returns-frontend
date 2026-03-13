@@ -42,7 +42,7 @@ class TestOnlyController @Inject()(
 
   private val externalRequest = ExternalRequest("BTA", "/business-account")
 
-  def yourAccountFromExternal(lang: Option[String] = None): Action[AnyContent] = cc.auth().async {
+  def yourAccountFromExternal(lang: Option[String] = None): Action[AnyContent] = cc.auth.async {
     implicit request =>
       testConnector.externalEntry(externalRequest, YourAccount.name, None, lang) map {
         case Right(response) => Redirect(response.redirectUrl)
@@ -50,7 +50,7 @@ class TestOnlyController @Inject()(
       }
   }
 
-  def startReturnFromExternal(period: Period, lang: Option[String] = None): Action[AnyContent] = cc.auth().async {
+  def startReturnFromExternal(period: Period, lang: Option[String] = None): Action[AnyContent] = cc.auth.async {
     implicit request =>
       testConnector.externalEntry(externalRequest, StartReturn.name, Some(period), lang) map {
         case Right(response) => Redirect(response.redirectUrl)
@@ -58,7 +58,7 @@ class TestOnlyController @Inject()(
       }
   }
 
-  def continueReturnFromExternal(period: Period, lang: Option[String] = None): Action[AnyContent] = cc.auth().async {
+  def continueReturnFromExternal(period: Period, lang: Option[String] = None): Action[AnyContent] = cc.auth.async {
     implicit request =>
       testConnector.externalEntry(externalRequest, ContinueReturn.name, Some(period), lang) map {
         case Right(response) => Redirect(response.redirectUrl)
@@ -66,7 +66,7 @@ class TestOnlyController @Inject()(
       }
   }
 
-  def returnsHistoryFromExternal(lang: Option[String] = None): Action[AnyContent] = cc.auth().async {
+  def returnsHistoryFromExternal(lang: Option[String] = None): Action[AnyContent] = cc.auth.async {
     implicit request =>
       testConnector.externalEntry(externalRequest, ReturnsHistory.name, None, lang) map {
         case Right(response) => Redirect(response.redirectUrl)
@@ -74,7 +74,7 @@ class TestOnlyController @Inject()(
       }
   }
 
-  def paymentsFromExternal(lang: Option[String] = None): Action[AnyContent] = cc.auth().async {
+  def paymentsFromExternal(lang: Option[String] = None): Action[AnyContent] = cc.auth.async {
     implicit request =>
       testConnector.externalEntry(externalRequest, Payment.name, None, lang) map {
         case Right(response) => Redirect(response.redirectUrl)

@@ -54,7 +54,7 @@ final case class SoldToCountryListPage(override val index: Option[Index] = None)
       case true =>
         answers
           .get(deriveNumberOfItems)
-          .map(n => SoldToCountryPage(Index(n)))
+          .map(n => SoldToCountryPage(Index(n), answers.iossNumber))
           .orRecover
       case false =>
         if (answers.isDefined(CorrectPreviousReturnPage(0))) CheckYourAnswersPage

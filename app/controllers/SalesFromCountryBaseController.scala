@@ -33,7 +33,7 @@ trait SalesFromCountryBaseController {
                                     (block: (Country, VatRateFromCountry) => Result)
                                     (implicit request: DataRequest[AnyContent]): Result = {
     (for {
-      country <- request.userAnswers.get(SoldToCountryPage(countryIndex))
+      country <- request.userAnswers.get(SoldToCountryPage(countryIndex, request.iossNumber))
       vatRate <- request.userAnswers.get(VatRatesFromCountryQuery(countryIndex, vatRateIndex))
     } yield block(country, vatRate))
       .getOrElse(Redirect(JourneyRecoveryPage.route(waypoints)))
@@ -45,7 +45,7 @@ trait SalesFromCountryBaseController {
                                          (implicit request: DataRequest[AnyContent]): Future[Result] =
 
     (for {
-      country <- request.userAnswers.get(SoldToCountryPage(countryIndex))
+      country <- request.userAnswers.get(SoldToCountryPage(countryIndex, request.iossNumber))
       vatRate <- request.userAnswers.get(VatRatesFromCountryQuery(countryIndex, vatRateIndex))
     } yield block(country, vatRate))
       .getOrElse(Redirect(JourneyRecoveryPage.route(waypoints)).toFuture)
@@ -55,9 +55,9 @@ trait SalesFromCountryBaseController {
                                             (block: (Country, VatRateFromCountry, BigDecimal) => Result)
                                             (implicit request: DataRequest[AnyContent]): Result = {
     (for {
-      country <- request.userAnswers.get(SoldToCountryPage(countryIndex))
+      country <- request.userAnswers.get(SoldToCountryPage(countryIndex, request.iossNumber))
       vatRate <- request.userAnswers.get(VatRatesFromCountryQuery(countryIndex, vatRateIndex))
-      netSales <- request.userAnswers.get(SalesToCountryPage(countryIndex, vatRateIndex))
+      netSales <- request.userAnswers.get(SalesToCountryPage(countryIndex, vatRateIndex, request.iossNumber))
     } yield {
       block(country, vatRate, netSales)
     })
@@ -68,9 +68,9 @@ trait SalesFromCountryBaseController {
                                                  (block: (Country, VatRateFromCountry, BigDecimal) => Future[Result])
                                                  (implicit request: DataRequest[AnyContent]): Future[Result] =
     (for {
-      country <- request.userAnswers.get(SoldToCountryPage(countryIndex))
+      country <- request.userAnswers.get(SoldToCountryPage(countryIndex, request.iossNumber))
       vatRate <- request.userAnswers.get(VatRatesFromCountryQuery(countryIndex, vatRateIndex))
-      netSales <- request.userAnswers.get(SalesToCountryPage(countryIndex, vatRateIndex))
+      netSales <- request.userAnswers.get(SalesToCountryPage(countryIndex, vatRateIndex, request.iossNumber))
     } yield block(country, vatRate, netSales))
       .orRecoverJourney
 }

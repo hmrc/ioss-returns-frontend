@@ -42,7 +42,7 @@ class VatOnSalesController @Inject()(
   protected val controllerComponents: MessagesControllerComponents = cc
 
 
-  def onPageLoad(waypoints: Waypoints, countryIndex: Index, vatRateIndex: Index): Action[AnyContent] = cc.authAndRequireData() {
+  def onPageLoad(waypoints: Waypoints, countryIndex: Index, vatRateIndex: Index, iossNumber: String): Action[AnyContent] = cc.authAndRequireData(iossNumber) {
     implicit request =>
 
       getCountryVatRateAndNetSales(countryIndex, vatRateIndex) {
@@ -52,16 +52,16 @@ class VatOnSalesController @Inject()(
           val period = request.userAnswers.period
           val standardVat = vatRateService.standardVatOnSales(netSales, vatRateFromCountry)
 
-          val preparedForm = request.userAnswers.get(VatOnSalesPage(countryIndex, vatRateIndex)) match {
+          val preparedForm = request.userAnswers.get(VatOnSalesPage(countryIndex, vatRateIndex, request.iossNumber)) match {
             case None => form
             case Some(value) => form.fill(value)
           }
 
-          Ok(view(preparedForm, waypoints, period, countryIndex, vatRateIndex, country, vatRateFromCountry, netSales, standardVat, request.isIntermediary, request.companyName))
+          Ok(view(preparedForm, waypoints, request.iossNumber, period, countryIndex, vatRateIndex, country, vatRateFromCountry, netSales, standardVat, request.isIntermediary, request.companyName))
       }
   }
 
-  def onSubmit(waypoints: Waypoints, countryIndex: Index, vatRateIndex: Index): Action[AnyContent] = cc.authAndRequireData().async {
+  def onSubmit(waypoints: Waypoints, countryIndex: Index, vatRateIndex: Index, iossNumber: String): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
     implicit request =>
 
       val period = request.userAnswers.period
@@ -73,13 +73,13 @@ class VatOnSalesController @Inject()(
 
           form.bindFromRequest().fold(
             formWithErrors =>
-              BadRequest(view(formWithErrors, waypoints, period, countryIndex, vatRateIndex, country, vatRate, netSales, standardVat, request.isIntermediary, request.companyName)).toFuture,
+              BadRequest(view(formWithErrors, waypoints, request.iossNumber, period, countryIndex, vatRateIndex, country, vatRate, netSales, standardVat, request.isIntermediary, request.companyName)).toFuture,
 
             value =>
               for {
-                updatedAnswers <- Future.fromTry(request.userAnswers.set(VatOnSalesPage(countryIndex, vatRateIndex), value))
+                updatedAnswers <- Future.fromTry(request.userAnswers.set(VatOnSalesPage(countryIndex, vatRateIndex, request.iossNumber), value))
                 _ <- cc.sessionRepository.set(updatedAnswers)
-              } yield Redirect(VatOnSalesPage(countryIndex, vatRateIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route)
+              } yield Redirect(VatOnSalesPage(countryIndex, vatRateIndex, request.iossNumber).navigate(waypoints, request.userAnswers, updatedAnswers).route)
           )
       }
   }

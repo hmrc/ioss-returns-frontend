@@ -31,7 +31,7 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
 
   def sessionRepository: SessionRepository
 
-  def identify: IdentifierActionProvider
+  def identify: IdentifierAction
 
   def getRegistration: GetRegistrationActionProvider
 
@@ -58,26 +58,24 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
   def intermediaryRequired: IntermediaryRequiredFilter
   
   def intermediaryEnabled: IntermediaryEnabledFilter
-
-  // TODO -> Pass in iossNumber, if it's there populate request, if not do what it's doing?
-  def auth(iossNumber: Option[String] = None): ActionBuilder[IdentifierRequest, AnyContent] =
-    actionBuilder andThen identify(iossNumber)
-
-  // TODO -> iossNu,ber redundant here for getRegistration? Not used where invoked
+  
+  def auth: ActionBuilder[IdentifierRequest, AnyContent] =
+    actionBuilder andThen identify
+  
   def authAndGetRegistration(iossNumber: Option[String] = None): ActionBuilder[RegistrationRequest, AnyContent] = {
-    auth(iossNumber) andThen
-      getRegistration(iossNumber)
+    auth andThen
+      getRegistration(iossNumber.get) // TODO -> Remove get and Option param,
   }
 
-  // TODO -> Need iossNumber for authAndGetRegistration()?
-  def authAndGetRegistrationAndCheckBounced: ActionBuilder[RegistrationRequest, AnyContent] = {
-    authAndGetRegistration() andThen
+  // TODO remove default ""
+  def authAndGetRegistrationAndCheckBounced(iossNumber: String = ""): ActionBuilder[RegistrationRequest, AnyContent] = {
+    authAndGetRegistration(Some(iossNumber)) andThen
       checkBouncedEmail()
   }
 
   // TODO remove default ""
   def authAndGetOptionalData(iossNumber: String = ""): ActionBuilder[OptionalDataRequest, AnyContent] = {
-    authAndGetRegistrationAndCheckBounced andThen getData(iossNumber)
+    authAndGetRegistrationAndCheckBounced(iossNumber) andThen getData(iossNumber)
   }
 
   // TODO remove default ""
@@ -111,7 +109,7 @@ case class DefaultAuthenticatedControllerComponents @Inject()(
                                                                fileMimeTypes: FileMimeTypes,
                                                                executionContext: ExecutionContext,
                                                                sessionRepository: SessionRepository,
-                                                               identify: IdentifierActionProvider,
+                                                               identify: IdentifierAction,
                                                                getRegistration: GetRegistrationActionProvider,
                                                                getData: DataRetrievalActionProvider,
                                                                requireData: DataRequiredAction,

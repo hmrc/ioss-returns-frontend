@@ -29,14 +29,14 @@ object SalesToCountrySummary {
 
   def row(answers: UserAnswers, waypoints: Waypoints, countryIndex: Index, vatRateIndex: Index, vatRate: VatRateFromCountry, sourcePage: AddItemPage)
          (implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(SalesToCountryPage(countryIndex, vatRateIndex)).map {
+    answers.get(SalesToCountryPage(countryIndex, vatRateIndex, answers.iossNumber)).map {
       answer =>
 
         SummaryListRowViewModel(
           key = "salesToCountry.checkYourAnswersLabel",
           value = ValueViewModel(HtmlContent(currencyFormat(answer))).withCssClass("govuk-table__cell--numeric"),
           actions = Seq(
-            ActionItemViewModel("site.change", SalesToCountryPage(countryIndex, vatRateIndex).changeLink(waypoints, sourcePage).url)
+            ActionItemViewModel("site.change", SalesToCountryPage(countryIndex, vatRateIndex, answers.iossNumber).changeLink(waypoints, sourcePage).url)
               .withVisuallyHiddenText(messages("salesToCountry.change.hidden", vatRate.rateForDisplay))
               .withAttribute(("id", s"change-net-value-sales-${vatRate.rate}-percent"))
           )

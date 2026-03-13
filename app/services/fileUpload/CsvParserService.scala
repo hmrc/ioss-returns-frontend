@@ -23,8 +23,8 @@ import pages.{SalesToCountryPage, SoldGoodsPage, SoldToCountryPage, VatOnSalesPa
 
 import java.io.*
 import java.time.LocalDate
-import scala.jdk.CollectionConverters.ListHasAsScala
 import javax.inject.{Inject, Singleton}
+import scala.jdk.CollectionConverters.ListHasAsScala
 import scala.util.Try
 
 object CsvParserService {
@@ -55,11 +55,11 @@ object CsvParserService {
 class CsvParserService @Inject()() {
 
   private final case class VatRow(
-                           country: String,
-                           vatRate: String,
-                           salesToCountry: BigDecimal,
-                           vatOnSales: BigDecimal
-                         )
+                                   country: String,
+                                   vatRate: String,
+                                   salesToCountry: BigDecimal,
+                                   vatOnSales: BigDecimal
+                                 )
 
   def populateUserAnswersFromCsv(userAnswers: UserAnswers, csvContent: String): Try[UserAnswers] = {
     val rawRows: Seq[Array[String]] = CsvParserService.split(csvContent)
@@ -73,16 +73,16 @@ class CsvParserService @Inject()() {
 
         accTry.flatMap { ua =>
           val rates: List[VatRateFromCountry] = vatRows.map(r => vatRateFrom(r.vatRate)).toList
-          val withCountryAndRates = ua.set(SoldToCountryPage(countryIndex), countryFromName(countryName))
-            .flatMap(_.set(VatRatesFromCountryPage(countryIndex, Index(0)), rates))
+          val withCountryAndRates = ua.set(SoldToCountryPage(countryIndex, userAnswers.iossNumber), countryFromName(countryName))
+            .flatMap(_.set(VatRatesFromCountryPage(countryIndex, Index(0), userAnswers.iossNumber), rates))
 
           vatRows.zipWithIndex.foldLeft(withCountryAndRates) {
             case (uaTry, (row, vatIndex)) =>
               val vatRateIndex = Index(vatIndex)
 
               uaTry
-                .flatMap(_.set(SalesToCountryPage(countryIndex, vatRateIndex), row.salesToCountry))
-                .flatMap(_.set(VatOnSalesPage(countryIndex, vatRateIndex), vatOnSalesFrom(row.vatOnSales)))
+                .flatMap(_.set(SalesToCountryPage(countryIndex, vatRateIndex, userAnswers.iossNumber), row.salesToCountry))
+                .flatMap(_.set(VatOnSalesPage(countryIndex, vatRateIndex, userAnswers.iossNumber), vatOnSalesFrom(row.vatOnSales)))
           }
         }
     }

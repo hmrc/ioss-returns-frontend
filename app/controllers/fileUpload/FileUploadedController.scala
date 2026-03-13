@@ -38,14 +38,14 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
 class FileUploadedController @Inject()(
-                                         override val messagesApi: MessagesApi,
-                                         cc: AuthenticatedControllerComponents,
-                                         formProvider: FileUploadedFormProvider,
-                                         view: FileUploadedView,
-                                         fileUploadOutcomeConnector: FileUploadOutcomeConnector,
-                                         csvParser: CsvParserService,
-                                         csvValidator: CsvValidator,
-                                 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
+                                        override val messagesApi: MessagesApi,
+                                        cc: AuthenticatedControllerComponents,
+                                        formProvider: FileUploadedFormProvider,
+                                        view: FileUploadedView,
+                                        fileUploadOutcomeConnector: FileUploadOutcomeConnector,
+                                        csvParser: CsvParserService,
+                                        csvValidator: CsvValidator,
+                                      )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
@@ -92,15 +92,15 @@ class FileUploadedController @Inject()(
             val form = formForStatus(status)
             form.bindFromRequest().fold(
               formWithErrors =>
-                  BadRequest(view(formWithErrors, waypoints, iossNumber, period, isIntermediary, companyName, maybeOutcome)).toFuture,
+                BadRequest(view(formWithErrors, waypoints, iossNumber, period, isIntermediary, companyName, maybeOutcome)).toFuture,
               value =>
                 for {
                   updatedAnswers <- Future.fromTry(request.userAnswers.set(FileUploadedPage(iossNumber), value))
                   _ <- cc.sessionRepository.set(updatedAnswers)
                   result <- if (status == "UPLOADED" && value) {
-                    parseCsvAndUpdateAnswers(waypoints, ref, updatedAnswers)
+                    parseCsvAndUpdateAnswers(waypoints, ref, updatedAnswers, iossNumber)
                   } else {
-                    Future.successful(Redirect(FileUploadedPage(iossNumber).navigate(waypoints, request.userAnswers, updatedAnswers).route))
+                    Redirect(FileUploadedPage(iossNumber).navigate(waypoints, request.userAnswers, updatedAnswers).route).toFuture
                   }
                 } yield result
             )
@@ -113,13 +113,13 @@ class FileUploadedController @Inject()(
   private def formForStatus(status: String): Form[Boolean] = {
     if (status == "FAILED") formProvider.failedForm else formProvider.successForm
   }
-}
 
   private def parseCsvAndUpdateAnswers(
                                         waypoints: Waypoints,
                                         reference: String,
-                                        answers: UserAnswers)
-                                      (implicit request: DataRequest[_]): Future[Result] = {
+                                        answers: UserAnswers,
+                                        iossNumber: String
+                                      )(implicit request: DataRequest[_]): Future[Result] = {
 
     fileUploadOutcomeConnector.getCsv(reference).flatMap {
 
@@ -130,27 +130,24 @@ class FileUploadedController @Inject()(
           Try(csvParser.populateUserAnswersFromCsv(answers, csv)).flatten match {
             case Success(updatedAnswers) =>
               cc.sessionRepository.set(updatedAnswers).map { _ =>
-                Redirect(FileUploadedPage.navigate(waypoints, request.userAnswers, updatedAnswers).route)
+                Redirect(FileUploadedPage(iossNumber).navigate(waypoints, request.userAnswers, updatedAnswers).route)
               }
             case Failure(e) =>
               logger.warn(s"CSV parsing failed", e)
-              Future.successful(Redirect(controllers.fileUpload.routes.DataErrorController.onPageLoad()))
+              Redirect(controllers.fileUpload.routes.DataErrorController.onPageLoad(waypoints, iossNumber)).toFuture
           }
         }.recoverWith {
           case CsvValidationException(errs) =>
-            val uaWithErrors = answers.set(CsvValidationErrorsPage, errs)
+            val uaWithErrors = answers.set(CsvValidationErrorsPage(iossNumber), errs)
             Future.fromTry(uaWithErrors).flatMap { uaWithErrors =>
               cc.sessionRepository.set(uaWithErrors).map { _ =>
-                Redirect(controllers.fileUpload.routes.DataErrorController.onPageLoad(waypoints))
+                Redirect(controllers.fileUpload.routes.DataErrorController.onPageLoad(waypoints, iossNumber))
               }
             }
         }
 
       case Left(_) =>
-        Future.successful(
-          Redirect(controllers.fileUpload.routes.DataErrorController.onPageLoad())
-        )
+        Redirect(controllers.fileUpload.routes.DataErrorController.onPageLoad(waypoints, iossNumber)).toFuture
     }
-
   }
 }

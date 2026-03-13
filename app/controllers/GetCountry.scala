@@ -31,7 +31,7 @@ trait GetCountry {
                           (block: Country => Future[Result])
                           (implicit request: DataRequest[AnyContent]): Future[Result] =
     request.userAnswers
-      .get(SoldToCountryPage(index))
+      .get(SoldToCountryPage(index, request.iossNumber))
       .map(block(_))
       .getOrElse(Redirect(JourneyRecoveryPage.route(waypoints)).toFuture)
 }
