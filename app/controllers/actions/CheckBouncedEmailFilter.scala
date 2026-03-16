@@ -17,21 +17,22 @@
 package controllers.actions
 
 import models.requests.RegistrationRequest
-import play.api.mvc.{ActionFilter, Result}
 import play.api.mvc.Results.Redirect
+import play.api.mvc.{ActionFilter, Result}
+import utils.FutureSyntax.FutureOps
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class CheckBouncedEmailFilterImpl()(implicit val executionContext: ExecutionContext)
+class CheckBouncedEmailFilterImpl(iossNumber: String)(implicit val executionContext: ExecutionContext)
   extends ActionFilter[RegistrationRequest] {
 
   override protected def filter[A](request: RegistrationRequest[A]): Future[Option[Result]] = {
 
     if (request.registrationWrapper.registration.schemeDetails.unusableStatus) {
-      Future(Some(Redirect(controllers.routes.InterceptUnusableEmailController.onPageLoad())))
+      Some(Redirect(controllers.routes.InterceptUnusableEmailController.onPageLoad(iossNumber))).toFuture
     } else {
-      Future(None)
+      None.toFuture
     }
 
   }
@@ -39,7 +40,6 @@ class CheckBouncedEmailFilterImpl()(implicit val executionContext: ExecutionCont
 
 class CheckBouncedEmailFilterProvider @Inject()()(implicit ec: ExecutionContext) {
 
-  def apply(): CheckBouncedEmailFilterImpl =
-    new CheckBouncedEmailFilterImpl()
-
+  def apply(iossNumber: String): CheckBouncedEmailFilterImpl =
+    new CheckBouncedEmailFilterImpl(iossNumber)
 }

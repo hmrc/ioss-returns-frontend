@@ -16,7 +16,7 @@
 
 package controllers
 
-import controllers.actions._
+import controllers.actions.*
 import forms.SalesToCountryFormProvider
 import logging.Logging
 import models.Index
@@ -41,7 +41,7 @@ class SalesToCountryController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(waypoints: Waypoints, countryIndex: Index, vatRateIndex: Index, iossNumber: String): Action[AnyContent] = cc.authAndRequireData(iossNumber) {
+  def onPageLoad(waypoints: Waypoints, iossNumber: String, countryIndex: Index, vatRateIndex: Index): Action[AnyContent] = cc.authAndRequireData(iossNumber) {
     implicit request =>
 
       val period = request.userAnswers.period
@@ -50,7 +50,7 @@ class SalesToCountryController @Inject()(
         case (country, vatRate) =>
           val form: Form[BigDecimal] = formProvider(vatRate, request.isIntermediary)
 
-          val preparedForm = request.userAnswers.get(SalesToCountryPage(countryIndex, vatRateIndex, request.iossNumber)) match {
+          val preparedForm = request.userAnswers.get(SalesToCountryPage(request.iossNumber, countryIndex, vatRateIndex)) match {
             case None => form
             case Some(value) => form.fill(value)
           }
@@ -58,7 +58,7 @@ class SalesToCountryController @Inject()(
       }
   }
 
-  def onSubmit(waypoints: Waypoints, countryIndex: Index, vatRateIndex: Index, iossNumber: String): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
+  def onSubmit(waypoints: Waypoints, iossNumber: String, countryIndex: Index, vatRateIndex: Index): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
     implicit request =>
       getCountryAndVatRateAsync(waypoints, countryIndex, vatRateIndex) {
         case (country, vatRate) =>
@@ -72,9 +72,9 @@ class SalesToCountryController @Inject()(
 
             value =>
               for {
-                updatedAnswers <- Future.fromTry(request.userAnswers.set(SalesToCountryPage(countryIndex, vatRateIndex, request.iossNumber), value))
+                updatedAnswers <- Future.fromTry(request.userAnswers.set(SalesToCountryPage(request.iossNumber, countryIndex, vatRateIndex), value))
                 _ <- cc.sessionRepository.set(updatedAnswers)
-              } yield Redirect(SalesToCountryPage(countryIndex, vatRateIndex, request.iossNumber).navigate(waypoints, request.userAnswers, updatedAnswers).route)
+              } yield Redirect(SalesToCountryPage(request.iossNumber, countryIndex, vatRateIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route)
           )
       }
   }

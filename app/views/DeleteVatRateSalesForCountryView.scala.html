@@ -22,7 +22,7 @@
     button: ButtonGroup
 )
 
-@(form: Form[_], waypoints: Waypoints, period: Period, countryIndex: Index, nextVatRateIndex: Index, vatRate: String, country: Country, isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, iossNumber: String, period: Period, countryIndex: Index, nextVatRateIndex: Index, vatRate: String, country: Country, isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, if(isIntermediary) {
         messages("deleteVatRateSalesForCountry.intermediary.title", vatRate, country.name)
@@ -32,7 +32,7 @@
 
     @if(isIntermediary){<p class="govuk-caption-l hmrc-caption-l">@companyName</p>}
 
-    @formHelper(action = routes.DeleteVatRateSalesForCountryController.onSubmit(waypoints, countryIndex, nextVatRateIndex), Symbol("autoComplete") -> "off") {
+    @formHelper(action = routes.DeleteVatRateSalesForCountryController.onSubmit(waypoints, iossNumber, countryIndex, nextVatRateIndex), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))
@@ -49,6 +49,6 @@
         )
     )
 
-        @button("site.continue", controllers.routes.DeleteVatRateSalesForCountryController.onPageLoad(waypoints, countryIndex, nextVatRateIndex).url, period, waypoints)
+        @button("site.continue", controllers.routes.DeleteVatRateSalesForCountryController.onPageLoad(waypoints, iossNumber, countryIndex, nextVatRateIndex).url, period, waypoints)
     }
 }

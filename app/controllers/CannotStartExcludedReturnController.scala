@@ -23,10 +23,10 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.intermediary.DashboardNavigationService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.EnrolmentIdentifiers.{findIntermediaryFromEnrolments, findIossFromEnrolments}
+import utils.FutureSyntax.FutureOps
 import views.html.CannotStartExcludedReturnView
 
 import javax.inject.Inject
-import scala.concurrent.Future
 
 class CannotStartExcludedReturnController @Inject()(
                                                      cc: AuthenticatedControllerComponents,
@@ -36,6 +36,7 @@ class CannotStartExcludedReturnController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
+  // TODO -> IossNumber
   def onPageLoad(): Action[AnyContent] = cc.authAndGetOptionalData().async {
     implicit request =>
 
@@ -44,9 +45,9 @@ class CannotStartExcludedReturnController @Inject()(
 
       val appropriateDashboardUrl: String =
         dashboardNavigationService.getAppropriateDashboardUrl(
-          request.isIntermediary, intermediaryEnrolmentsExist, iossEnrolmentsExist
+          request.isIntermediary, intermediaryEnrolmentsExist, iossEnrolmentsExist, request.iossNumber
         )
 
-      Future.successful(Ok(view(appropriateDashboardUrl)))
+      Ok(view(appropriateDashboardUrl)).toFuture
   }
 }

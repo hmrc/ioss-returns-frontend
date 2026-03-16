@@ -41,7 +41,7 @@ class IndexController @Inject()(
     val intermediaryEnrolmentsExist: Boolean = findIntermediaryFromEnrolments(request.enrolments).nonEmpty
     
     (request.isIntermediary, intermediaryEnrolmentsExist, iossEnrolmentsExist) match {
-      case (true, true, true) => Redirect(routes.IossOrIntermediaryController.onPageLoad())
+      case (true, true, true) => Redirect(routes.IossOrIntermediaryController.onPageLoad(request.iossNumber))
       case (true, true, false) => Redirect(appConfig.intermediaryDashboardUrl)
       case _ => Redirect(controllers.routes.YourAccountController.onPageLoad(waypoints = EmptyWaypoints))
     }

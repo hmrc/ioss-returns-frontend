@@ -41,9 +41,8 @@ class DeleteVatRateSalesForCountryController @Inject()(
   extends FrontendBaseController with I18nSupport with GetCountry with GetVatRates with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
-
-
-  def onPageLoad(waypoints: Waypoints, countryIndex: Index, vatRateIndex: Index): Action[AnyContent] = cc.authAndRequireData().async {
+  
+  def onPageLoad(waypoints: Waypoints, iossNumber: String, countryIndex: Index, vatRateIndex: Index): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
     implicit request =>
       getCountry(waypoints, countryIndex) {
         country =>
@@ -53,12 +52,12 @@ class DeleteVatRateSalesForCountryController @Inject()(
 
               val form: Form[Boolean] = formProvider(vatRate.rateForDisplay, country, request.isIntermediary)
 
-              Ok(view(form, waypoints, request.userAnswers.period, countryIndex, vatRateIndex, vatRate.rateForDisplay, country, request.isIntermediary, request.companyName)).toFuture
+              Ok(view(form, waypoints, request.iossNumber, request.userAnswers.period, countryIndex, vatRateIndex, vatRate.rateForDisplay, country, request.isIntermediary, request.companyName)).toFuture
           }
       }
   }
 
-  def onSubmit(waypoints: Waypoints, countryIndex: Index, vatRateIndex: Index): Action[AnyContent] = cc.authAndRequireData().async {
+  def onSubmit(waypoints: Waypoints, iossNumber: String, countryIndex: Index, vatRateIndex: Index): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
     implicit request =>
       getCountry(waypoints, countryIndex) {
         country =>
@@ -70,17 +69,17 @@ class DeleteVatRateSalesForCountryController @Inject()(
 
               form.bindFromRequest().fold(
                 formWithErrors =>
-                  Future.successful(BadRequest(view(formWithErrors, waypoints, request.userAnswers.period, countryIndex, vatRateIndex, vatRate.rateForDisplay, country, request.isIntermediary, request.companyName))),
+                  BadRequest(view(formWithErrors, waypoints, request.iossNumber, request.userAnswers.period, countryIndex, vatRateIndex, vatRate.rateForDisplay, country, request.isIntermediary, request.companyName)).toFuture,
 
                 value =>
                   if (value) {
                     for {
                       updatedAnswers <- Future.fromTry(request.userAnswers.remove(VatRateFromCountryQuery(countryIndex, vatRateIndex)))
                       _ <- cc.sessionRepository.set(updatedAnswers)
-                    } yield Redirect(DeleteVatRateSalesForCountryPage(countryIndex, vatRateIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route)
+                    } yield Redirect(DeleteVatRateSalesForCountryPage(request.iossNumber, countryIndex, vatRateIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route)
                   } else {
                     Redirect(
-                      DeleteVatRateSalesForCountryPage(countryIndex, vatRateIndex).navigate(waypoints, request.userAnswers, request.userAnswers).route
+                      DeleteVatRateSalesForCountryPage(request.iossNumber, countryIndex, vatRateIndex).navigate(waypoints, request.userAnswers, request.userAnswers).route
                     ).toFuture
                   }
               )

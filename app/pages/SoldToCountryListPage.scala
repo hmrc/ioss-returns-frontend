@@ -17,7 +17,7 @@
 package pages
 
 import controllers.routes
-import models.{Index, UserAnswers}
+import models.{CheckMode, Index, NormalMode, UserAnswers}
 import pages.corrections.CorrectPreviousReturnPage
 import play.api.libs.json.{JsObject, JsPath}
 import play.api.mvc.Call
@@ -25,14 +25,29 @@ import queries.{Derivable, DeriveNumberOfSales}
 
 object SoldToCountryListPage {
 
-  val normalModeUrlFragment: String = "add-sales-country-list"
-  val checkModeUrlFragment: String = "change-add-sales-country-list"
+  def normalModeUrlFragment(iossNumber: String): String = s"$iossNumber-add-sales-country-list"
+
+  def checkModeUrlFragment(iossNumber: String): String = s"$iossNumber-change-add-sales-country-list"
+
+  def waypointFromString(s: String): Option[Waypoint] = {
+
+    val normalModePattern = """((?i)IM\d{10})-add-sales-country-list""".r.anchored
+    val checkModePattern = """((?i)IM\d{10})-change-add-sales-country-list""".r.anchored
+
+    s match {
+      case normalModePattern(iossNumber) =>
+        Some(SoldToCountryListPage(iossNumber).waypoint(NormalMode))
+
+      case checkModePattern(iossNumber) =>
+        Some(SoldToCountryListPage(iossNumber).waypoint(CheckMode))
+
+      case _ =>
+        None
+    }
+  }
 }
 
-final case class SoldToCountryListPage(override val index: Option[Index] = None) extends AddItemPage(index) with QuestionPage[Boolean] {
-
-  override val normalModeUrlFragment: String = SoldToCountryListPage.normalModeUrlFragment
-  override val checkModeUrlFragment: String = SoldToCountryListPage.checkModeUrlFragment
+final case class SoldToCountryListPage(iossNumber: String, override val index: Option[Index] = None) extends AddItemPage(index) with QuestionPage[Boolean] {
 
   override def isTheSamePage(other: Page): Boolean = other match {
     case _: SoldToCountryListPage => true
@@ -44,7 +59,10 @@ final case class SoldToCountryListPage(override val index: Option[Index] = None)
   override def toString: String = "soldToCountryList"
 
   override def route(waypoints: Waypoints): Call =
-    routes.SoldToCountryListController.onPageLoad(waypoints)
+    routes.SoldToCountryListController.onPageLoad(waypoints, iossNumber)
+    
+  override val normalModeUrlFragment: String = SoldToCountryListPage.normalModeUrlFragment(iossNumber)
+  override val checkModeUrlFragment: String = SoldToCountryListPage.checkModeUrlFragment(iossNumber)
 
   override protected def nextPageCheckMode(waypoints: NonEmptyWaypoints, answers: UserAnswers): Page =
     nextPageNormalMode(waypoints, answers)
@@ -54,11 +72,15 @@ final case class SoldToCountryListPage(override val index: Option[Index] = None)
       case true =>
         answers
           .get(deriveNumberOfItems)
-          .map(n => SoldToCountryPage(Index(n), answers.iossNumber))
+          .map(n => SoldToCountryPage(answers.iossNumber, Index(n)))
           .orRecover
+        
       case false =>
-        if (answers.isDefined(CorrectPreviousReturnPage(0))) CheckYourAnswersPage
-        else CorrectPreviousReturnPage(0)
+        if (answers.isDefined(CorrectPreviousReturnPage(0))) {
+          CheckYourAnswersPage
+        } else {
+          CorrectPreviousReturnPage(0)
+        }
     }.orRecover
   }
 

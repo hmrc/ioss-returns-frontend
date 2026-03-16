@@ -34,7 +34,7 @@ trait GetVatRates {
     request.userAnswers
       .get(VatRateFromCountryQuery(countryIndex, vatRateIndex))
       .map(block(_))
-      .getOrElse(Redirect(CheckSalesPage(countryIndex, request.iossNumber).route(waypoints).url).toFuture)
+      .getOrElse(Redirect(CheckSalesPage(request.iossNumber, countryIndex).route(waypoints).url).toFuture)
   }
 
   protected def getAllVatRatesFromCountry(waypoints: Waypoints, countryIndex: Index)

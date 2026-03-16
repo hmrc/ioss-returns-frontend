@@ -44,7 +44,7 @@ class VatRatesFromCountryController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(waypoints: Waypoints, countryIndex: Index, iossNumber: String): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
+  def onPageLoad(waypoints: Waypoints, iossNumber: String, countryIndex: Index): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
     implicit request => {
       getCountry(waypoints, countryIndex) { country =>
         getAllVatRatesFromCountry(waypoints, countryIndex) { currentVatRatesAnswers =>
@@ -58,7 +58,7 @@ class VatRatesFromCountryController @Inject()(
 
             val nextVatRateIndex = Index(currentVatRatesAnswers.vatRatesFromCountry.map(_.size).getOrElse(0))
 
-            val answers = request.userAnswers.get(VatRatesFromCountryPage(countryIndex, nextVatRateIndex, request.iossNumber))
+            val answers = request.userAnswers.get(VatRatesFromCountryPage(request.iossNumber, countryIndex, nextVatRateIndex))
 
             val form: Form[List[VatRateFromCountry]] = formProvider(allVatRates, request.isIntermediary)
 
@@ -71,7 +71,7 @@ class VatRatesFromCountryController @Inject()(
               case 1 =>
                 answers match {
                   case Some(_) =>
-                    Redirect(RemainingVatRateFromCountryPage(countryIndex, nextVatRateIndex).route(waypoints)).toFuture
+                    Redirect(RemainingVatRateFromCountryPage(request.iossNumber, countryIndex, nextVatRateIndex).route(waypoints)).toFuture
                   case _ =>
                     addVatRateAndRedirect(currentVatRatesAnswers, remainingVatRates.toList, countryIndex, nextVatRateIndex, waypoints)
                 }
@@ -85,7 +85,7 @@ class VatRatesFromCountryController @Inject()(
     }
   }
 
-  def onSubmit(waypoints: Waypoints, countryIndex: Index, iossNumber: String): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
+  def onSubmit(waypoints: Waypoints, iossNumber: String, countryIndex: Index): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
     implicit request =>
       getCountry(waypoints, countryIndex) { country =>
         getAllVatRatesFromCountry(waypoints, countryIndex) { currentVatRatesAnswers =>
@@ -147,10 +147,10 @@ class VatRatesFromCountryController @Inject()(
       _ <- cc.sessionRepository.set(updatedAnswers)
     } yield {
       if(additionalVatRates.isEmpty && firstIncompleteSales.isEmpty) {
-        Redirect(CheckSalesPage(countryIndex, request.iossNumber, None).route(waypoints))
+        Redirect(CheckSalesPage(request.iossNumber, countryIndex, None).route(waypoints))
       } else {
         Redirect(
-          VatRatesFromCountryPage(countryIndex, firstIncompleteSales.getOrElse(nextVatRateIndex), request.iossNumber)
+          VatRatesFromCountryPage(request.iossNumber, countryIndex, firstIncompleteSales.getOrElse(nextVatRateIndex))
           .navigate(waypoints, request.userAnswers, updatedAnswers).route
         )
       }

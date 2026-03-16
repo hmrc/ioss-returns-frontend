@@ -62,15 +62,15 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
   def auth: ActionBuilder[IdentifierRequest, AnyContent] =
     actionBuilder andThen identify
   
-  def authAndGetRegistration(iossNumber: Option[String] = None): ActionBuilder[RegistrationRequest, AnyContent] = {
+  def authAndGetRegistration(iossNumber: String): ActionBuilder[RegistrationRequest, AnyContent] = {
     auth andThen
-      getRegistration(iossNumber.get) // TODO -> Remove get and Option param,
+      getRegistration(iossNumber)
   }
 
   // TODO remove default ""
   def authAndGetRegistrationAndCheckBounced(iossNumber: String = ""): ActionBuilder[RegistrationRequest, AnyContent] = {
-    authAndGetRegistration(Some(iossNumber)) andThen
-      checkBouncedEmail()
+    authAndGetRegistration(iossNumber) andThen
+      checkBouncedEmail(iossNumber)
   }
 
   // TODO remove default ""
@@ -89,7 +89,7 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
   }
 
   def authAndIntermediaryRequired(iossNumber: String): ActionBuilder[RegistrationRequest, AnyContent] = {
-    authAndGetRegistration(Some(iossNumber)) andThen
+    authAndGetRegistration(iossNumber) andThen
       intermediaryRequired()
   }
   

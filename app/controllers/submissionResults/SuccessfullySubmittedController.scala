@@ -94,7 +94,7 @@ class SuccessfullySubmittedController @Inject()(
 
         val appropriateDashboardUrl: String =
           dashboardNavigationService.getAppropriateDashboardUrl(
-            isIntermediary, intermediaryEnrolmentsExist, iossEnrolmentsExist
+            isIntermediary, intermediaryEnrolmentsExist, iossEnrolmentsExist, request.iossNumber
           )
 
         Ok(view(

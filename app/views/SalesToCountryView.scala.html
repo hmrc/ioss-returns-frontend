@@ -42,7 +42,7 @@
     Some(caption)
 )) {
 
-    @formHelper(action = routes.SalesToCountryController.onSubmit(waypoints, countryIndex, nextVatRateIndex, iossNumber), Symbol("autoComplete") -> "off") {
+    @formHelper(action = routes.SalesToCountryController.onSubmit(waypoints, iossNumber, countryIndex, nextVatRateIndex), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))
@@ -68,7 +68,7 @@
         )
 
         @button(
-            "site.continue", SalesToCountryPage(countryIndex, nextVatRateIndex, iossNumber).route(waypoints).url, period, waypoints
+            "site.continue", SalesToCountryPage(iossNumber, countryIndex, nextVatRateIndex).route(waypoints).url, period, waypoints
         )
     }
 }

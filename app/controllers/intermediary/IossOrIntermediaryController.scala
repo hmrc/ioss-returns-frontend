@@ -16,17 +16,17 @@
 
 package controllers.intermediary
 
-import controllers.actions.AuthenticatedControllerComponents
 import config.FrontendAppConfig
+import controllers.actions.AuthenticatedControllerComponents
 import forms.IossOrIntermediaryFormProvider
 import pages.EmptyWaypoints
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.auth.core.Enrolments
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.IossOrIntermediaryView
 import utils.EnrolmentIdentifiers.*
 import utils.FutureSyntax.FutureOps
+import views.html.IossOrIntermediaryView
 
 import javax.inject.Inject
 
@@ -40,16 +40,16 @@ class IossOrIntermediaryController @Inject()(
   protected val controllerComponents: MessagesControllerComponents = cc
   private val form = formProvider()
   
-  def onPageLoad(): Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced() {
+  def onPageLoad(iossNumber: String): Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced(iossNumber) {
     implicit request =>
 
       val allEnrolments: Seq[String] = findAllEnrolments(request.enrolments)
       val totalNumberOfEnrolments: Int = allEnrolments.size
 
-      Ok(view(form, allEnrolments, totalNumberOfEnrolments))
+      Ok(view(form, request.iossNumber, allEnrolments, totalNumberOfEnrolments))
   }
 
-  def onSubmit(): Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced().async {
+  def onSubmit(iossNumber: String): Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced(iossNumber).async {
     implicit request =>
 
       val intermediaryNumber = request.intermediaryNumber.getOrElse("")
@@ -58,7 +58,7 @@ class IossOrIntermediaryController @Inject()(
 
       form.bindFromRequest().fold(
         formWithErrors =>
-          BadRequest(view(formWithErrors, allEnrolments, totalNumberOfEnrolments)).toFuture,
+          BadRequest(view(formWithErrors, request.iossNumber, allEnrolments, totalNumberOfEnrolments)).toFuture,
 
         value =>
 

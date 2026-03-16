@@ -43,7 +43,7 @@ class ReturnSubmissionFailureController @Inject()(
 
       val determineRedirect: String =
         dashboardNavigationService.getAppropriateDashboardUrl(
-          request.isIntermediary, intermediaryEnrolmentsExist, iossEnrolmentsExist
+          request.isIntermediary, intermediaryEnrolmentsExist, iossEnrolmentsExist, request.iossNumber
         )
 
       Ok(view(determineRedirect))

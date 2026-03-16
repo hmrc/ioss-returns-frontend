@@ -89,14 +89,14 @@ class VatReturnService @Inject()(
                                      countryIndex: Index,
                                      vatRateIndex: Index
                                    ): ValidationResult[List[SalesDetails]] =
-    answers.get(VatRatesFromCountryPage(countryIndex, vatRateIndex, answers.iossNumber)) match {
+    answers.get(VatRatesFromCountryPage(answers.iossNumber, countryIndex, vatRateIndex)) match {
       case Some(list) if list.nonEmpty =>
         list.zipWithIndex.map {
           case (vatRate, index) =>
             processSalesAtVatRate(answers, countryIndex, Index(index), vatRate)
         }.sequence
       case _ =>
-        DataMissingError(VatRatesFromCountryPage(countryIndex, vatRateIndex, answers.iossNumber)).invalidNec
+        DataMissingError(VatRatesFromCountryPage(answers.iossNumber, countryIndex, vatRateIndex)).invalidNec
     }
 
   private def processSalesAtVatRate(

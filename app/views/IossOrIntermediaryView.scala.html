@@ -24,11 +24,11 @@
         govukButton: GovukButton
 )
 
-@(form: Form[_], numberOfEnrolments: Seq[String], totalNumberOfEnrolments: Int)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], iossNumber: String, numberOfEnrolments: Seq[String], totalNumberOfEnrolments: Int)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, messages("iossOrIntermediary.title", totalNumberOfEnrolments))) {
 
-   @formHelper(action = controllers.intermediary.routes.IossOrIntermediaryController.onSubmit(), Symbol("autoComplete") -> "off") {
+   @formHelper(action = controllers.intermediary.routes.IossOrIntermediaryController.onSubmit(iossNumber), Symbol("autoComplete") -> "off") {
 
        @if(form.errors.nonEmpty) {
            @govukErrorSummary(ErrorSummaryViewModel(form))

@@ -42,12 +42,15 @@ class CheckIsCurrentReturnPeriodFilterImpl(startReturnPeriod: Period,
     returnStatusConnector.getCurrentReturns(request.iossNumber).map { (currentReturnsResponse: Either[ErrorResponse, CurrentReturns]) =>
       currentReturnsResponse match {
         case Left(value: ErrorResponse) => throw new RuntimeException(s"failed getting current returns: $value")
-        case Right(currentReturns: CurrentReturns) => processCurrentReturns(currentReturns)
+        case Right(currentReturns: CurrentReturns) => processCurrentReturns(request.iossNumber, currentReturns)
       }
     }
   }
 
-  private def processCurrentReturns(currentReturns: CurrentReturns): Option[Result] = {
+  private def processCurrentReturns(
+                                     iossNumber: String,
+                                     currentReturns: CurrentReturns
+                                   ): Option[Result] = {
     val exceptionOrReturn = NextReturnCalculation.calculateNonNextReturn(currentReturns.returns)
 
     exceptionOrReturn match {
@@ -56,7 +59,7 @@ class CheckIsCurrentReturnPeriodFilterImpl(startReturnPeriod: Period,
         actionableReturn match {
           case NextReturn(_) =>
             val redirect = remapCompleteOrExcludedToRedirect(currentReturns)
-              .getOrElse(Redirect(controllers.routes.NoOtherPeriodsAvailableController.onPageLoad(EmptyWaypoints)))
+              .getOrElse(Redirect(controllers.routes.NoOtherPeriodsAvailableController.onPageLoad(EmptyWaypoints, iossNumber)))
 
             Some(redirect)
           case other: OtherReturn =>

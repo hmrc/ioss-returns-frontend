@@ -69,16 +69,16 @@ class RedirectService @Inject()(
     errors.flatMap {
       case DataMissingError(AllSalesQuery) =>
         logger.error(s"Data missing - no data provided for sales")
-        Some(routes.SoldToCountryController.onPageLoad(waypoints, Index(0), request.iossNumber))
-      case DataMissingError(VatRatesFromCountryPage(countryIndex, vatRateIndex, iossNumber)) =>
+        Some(routes.SoldToCountryController.onPageLoad(waypoints, request.iossNumber, Index(0)))
+      case DataMissingError(VatRatesFromCountryPage(iossNumber, countryIndex, vatRateIndex)) =>
         logger.error(s"Data missing - vat rates with index ${vatRateIndex.position}")
-        Some(routes.VatRatesFromCountryController.onPageLoad(waypoints, countryIndex, iossNumber))
+        Some(routes.VatRatesFromCountryController.onPageLoad(waypoints, iossNumber, countryIndex))
       case DataMissingError(SalesAtVatRateQuery(countryIndex, vatRateIndex)) =>
         logger.error(s"Data missing - vat rates with index ${vatRateIndex.position} for country ${countryIndex.position}")
-        Some(routes.SalesToCountryController.onPageLoad(waypoints, countryIndex, vatRateIndex, request.iossNumber))
+        Some(routes.SalesToCountryController.onPageLoad(waypoints, request.iossNumber, countryIndex, vatRateIndex))
       case DataMissingError(VatOnSalesFromQuery(countryIndex, vatRateIndex)) =>
         logger.error(s"Data missing - vat charged on sales at vat rate ${vatRateIndex.position} for country ${countryIndex.position}")
-        Some(routes.VatOnSalesController.onPageLoad(waypoints, countryIndex, vatRateIndex, request.iossNumber))
+        Some(routes.VatOnSalesController.onPageLoad(waypoints, request.iossNumber, countryIndex, vatRateIndex))
 
       case DataMissingError(AllCorrectionPeriodsQuery) =>
         logger.error(s"Data missing - no data provided for corrections")

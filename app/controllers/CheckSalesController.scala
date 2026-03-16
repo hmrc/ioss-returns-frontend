@@ -47,7 +47,7 @@ class CheckSalesController @Inject()(
 
   val form: Form[Boolean] = formProvider()
 
-  def onPageLoad(waypoints: Waypoints, countryIndex: Index, iossNumber: String): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
+  def onPageLoad(waypoints: Waypoints, iossNumber: String, countryIndex: Index): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
     implicit request =>
       getCountry(waypoints, countryIndex) { country =>
         getAllVatRatesFromCountry(waypoints, countryIndex) { vatRates =>
@@ -94,7 +94,7 @@ class CheckSalesController @Inject()(
       }
   }
 
-  def onSubmit(waypoints: Waypoints, countryIndex: Index, iossNumber: String, incompletePromptShown: Boolean): Action[AnyContent] =
+  def onSubmit(waypoints: Waypoints, iossNumber: String, countryIndex: Index, incompletePromptShown: Boolean): Action[AnyContent] =
     cc.authAndRequireData(iossNumber).async {
     implicit request =>
       getCountry(waypoints, countryIndex) { country =>
@@ -115,16 +115,16 @@ class CheckSalesController @Inject()(
                   val firstIncompleteIndex: Index = Index(incomplete.headOption.map(_._2)
                     .getOrElse(throw IllegalStateException("Index doesn't exist")))
 
-                  val salesToCountry: Option[BigDecimal] = request.userAnswers.get(SalesToCountryPage(countryIndex, firstIncompleteIndex, request.iossNumber))
+                  val salesToCountry: Option[BigDecimal] = request.userAnswers.get(SalesToCountryPage(request.iossNumber, countryIndex, firstIncompleteIndex))
 
                   salesToCountry match {
                     case Some(_) =>
-                      Redirect(routes.VatOnSalesController.onPageLoad(waypoints, countryIndex, firstIncompleteIndex, request.iossNumber)).toFuture
+                      Redirect(routes.VatOnSalesController.onPageLoad(waypoints, request.iossNumber, countryIndex, firstIncompleteIndex)).toFuture
                     case None =>
-                      Redirect(routes.SalesToCountryController.onPageLoad(waypoints, countryIndex, firstIncompleteIndex, request.iossNumber)).toFuture
+                      Redirect(routes.SalesToCountryController.onPageLoad(waypoints, request.iossNumber, countryIndex, firstIncompleteIndex)).toFuture
                   }
                 } else {
-                  Redirect(routes.CheckSalesController.onPageLoad(waypoints, countryIndex, request.iossNumber)).toFuture
+                  Redirect(routes.CheckSalesController.onPageLoad(waypoints, request.iossNumber, countryIndex)).toFuture
                 }
               }) {
               form.bindFromRequest().fold(
@@ -133,12 +133,12 @@ class CheckSalesController @Inject()(
 
                 value =>
                   for {
-                    updatedAnswers <- Future.fromTry(request.userAnswers.set(CheckSalesPage(countryIndex, request.iossNumber), value))
+                    updatedAnswers <- Future.fromTry(request.userAnswers.set(CheckSalesPage(request.iossNumber, countryIndex), value))
                     updatedAnswersWithRemainingVatRates <- Future.fromTry(
                       updatedAnswers.set(RemainingVatRatesFromCountryQuery(countryIndex), remainingVatRates)
                     )
                     _ <- cc.sessionRepository.set(updatedAnswersWithRemainingVatRates)
-                  } yield Redirect(CheckSalesPage(countryIndex, request.iossNumber).navigate(waypoints, request.userAnswers, updatedAnswersWithRemainingVatRates).route)
+                  } yield Redirect(CheckSalesPage(request.iossNumber, countryIndex).navigate(waypoints, request.userAnswers, updatedAnswersWithRemainingVatRates).route)
               )
             }
           }

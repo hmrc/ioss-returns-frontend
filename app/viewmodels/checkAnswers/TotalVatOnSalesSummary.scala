@@ -22,8 +22,8 @@ import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
 import utils.CurrencyFormatter
-import viewmodels.govuk.summarylist._
-import viewmodels.implicits._
+import viewmodels.govuk.summarylist.*
+import viewmodels.implicits.*
 
 object TotalVatOnSalesSummary extends CurrencyFormatter {
 
@@ -37,7 +37,7 @@ object TotalVatOnSalesSummary extends CurrencyFormatter {
             .withCssClass("govuk-table__cell--numeric")
             .withCssClass("govuk-!-padding-right-9"),
           actions = Seq(
-            ActionItemViewModel("site.change", SoldToCountryListPage().changeLink(waypoints, sourcePage).url)
+            ActionItemViewModel("site.change", SoldToCountryListPage(answers.iossNumber).changeLink(waypoints, sourcePage).url)
               .withVisuallyHiddenText(messages("checkYourAnswers.vatOnSales.hidden"))
               .withAttribute(("id", "change-vat-charged-eu"))
           )

@@ -16,7 +16,7 @@
 
 package pages
 
-import models.{CheckMode, Mode, NormalMode}
+import models.Mode
 import pages.corrections.CorrectionListCountriesPage
 
 case class Waypoint(
@@ -29,13 +29,12 @@ object Waypoint {
 
   private val fragments: Map[String, Waypoint] =
     Map(
-      SoldToCountryListPage.normalModeUrlFragment -> SoldToCountryListPage().waypoint(NormalMode),
-      SoldToCountryListPage.checkModeUrlFragment -> SoldToCountryListPage().waypoint(CheckMode),
       CheckYourAnswersPage.urlFragment -> CheckYourAnswersPage.waypoint,
     )
 
   def fromString(s: String): Option[Waypoint] =
     fragments.get(s)
+      .orElse(SoldToCountryListPage.waypointFromString(s))
       .orElse(CheckSalesPage.waypointFromString(s))
       .orElse(CorrectionListCountriesPage.waypointFromString(s))
 

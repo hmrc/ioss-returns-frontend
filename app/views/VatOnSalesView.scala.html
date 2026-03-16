@@ -58,7 +58,7 @@
     Some(caption)
 )) {
 
-    @formHelper(action = routes.VatOnSalesController.onSubmit(waypoints, countryIndex, nextVatRateIndex, iossNumber), Symbol("autoComplete") -> "off") {
+    @formHelper(action = routes.VatOnSalesController.onSubmit(waypoints, iossNumber, countryIndex, nextVatRateIndex), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))
@@ -104,7 +104,7 @@
         )
 
         @button(
-            "site.continue", routes.VatOnSalesController.onPageLoad(waypoints, countryIndex, nextVatRateIndex, iossNumber).url, period, waypoints
+            "site.continue", routes.VatOnSalesController.onPageLoad(waypoints, iossNumber, countryIndex, nextVatRateIndex).url, period, waypoints
         )
     }
 }

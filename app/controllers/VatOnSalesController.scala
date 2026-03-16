@@ -42,7 +42,7 @@ class VatOnSalesController @Inject()(
   protected val controllerComponents: MessagesControllerComponents = cc
 
 
-  def onPageLoad(waypoints: Waypoints, countryIndex: Index, vatRateIndex: Index, iossNumber: String): Action[AnyContent] = cc.authAndRequireData(iossNumber) {
+  def onPageLoad(waypoints: Waypoints, iossNumber: String, countryIndex: Index, vatRateIndex: Index): Action[AnyContent] = cc.authAndRequireData(iossNumber) {
     implicit request =>
 
       getCountryVatRateAndNetSales(countryIndex, vatRateIndex) {
@@ -52,7 +52,7 @@ class VatOnSalesController @Inject()(
           val period = request.userAnswers.period
           val standardVat = vatRateService.standardVatOnSales(netSales, vatRateFromCountry)
 
-          val preparedForm = request.userAnswers.get(VatOnSalesPage(countryIndex, vatRateIndex, request.iossNumber)) match {
+          val preparedForm = request.userAnswers.get(VatOnSalesPage(request.iossNumber, countryIndex, vatRateIndex)) match {
             case None => form
             case Some(value) => form.fill(value)
           }
@@ -61,7 +61,7 @@ class VatOnSalesController @Inject()(
       }
   }
 
-  def onSubmit(waypoints: Waypoints, countryIndex: Index, vatRateIndex: Index, iossNumber: String): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
+  def onSubmit(waypoints: Waypoints, iossNumber: String, countryIndex: Index, vatRateIndex: Index): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
     implicit request =>
 
       val period = request.userAnswers.period
@@ -77,9 +77,9 @@ class VatOnSalesController @Inject()(
 
             value =>
               for {
-                updatedAnswers <- Future.fromTry(request.userAnswers.set(VatOnSalesPage(countryIndex, vatRateIndex, request.iossNumber), value))
+                updatedAnswers <- Future.fromTry(request.userAnswers.set(VatOnSalesPage( request.iossNumber, countryIndex, vatRateIndex), value))
                 _ <- cc.sessionRepository.set(updatedAnswers)
-              } yield Redirect(VatOnSalesPage(countryIndex, vatRateIndex, request.iossNumber).navigate(waypoints, request.userAnswers, updatedAnswers).route)
+              } yield Redirect(VatOnSalesPage(request.iossNumber, countryIndex, vatRateIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route)
           )
       }
   }

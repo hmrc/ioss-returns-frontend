@@ -35,7 +35,7 @@
         messages("soldToCountry.title", period.displayText)
     })) {
 
-  @formHelper(action = routes.SoldToCountryController.onSubmit(waypoints, index, iossNumber)) {
+  @formHelper(action = routes.SoldToCountryController.onSubmit(waypoints, iossNumber, index)) {
 
     @if(form.errors.nonEmpty) {
       @govukErrorSummary(ErrorSummaryViewModel(form))
@@ -63,7 +63,7 @@
     )
 
     @button(
-      "site.continue", routes.SoldToCountryController.onPageLoad(waypoints, index, iossNumber).url, period, waypoints
+      "site.continue", routes.SoldToCountryController.onPageLoad(waypoints, iossNumber, index).url, period, waypoints
     )
   }
 }

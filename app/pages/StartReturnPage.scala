@@ -38,6 +38,6 @@ case class StartReturnPage(iossNumber: String, period: Period, frontendAppConfig
       case true =>
         SoldGoodsPage(answers.iossNumber)
       case false =>
-        NoOtherPeriodsAvailablePage
+        NoOtherPeriodsAvailablePage(answers.iossNumber)
     }.orRecover
 }

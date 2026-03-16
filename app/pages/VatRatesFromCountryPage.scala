@@ -21,15 +21,15 @@ import models.{Index, UserAnswers, VatRateFromCountry}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
-case class VatRatesFromCountryPage(countryIndex: Index, vatRatesIndex: Index, iossNumber: String) extends QuestionPage[List[VatRateFromCountry]] {
+case class VatRatesFromCountryPage(iossNumber: String, countryIndex: Index, vatRatesIndex: Index) extends QuestionPage[List[VatRateFromCountry]] {
 
   override def path: JsPath = JsPath \ PageConstants.sales \ countryIndex.position \ toString
 
   override def toString: String = PageConstants.vatRates
 
-  override def route(waypoints: Waypoints): Call = routes.VatRatesFromCountryController.onPageLoad(waypoints, countryIndex, iossNumber)
+  override def route(waypoints: Waypoints): Call = routes.VatRatesFromCountryController.onPageLoad(waypoints, iossNumber, countryIndex)
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page = {
-    SalesToCountryPage(countryIndex, vatRatesIndex, answers.iossNumber)
+    SalesToCountryPage(answers.iossNumber, countryIndex, vatRatesIndex)
   }
 }

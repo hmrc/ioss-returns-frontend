@@ -73,16 +73,16 @@ class CsvParserService @Inject()() {
 
         accTry.flatMap { ua =>
           val rates: List[VatRateFromCountry] = vatRows.map(r => vatRateFrom(r.vatRate)).toList
-          val withCountryAndRates = ua.set(SoldToCountryPage(countryIndex, userAnswers.iossNumber), countryFromName(countryName))
-            .flatMap(_.set(VatRatesFromCountryPage(countryIndex, Index(0), userAnswers.iossNumber), rates))
+          val withCountryAndRates = ua.set(SoldToCountryPage(userAnswers.iossNumber, countryIndex), countryFromName(countryName))
+            .flatMap(_.set(VatRatesFromCountryPage(userAnswers.iossNumber, countryIndex, Index(0)), rates))
 
           vatRows.zipWithIndex.foldLeft(withCountryAndRates) {
             case (uaTry, (row, vatIndex)) =>
               val vatRateIndex = Index(vatIndex)
 
               uaTry
-                .flatMap(_.set(SalesToCountryPage(countryIndex, vatRateIndex, userAnswers.iossNumber), row.salesToCountry))
-                .flatMap(_.set(VatOnSalesPage(countryIndex, vatRateIndex, userAnswers.iossNumber), vatOnSalesFrom(row.vatOnSales)))
+                .flatMap(_.set(SalesToCountryPage(userAnswers.iossNumber, countryIndex, vatRateIndex), row.salesToCountry))
+                .flatMap(_.set(VatOnSalesPage(userAnswers.iossNumber, countryIndex, vatRateIndex), vatOnSalesFrom(row.vatOnSales)))
           }
         }
     }

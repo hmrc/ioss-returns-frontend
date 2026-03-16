@@ -17,7 +17,7 @@
 package controllers
 
 import config.FrontendAppConfig
-import controllers.actions._
+import controllers.actions.*
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -26,15 +26,15 @@ import views.html.InterceptUnusableEmailView
 import javax.inject.Inject
 
 class InterceptUnusableEmailController @Inject()(
-                                       override val messagesApi: MessagesApi,
-                                       cc: AuthenticatedControllerComponents,
-                                       appConfig: FrontendAppConfig,
-                                       view: InterceptUnusableEmailView
-                                     ) extends FrontendBaseController with I18nSupport {
+                                                  override val messagesApi: MessagesApi,
+                                                  cc: AuthenticatedControllerComponents,
+                                                  appConfig: FrontendAppConfig,
+                                                  view: InterceptUnusableEmailView
+                                                ) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad: Action[AnyContent] = cc.authAndGetRegistration() {
+  def onPageLoad(iossNumber: String): Action[AnyContent] = cc.authAndGetRegistration(iossNumber) {
     implicit request =>
 
       Ok(view(request.registrationWrapper.registration.schemeDetails.businessEmailId, appConfig.amendRegistrationUrl))

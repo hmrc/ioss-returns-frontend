@@ -19,7 +19,7 @@ package pages
 import controllers.routes
 import play.api.mvc.Call
 
-case object NoOtherPeriodsAvailablePage extends Page {
+case class NoOtherPeriodsAvailablePage(iossNumber: String) extends Page {
   override def route(waypoints: Waypoints): Call =
-    routes.NoOtherPeriodsAvailableController.onPageLoad(waypoints)
+    routes.NoOtherPeriodsAvailableController.onPageLoad(waypoints, iossNumber)
 }

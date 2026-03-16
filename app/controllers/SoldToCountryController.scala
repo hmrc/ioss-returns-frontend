@@ -39,7 +39,7 @@ class SoldToCountryController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(waypoints: Waypoints, index: Index, iossNumber: String): Action[AnyContent] = cc.authAndRequireData(iossNumber) {
+  def onPageLoad(waypoints: Waypoints, iossNumber: String, index: Index): Action[AnyContent] = cc.authAndRequireData(iossNumber) {
     implicit request =>
 
       val period = request.userAnswers.period
@@ -52,7 +52,7 @@ class SoldToCountryController @Inject()(
         request.isIntermediary
       )
 
-      val preparedForm = request.userAnswers.get(SoldToCountryPage(index, request.iossNumber)) match {
+      val preparedForm = request.userAnswers.get(SoldToCountryPage(request.iossNumber, index)) match {
         case None => form
         case Some(value) => form.fill(value)
       }
@@ -60,7 +60,7 @@ class SoldToCountryController @Inject()(
       Ok(view(preparedForm, waypoints, request.iossNumber, period, index, request.isIntermediary, request.companyName))
   }
 
-  def onSubmit(waypoints: Waypoints, index: Index, iossNumber: String): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
+  def onSubmit(waypoints: Waypoints, iossNumber: String, index: Index): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
     implicit request =>
 
       val period = request.userAnswers.period
@@ -79,10 +79,10 @@ class SoldToCountryController @Inject()(
 
         value =>
           for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(SoldToCountryPage(index, request.iossNumber), value))
+            updatedAnswers <- Future.fromTry(request.userAnswers.set(SoldToCountryPage(request.iossNumber, index), value))
             cleanup <- Future.fromTry(updatedAnswers.remove(AllSalesWithOptionalVatQuery(index)))
             _ <- cc.sessionRepository.set(cleanup)
-          } yield Redirect(SoldToCountryPage(index, request.iossNumber).navigate(waypoints, request.userAnswers, cleanup).route)
+          } yield Redirect(SoldToCountryPage(request.iossNumber, index).navigate(waypoints, request.userAnswers, cleanup).route)
       )
   }
 }

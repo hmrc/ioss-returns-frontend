@@ -33,7 +33,7 @@
     messages("vatRatesFromCountry.title")
 })) {
 
-    @formHelper(action = routes.VatRatesFromCountryController.onSubmit(waypoints, index, iossNumber), Symbol("autoComplete") -> "off") {
+    @formHelper(action = routes.VatRatesFromCountryController.onSubmit(waypoints, iossNumber, index), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form, errorLinkOverrides = Map("value" -> "value_0")))
@@ -61,7 +61,7 @@
         )
 
         @button(
-            "site.continue", routes.VatRatesFromCountryController.onPageLoad(waypoints, index, iossNumber).url, period, waypoints
+            "site.continue", routes.VatRatesFromCountryController.onPageLoad(waypoints, iossNumber, index).url, period, waypoints
         )
     }
 }

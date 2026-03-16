@@ -46,7 +46,7 @@ class SoldToCountryListController @Inject()(
   val form: Form[Boolean] = formProvider()
 
   // TODO -> URL IOSS NUMBER
-  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndRequireData().async {
+  def onPageLoad(waypoints: Waypoints, iossNumber: String): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
     implicit request =>
 
       val period = request.userAnswers.period
@@ -56,20 +56,20 @@ class SoldToCountryListController @Inject()(
 
           val canAddSales = number < Country.euCountriesWithNI.size
           val salesSummary = SoldToCountryListSummary
-            .addToListRows(request.userAnswers, waypoints, SoldToCountryListPage())
+            .addToListRows(request.userAnswers, waypoints, SoldToCountryListPage(request.iossNumber))
 
           withCompleteDataAsync[Country](
             data = getCountriesWithIncompleteSales _,
             onFailure = (incomplete: Seq[Country]) => {
-              Ok(view(form = form, waypoints = waypoints, period = period, salesList = salesSummary, canAddSales = canAddSales, incompleteCountries = incomplete, isIntermediary = request.isIntermediary, companyName = request.companyName)).toFuture
+              Ok(view(form = form, waypoints = waypoints, request.iossNumber, period = period, salesList = salesSummary, canAddSales = canAddSales, incompleteCountries = incomplete, isIntermediary = request.isIntermediary, companyName = request.companyName)).toFuture
             }) {
-            Ok(view(form = form, waypoints = waypoints, period = period, salesList = salesSummary, canAddSales = canAddSales, isIntermediary = request.isIntermediary, companyName = request.companyName )).toFuture
+            Ok(view(form = form, waypoints = waypoints, request.iossNumber, period = period, salesList = salesSummary, canAddSales = canAddSales, isIntermediary = request.isIntermediary, companyName = request.companyName )).toFuture
           }
 
       }
   }
 
-  def onSubmit(waypoints: Waypoints, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndRequireData().async {
+  def onSubmit(waypoints: Waypoints, iossNumber: String, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
     implicit request =>
 
       val period = request.userAnswers.period
@@ -81,32 +81,32 @@ class SoldToCountryListController @Inject()(
             firstIndexedIncompleteCountrySales(incompleteCountries) match {
               case Some(incompleteCountry) =>
                 if (incompleteCountry._1.vatRatesFromCountry.isEmpty) {
-                  Redirect(routes.VatRatesFromCountryController.onPageLoad(waypoints, Index(incompleteCountry._2), request.iossNumber)).toFuture
+                  Redirect(routes.VatRatesFromCountryController.onPageLoad(waypoints, request.iossNumber, Index(incompleteCountry._2))).toFuture
                 } else {
-                  Redirect(routes.CheckSalesController.onPageLoad(waypoints, Index(incompleteCountry._2), request.iossNumber)).toFuture
+                  Redirect(routes.CheckSalesController.onPageLoad(waypoints, request.iossNumber, Index(incompleteCountry._2))).toFuture
                 }
               case None =>
                 Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
             }
           } else {
-            Redirect(routes.SoldToCountryListController.onPageLoad(waypoints)).toFuture
+            Redirect(routes.SoldToCountryListController.onPageLoad(waypoints, request.iossNumber)).toFuture
           }
         })(getDerivedItems(waypoints, DeriveNumberOfSales) {
         number =>
 
           val canAddSales = number < Country.euCountriesWithNI.size
           val salesSummary = SoldToCountryListSummary
-            .addToListRows(request.userAnswers, waypoints, SoldToCountryListPage())
+            .addToListRows(request.userAnswers, waypoints, SoldToCountryListPage(request.iossNumber))
 
           form.bindFromRequest().fold(
             formWithErrors =>
-              BadRequest(view(form = formWithErrors, waypoints = waypoints, period = period, salesList = salesSummary, canAddSales = canAddSales, isIntermediary = request.isIntermediary, companyName = request.companyName)).toFuture,
+              BadRequest(view(form = formWithErrors, waypoints = waypoints, request.iossNumber, period = period, salesList = salesSummary, canAddSales = canAddSales, isIntermediary = request.isIntermediary, companyName = request.companyName)).toFuture,
 
             value =>
               for {
-                updatedAnswers <- Future.fromTry(request.userAnswers.set(SoldToCountryListPage(), value))
+                updatedAnswers <- Future.fromTry(request.userAnswers.set(SoldToCountryListPage(request.iossNumber), value))
                 _ <- cc.sessionRepository.set(updatedAnswers)
-              } yield Redirect(SoldToCountryListPage().navigate(waypoints, request.userAnswers, updatedAnswers).route)
+              } yield Redirect(SoldToCountryListPage(request.iossNumber).navigate(waypoints, request.userAnswers, updatedAnswers).route)
           )
       })
   }

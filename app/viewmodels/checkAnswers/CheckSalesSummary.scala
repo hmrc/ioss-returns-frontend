@@ -23,8 +23,8 @@ import queries.SalesByCountryQuery
 import uk.gov.hmrc.govukfrontend.views.Aliases.CardTitle
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{Actions, Card, SummaryList}
-import viewmodels.govuk.summarylist._
-import viewmodels.implicits._
+import viewmodels.govuk.summarylist.*
+import viewmodels.implicits.*
 
 object CheckSalesSummary {
 
@@ -38,9 +38,9 @@ object CheckSalesSummary {
             case (vatRateFromCountry, vatRateIndex) =>
 
               val rows = SalesToCountrySummary
-                .row(answers, waypoints, countryIndex, Index(vatRateIndex), vatRateFromCountry, CheckSalesPage(countryIndex, answers.iossNumber, Some(Index(vatRateIndex)))).toList ++
+                .row(answers, waypoints, countryIndex, Index(vatRateIndex), vatRateFromCountry, CheckSalesPage(answers.iossNumber, countryIndex, Some(Index(vatRateIndex)))).toList ++
                 VatOnSalesSummary
-                  .row(answers, waypoints, countryIndex, Index(vatRateIndex), CheckSalesPage(countryIndex, answers.iossNumber, Some(Index(vatRateIndex)))).toList
+                  .row(answers, waypoints, countryIndex, Index(vatRateIndex), CheckSalesPage(answers.iossNumber, countryIndex, Some(Index(vatRateIndex)))).toList
 
               SummaryListViewModel(
                 rows = rows
@@ -49,7 +49,7 @@ object CheckSalesSummary {
                   title = Some(CardTitle(content = HtmlContent(messages("checkSales.vatRate", vatRateFromCountry.rate)))),
                   actions = Some(Actions(
                     items = Seq(
-                      ActionItemViewModel("site.remove", DeleteVatRateSalesForCountryPage(countryIndex, Index(vatRateIndex)).route(waypoints).url)
+                      ActionItemViewModel("site.remove", DeleteVatRateSalesForCountryPage(answers.iossNumber, countryIndex, Index(vatRateIndex)).route(waypoints).url)
                         .withVisuallyHiddenText(messages("salesToCountry.remove.hidden", vatRateFromCountry.rateForDisplay)))
                   ))
                 )

@@ -16,7 +16,7 @@
 
 package controllers
 
-import controllers.actions._
+import controllers.actions.*
 import forms.RemainingVatRateFromCountryFormProvider
 import models.Index
 import pages.{RemainingVatRateFromCountryPage, Waypoints}
@@ -44,7 +44,7 @@ class RemainingVatRateFromCountryController @Inject()(
 
   val form: Form[Boolean] = formProvider()
 
-  def onPageLoad(waypoints: Waypoints, countryIndex: Index, vatRateIndex: Index): Action[AnyContent] = cc.authAndRequireData().async {
+  def onPageLoad(waypoints: Waypoints, iossNumber: String, countryIndex: Index, vatRateIndex: Index): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
     implicit request =>
       getCountry(waypoints, countryIndex) { country =>
         getAllVatRatesFromCountry(waypoints, countryIndex) { vatRates =>
@@ -54,18 +54,18 @@ class RemainingVatRateFromCountryController @Inject()(
 
             val remainingVatRate = remainingVatRates.head
 
-            val preparedForm = request.userAnswers.get(RemainingVatRateFromCountryPage(countryIndex, vatRateIndex)) match {
+            val preparedForm = request.userAnswers.get(RemainingVatRateFromCountryPage(request.iossNumber, countryIndex, vatRateIndex)) match {
               case None => form
               case Some(value) => form.fill(value)
             }
 
-            Ok(view(preparedForm, waypoints, period, countryIndex, vatRateIndex, remainingVatRate.rateForDisplay, country, request.isIntermediary, request.companyName)).toFuture
+            Ok(view(preparedForm, waypoints, request.iossNumber, period, countryIndex, vatRateIndex, remainingVatRate.rateForDisplay, country, request.isIntermediary, request.companyName)).toFuture
           }
         }
       }
   }
 
-  def onSubmit(waypoints: Waypoints, countryIndex: Index, vatRateIndex: Index): Action[AnyContent] = cc.authAndRequireData().async {
+  def onSubmit(waypoints: Waypoints, iossNumber: String, countryIndex: Index, vatRateIndex: Index): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
     implicit request =>
       getCountry(waypoints, countryIndex) { country =>
         getAllVatRatesFromCountry(waypoints, countryIndex) { vatRates =>
@@ -78,26 +78,26 @@ class RemainingVatRateFromCountryController @Inject()(
 
             form.bindFromRequest().fold(
               formWithErrors =>
-                BadRequest(view(formWithErrors, waypoints, period, countryIndex, vatRateIndex, remainingVatRate.rateForDisplay, country, request.isIntermediary, request.companyName)).toFuture,
+                BadRequest(view(formWithErrors, waypoints, request.iossNumber, period, countryIndex, vatRateIndex, remainingVatRate.rateForDisplay, country, request.isIntermediary, request.companyName)).toFuture,
 
               value =>
                 if (value) {
                   val updatedVatRates = vatRates.copy(vatRatesFromCountry =
                     vatRates.vatRatesFromCountry.map(_ :+ VatRateWithOptionalSalesFromCountry.fromVatRateFromCountry(remainingVatRate)))
                   for {
-                    updatedAnswers <- Future.fromTry(request.userAnswers.set(RemainingVatRateFromCountryPage(countryIndex, vatRateIndex), value))
+                    updatedAnswers <- Future.fromTry(request.userAnswers.set(RemainingVatRateFromCountryPage(request.iossNumber, countryIndex, vatRateIndex), value))
                     updatedVatRateAnswersWithFinalVatRate <- Future.fromTry(updatedAnswers.set(AllSalesByCountryQuery(countryIndex), updatedVatRates))
                     _ <- cc.sessionRepository.set(updatedVatRateAnswersWithFinalVatRate)
                   } yield {
-                    Redirect(RemainingVatRateFromCountryPage(countryIndex, vatRateIndex)
+                    Redirect(RemainingVatRateFromCountryPage(request.iossNumber, countryIndex, vatRateIndex)
                       .navigate(waypoints, request.userAnswers, updatedVatRateAnswersWithFinalVatRate).route)
                   }
                 } else {
                   for {
-                    updatedAnswers <- Future.fromTry(request.userAnswers.set(RemainingVatRateFromCountryPage(countryIndex, vatRateIndex), value))
+                    updatedAnswers <- Future.fromTry(request.userAnswers.set(RemainingVatRateFromCountryPage(request.iossNumber, countryIndex, vatRateIndex), value))
                     _ <- cc.sessionRepository.set(updatedAnswers)
                   } yield {
-                    Redirect(RemainingVatRateFromCountryPage(countryIndex, vatRateIndex)
+                    Redirect(RemainingVatRateFromCountryPage(request.iossNumber, countryIndex, vatRateIndex)
                       .navigate(waypoints, request.userAnswers, updatedAnswers).route)
                   }
                 }

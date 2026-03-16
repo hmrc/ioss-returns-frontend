@@ -40,18 +40,18 @@ class DeleteSoldToCountryController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(waypoints: Waypoints, countryIndex: Index): Action[AnyContent] = cc.authAndRequireData() {
+  def onPageLoad(waypoints: Waypoints, iossNumber: String, countryIndex: Index): Action[AnyContent] = cc.authAndRequireData(iossNumber) {
     implicit request =>
       getAnswer(SalesByCountryQuery(countryIndex)) {
         salesToCountryWithOptionalVat =>
 
           val form: Form[Boolean] = formProvider(salesToCountryWithOptionalVat.country)
 
-          Ok(view(form, waypoints, request.userAnswers.period, countryIndex, salesToCountryWithOptionalVat.country, request.isIntermediary, request.companyName))
+          Ok(view(form, waypoints, request.iossNumber, request.userAnswers.period, countryIndex, salesToCountryWithOptionalVat.country, request.isIntermediary, request.companyName))
       }
   }
 
-  def onSubmit(waypoints: Waypoints, countryIndex: Index): Action[AnyContent] = cc.authAndRequireData().async {
+  def onSubmit(waypoints: Waypoints, iossNumber: String, countryIndex: Index): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
     implicit request =>
       getAnswerAsync(SalesByCountryQuery(countryIndex)) {
         salesToCountryWithOptionalVat =>
@@ -60,16 +60,16 @@ class DeleteSoldToCountryController @Inject()(
 
           form.bindFromRequest().fold(
             formWithErrors =>
-              BadRequest(view(formWithErrors, waypoints, request.userAnswers.period, countryIndex, salesToCountryWithOptionalVat.country, request.isIntermediary, request.companyName)).toFuture,
+              BadRequest(view(formWithErrors, waypoints, request.iossNumber, request.userAnswers.period, countryIndex, salesToCountryWithOptionalVat.country, request.isIntermediary, request.companyName)).toFuture,
 
             value =>
               if (value) {
                 for {
                   updatedAnswers <- Future.fromTry(request.userAnswers.remove(SalesByCountryQuery(countryIndex)))
                   _ <- cc.sessionRepository.set(updatedAnswers)
-                } yield Redirect(DeleteSoldToCountryPage(countryIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route)
+                } yield Redirect(DeleteSoldToCountryPage(request.iossNumber, countryIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route)
               } else {
-                Redirect(DeleteSoldToCountryPage(countryIndex).navigate(waypoints, request.userAnswers, request.userAnswers).route).toFuture
+                Redirect(DeleteSoldToCountryPage(request.iossNumber, countryIndex).navigate(waypoints, request.userAnswers, request.userAnswers).route).toFuture
               }
           )
       }

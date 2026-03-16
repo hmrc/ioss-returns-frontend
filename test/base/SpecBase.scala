@@ -94,10 +94,10 @@ trait SpecBase
   def completeUserAnswers: UserAnswers = emptyUserAnswers
     .set(SoldGoodsPage(iossNumber), true).success.value
     .set(CorrectPreviousReturnPage(0), false).success.value
-    .set(SoldToCountryPage(index), Country("HR", "Croatia")).success.value
-    .set(VatRatesFromCountryPage(index, index), vatRates).success.value
-    .set(SalesToCountryPage(index, index), BigDecimal(100)).success.value
-    .set(VatOnSalesPage(index, index), VatOnSales(VatOnSalesChoice.Standard, BigDecimal(20))).success.value
+    .set(SoldToCountryPage(iossNumber, index), Country("HR", "Croatia")).success.value
+    .set(VatRatesFromCountryPage(iossNumber, index, index), vatRates).success.value
+    .set(SalesToCountryPage(iossNumber, index, index), BigDecimal(100)).success.value
+    .set(VatOnSalesPage(iossNumber, index, index), VatOnSales(VatOnSalesChoice.Standard, BigDecimal(20))).success.value
 
   val completedUserAnswersWithCorrections: UserAnswers = completeUserAnswers
     .set(CorrectPreviousReturnPage(0), true).success.value
