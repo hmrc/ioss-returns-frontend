@@ -20,8 +20,8 @@ import controllers.routes
 import models.corrections.CorrectionToCountry
 import models.requests.DataRequest
 import models.{Country, Index, UserAnswers}
-import pages.{SoldGoodsPage, Waypoints}
 import pages.corrections.CorrectPreviousReturnPage
+import pages.{SoldGoodsPage, Waypoints}
 import play.api.mvc.Results.Redirect
 import play.api.mvc.{AnyContent, Result}
 import queries.*
@@ -105,7 +105,7 @@ trait CompletionChecks {
     val numberOfExistingReturnPeriods = request.userAnswers.get(AllCorrectionPeriodsQuery).map(_.size).getOrElse(0)
 
     if (numberOfFulfilledObligations > 1) {
-      Some(request.userAnswers.get(CorrectPreviousReturnPage(numberOfExistingReturnPeriods)).isDefined)
+      Some(request.userAnswers.get(CorrectPreviousReturnPage(request.iossNumber, numberOfExistingReturnPeriods)).isDefined)
     } else {
       None
     }
@@ -118,7 +118,7 @@ trait CompletionChecks {
     if (!soldGoodsAnswered) {
       Some(Redirect(routes.SoldGoodsController.onPageLoad(waypoints, request.iossNumber)))
     } else if (correctPreviousReturnAnswered(numberOfFulfilledObligations).contains(false)) {
-      Some(Redirect(controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(waypoints)))
+      Some(Redirect(controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(waypoints, request.iossNumber)))
     } else {
       None
     }

@@ -24,13 +24,13 @@
         button: ButtonGroup
 )
 
-@(form: Form[_], waypoints: Waypoints, period: Period, periodIndex: Index, correctionPeriod: Period, isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, iossNumber: String, period: Period, periodIndex: Index, correctionPeriod: Period, isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
 
   @layout(pageTitle = title(form, messages("removePeriodCorrection.title", correctionPeriod.displayText))) {
     
     @if(isIntermediary){<p class="govuk-caption-l hmrc-caption-l">@companyName</p>}
 
-    @formHelper(action = controllers.corrections.routes.RemovePeriodCorrectionController.onSubmit(waypoints, periodIndex), Symbol("autoComplete") -> "off") {
+    @formHelper(action = controllers.corrections.routes.RemovePeriodCorrectionController.onSubmit(waypoints, iossNumber, periodIndex), Symbol("autoComplete") -> "off") {
 
       @if(form.errors.nonEmpty) {
         @govukErrorSummary(ErrorSummaryViewModel(form))
@@ -43,6 +43,6 @@
         )
       )
 
-      @button("site.continue", controllers.corrections.routes.RemovePeriodCorrectionController.onPageLoad(waypoints, periodIndex).url, period, waypoints)
+      @button("site.continue", controllers.corrections.routes.RemovePeriodCorrectionController.onPageLoad(waypoints, iossNumber, periodIndex).url, period, waypoints)
     }
   }

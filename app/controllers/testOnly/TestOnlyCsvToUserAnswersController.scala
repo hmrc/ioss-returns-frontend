@@ -50,7 +50,7 @@ class TestOnlyCsvToUserAnswersController @Inject()(
         .fromTry(csvParser.populateUserAnswersFromCsv(request.userAnswers, inlineCsv))
         .flatMap { updatedAnswers =>
           cc.sessionRepository.set(updatedAnswers).map { _ =>
-            Redirect(controllers.routes.CheckYourAnswersController.onPageLoad(waypoints))
+            Redirect(controllers.routes.CheckYourAnswersController.onPageLoad(waypoints, request.iossNumber))
           }
         }
         .recover { case _ =>

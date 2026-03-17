@@ -21,7 +21,7 @@ import pages.{JourneyRecoveryPage, NonEmptyWaypoints, Page, QuestionPage, Waypoi
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
-case class VatPayableForCountryPage(periodIndex: Index, countryIndex: Index) extends QuestionPage[Boolean] {
+case class VatPayableForCountryPage(iossNumber: String, periodIndex: Index, countryIndex: Index) extends QuestionPage[Boolean] {
 
   override def path: JsPath = JsPath \ toString
 
@@ -30,13 +30,13 @@ case class VatPayableForCountryPage(periodIndex: Index, countryIndex: Index) ext
   override protected def nextPageCheckMode(waypoints: NonEmptyWaypoints, answers: UserAnswers): Page =
     nextPageNormalMode(waypoints, answers)
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
-    answers.get(VatPayableForCountryPage(periodIndex, countryIndex)) match {
-      case Some(true) => CheckVatPayableAmountPage(periodIndex, countryIndex)
-      case Some(false) => VatAmountCorrectionCountryPage(periodIndex, countryIndex)
+    answers.get(VatPayableForCountryPage(answers.iossNumber, periodIndex, countryIndex)) match {
+      case Some(true) => CheckVatPayableAmountPage(answers.iossNumber, periodIndex, countryIndex)
+      case Some(false) => VatAmountCorrectionCountryPage(answers.iossNumber, periodIndex, countryIndex)
 
       case _ => JourneyRecoveryPage
     }
 
   override def route(waypoints: Waypoints): Call =
-    controllers.corrections.routes.VatPayableForCountryController.onPageLoad(waypoints, periodIndex, countryIndex)
+    controllers.corrections.routes.VatPayableForCountryController.onPageLoad(waypoints, iossNumber, periodIndex, countryIndex)
 }

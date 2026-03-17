@@ -17,17 +17,17 @@
 package viewmodels.checkAnswers.corrections
 
 import models.UserAnswers
-import pages.{CheckAnswersPage, Waypoints}
 import pages.corrections.CorrectPreviousReturnPage
+import pages.{CheckAnswersPage, Waypoints}
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
-import viewmodels.govuk.summarylist._
-import viewmodels.implicits._
+import viewmodels.govuk.summarylist.*
+import viewmodels.implicits.*
 
 object CorrectPreviousReturnSummary  {
 
   def row(answers: UserAnswers, waypoints: Waypoints, sourcePage: CheckAnswersPage)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(CorrectPreviousReturnPage(0)).map {
+    answers.get(CorrectPreviousReturnPage(answers.iossNumber, 0)).map {
       answer =>
 
         val value = if (answer) "site.yes" else "site.no"
@@ -37,7 +37,7 @@ object CorrectPreviousReturnSummary  {
           value   = ValueViewModel(value)
             .withCssClass("govuk-summary-list__value  govuk-table__cell--numeric govuk-!-padding-right-9"),
           actions = Seq(
-            ActionItemViewModel("site.change", CorrectPreviousReturnPage(0).changeLink(waypoints, sourcePage).url)
+            ActionItemViewModel("site.change", CorrectPreviousReturnPage(answers.iossNumber, 0).changeLink(waypoints, sourcePage).url)
               .withVisuallyHiddenText(messages("correctPreviousReturn.change.hidden"))
               .withAttribute(("id", "change-corrections"))
           )

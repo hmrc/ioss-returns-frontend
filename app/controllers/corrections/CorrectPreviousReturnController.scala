@@ -26,6 +26,7 @@ import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.{ObligationsService, PartialReturnPeriodService}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.FutureSyntax.FutureOps
 import views.html.corrections.CorrectPreviousReturnView
 
 import javax.inject.Inject
@@ -44,7 +45,7 @@ class CorrectPreviousReturnController @Inject()(
 
   val form: Form[Boolean] = formProvider()
 
-  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible().async {
+  def onPageLoad(waypoints: Waypoints, iossNumber: String): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(iossNumber).async {
     implicit request =>
 
       val period = request.userAnswers.period
@@ -59,16 +60,16 @@ class CorrectPreviousReturnController @Inject()(
 
         val etmpObligationDetails = obligations.size
 
-        val preparedForm = request.userAnswers.get(CorrectPreviousReturnPage(etmpObligationDetails)) match {
+        val preparedForm = request.userAnswers.get(CorrectPreviousReturnPage(request.iossNumber, etmpObligationDetails)) match {
           case None => form
           case Some(value) => form.fill(value)
         }
 
-        Future.successful(Ok(view(preparedForm, waypoints, period, maybeExclusion, isFinalReturn, request.isIntermediary, request.companyName)))
+        Ok(view(preparedForm, waypoints, request.iossNumber, period, maybeExclusion, isFinalReturn, request.isIntermediary, request.companyName)).toFuture
       }
   }
 
-  def onSubmit(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible().async {
+  def onSubmit(waypoints: Waypoints, iossNumber: String): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(iossNumber).async {
     implicit request =>
 
       val period = request.userAnswers.period
@@ -85,14 +86,14 @@ class CorrectPreviousReturnController @Inject()(
 
         form.bindFromRequest().fold(
           formWithErrors =>
-            Future.successful(BadRequest(view(formWithErrors, waypoints, period, maybeExclusion, isFinalReturn, request.isIntermediary, request.companyName))),
+            BadRequest(view(formWithErrors, waypoints, request.iossNumber, period, maybeExclusion, isFinalReturn, request.isIntermediary, request.companyName)).toFuture,
 
           value =>
             for {
-              updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectPreviousReturnPage(etmpObligationDetails), value))
+              updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectPreviousReturnPage(request.iossNumber, etmpObligationDetails), value))
               _ <- cc.sessionRepository.set(updatedAnswers)
             } yield {
-              Redirect(CorrectPreviousReturnPage(etmpObligationDetails).navigate(waypoints, request.userAnswers, updatedAnswers).route)
+              Redirect(CorrectPreviousReturnPage(request.iossNumber, etmpObligationDetails).navigate(waypoints, request.userAnswers, updatedAnswers).route)
             }
         )
       }

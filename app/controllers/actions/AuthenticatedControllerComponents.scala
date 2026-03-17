@@ -83,8 +83,8 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
     authAndGetOptionalData(iossNumber) andThen requireData andThen checkExcludedTrader() andThen checkCommencementDate()
   }
 
-  def authAndGetDataAndCorrectionEligible(): ActionBuilder[DataRequest, AnyContent] = {
-    authAndRequireData() andThen
+  def authAndGetDataAndCorrectionEligible(iossNumber: String = ""): ActionBuilder[DataRequest, AnyContent] = {
+    authAndRequireData(iossNumber) andThen
       requirePreviousReturns()
   }
 

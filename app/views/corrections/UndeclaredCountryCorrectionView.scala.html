@@ -28,7 +28,7 @@
 )
 
 
-@(form: Form[_], waypoints: Waypoints, period: Period, country: Country, correctionPeriod: Period, periodIndex:Index, countryIndex: Index, isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, iossNumber: String, period: Period, country: Country, correctionPeriod: Period, periodIndex:Index, countryIndex: Index, isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, if(isIntermediary) {
     messages("undeclaredCountryCorrection.intermediary.title", country.name)
@@ -36,7 +36,7 @@
     messages("undeclaredCountryCorrection.title", country.name)
 })) {
 
-    @formHelper(action = controllers.corrections.routes.UndeclaredCountryCorrectionController.onSubmit(waypoints, periodIndex, countryIndex), Symbol("autoComplete") -> "off") {
+    @formHelper(action = controllers.corrections.routes.UndeclaredCountryCorrectionController.onSubmit(waypoints, iossNumber, periodIndex, countryIndex), Symbol("autoComplete") -> "off") {
 
 
         @if(form.errors.nonEmpty) {
@@ -70,7 +70,7 @@
         )
 
         @button(
-            "site.continue", UndeclaredCountryCorrectionPage(periodIndex, countryIndex).route(waypoints).url, period, waypoints
+            "site.continue", UndeclaredCountryCorrectionPage(iossNumber, periodIndex, countryIndex).route(waypoints).url, period, waypoints
         )
     }
 }

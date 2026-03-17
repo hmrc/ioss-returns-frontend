@@ -37,9 +37,9 @@ final case class CheckSalesPage(iossNumber: String, countryIndex: Index, vatRate
 
   override def route(waypoints: Waypoints): Call =
     routes.CheckSalesController.onPageLoad(waypoints, iossNumber, countryIndex)
-
-  override val normalModeUrlFragment: String = CheckSalesPage.normalModeUrlFragment(countryIndex, iossNumber)
-  override val checkModeUrlFragment: String = CheckSalesPage.checkModeUrlFragment(countryIndex, iossNumber)
+  
+  override val normalModeUrlFragment: String = CheckSalesPage.normalModeUrlFragment(iossNumber, countryIndex)
+  override val checkModeUrlFragment: String = CheckSalesPage.checkModeUrlFragment(iossNumber, countryIndex)
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
     answers.get(this).map {
@@ -82,10 +82,10 @@ final case class CheckSalesPage(iossNumber: String, countryIndex: Index, vatRate
 }
 
 object CheckSalesPage {
+  
+  def normalModeUrlFragment(iossNumber: String, countryIndex: Index): String = s"$iossNumber-check-sales-${countryIndex.display}"
 
-  def normalModeUrlFragment(countryIndex: Index, iossNumber: String): String = s"$iossNumber-check-sales-${countryIndex.display}"
-
-  def checkModeUrlFragment(countryIndex: Index, iossNumber: String): String = s"$iossNumber-change-check-sales-${countryIndex.display}"
+  def checkModeUrlFragment(iossNumber: String, countryIndex: Index): String = s"$iossNumber-change-check-sales-${countryIndex.display}"
 
   def waypointFromString(s: String): Option[Waypoint] = {
 

@@ -23,13 +23,13 @@ import play.twirl.api.Html
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
 import viewmodels.govuk.all.currencyFormat
-import viewmodels.govuk.summarylist._
-import viewmodels.implicits._
+import viewmodels.govuk.summarylist.*
+import viewmodels.implicits.*
 
 object NewVatTotalSummary  {
 
   def row(answers: UserAnswers, periodIndex: Index, countryIndex: Index, originalAmount: BigDecimal)(implicit messages: Messages): Option[SummaryListRow] = {
-    answers.get(VatAmountCorrectionCountryPage(periodIndex, countryIndex)).map {
+    answers.get(VatAmountCorrectionCountryPage(answers.iossNumber, periodIndex, countryIndex)).map {
       answer =>
 
         SummaryListRowViewModel(

@@ -41,7 +41,7 @@ class RemoveCountryCorrectionController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(waypoints: Waypoints, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndRequireData().async {
+  def onPageLoad(waypoints: Waypoints, iossNumber: String, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
     implicit request =>
       getCountry(waypoints, periodIndex, countryIndex) { country =>
 
@@ -49,11 +49,11 @@ class RemoveCountryCorrectionController @Inject()(
 
         val preparedForm: Form[Boolean] = formProvider(country)
 
-        Ok(view(preparedForm, waypoints, period, periodIndex, countryIndex, country, request.isIntermediary, request.companyName)).toFuture
+        Ok(view(preparedForm, waypoints, request.iossNumber, period, periodIndex, countryIndex, country, request.isIntermediary, request.companyName)).toFuture
       }
   }
 
-  def onSubmit(waypoints: Waypoints, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndRequireData().async {
+  def onSubmit(waypoints: Waypoints, iossNumber: String, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
     implicit request =>
       getCountry(waypoints, periodIndex, countryIndex) { country =>
 
@@ -63,7 +63,7 @@ class RemoveCountryCorrectionController @Inject()(
 
         form.bindFromRequest().fold(
           formWithErrors =>
-            Future.successful(BadRequest(view(formWithErrors, waypoints, period, periodIndex, countryIndex, country, request.isIntermediary, request.companyName))),
+            BadRequest(view(formWithErrors, waypoints, request.iossNumber, period, periodIndex, countryIndex, country, request.isIntermediary, request.companyName)).toFuture,
 
           value =>
             if (value) {
@@ -77,14 +77,14 @@ class RemoveCountryCorrectionController @Inject()(
                             answersWithRemovedCorrections <- Future.fromTry(answersWithRemovedPeriod.remove(AllCorrectionPeriodsQuery))
                             _ <- cc.sessionRepository.set(answersWithRemovedCorrections)
                           } yield {
-                            Redirect(RemoveCountryCorrectionPage(periodIndex, countryIndex)
+                            Redirect(RemoveCountryCorrectionPage(request.iossNumber, periodIndex, countryIndex)
                               .navigate(waypoints, request.userAnswers, answersWithRemovedCorrections).route)
                           }
                         } else {
                           for {
                             _ <- cc.sessionRepository.set(answersWithRemovedPeriod)
                           } yield {
-                            Redirect(RemoveCountryCorrectionPage(periodIndex, countryIndex)
+                            Redirect(RemoveCountryCorrectionPage(request.iossNumber, periodIndex, countryIndex)
                               .navigate(waypoints, request.userAnswers, answersWithRemovedPeriod).route)
                           }
                         }
@@ -93,13 +93,13 @@ class RemoveCountryCorrectionController @Inject()(
                     for {
                       _ <- cc.sessionRepository.set(updatedAnswers)
                     } yield {
-                      Redirect(RemoveCountryCorrectionPage(periodIndex, countryIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route)
+                      Redirect(RemoveCountryCorrectionPage(request.iossNumber, periodIndex, countryIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route)
                     }
                   }
               }
 
             } else {
-              Redirect(RemoveCountryCorrectionPage(periodIndex, countryIndex).navigate(waypoints, request.userAnswers, request.userAnswers).route).toFuture
+              Redirect(RemoveCountryCorrectionPage(request.iossNumber, periodIndex, countryIndex).navigate(waypoints, request.userAnswers, request.userAnswers).route).toFuture
             }
         )
       }

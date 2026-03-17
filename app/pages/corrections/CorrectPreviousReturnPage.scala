@@ -24,23 +24,23 @@ import queries.AllCorrectionPeriodsQuery
 
 import scala.util.Try
 
-case class CorrectPreviousReturnPage(numberOfExistingReturnPeriods: Int) extends QuestionPage[Boolean] {
+case class CorrectPreviousReturnPage(iossNumber: String, numberOfExistingReturnPeriods: Int) extends QuestionPage[Boolean] {
 
   override def path: JsPath = JsPath \ toString
 
   override def toString: String = "correctPreviousReturn"
 
-  override def route(waypoints: Waypoints): Call = controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(waypoints)
+  override def route(waypoints: Waypoints): Call = controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(waypoints, iossNumber)
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page = {
 
-    answers.get(CorrectPreviousReturnPage(numberOfExistingReturnPeriods)) match {
+    answers.get(CorrectPreviousReturnPage(answers.iossNumber, numberOfExistingReturnPeriods)) match {
       case Some(true) => if (numberOfExistingReturnPeriods > 1) {
-        CorrectionReturnYearPage(Index(0))
+        CorrectionReturnYearPage(answers.iossNumber, Index(0))
       } else {
-        CorrectionReturnSinglePeriodPage(Index(0))
+        CorrectionReturnSinglePeriodPage(answers.iossNumber, Index(0))
       }
-      case Some(false) => CheckYourAnswersPage
+      case Some(false) => CheckYourAnswersPage(answers.iossNumber)
       case _ => JourneyRecoveryPage
     }
   }

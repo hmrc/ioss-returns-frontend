@@ -40,18 +40,18 @@ class RemovePeriodCorrectionController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(waypoints: Waypoints, periodIndex: Index): Action[AnyContent] = cc.authAndRequireData().async {
+  def onPageLoad(waypoints: Waypoints, iossNumber: String, periodIndex: Index): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
     implicit request =>
 
       getCorrectionReturnPeriod(waypoints, periodIndex) { correctionPeriod =>
 
         val preparedForm: Form[Boolean] = formProvider(correctionPeriod)
 
-        Ok(view(preparedForm, waypoints, request.userAnswers.period, periodIndex, correctionPeriod, request.isIntermediary, request.companyName)).toFuture
+        Ok(view(preparedForm, waypoints, request.iossNumber, request.userAnswers.period, periodIndex, correctionPeriod, request.isIntermediary, request.companyName)).toFuture
       }
   }
 
-  def onSubmit(waypoints: Waypoints, periodIndex: Index): Action[AnyContent] = cc.authAndRequireData().async {
+  def onSubmit(waypoints: Waypoints, iossNumber: String, periodIndex: Index): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
     implicit request =>
 
       getCorrectionReturnPeriod(waypoints, periodIndex) { correctionPeriod =>
@@ -60,7 +60,7 @@ class RemovePeriodCorrectionController @Inject()(
 
         form.bindFromRequest().fold(
           formWithErrors =>
-            Future.successful(BadRequest(view(formWithErrors, waypoints, request.userAnswers.period, periodIndex, correctionPeriod, request.isIntermediary, request.companyName))),
+            BadRequest(view(formWithErrors, waypoints, request.iossNumber, request.userAnswers.period, periodIndex, correctionPeriod, request.isIntermediary, request.companyName)).toFuture,
 
           value =>
             if (value) {
@@ -71,18 +71,18 @@ class RemovePeriodCorrectionController @Inject()(
                       answersWithRemovedPeriods <- Future.fromTry(updatedAnswers.remove(AllCorrectionPeriodsQuery))
                       _ <- cc.sessionRepository.set(answersWithRemovedPeriods)
                     } yield {
-                      Redirect(RemovePeriodCorrectionPage(periodIndex).navigate(waypoints, request.userAnswers, answersWithRemovedPeriods).route)
+                      Redirect(RemovePeriodCorrectionPage(request.iossNumber, periodIndex).navigate(waypoints, request.userAnswers, answersWithRemovedPeriods).route)
                     }
                   } else {
                     for {
                       _ <- cc.sessionRepository.set(updatedAnswers)
                     } yield {
-                      Redirect(RemovePeriodCorrectionPage(periodIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route)
+                      Redirect(RemovePeriodCorrectionPage(request.iossNumber, periodIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route)
                     }
                   }
               }
             } else {
-              Future.successful(Redirect(RemovePeriodCorrectionPage(periodIndex).navigate(waypoints, request.userAnswers, request.userAnswers).route))
+              Redirect(RemovePeriodCorrectionPage(request.iossNumber, periodIndex).navigate(waypoints, request.userAnswers, request.userAnswers).route).toFuture
             }
         )
       }

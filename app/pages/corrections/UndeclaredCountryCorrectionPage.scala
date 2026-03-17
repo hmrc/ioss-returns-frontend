@@ -23,19 +23,19 @@ import pages.{JourneyRecoveryPage, Page, QuestionPage, Waypoints}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
-case class UndeclaredCountryCorrectionPage(periodIndex: Index, countryIndex: Index) extends QuestionPage[Boolean] {
+case class UndeclaredCountryCorrectionPage(iossNumber: String, periodIndex: Index, countryIndex: Index) extends QuestionPage[Boolean] {
 
   override def path: JsPath = JsPath \ corrections \ periodIndex.position \ correctionsToCountry \ countryIndex.position \ toString
 
   override def toString: String = "undeclaredCountryCorrection"
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
-    answers.get(UndeclaredCountryCorrectionPage(periodIndex, countryIndex)) match {
-      case Some(true) => VatAmountCorrectionCountryPage(periodIndex, countryIndex)
-      case Some(false) => CorrectionCountryPage(periodIndex, countryIndex)
+    answers.get(UndeclaredCountryCorrectionPage(answers.iossNumber, periodIndex, countryIndex)) match {
+      case Some(true) => VatAmountCorrectionCountryPage(answers.iossNumber, periodIndex, countryIndex)
+      case Some(false) => CorrectionCountryPage(answers.iossNumber, periodIndex, countryIndex)
       case _ => JourneyRecoveryPage
     }
 
   override def route(waypoints: Waypoints): Call =
-    routes.UndeclaredCountryCorrectionController.onPageLoad(waypoints, periodIndex, countryIndex)
+    routes.UndeclaredCountryCorrectionController.onPageLoad(waypoints, iossNumber, periodIndex, countryIndex)
 }

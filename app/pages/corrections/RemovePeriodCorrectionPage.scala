@@ -22,7 +22,7 @@ import play.api.libs.json.JsPath
 import play.api.mvc.Call
 import queries.DeriveNumberOfCorrectionPeriods
 
-case class RemovePeriodCorrectionPage(periodIndex: Index) extends QuestionPage[Boolean] {
+case class RemovePeriodCorrectionPage(iossNumber: String, periodIndex: Index) extends QuestionPage[Boolean] {
 
   override def path: JsPath = JsPath \ toString
 
@@ -30,9 +30,9 @@ case class RemovePeriodCorrectionPage(periodIndex: Index) extends QuestionPage[B
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
     answers.get(DeriveNumberOfCorrectionPeriods) match {
-      case Some(numberOfPeriods) if numberOfPeriods > 0 => VatPeriodCorrectionsListPage(answers.period, addAnother = false)
-      case _ => CorrectPreviousReturnPage(0)
+      case Some(numberOfPeriods) if numberOfPeriods > 0 => VatPeriodCorrectionsListPage(answers.iossNumber, answers.period, addAnother = false)
+      case _ => CorrectPreviousReturnPage(answers.iossNumber, 0)
     }
 
-  override def route(waypoints: Waypoints): Call = controllers.corrections.routes.RemovePeriodCorrectionController.onPageLoad(waypoints, periodIndex)
+  override def route(waypoints: Waypoints): Call = controllers.corrections.routes.RemovePeriodCorrectionController.onPageLoad(waypoints, iossNumber, periodIndex)
 }

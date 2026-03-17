@@ -16,7 +16,7 @@
 
 package controllers.corrections
 
-import controllers.actions._
+import controllers.actions.*
 import models.Index
 import models.corrections.CorrectionToCountry
 import pages.Waypoints
@@ -27,7 +27,7 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.CompletionChecks
 import utils.FutureSyntax.FutureOps
 import viewmodels.checkAnswers.corrections.{CountryVatCorrectionSummary, NewVatTotalSummary, PreviousVatTotalSummary}
-import viewmodels.govuk.summarylist._
+import viewmodels.govuk.summarylist.*
 import views.html.corrections.CheckVatPayableAmountView
 
 import javax.inject.Inject
@@ -40,12 +40,12 @@ class CheckVatPayableAmountController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(waypoints: Waypoints, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible().async {
+  def onPageLoad(waypoints: Waypoints, iossNumber: String, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(iossNumber).async {
     implicit request =>
 
       val period = request.userAnswers.period
-      val correctionPeriod = request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex))
-      val selectedCountry = request.userAnswers.get(CorrectionCountryPage(periodIndex, countryIndex))
+      val correctionPeriod = request.userAnswers.get(CorrectionReturnPeriodPage(request.iossNumber, periodIndex))
+      val selectedCountry = request.userAnswers.get(CorrectionCountryPage(request.iossNumber, periodIndex, countryIndex))
 
       (correctionPeriod, selectedCountry) match {
         case (Some(correctionPeriod), Some(country)) =>
@@ -65,6 +65,7 @@ class CheckVatPayableAmountController @Inject()(
               onFailure = (_: Seq[CorrectionToCountry]) => {
                 Ok(view(
                   waypoints,
+                  request.iossNumber,
                   period,
                   summaryList,
                   country,
@@ -76,7 +77,7 @@ class CheckVatPayableAmountController @Inject()(
                   request.companyName
                 )).toFuture
               }) {
-              Ok(view(waypoints, period, summaryList, country, correctionPeriod, periodIndex, countryIndex, countryCorrectionComplete = true, request.isIntermediary, request.companyName)).toFuture
+              Ok(view(waypoints, request.iossNumber, period, summaryList, country, correctionPeriod, periodIndex, countryIndex, countryCorrectionComplete = true, request.isIntermediary, request.companyName)).toFuture
             }
           }
         case _ =>
@@ -84,17 +85,17 @@ class CheckVatPayableAmountController @Inject()(
       }
   }
 
-  def onSubmit(waypoints: Waypoints, periodIndex: Index, countryIndex: Index, incompletePromptShown: Boolean): Action[AnyContent] =
-    cc.authAndGetDataAndCorrectionEligible() {
+  def onSubmit(waypoints: Waypoints, iossNumber: String, periodIndex: Index, countryIndex: Index, incompletePromptShown: Boolean): Action[AnyContent] =
+    cc.authAndGetDataAndCorrectionEligible(iossNumber) {
       implicit request =>
         val incomplete = getIncompleteCorrectionsToCountry(periodIndex, countryIndex)
         if (incomplete.isEmpty) {
-          Redirect(controllers.corrections.routes.CorrectionListCountriesController.onPageLoad(waypoints, periodIndex))
+          Redirect(controllers.corrections.routes.CorrectionListCountriesController.onPageLoad(waypoints, request.iossNumber, periodIndex))
         } else {
           if (incompletePromptShown) {
-            Redirect(routes.CorrectionCountryController.onPageLoad(waypoints, periodIndex, countryIndex))
+            Redirect(routes.CorrectionCountryController.onPageLoad(waypoints, request.iossNumber, periodIndex, countryIndex))
           } else {
-            Redirect(routes.CheckVatPayableAmountController.onPageLoad(waypoints, periodIndex, countryIndex))
+            Redirect(routes.CheckVatPayableAmountController.onPageLoad(waypoints, request.iossNumber, periodIndex, countryIndex))
           }
         }
     }

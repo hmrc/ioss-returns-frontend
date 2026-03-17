@@ -26,11 +26,11 @@
     button: ButtonGroup
 )
 
-@(form: Form[_], waypoints: Waypoints, period: Period, maybeExclusion: Option[EtmpExclusion], isFinalReturn: Boolean, isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, iossNumber: String, period: Period, maybeExclusion: Option[EtmpExclusion], isFinalReturn: Boolean, isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, messages("correctPreviousReturn.title"))) {
 
-    @formHelper(action = controllers.corrections.routes.CorrectPreviousReturnController.onSubmit(waypoints), Symbol("autoComplete") -> "off") {
+    @formHelper(action = controllers.corrections.routes.CorrectPreviousReturnController.onSubmit(waypoints, iossNumber), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))
@@ -56,7 +56,7 @@
         }
 
         @button(
-            "site.continue", controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(waypoints).url, period, waypoints
+            "site.continue", controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(waypoints, iossNumber).url, period, waypoints
         )
     }
 }

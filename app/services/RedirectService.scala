@@ -82,13 +82,13 @@ class RedirectService @Inject()(
 
       case DataMissingError(AllCorrectionPeriodsQuery) =>
         logger.error(s"Data missing - no data provided for corrections")
-        Some(correctionsRoutes.CorrectionReturnYearController.onPageLoad(waypoints, Index(0)))
+        Some(correctionsRoutes.CorrectionReturnYearController.onPageLoad(waypoints, request.iossNumber, Index(0)))
       case DataMissingError(AllCorrectionCountriesQuery(periodIndex)) =>
         logger.error(s"Data missing - no countries found for corrections to period ${periodIndex.position}")
-        Some(correctionsRoutes.CorrectionCountryController.onPageLoad(waypoints, periodIndex, Index(0)))
+        Some(correctionsRoutes.CorrectionCountryController.onPageLoad(waypoints, request.iossNumber, periodIndex, Index(0)))
       case DataMissingError(CorrectionToCountryQuery(periodIndex, countryIndex)) =>
         logger.error(s"Data missing - correction to country ${countryIndex.position} in period ${periodIndex.position}")
-        Some(correctionsRoutes.VatAmountCorrectionCountryController.onPageLoad(waypoints, periodIndex, Index(0)))
+        Some(correctionsRoutes.VatAmountCorrectionCountryController.onPageLoad(waypoints, request.iossNumber, periodIndex, Index(0)))
 
       case DataMissingError(_) =>
         logger.error(s"Unhandled DataMissingError")

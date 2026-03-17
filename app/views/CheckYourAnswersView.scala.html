@@ -29,6 +29,7 @@
 @(
         waypoints: Waypoints,
         summaryLists: Seq[(Option[String], SummaryList)],
+        iossNumber: String,
         period: Period,
         totalVatToCountries: List[TotalVatToCountry],
         totalVatOnSales: BigDecimal,
@@ -41,7 +42,6 @@
 )(implicit request: Request[_], messages: Messages)
 
     @layout(pageTitle = titleNoForm(messages("checkYourAnswers.title"))) {
-
 
         <h1 class="govuk-heading-l">@messages("checkYourAnswers.heading")</h1>
 
@@ -137,14 +137,14 @@
         }
 
         @if(missingData.isEmpty) {
-            @formHelper(action = routes.CheckYourAnswersController.onSubmit(waypoints, incompletePromptShown = false)) {
-                @button("site.submit", routes.CheckYourAnswersController.onPageLoad(waypoints).url, period, waypoints)
+            @formHelper(action = routes.CheckYourAnswersController.onSubmit(waypoints, iossNumber, incompletePromptShown = false)) {
+                @button("site.submit", routes.CheckYourAnswersController.onPageLoad(waypoints, iossNumber).url, period, waypoints)
             }
         } else {
             <h2 class="govuk-heading-m push--top">@messages("error.missing_answers_header")</h2>
             <p class="govuk-body">@messages("error.missing_answers_prompt.general")</p>
 
-            @formHelper(action = routes.CheckYourAnswersController.onSubmit(waypoints, incompletePromptShown = true)) {
+            @formHelper(action = routes.CheckYourAnswersController.onSubmit(waypoints, iossNumber, incompletePromptShown = true)) {
                 @govukButton(
                     ButtonViewModel(messages("error.resolve_missing_answers"))
                 )

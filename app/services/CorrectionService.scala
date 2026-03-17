@@ -61,13 +61,13 @@ class CorrectionService @Inject()(
   }
 
   private def getCorrections(answers: UserAnswers): ValidationResult[List[PeriodWithCorrections]] = {
-    answers.get(CorrectPreviousReturnPage(0)) match {
+    answers.get(CorrectPreviousReturnPage(answers.iossNumber, 0)) match {
       case Some(false) =>
         List.empty[PeriodWithCorrections].validNec
       case Some(true) =>
         processCorrections(answers)
       case None =>
-        DataMissingError(CorrectPreviousReturnPage(0)).invalidNec
+        DataMissingError(CorrectPreviousReturnPage(answers.iossNumber, 0)).invalidNec
     }
   }
 

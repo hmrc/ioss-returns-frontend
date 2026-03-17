@@ -21,18 +21,18 @@ import pages.{JourneyRecoveryPage, Page, QuestionPage, Waypoints}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
-case class CorrectionReturnYearPage(index: Index) extends QuestionPage[Int] {
+case class CorrectionReturnYearPage(iossNumber: String, index: Index) extends QuestionPage[Int] {
 
   override def path: JsPath = JsPath \ toString
 
   override def toString: String = "correctionReturnYear"
 
   override def route(waypoints: Waypoints): Call =
-    controllers.corrections.routes.CorrectionReturnYearController.onPageLoad(waypoints, index)
+    controllers.corrections.routes.CorrectionReturnYearController.onPageLoad(waypoints, iossNumber, index)
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
-    answers.get(CorrectionReturnYearPage(index)) match {
-      case Some(_) => CorrectionReturnPeriodPage(index)
+    answers.get(CorrectionReturnYearPage(answers.iossNumber, index)) match {
+      case Some(_) => CorrectionReturnPeriodPage(answers.iossNumber, index)
       case _ => JourneyRecoveryPage
     }
 }

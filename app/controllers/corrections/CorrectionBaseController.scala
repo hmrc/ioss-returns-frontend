@@ -16,7 +16,7 @@
 
 package controllers.corrections
 
-import controllers.JourneyRecoverySyntax._
+import controllers.JourneyRecoverySyntax.*
 import models.requests.DataRequest
 import models.{Country, Index, Period}
 import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage}
@@ -38,7 +38,7 @@ trait CorrectionBaseController {
 
     (for {
       numberOfCorrections <- request.userAnswers.get(DeriveNumberOfCorrections(periodIndex))
-      correctionPeriod <- request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex))
+      correctionPeriod <- request.userAnswers.get(CorrectionReturnPeriodPage(request.iossNumber, periodIndex))
     } yield block(numberOfCorrections, correctionPeriod))
       .orRecoverJourney
 
@@ -48,7 +48,7 @@ trait CorrectionBaseController {
 
     (for {
       numberOfCorrections <- request.userAnswers.get(DeriveNumberOfCorrections(periodIndex))
-      correctionPeriod <- request.userAnswers.get(CorrectionReturnPeriodPage(periodIndex))
+      correctionPeriod <- request.userAnswers.get(CorrectionReturnPeriodPage(request.iossNumber, periodIndex))
     } yield block(numberOfCorrections, correctionPeriod))
       .orRecoverJourney
 
@@ -56,7 +56,7 @@ trait CorrectionBaseController {
                           (block: Country => Future[Result])
                           (implicit request: DataRequest[AnyContent]): Future[Result] =
     request.userAnswers
-      .get(CorrectionCountryPage(periodIndex, countryIndex))
+      .get(CorrectionCountryPage(request.iossNumber, periodIndex, countryIndex))
       .map(block(_))
       .getOrElse(Redirect(JourneyRecoveryPage.route(waypoints)).toFuture)
 

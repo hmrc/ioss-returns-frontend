@@ -16,7 +16,7 @@
 
 package controllers.corrections
 
-import controllers.actions._
+import controllers.actions.*
 import logging.Logging
 import models.StandardPeriod
 import pages.Waypoints
@@ -51,7 +51,7 @@ class NoOtherCorrectionPeriodsAvailableController @Inject()(
 
       if(completedCorrectionPeriods.isEmpty) {
         val cleanup = for {
-          updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectPreviousReturnPage(0), false))
+          updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectPreviousReturnPage(request.iossNumber, 0), false))
           _              <- cc.sessionRepository.set(updatedAnswers)
         } yield Redirect(controllers.routes.CheckYourAnswersController.onPageLoad(waypoints))
 

@@ -30,7 +30,7 @@
 )
 
 
-@(form: Form[_], waypoints: Waypoints, list: Seq[SummaryList], period: Period, correctionPeriod: Period, periodIndex: Index, canAddCountries: Boolean, incompleteCountries: Seq[String], isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, list: Seq[SummaryList], iossNumber: String, period: Period, correctionPeriod: Period, periodIndex: Index, canAddCountries: Boolean, incompleteCountries: Seq[String], isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
 
 @titleText = @{
     list.size match {
@@ -83,7 +83,7 @@
             @govukSummaryList(list)
         }
         @if(incompleteCountries.isEmpty) {
-            @formHelper(action = controllers.corrections.routes.CorrectionListCountriesController.onSubmit(waypoints, periodIndex, false), Symbol("autoComplete") -> "off") {
+            @formHelper(action = controllers.corrections.routes.CorrectionListCountriesController.onSubmit(waypoints, iossNumber, periodIndex, false), Symbol("autoComplete") -> "off") {
                 @if(canAddCountries) {
                     @govukRadios(
                         RadiosViewModel.yesNo(
@@ -98,11 +98,11 @@
                     <input type="hidden" name="value" id="value" value="false"/>
                 }
 
-                @button("site.continue", controllers.corrections.routes.CorrectionListCountriesController.onPageLoad(waypoints, periodIndex).url, period, waypoints
+                @button("site.continue", controllers.corrections.routes.CorrectionListCountriesController.onPageLoad(waypoints, iossNumber, periodIndex).url, period, waypoints
                 )
             }
         } else {
-            @formHelper(action = controllers.corrections.routes.CorrectionListCountriesController.onSubmit(waypoints, periodIndex, true), Symbol("autoComplete") -> "off") {
+            @formHelper(action = controllers.corrections.routes.CorrectionListCountriesController.onSubmit(waypoints, iossNumber, periodIndex, true), Symbol("autoComplete") -> "off") {
                 <h2 class="govuk-heading-m push--top">@messages("error.missing_answers_header")</h2>
                 <p class="govuk-body">@messages("error.missing_answers_prompt", incompleteCountries.head)</p>
 

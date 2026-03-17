@@ -23,18 +23,18 @@ import pages.{JourneyRecoveryPage, Page, QuestionPage, Waypoints}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
-final case class VatAmountCorrectionCountryPage(periodIndex: Index, countryIndex: Index) extends QuestionPage[BigDecimal] {
+final case class VatAmountCorrectionCountryPage(iossNumber: String, periodIndex: Index, countryIndex: Index) extends QuestionPage[BigDecimal] {
 
   override def path: JsPath = JsPath \ corrections \ periodIndex.position \ correctionsToCountry \ countryIndex.position \ toString
 
   override def toString: String = "countryVatCorrection"
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
-    answers.get(VatAmountCorrectionCountryPage(periodIndex, countryIndex)) match {
-      case Some(_) => VatPayableForCountryPage(periodIndex, countryIndex)
+    answers.get(VatAmountCorrectionCountryPage(answers.iossNumber, periodIndex, countryIndex)) match {
+      case Some(_) => VatPayableForCountryPage(answers.iossNumber, periodIndex, countryIndex)
       case _ => JourneyRecoveryPage
     }
 
   override def route(waypoints: Waypoints): Call =
-    routes.VatAmountCorrectionCountryController.onPageLoad(waypoints, periodIndex, countryIndex)
+    routes.VatAmountCorrectionCountryController.onPageLoad(waypoints, iossNumber, periodIndex, countryIndex)
 }

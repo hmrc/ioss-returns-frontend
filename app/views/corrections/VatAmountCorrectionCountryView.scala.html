@@ -31,6 +31,7 @@
 @(
         form: Form[_],
         waypoints: Waypoints,
+        iossNumber: String,
         period: Period,
         periodIndex: Index,
         correctionPeriod: Period,
@@ -56,7 +57,7 @@
         }
     )) {
 
-        @formHelper(action = controllers.corrections.routes.VatAmountCorrectionCountryController.onSubmit(waypoints, periodIndex, countryIndex), Symbol("autoComplete") -> "off") {
+        @formHelper(action = controllers.corrections.routes.VatAmountCorrectionCountryController.onSubmit(waypoints, iossNumber, periodIndex, countryIndex), Symbol("autoComplete") -> "off") {
 
             @if(form.errors.nonEmpty) {
                 @govukErrorSummary(ErrorSummaryViewModel(form))
@@ -108,7 +109,7 @@
             )
 
             @button(
-                "site.continue", VatAmountCorrectionCountryPage(periodIndex, countryIndex).route(waypoints).url, period, waypoints
+                "site.continue", VatAmountCorrectionCountryPage(iossNumber, periodIndex, countryIndex).route(waypoints).url, period, waypoints
             )
         }
     }

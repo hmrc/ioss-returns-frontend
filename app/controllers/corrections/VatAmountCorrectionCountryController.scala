@@ -42,7 +42,7 @@ class VatAmountCorrectionCountryController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(waypoints: Waypoints, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible().async {
+  def onPageLoad(waypoints: Waypoints, iossNumber: String, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(iossNumber).async {
     implicit request =>
 
       getCorrectionReturnPeriod(waypoints, periodIndex) { correctionReturnPeriod =>
@@ -57,13 +57,14 @@ class VatAmountCorrectionCountryController @Inject()(
 
             val form: Form[BigDecimal] = formProvider(country.name, previouslyDeclaredAmount, request.isIntermediary)
 
-            val preparedForm = request.userAnswers.get(VatAmountCorrectionCountryPage(periodIndex, countryIndex)) match {
+            val preparedForm = request.userAnswers.get(VatAmountCorrectionCountryPage(request.iossNumber, periodIndex, countryIndex)) match {
               case None => form
               case Some(value) => form.fill(value)
             }
             Ok(view(
               preparedForm,
               waypoints,
+              request.iossNumber,
               period,
               periodIndex,
               correctionReturnPeriod,
@@ -79,7 +80,7 @@ class VatAmountCorrectionCountryController @Inject()(
       }
   }
 
-  def onSubmit(waypoints: Waypoints, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible().async {
+  def onSubmit(waypoints: Waypoints, iossNumber: String, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(iossNumber).async {
     implicit request =>
 
       getCorrectionReturnPeriod(waypoints, periodIndex) { correctionReturnPeriod =>
@@ -99,6 +100,7 @@ class VatAmountCorrectionCountryController @Inject()(
                 BadRequest(view(
                   formWithErrors,
                   waypoints,
+                  request.iossNumber,
                   period,
                   periodIndex,
                   correctionReturnPeriod,
@@ -112,9 +114,9 @@ class VatAmountCorrectionCountryController @Inject()(
               value =>
 
                 for {
-                  updatedAnswers <- Future.fromTry(request.userAnswers.set(VatAmountCorrectionCountryPage(periodIndex, countryIndex), value))
+                  updatedAnswers <- Future.fromTry(request.userAnswers.set(VatAmountCorrectionCountryPage(request.iossNumber, periodIndex, countryIndex), value))
                   _ <- cc.sessionRepository.set(updatedAnswers)
-                } yield Redirect(VatAmountCorrectionCountryPage(periodIndex, countryIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route)
+                } yield Redirect(VatAmountCorrectionCountryPage(request.iossNumber, periodIndex, countryIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route)
             )
           }
         }

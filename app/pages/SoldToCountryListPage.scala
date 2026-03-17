@@ -76,10 +76,10 @@ final case class SoldToCountryListPage(iossNumber: String, override val index: O
           .orRecover
         
       case false =>
-        if (answers.isDefined(CorrectPreviousReturnPage(0))) {
+        if (answers.isDefined(CorrectPreviousReturnPage(answers.iossNumber, 0))) {
           CheckYourAnswersPage
         } else {
-          CorrectPreviousReturnPage(0)
+          CorrectPreviousReturnPage(answers.iossNumber, 0)
         }
     }.orRecover
   }

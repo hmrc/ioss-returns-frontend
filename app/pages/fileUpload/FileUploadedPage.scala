@@ -34,10 +34,10 @@ case class FileUploadedPage(iossNumber: String) extends QuestionPage[Boolean] {
     val status = answers.get(FileUploadStatusPage(answers.iossNumber)).map(_.toUpperCase)
     (status, answers.get(this)) match {
       case (Some("UPLOADED"), Some(true)) =>
-        if (answers.isDefined(CorrectPreviousReturnPage(0))) {
-          CheckYourAnswersPage
+        if (answers.isDefined(CorrectPreviousReturnPage(answers.iossNumber, 0))) {
+          CheckYourAnswersPage(answers.iossNumber)
         } else {
-          CorrectPreviousReturnPage(0)
+          CorrectPreviousReturnPage(answers.iossNumber, 0)
         }
       case (Some("UPLOADED"), Some(false)) =>
         FileUploadPage(answers.iossNumber)

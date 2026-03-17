@@ -38,7 +38,7 @@ class VatPayableForCountryController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(waypoints: Waypoints, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible().async {
+  def onPageLoad(waypoints: Waypoints, iossNumber: String, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(iossNumber).async {
     implicit request =>
 
       getCorrectionReturnPeriod(waypoints, periodIndex) { correctionReturnPeriod =>
@@ -46,7 +46,7 @@ class VatPayableForCountryController @Inject()(
           getPreviouslyDeclaredCorrectionAnswers(waypoints, periodIndex, countryIndex) { previouslyDeclaredCorrectionAnswers =>
 
             val correctionAmount = request.userAnswers.get(
-              VatAmountCorrectionCountryPage(periodIndex, countryIndex)
+              VatAmountCorrectionCountryPage(request.iossNumber, periodIndex, countryIndex)
             ).getOrElse(BigDecimal(0))
 
             val calculatedCorrectionAmount = if (previouslyDeclaredCorrectionAnswers.previouslyDeclared) {
@@ -56,7 +56,7 @@ class VatPayableForCountryController @Inject()(
             }
 
             val form = formProvider(country, calculatedCorrectionAmount)
-            val preparedForm = request.userAnswers.get(VatPayableForCountryPage(periodIndex, countryIndex)) match {
+            val preparedForm = request.userAnswers.get(VatPayableForCountryPage(request.iossNumber, periodIndex, countryIndex)) match {
               case None => form
               case Some(value) => form.fill(value)
             }
@@ -64,6 +64,7 @@ class VatPayableForCountryController @Inject()(
               view(
                 preparedForm,
                 waypoints,
+                request.iossNumber,
                 request.userAnswers.period,
                 periodIndex,
                 countryIndex,
@@ -79,14 +80,14 @@ class VatPayableForCountryController @Inject()(
       }
   }
 
-  def onSubmit(waypoints: Waypoints, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible().async {
+  def onSubmit(waypoints: Waypoints, iossNumber: String, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(iossNumber).async {
     implicit request =>
       getCorrectionReturnPeriod(waypoints, periodIndex) { correctionReturnPeriod =>
         getCountry(waypoints, periodIndex, countryIndex) { country =>
           getPreviouslyDeclaredCorrectionAnswers(waypoints, periodIndex, countryIndex) { previouslyDeclaredCorrectionAnswers =>
 
             val correctionAmount = request.userAnswers.get(
-              VatAmountCorrectionCountryPage(periodIndex, countryIndex)
+              VatAmountCorrectionCountryPage(request.iossNumber, periodIndex, countryIndex)
             ).getOrElse(BigDecimal(0))
 
             val calculatedCorrectionAmount = if (previouslyDeclaredCorrectionAnswers.previouslyDeclared) {
@@ -102,6 +103,7 @@ class VatPayableForCountryController @Inject()(
                   view(
                     formWithErrors,
                     waypoints,
+                    request.iossNumber,
                     request.userAnswers.period,
                     periodIndex,
                     countryIndex,
@@ -115,8 +117,8 @@ class VatPayableForCountryController @Inject()(
               value =>
 
                 for {
-                  updatedAnswers <- Future.fromTry(request.userAnswers.set(VatPayableForCountryPage(periodIndex, countryIndex), value))
-                } yield Redirect(VatPayableForCountryPage(periodIndex, countryIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route)
+                  updatedAnswers <- Future.fromTry(request.userAnswers.set(VatPayableForCountryPage(request.iossNumber, periodIndex, countryIndex), value))
+                } yield Redirect(VatPayableForCountryPage(request.iossNumber, periodIndex, countryIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route)
             )
           }
         }

@@ -29,11 +29,11 @@
 )
 
 
-@(form: Form[_], waypoints: Waypoints, period: Period, periodIndex: Index, correctionPeriod: Period, index: Index, isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, iossNumber: String, period: Period, periodIndex: Index, correctionPeriod: Period, index: Index, isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, messages("correctionCountry.title"))) {
 
-  @formHelper(action = controllers.corrections.routes.CorrectionCountryController.onSubmit(waypoints, periodIndex, index)) {
+  @formHelper(action = controllers.corrections.routes.CorrectionCountryController.onSubmit(waypoints, iossNumber, periodIndex, index)) {
 
     @if(form.errors.nonEmpty) {
       @govukErrorSummary(ErrorSummaryViewModel(form))
@@ -65,7 +65,7 @@
     )
 
     @button(
-      "site.continue", CorrectionCountryPage(periodIndex, index).route(waypoints).url, period, waypoints
+      "site.continue", CorrectionCountryPage(iossNumber, periodIndex, index).route(waypoints).url, period, waypoints
     )
   }
 }
