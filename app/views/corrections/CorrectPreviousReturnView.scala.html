@@ -28,11 +28,7 @@
 
 @(form: Form[_], waypoints: Waypoints, period: Period, maybeExclusion: Option[EtmpExclusion], isFinalReturn: Boolean, isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = title(form, if(isIntermediary) {
-    messages("correctPreviousReturn.intermediary.title")
-} else {
-    messages("correctPreviousReturn.title")
-})) {
+@layout(pageTitle = title(form, messages("correctPreviousReturn.title"))) {
 
     @formHelper(action = controllers.corrections.routes.CorrectPreviousReturnController.onSubmit(waypoints), Symbol("autoComplete") -> "off") {
 
@@ -45,11 +41,7 @@
             @govukRadios(
                 RadiosViewModel.yesNo(
                     field = form("value"),
-                    legend = LegendViewModel(if(isIntermediary) {
-                        messages("correctPreviousReturn.intermediary.heading")
-                    } else {
-                        messages("correctPreviousReturn.heading")
-                    }).asPageHeading()
+                    legend = LegendViewModel(messages("correctPreviousReturn.heading")).asPageHeading()
                 ).withHint(
                     HintViewModel(messages("correctPreviousReturn.lastChance.hint"))
                 )
