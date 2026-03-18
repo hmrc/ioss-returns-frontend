@@ -104,12 +104,11 @@
                 <div class="govuk-summary-card__content ">
                     <dl class="govuk-summary-list">
                     @for(totalVatToCountry <- totalVatToCountries) {
-                        <div class="govuk-summary-list__row">
+                        <div class="govuk-summary-list__row ">
                             <dt class="govuk-summary-list__key"><strong>@totalVatToCountry.country.name</strong></dt>
                             <dd class="govuk-summary-list__value govuk-table__cell--numeric govuk-!-padding-right-9">
-                                @Html(currencyFormat(totalVatToCountry.totalVat))
+                            @Html(currencyFormat(totalVatToCountry.totalVat))
                             </dd>
-                            <dd class="govuk-summary-list__actions"></dd>
                         </div>
                     }
                     </dl>
@@ -123,7 +122,7 @@
                     @messages("checkYourAnswers.totalVatPayable.heading")
                 </dd>
                 <dd class="govuk-summary-list__value govuk-!-padding-right-0 govuk-!-font-size-24">
-                    @Html(currencyFormatWithAccuracy(totalVatOnSales))
+                @Html(currencyFormat(totalVatOnSales))
                 </dd>
                 <dd></dd>
             </div>
