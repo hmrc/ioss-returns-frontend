@@ -61,11 +61,11 @@
             <h2 class="govuk-heading-m govuk-!-margin-top-6" id="how-pay">@messages("successfullySubmitted.payVatOwed")</h2>
             @if(isIntermediary) {
                 <p class="govuk-body">
-                    @Html(messages("successfullySubmitted.intermediary.payPeriodAmount", period.lastDay.format(DateTimeFormatter.ofPattern("d MMMM u")), currencyFormatWithAccuracy(owedAmount)))
+                    @Html(messages("successfullySubmitted.intermediary.payPeriodAmount", period.lastDay.format(DateTimeFormatter.ofPattern("d MMMM u")), currencyFormat(owedAmount)))
                 </p>
             } else {
                 <p class="govuk-body">
-                    @Html(messages("successfullySubmitted.payPeriodAmount", period.lastDay.format(DateTimeFormatter.ofPattern("d MMMM u")), currencyFormatWithAccuracy(owedAmount)))
+                    @Html(messages("successfullySubmitted.payPeriodAmount", period.lastDay.format(DateTimeFormatter.ofPattern("d MMMM u")), currencyFormat(owedAmount)))
                 </p>
             }
 
