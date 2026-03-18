@@ -322,9 +322,7 @@ remainingVatRateFromCountry.intermediary.caption = {0}{1} sales to {2}
 remainingVatRateFromCountry.error.required = Select yes if you sold goods at the {0} VAT rate
 
 correctPreviousReturn.title = Do you want to use this return to correct a previous one?
-correctPreviousReturn.intermediary.title = Do you want to use this return to correct a previous one?
 correctPreviousReturn.heading = Do you want to use this return to correct a previous one?
-correctPreviousReturn.intermediary.heading = Do you want to use this return to correct a previous one?
 correctPreviousReturn.checkYourAnswersLabel = Corrections
 correctPreviousReturn.error.required = Select yes if you want to correct a previous return
 correctPreviousReturn.change.hidden = if you want to correct a previous return
