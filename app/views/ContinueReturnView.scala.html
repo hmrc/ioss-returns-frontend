@@ -22,11 +22,11 @@
     govukButton: GovukButton
 )
 
-@(form: Form[_], period: Period, isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], iossNumber: String, period: Period, isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, messages("continueReturn.title"))) {
 
-    @formHelper(action = routes.ContinueReturnController.onSubmit(period), Symbol("autoComplete") -> "off") {
+    @formHelper(action = routes.ContinueReturnController.onSubmit(iossNumber, period), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form,  errorLinkOverrides = Map("value" -> "value_0")))

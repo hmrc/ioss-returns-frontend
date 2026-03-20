@@ -35,7 +35,7 @@ case class FileUploadedPage(iossNumber: String) extends QuestionPage[Boolean] {
     (status, answers.get(this)) match {
       case (Some("UPLOADED"), Some(true)) =>
         if (answers.isDefined(CorrectPreviousReturnPage(answers.iossNumber, 0))) {
-          CheckYourAnswersPage(answers.iossNumber)
+          CheckYourAnswersPage
         } else {
           CorrectPreviousReturnPage(answers.iossNumber, 0)
         }

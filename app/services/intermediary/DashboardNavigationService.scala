@@ -24,15 +24,15 @@ import javax.inject.Inject
 class DashboardNavigationService @Inject()(frontendAppConfig: FrontendAppConfig) {
 
   def getAppropriateDashboardUrl(
-                                    isIntermediary: Boolean,
-                                    intermediaryEnrolmentsExist: Boolean,
-                                    iossEnrolmentsExist: Boolean,
-                                    iossNumber: String
-                                    ): String =
+                                  isIntermediary: Boolean,
+                                  intermediaryEnrolmentsExist: Boolean,
+                                  iossEnrolmentsExist: Boolean,
+                                  iossNumber: String
+                                ): String =
 
     (isIntermediary, intermediaryEnrolmentsExist, iossEnrolmentsExist) match {
       case (true, true, true) => routes.IossOrIntermediaryController.onPageLoad(iossNumber).url
       case (true, true, false) => frontendAppConfig.intermediaryDashboardUrl
-      case _ => controllers.routes.YourAccountController.onPageLoad().url
+      case _ => controllers.routes.YourAccountController.onPageLoad(iossNumber = iossNumber).url
     }
 }

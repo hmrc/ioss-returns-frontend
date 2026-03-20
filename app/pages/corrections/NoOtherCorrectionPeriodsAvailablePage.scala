@@ -19,9 +19,8 @@ package pages.corrections
 import pages.{Page, Waypoints}
 import play.api.mvc.Call
 
-object NoOtherCorrectionPeriodsAvailablePage extends Page {
+case class NoOtherCorrectionPeriodsAvailablePage(iossNumber: String) extends Page {
 
   override def route(waypoints: Waypoints): Call =
-    controllers.corrections.routes.NoOtherCorrectionPeriodsAvailableController.onPageLoad()
-
+    controllers.corrections.routes.NoOtherCorrectionPeriodsAvailableController.onPageLoad(waypoints, iossNumber)
 }

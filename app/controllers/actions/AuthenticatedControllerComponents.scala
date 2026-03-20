@@ -72,9 +72,8 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
     authAndGetRegistration(iossNumber) andThen
       checkBouncedEmail(iossNumber)
   }
-
-  // TODO remove default ""
-  def authAndGetOptionalData(iossNumber: String = ""): ActionBuilder[OptionalDataRequest, AnyContent] = {
+  
+  def authAndGetOptionalData(iossNumber: String): ActionBuilder[OptionalDataRequest, AnyContent] = {
     authAndGetRegistrationAndCheckBounced(iossNumber) andThen getData(iossNumber)
   }
 
@@ -83,7 +82,7 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
     authAndGetOptionalData(iossNumber) andThen requireData andThen checkExcludedTrader() andThen checkCommencementDate()
   }
 
-  def authAndGetDataAndCorrectionEligible(iossNumber: String = ""): ActionBuilder[DataRequest, AnyContent] = {
+  def authAndGetDataAndCorrectionEligible(iossNumber: String): ActionBuilder[DataRequest, AnyContent] = {
     authAndRequireData(iossNumber) andThen
       requirePreviousReturns()
   }

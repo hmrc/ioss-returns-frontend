@@ -34,7 +34,7 @@ case class CorrectionReturnSinglePeriodPage(iossNumber: String, index: Index) ex
 
     answers.get(CorrectionReturnSinglePeriodPage(answers.iossNumber, index)) match {
       case Some(true) => CorrectionCountryPage(answers.iossNumber, index, Index(0))
-      case Some(false) => NoOtherCorrectionPeriodsAvailablePage
+      case Some(false) => NoOtherCorrectionPeriodsAvailablePage(answers.iossNumber)
       case _ => JourneyRecoveryPage
 
     }

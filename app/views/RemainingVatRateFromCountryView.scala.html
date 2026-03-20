@@ -50,7 +50,7 @@
         )
 
         @button(
-            "site.continue", routes.RemainingVatRateFromCountryController.onPageLoad(waypoints, iossNumber, countryIndex, nextVatRateIndex).url, period, waypoints
+            "site.continue", routes.RemainingVatRateFromCountryController.onPageLoad(waypoints, iossNumber, countryIndex, nextVatRateIndex).url, iossNumber, period, waypoints
         )
     }
 }

@@ -19,7 +19,9 @@ package pages
 import controllers.routes
 import play.api.mvc.Call
 
-object YourAccountPage extends Page {
-  override def route(waypoints: Waypoints): Call =
-    routes.YourAccountController.onPageLoad(waypoints)
+case class YourAccountPage(iossNumber: String) extends Page {
+  
+  override def route(waypoints: Waypoints): Call = {
+    routes.YourAccountController.onPageLoad(waypoints, iossNumber)
+  }
 }

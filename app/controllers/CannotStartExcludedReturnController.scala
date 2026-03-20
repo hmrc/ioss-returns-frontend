@@ -35,9 +35,8 @@ class CannotStartExcludedReturnController @Inject()(
                                                    ) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
-
-  // TODO -> IossNumber
-  def onPageLoad(): Action[AnyContent] = cc.authAndGetOptionalData().async {
+  
+  def onPageLoad(iossNumber: String): Action[AnyContent] = cc.authAndGetOptionalData(iossNumber).async {
     implicit request =>
 
       val iossEnrolmentsExist: Boolean = findIossFromEnrolments(request.enrolments).nonEmpty

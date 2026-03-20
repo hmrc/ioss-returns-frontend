@@ -34,8 +34,8 @@ class NoMoreWelshController @Inject()(
                                      ) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
-
-  def onPageLoad(redirectUrl: Option[RedirectUrl] = None): Action[AnyContent] = cc.auth {
+  
+  def onPageLoad(iossNumber: String, redirectUrl: Option[RedirectUrl] = None): Action[AnyContent] = cc.auth {
     implicit request =>
 
       val safeUrl: Option[String] = redirectUrl.flatMap {
@@ -49,6 +49,6 @@ class NoMoreWelshController @Inject()(
           }
       }
 
-      Ok(view(safeUrl))
+      Ok(view(iossNumber, safeUrl))
   }
 }

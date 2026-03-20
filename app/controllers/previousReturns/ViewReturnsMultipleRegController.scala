@@ -16,18 +16,18 @@
 
 package controllers.previousReturns
 
-import controllers.actions._
+import controllers.actions.*
 import logging.Logging
+import models.requests.OptionalDataRequest
 import pages.Waypoints
 import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc._
+import play.api.mvc.*
 import repositories.SelectedPreviousRegistrationRepository
 import services.{PeriodWithFinancialDataService, PreviousRegistrationService}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.FutureSyntax.FutureOps
 import viewmodels.previousReturns.PreviousRegistration
 import views.html.previousReturns.ViewReturnsMultipleRegView
-import models.requests.OptionalDataRequest
-
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -43,7 +43,7 @@ class ViewReturnsMultipleRegController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetOptionalData().async {
+  def onPageLoad(waypoints: Waypoints, iossNumber: String): Action[AnyContent] = cc.authAndGetOptionalData(iossNumber).async {
     implicit request =>
       previousRegistrationService.getPreviousRegistrations(request.isIntermediary).flatMap {
         case Nil =>
@@ -55,14 +55,14 @@ class ViewReturnsMultipleRegController @Inject()(
             case Some(selectedRegistration) if registrations.contains(selectedRegistration.previousRegistration) =>
               okView(waypoints, selectedRegistration.previousRegistration)
             case _ =>
-              Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+              Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()).toFuture
           }
       }
   }
 
-  private def okView(waypoints: Waypoints, previousRegistration: PreviousRegistration)(implicit r: OptionalDataRequest[_]): Future[Result] = {
+  private def okView(waypoints: Waypoints, previousRegistration: PreviousRegistration)(implicit request: OptionalDataRequest[_]): Future[Result] = {
     periodWithFinancialDataService.getPeriodWithFinancialData(previousRegistration.iossNumber).map { periodWithFinancialData =>
-      Ok(view(waypoints, previousRegistration, periodWithFinancialData, isIntermediary = r.isIntermediary, companyName = r.companyName))
+      Ok(view(waypoints, request.iossNumber, previousRegistration, periodWithFinancialData, isIntermediary = request.isIntermediary, companyName = request.companyName))
     }
   }
 }

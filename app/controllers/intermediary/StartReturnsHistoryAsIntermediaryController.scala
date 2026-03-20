@@ -41,6 +41,7 @@ class StartReturnsHistoryAsIntermediaryController @Inject()(
   
   def startReturnsHistoryAsIntermediary(waypoints: Waypoints, iossNumber: String): Action[AnyContent] = (
     cc.authAndIntermediaryRequired(iossNumber) andThen cc.getData(iossNumber)).async { implicit request =>
+    // TODO -> Check if correct iossNumber -> May need additional urlIossNumber param
     
     if (config.intermediaryEnabled) {
 
@@ -51,7 +52,7 @@ class StartReturnsHistoryAsIntermediaryController @Inject()(
       for {
         _ <- intermediarySelectedIossNumberRepository.set(intermediarySelectedIossNumber)
       } yield {
-        Redirect(controllers.previousReturns.routes.SubmittedReturnsHistoryController.onPageLoad(waypoints).url)
+        Redirect(controllers.previousReturns.routes.SubmittedReturnsHistoryController.onPageLoad(waypoints, request.iossNumber).url)
       }
 
     } else {

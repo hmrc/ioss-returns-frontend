@@ -69,7 +69,7 @@ class CorrectionReturnSinglePeriodController @Inject()(
         val uncompletedCorrectionPeriods = correctionMonths.diff(completedCorrectionPeriods).distinct
 
         uncompletedCorrectionPeriods.size match {
-          case 0 => Redirect(controllers.routes.CheckYourAnswersController.onPageLoad(waypoints)).toFuture
+          case 0 => Redirect(controllers.routes.CheckYourAnswersController.onPageLoad(waypoints, request.iossNumber)).toFuture
           case 1 => Ok(view(form, waypoints, request.iossNumber, period, uncompletedCorrectionPeriods.head, index, isIntermediary)).toFuture
           case _ => Redirect(
             controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(waypoints, request.iossNumber, index)

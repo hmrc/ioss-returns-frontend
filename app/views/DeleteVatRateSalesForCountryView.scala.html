@@ -49,6 +49,6 @@
         )
     )
 
-        @button("site.continue", controllers.routes.DeleteVatRateSalesForCountryController.onPageLoad(waypoints, iossNumber, countryIndex, nextVatRateIndex).url, period, waypoints)
+        @button("site.continue", controllers.routes.DeleteVatRateSalesForCountryController.onPageLoad(waypoints, iossNumber, countryIndex, nextVatRateIndex).url, iossNumber, period, waypoints)
     }
 }

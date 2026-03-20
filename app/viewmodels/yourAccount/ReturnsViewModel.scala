@@ -70,18 +70,18 @@ object ReturnsViewModel {
       url = controllers.routes.StartReturnController.onPageLoad(waypoints, iossNumber, period).url
     )
 
-  private def continueDueReturnLink(period: StandardPeriod)(implicit messages: Messages) =
+  private def continueDueReturnLink(iossNumber: String, period: StandardPeriod)(implicit messages: Messages) =
     LinkModel(
       linkText = messages("yourAccount.yourReturns.dueReturn.continueReturn"),
       id = "continue-your-return",
-      url = controllers.routes.ContinueReturnController.onPageLoad(period).url
+      url = controllers.routes.ContinueReturnController.onPageLoad(iossNumber, period).url
     )
 
-  private def continueOverdueReturnLink(period: StandardPeriod)(implicit messages: Messages) =
+  private def continueOverdueReturnLink(iossNumber: String, period: StandardPeriod)(implicit messages: Messages) =
     LinkModel(
       linkText = messages("yourAccount.yourReturns.continueReturn", period.displayShortText),
       id = "continue-your-return",
-      url = controllers.routes.ContinueReturnController.onPageLoad(period).url
+      url = controllers.routes.ContinueReturnController.onPageLoad(iossNumber, period).url
     )
 
   private def returnDueParagraph(period: StandardPeriod)(implicit messages: Messages) =
@@ -143,7 +143,7 @@ object ReturnsViewModel {
       case (0, Some(_), Some(dueReturn)) =>
         ReturnsViewModel(
           contents = Seq(returnDueInProgressParagraph(dueReturn.period)),
-          linkToStart = Some(continueDueReturnLink(dueReturn.period))
+          linkToStart = Some(continueDueReturnLink(request.iossNumber, dueReturn.period))
         )
 
       case (1, None, _) =>
@@ -160,7 +160,7 @@ object ReturnsViewModel {
           .getOrElse(Seq(returnOverdueInProgressParagraph()))
         ReturnsViewModel(
           contents = contents,
-          linkToStart = Some(continueOverdueReturnLink(inProgress.period))
+          linkToStart = Some(continueOverdueReturnLink(request.iossNumber, inProgress.period))
         )
 
       case (x, None, _) =>
@@ -178,7 +178,7 @@ object ReturnsViewModel {
           .getOrElse(Seq(onlyReturnsOverdueParagraph(x)))
         ReturnsViewModel(
           contents = contents,
-          linkToStart = Some(continueOverdueReturnLink(inProgress.period))
+          linkToStart = Some(continueOverdueReturnLink(request.iossNumber, inProgress.period))
         )
 
       case _ =>

@@ -27,11 +27,11 @@
 )
 
 
-@(form: Form[_], waypoints: Waypoints, preparedDataList: List[PrepareData])(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, iossNumber: String, preparedDataList: List[PrepareData])(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, messages("whichPreviousRegistrationToPay.title"))) {
 
-    @formHelper(action = routes.WhichPreviousRegistrationToPayController.onSubmit(waypoints), Symbol("autoComplete") -> "off") {
+    @formHelper(action = routes.WhichPreviousRegistrationToPayController.onSubmit(waypoints, iossNumber), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))

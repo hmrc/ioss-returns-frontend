@@ -58,7 +58,7 @@ class CheckIsCurrentReturnPeriodFilterImpl(startReturnPeriod: Period,
       case Right(actionableReturn) =>
         actionableReturn match {
           case NextReturn(_) =>
-            val redirect = remapCompleteOrExcludedToRedirect(currentReturns)
+            val redirect = remapCompleteOrExcludedToRedirect(iossNumber, currentReturns)
               .getOrElse(Redirect(controllers.routes.NoOtherPeriodsAvailableController.onPageLoad(EmptyWaypoints, iossNumber)))
 
             Some(redirect)
@@ -68,8 +68,8 @@ class CheckIsCurrentReturnPeriodFilterImpl(startReturnPeriod: Period,
                 None
 
               case _ =>
-                val redirect = remapCompleteOrExcludedToRedirect(currentReturns)
-                  .getOrElse(Redirect(controllers.routes.CannotStartReturnController.onPageLoad()))
+                val redirect = remapCompleteOrExcludedToRedirect(iossNumber, currentReturns)
+                  .getOrElse(Redirect(controllers.routes.CannotStartReturnController.onPageLoad(iossNumber)))
 
                 Some(redirect)
             }
@@ -77,15 +77,18 @@ class CheckIsCurrentReturnPeriodFilterImpl(startReturnPeriod: Period,
     }
   }
 
-  private def remapCompleteOrExcludedToRedirect(currentReturns: CurrentReturns): Option[Result] = {
+  private def remapCompleteOrExcludedToRedirect(
+                                                 iossNumber: String,
+                                                 currentReturns: CurrentReturns
+                                               ): Option[Result] = {
     currentReturns.completeOrExcludedReturns.find(_.period == startReturnPeriod).map {
       foundCompleteOrExcludedReturn =>
         val submissionStatus = foundCompleteOrExcludedReturn.submissionStatus
         submissionStatus match {
           case Complete =>
-            Redirect(controllers.previousReturns.routes.SubmittedReturnForPeriodController.onPageLoad(EmptyWaypoints, startReturnPeriod))
+            Redirect(controllers.previousReturns.routes.SubmittedReturnForPeriodController.onPageLoad(EmptyWaypoints, iossNumber, startReturnPeriod))
           case Excluded | Expired =>
-            Redirect(controllers.routes.CannotStartExcludedReturnController.onPageLoad())
+            Redirect(controllers.routes.CannotStartExcludedReturnController.onPageLoad(iossNumber))
           case _ =>
             throw new RuntimeException(s"Unexpected status found in foundCompleteOrExcludedReturn $submissionStatus")
         }

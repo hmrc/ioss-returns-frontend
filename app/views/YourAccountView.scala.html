@@ -65,7 +65,7 @@
                         HtmlContent(Html(messages(
                             "yourAccount.previousRegistrations.plural",
                             currencyFormat(previousRegistrationPrepareData.map(_.overduePayments.map(_.amountOwed).sum).sum)
-                        ) + s"""<p class="govuk-body"><a class="govuk-link" href="${paymentRoutes.WhichPreviousRegistrationToPayController.onPageLoad(waypoints)}">${messages("yourAccount.previousRegistrations.payLink")}</a></p>"""))
+                        ) + s"""<p class="govuk-body"><a class="govuk-link" href="${paymentRoutes.WhichPreviousRegistrationToPayController.onPageLoad(waypoints, iossNumber)}">${messages("yourAccount.previousRegistrations.payLink")}</a></p>"""))
                 ))
             } else {
                 @govukWarningText(WarningText(
@@ -74,7 +74,7 @@
                         "yourAccount.previousRegistrations.singular",
                         currencyFormat(previousRegistrationPrepareData.map(_.totalAmountOwed).sum),
                         previousRegistrationPrepareData.map(_.iossNumber).head
-                    ) + s"""<p class="govuk-body"><a class="govuk-link" href="${paymentRoutes.WhichPreviousRegistrationToPayController.onPageLoad(waypoints)}">${messages("yourAccount.previousRegistrations.payLink")}</a></p>"""))
+                    ) + s"""<p class="govuk-body"><a class="govuk-link" href="${paymentRoutes.WhichPreviousRegistrationToPayController.onPageLoad(waypoints, iossNumber)}">${messages("yourAccount.previousRegistrations.payLink")}</a></p>"""))
                 ))
             }
         }
@@ -301,7 +301,7 @@
                     <h2 class="govuk-heading-m">@messages("yourAccount.details.heading")</h2>
 
                     <p class="govuk-body">
-                        <a class="govuk-link" href="@prevRoutes.SubmittedReturnsHistoryController.onPageLoad(EmptyWaypoints).url"
+                        <a class="govuk-link" href="@prevRoutes.SubmittedReturnsHistoryController.onPageLoad(EmptyWaypoints, iossNumber).url"
                         id="view-submitted-returns">
                         @messages("yourAccount.details.viewSubmittedReturns")
                         </a>

@@ -50,7 +50,7 @@ class SavedProgressController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(period: Period, continueUrl: RedirectUrl): Action[AnyContent] = cc.authAndRequireData().async {
+  def onPageLoad(iossNumber: String, period: Period, continueUrl: RedirectUrl): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
     implicit request =>
       val dateTimeFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy")
       val answersExpiry = request.userAnswers.lastUpdated.plus(appConfig.saveForLaterTtl, ChronoUnit.DAYS)
@@ -80,7 +80,7 @@ class SavedProgressController @Inject()(
                 case _ => externalUrl
               }
 
-              Ok(view(period, answersExpiry, safeContinueUrl, determinedRedirect))
+              Ok(view(request.iossNumber, period, answersExpiry, safeContinueUrl, determinedRedirect))
             }
 
           case (Left(ConflictFound), externalUrl)
@@ -88,7 +88,7 @@ class SavedProgressController @Inject()(
             Redirect(appConfig.intermediaryDashboardUrl).toFuture
 
           case (Left(ConflictFound), externalUrl) =>
-            Redirect(externalUrl.getOrElse(routes.YourAccountController.onPageLoad().url)).toFuture
+            Redirect(externalUrl.getOrElse(routes.YourAccountController.onPageLoad(iossNumber = request.iossNumber).url)).toFuture
 
           case (Left(e), _) =>
             logger.error(s"Unexpected result on submit: ${e.toString}")

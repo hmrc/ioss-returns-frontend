@@ -206,17 +206,17 @@ class CheckYourAnswersController @Inject()(
                     userAnswers.set(TotalAmountVatDueGBPQuery, remainingTotalAmountVatDueGBP) match {
                       case Failure(exception) =>
                         logger.error(s"Couldn't update users answers with remaining owed vat ${exception.getMessage}", exception)
-                        Redirect(controllers.submissionResults.routes.ReturnSubmissionFailureController.onPageLoad().url).toFuture
+                        Redirect(controllers.submissionResults.routes.ReturnSubmissionFailureController.onPageLoad(request.iossNumber).url).toFuture
                       case Success(updatedAnswers) =>
                         cc.sessionRepository.set(updatedAnswers).map(_ =>
-                          Redirect(controllers.submissionResults.routes.SuccessfullySubmittedController.onPageLoad().url)
+                          Redirect(controllers.submissionResults.routes.SuccessfullySubmittedController.onPageLoad(request.iossNumber).url)
                         )
                     }
                   }.recoverWith {
                     case e: Exception =>
                       logger.error(s"Error while submitting VAT return ${e.getMessage}", e)
                       auditService.audit(ReturnsAuditModel.build(userAnswers, SubmissionResult.Failure))
-                      saveUserAnswersOnCoreError(controllers.submissionResults.routes.ReturnSubmissionFailureController.onPageLoad())
+                      saveUserAnswersOnCoreError(controllers.submissionResults.routes.ReturnSubmissionFailureController.onPageLoad(request.iossNumber))
                   }
               }
           }
@@ -243,7 +243,7 @@ class CheckYourAnswersController @Inject()(
             Redirect(frontendAppConfig.intermediaryDashboardUrl).toFuture
 
           case Left(ConflictFound) =>
-            Redirect(routes.YourAccountController.onPageLoad()).toFuture
+            Redirect(routes.YourAccountController.onPageLoad(iossNumber = request.iossNumber)).toFuture
 
           case Left(e) =>
             logger.error(s"Unexpected result on submit: $e")

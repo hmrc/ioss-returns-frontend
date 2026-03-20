@@ -41,17 +41,17 @@ class DeleteReturnController @Inject()(
 
   private val form: Form[Boolean] = formProvider()
 
-  def onPageLoad(period: Period): Action[AnyContent] = cc.authAndRequireData().async {
+  def onPageLoad(iossNumber: String, period: Period): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
     implicit request =>
 
-      Ok(view(form, request.userAnswers.period, request.isIntermediary, request.companyName)).toFuture
+      Ok(view(form, request.iossNumber, request.userAnswers.period, request.isIntermediary, request.companyName)).toFuture
   }
 
-  def onSubmit(period: Period): Action[AnyContent] = cc.authAndRequireData().async {
+  def onSubmit(iossNumber: String, period: Period): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
     implicit request =>
       form.bindFromRequest().fold(
         formWithErrors =>
-          BadRequest(view(formWithErrors, request.userAnswers.period, request.isIntermediary, request.companyName)).toFuture,
+          BadRequest(view(formWithErrors, request.iossNumber, request.userAnswers.period, request.isIntermediary, request.companyName)).toFuture,
         value =>
           if (value) {
             for {
@@ -59,7 +59,7 @@ class DeleteReturnController @Inject()(
               _ <- saveForLaterService.deleteSavedUserAnswers(request.iossNumber, period)
             } yield Redirect(controllers.routes.IndexController.onPageLoad)
           } else {
-            Redirect(controllers.routes.ContinueReturnController.onPageLoad(request.userAnswers.period)).toFuture
+            Redirect(controllers.routes.ContinueReturnController.onPageLoad(request.iossNumber, request.userAnswers.period)).toFuture
           }
       )
   }

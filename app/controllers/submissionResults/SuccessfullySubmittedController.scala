@@ -28,6 +28,7 @@ import services.intermediary.DashboardNavigationService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.EnrolmentIdentifiers.{findIntermediaryFromEnrolments, findIossFromEnrolments}
 import utils.Formatters.generateVatReturnReference
+import utils.FutureSyntax.FutureOps
 import views.html.submissionResults.SuccessfullySubmittedView
 
 import javax.inject.Inject
@@ -45,7 +46,7 @@ class SuccessfullySubmittedController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad: Action[AnyContent] = cc.authAndRequireData().async {
+  def onPageLoad(iossNumber: String): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
     implicit request =>
       val userResearchUrl = frontendAppConfig.userResearchUrl2
       val isIntermediary = request.isIntermediary
@@ -63,7 +64,7 @@ class SuccessfullySubmittedController @Inject()(
               Future.failed(new RuntimeException("No intermediary number in request"))
           }
         } else {
-          Future.successful("")
+          "".toFuture
         }
 
       val returnReference = generateVatReturnReference(request.iossNumber, request.userAnswers.period)
@@ -100,6 +101,7 @@ class SuccessfullySubmittedController @Inject()(
         Ok(view(
           returnReference,
           nilReturn = nilReturn,
+          iossNumber = request.iossNumber,
           period = request.userAnswers.period,
           owedAmount = totalOwed,
           externalUrl = maybeExternalUrl,

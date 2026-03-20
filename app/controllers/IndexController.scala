@@ -34,6 +34,7 @@ class IndexController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
+  // TODO -> iossNumber
   def onPageLoad: Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced() {
     implicit request =>
 
@@ -43,7 +44,7 @@ class IndexController @Inject()(
     (request.isIntermediary, intermediaryEnrolmentsExist, iossEnrolmentsExist) match {
       case (true, true, true) => Redirect(routes.IossOrIntermediaryController.onPageLoad(request.iossNumber))
       case (true, true, false) => Redirect(appConfig.intermediaryDashboardUrl)
-      case _ => Redirect(controllers.routes.YourAccountController.onPageLoad(waypoints = EmptyWaypoints))
+      case _ => Redirect(controllers.routes.YourAccountController.onPageLoad(waypoints = EmptyWaypoints, iossNumber = "IM9001234567")) // TODO -> Remove 
     }
   }
 }

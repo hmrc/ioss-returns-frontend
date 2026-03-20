@@ -36,23 +36,23 @@ class ContinueReturnController @Inject()(
   private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(period: Period): Action[AnyContent] = cc.authAndRequireData() {
+  def onPageLoad(iossNumber: String, period: Period): Action[AnyContent] = cc.authAndRequireData(iossNumber) {
     implicit request =>
       request.userAnswers.get(SavedProgressPage).map(
-        _ => Ok(view(form, request.userAnswers.period, request.isIntermediary, request.companyName))
+        _ => Ok(view(form, request.iossNumber, request.userAnswers.period, request.isIntermediary, request.companyName))
       ).getOrElse(
         Redirect(controllers.routes.StartReturnController.onPageLoad(iossNumber = request.iossNumber, period = period))
       )
 
   }
 
-  def onSubmit(period: Period): Action[AnyContent] = cc.authAndRequireData() {
+  def onSubmit(iossNumber: String, period: Period): Action[AnyContent] = cc.authAndRequireData(iossNumber) {
     implicit request =>
       form.bindFromRequest().fold(
         formWithErrors =>
-          BadRequest(view(formWithErrors, request.userAnswers.period, request.isIntermediary, request.companyName)),
+          BadRequest(view(formWithErrors, request.iossNumber, request.userAnswers.period, request.isIntermediary, request.companyName)),
         value =>
-          Redirect(ContinueReturnPage.navigate(request.userAnswers, value))
+          Redirect(ContinueReturnPage(request.iossNumber).navigate(request.userAnswers, value))
       )
   }
 }

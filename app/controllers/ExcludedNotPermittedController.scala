@@ -31,7 +31,7 @@ class ExcludedNotPermittedController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(): Action[AnyContent] = cc.auth { implicit request =>
-    Ok(view())
+  def onPageLoad(iossNumber: String): Action[AnyContent] = cc.auth { implicit request =>
+    Ok(view(iossNumber))
   }
 }

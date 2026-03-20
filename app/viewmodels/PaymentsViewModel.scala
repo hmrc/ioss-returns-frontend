@@ -28,7 +28,7 @@ case class PaymentsViewModel(sections: Seq[PaymentsSection], warning: Option[Str
 case class PaymentsSection(contents: Seq[String], heading: Option[String] = None)
 
 object PaymentsViewModel {
-  def apply(duePayments: Seq[Payment], overduePayments: Seq[Payment], excludedPayments: Seq[Payment], clock: Clock)
+  def apply(iossNumber: String, duePayments: Seq[Payment], overduePayments: Seq[Payment], excludedPayments: Seq[Payment], clock: Clock)
            (implicit messages: Messages): PaymentsViewModel = {
     if (duePayments.isEmpty && overduePayments.isEmpty) {
       PaymentsViewModel(
@@ -61,7 +61,7 @@ object PaymentsViewModel {
           LinkModel(
             linkText = messages("yourAccount.payment.makeAPayment"),
             id = "make-a-payment",
-            url = controllers.payments.routes.WhichVatPeriodToPayController.onPageLoad().url
+            url = controllers.payments.routes.WhichVatPeriodToPayController.onPageLoad(iossNumber = iossNumber).url
           )
         )
       )

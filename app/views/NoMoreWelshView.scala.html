@@ -19,7 +19,7 @@
         govukButton: GovukButton
 )
 
-@(externalUrl: Option[String] = None)(implicit request: Request[_], messages: Messages)
+@(iossNumber: String, externalUrl: Option[String] = None)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(messages("noMoreWelsh.title"))) {
 
@@ -27,7 +27,7 @@
 
     @govukButton(
         ButtonViewModel(messages("noMoreWelsh.submit"))
-        .asLink(externalUrl.getOrElse(routes.YourAccountController.onPageLoad().url))
+        .asLink(externalUrl.getOrElse(routes.YourAccountController.onPageLoad(iossNumber = iossNumber).url))
         .withAttribute(("id", "continue"))
     )
 }

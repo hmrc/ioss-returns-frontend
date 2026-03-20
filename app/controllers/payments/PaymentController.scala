@@ -18,7 +18,7 @@ package controllers.payments
 
 import config.Service
 import connectors.{FinancialDataConnector, VatReturnConnector}
-import controllers.actions._
+import controllers.actions.*
 import logging.Logging
 import models.Period
 import pages.{JourneyRecoveryPage, Waypoints}
@@ -28,6 +28,7 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import services.{PaymentsService, PreviousRegistrationService}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.FutureSyntax.FutureOps
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -44,18 +45,20 @@ class PaymentController @Inject()(
   protected val controllerComponents: MessagesControllerComponents = cc
   private val paymentsBaseUrl: Service = config.get[Service]("microservice.services.pay-api")
 
-  def makePayment(waypoints: Waypoints, period: Period): Action[AnyContent] = cc.authAndGetOptionalData().async { implicit request =>
+  def makePayment(waypoints: Waypoints, iossNumber: String, period: Period): Action[AnyContent] =
+    cc.authAndGetOptionalData(iossNumber).async { implicit request =>
     getAmountOwedAndRedirect(period, request.iossNumber)
   }
 
+  // TODO -> Check if correct iossNumber -> May need additional urlIossNumber param
   def makePaymentForIossNumber(waypoints: Waypoints, period: Period, iossNumber: String): Action[AnyContent] = {
-    cc.authAndGetOptionalData().async { implicit request =>
+    cc.authAndGetOptionalData(iossNumber).async { implicit request =>
       previousRegistrationService.getPreviousRegistrations(request.isIntermediary).flatMap { previousRegistrations =>
         val validIossNumbers: Seq[String] = request.iossNumber :: previousRegistrations.map(_.iossNumber)
         if (validIossNumbers.contains(iossNumber)) {
           getAmountOwedAndRedirect(period, iossNumber)
         } else {
-          Future.successful(Redirect(JourneyRecoveryPage.route(waypoints)))
+          Redirect(JourneyRecoveryPage.route(waypoints)).toFuture
         }
       }
     }

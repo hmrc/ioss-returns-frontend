@@ -29,15 +29,16 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class CheckSubmittedReturnsFilterImpl(
-                                     connector: VatReturnConnector
+                                       connector: VatReturnConnector
                                      )(implicit val executionContext: ExecutionContext)
   extends ActionFilter[DataRequest] with Logging {
 
   override protected def filter[A](request: DataRequest[A]): Future[Option[Result]] = {
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
 
-    connector.getObligations(request.iossNumber)
-      .map(obligations)
+    connector.getObligations(request.iossNumber).map { obligations =>
+        obligationsResult(request.iossNumber, obligations)
+      }
       .recover {
         case e: Exception =>
           logger.error(s"Error occurred while getting obligations ${e.getMessage}", e)
@@ -45,20 +46,23 @@ class CheckSubmittedReturnsFilterImpl(
       }
   }
 
-    private def obligations(etmpObligations: EtmpObligations): Option[Result] = {
-      etmpObligations.obligations.flatMap(_.obligationDetails).minByOption(_.periodKey) match {
-        case Some(etmpObligation) if etmpObligation.status == EtmpObligationsFulfilmentStatus.Fulfilled =>
-          None
-        case _ =>
-          Some(Redirect(controllers.routes.CheckYourAnswersController.onPageLoad()))
-      }
+  private def obligationsResult(
+                                 iossNumber: String,
+                                 etmpObligations: EtmpObligations
+                               ): Option[Result] = {
+    etmpObligations.obligations.flatMap(_.obligationDetails).minByOption(_.periodKey) match {
+      case Some(etmpObligation) if etmpObligation.status == EtmpObligationsFulfilmentStatus.Fulfilled =>
+        None
+      case _ =>
+        Some(Redirect(controllers.routes.CheckYourAnswersController.onPageLoad(iossNumber = iossNumber)))
     }
+  }
 
 }
 
 class CheckSubmittedReturnsFilterProvider @Inject()(
-                                                   connector: VatReturnConnector
-                                                   )(implicit ec:ExecutionContext) {
+                                                     connector: VatReturnConnector
+                                                   )(implicit ec: ExecutionContext) {
 
   def apply(): CheckSubmittedReturnsFilterImpl =
     new CheckSubmittedReturnsFilterImpl(connector)

@@ -43,6 +43,6 @@
         )
       )
 
-      @button("site.continue", controllers.corrections.routes.RemovePeriodCorrectionController.onPageLoad(waypoints, iossNumber, periodIndex).url, period, waypoints)
+      @button("site.continue", controllers.corrections.routes.RemovePeriodCorrectionController.onPageLoad(waypoints, iossNumber, periodIndex).url, iossNumber, period, waypoints)
     }
   }
