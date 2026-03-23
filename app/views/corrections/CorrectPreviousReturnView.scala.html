@@ -50,11 +50,7 @@
             @govukRadios(
                 RadiosViewModel.yesNo(
                     field = form("value"),
-                    legend = LegendViewModel(if(isIntermediary) {
-                        messages("correctPreviousReturn.intermediary.heading")
-                    } else {
-                        messages("correctPreviousReturn.heading")
-                    }).asPageHeading()
+                    legend = LegendViewModel(messages("correctPreviousReturn.heading")).asPageHeading()
                 )
             )
         }
