@@ -99,6 +99,7 @@ class CsvParserService @Inject()() {
     } else {
       rows
         .drop(headerIndex + 1)
+        .filterNot(isRowEmpty)
         .collect {
           case Array(country, vatRate, sales, vat) =>
             VatRow(
@@ -109,6 +110,10 @@ class CsvParserService @Inject()() {
             )
         }
     }
+  }
+
+  private def isRowEmpty(row: Array[String]): Boolean = {
+    row.forall(_.trim.isEmpty)
   }
 
   private def parseVatRate(vatRateFromCsv: String): String = {
