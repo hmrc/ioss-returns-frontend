@@ -91,7 +91,10 @@ class CsvParserService @Inject()() {
   private def extractVatRows(rows: Seq[Array[String]]): Seq[VatRow] = {
 
     val headerIndex = {
-      rows.indexWhere(_.headOption.exists(_.trim.equalsIgnoreCase("Country")))
+      rows.indexWhere(_.headOption.exists { c =>
+        val cleaned = c.replace("\"", "").trim.toLowerCase
+        cleaned.startsWith("country")
+      })
     }
 
     if (headerIndex < 0) {
