@@ -45,8 +45,12 @@ class CsvValidator @Inject()(vatRateService: VatRateService)(implicit ec: Execut
                         rows: Seq[Array[String]],
                         period: Period
                       )(implicit hc: HeaderCarrier): Future[Seq[CsvError]] = {
+
     val headerIndex = rows.indexWhere { row =>
-      row.headOption.exists(c => c.replace("\"", "").trim.equalsIgnoreCase("Country"))
+      row.headOption.exists { c =>
+        val cleaned = c.replace("\"", "").trim
+        cleaned.toLowerCase.startsWith("country")
+      }
     }
 
     if (headerIndex < 0) {

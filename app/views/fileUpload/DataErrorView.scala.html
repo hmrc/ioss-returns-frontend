@@ -42,15 +42,15 @@
 
 @titleText = @{
     errorCount match {
-        case 1 => messages("dataError.title")
-        case i => messages("dataError.title.plural", i)
+        case i if i > 1 => messages("dataError.title.plural", i)
+        case _ => messages("dataError.title")
     }
 }
 
 @headingText = @{
     errorCount match {
-        case 1 => messages("dataError.heading")
-        case i => messages("dataError.heading.plural", i)
+        case i if i > 1 => messages("dataError.heading.plural", i)
+        case _ => messages("dataError.heading")
     }
 }
 
