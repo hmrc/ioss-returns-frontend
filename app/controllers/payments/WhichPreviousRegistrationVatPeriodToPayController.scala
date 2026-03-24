@@ -64,7 +64,7 @@ class WhichPreviousRegistrationVatPeriodToPayController @Inject()(
 
           payments match {
             case payment :: Nil => makePayment(iossNumber, payment)
-            case Nil => Ok(viewNoPayment(YourAccountPage(request.iossNumber).route(waypoints).url)).toFuture
+            case Nil => Ok(viewNoPayment(YourAccountPage.route(waypoints).url)).toFuture
             case _ => Ok(view(form, waypoints, request.iossNumber, payments, paymentError = paymentError)).toFuture
           }
         }

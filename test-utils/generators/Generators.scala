@@ -16,13 +16,12 @@
 
 package generators
 
-import org.scalacheck.Arbitrary._
-import org.scalacheck.Gen._
+import org.scalacheck.Arbitrary.*
+import org.scalacheck.Gen.*
 import org.scalacheck.{Gen, Shrink}
 import org.scalatest.OptionValues
 
 import java.time.{Instant, LocalDate, ZoneOffset}
-
 
 trait Generators extends PageGenerators with ModelGenerators with OptionValues {
 

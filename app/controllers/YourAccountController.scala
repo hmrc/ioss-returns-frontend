@@ -57,7 +57,7 @@ class YourAccountController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(waypoints: Waypoints, iossNumber: String): Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced(iossNumber).async {
+  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetRegistrationWithoutUrlIoss.async {
     implicit request =>
 
       val userResearchUrl = appConfig.userResearchUrl1

@@ -22,7 +22,7 @@
         govukButton: GovukButton
 )
 
-@(iossNumber: String)(implicit request: Request[_], messages: Messages)
+@()(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(messages("cannotStartReturn.title"))) {
 
@@ -30,6 +30,6 @@
 
     <p class="govuk-body">@messages("cannotStartReturn.p1")</p>
 
-    <p class="govuk-body">@Html(messages("cannotStartReturn.backToYourAccount", YourAccountPage(iossNumber).route(EmptyWaypoints).url))</p>
+    <p class="govuk-body">@Html(messages("cannotStartReturn.backToYourAccount", YourAccountPage.route(EmptyWaypoints).url))</p>
 
 }

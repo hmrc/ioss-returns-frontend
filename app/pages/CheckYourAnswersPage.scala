@@ -19,15 +19,31 @@ package pages
 import controllers.routes
 import play.api.mvc.Call
 
-case object CheckYourAnswersPage extends CheckAnswersPage {
+case class CheckYourAnswersPage(iossNumber: String) extends CheckAnswersPage {
 
   override def isTheSamePage(other: Page): Boolean = other match {
-    case CheckYourAnswersPage => true
+    case CheckYourAnswersPage(iossNumber) => true
     case _ => false
   }
 
-  override val urlFragment: String = "check-your-answers"
+  override val urlFragment: String = s"$iossNumber-check-your-answers"
 
   override def route(waypoints: Waypoints): Call =
-    routes.CheckYourAnswersController.onPageLoad(iossNumber = "IM9001234567") // TODO -> Pass iossNumber
+    routes.CheckYourAnswersController.onPageLoad(waypoints, iossNumber)
+}
+
+object CheckYourAnswersPage {
+  
+  def waypointFromString(s: String): Option[Waypoint] = {
+
+    val checkModePattern = """((?i)IM\d{10})-check-your-answers""".r.anchored
+
+    s match {
+      case checkModePattern(iossNumber) =>
+        Some(CheckYourAnswersPage(iossNumber).waypoint)
+
+      case _ =>
+        None
+    }
+  }
 }

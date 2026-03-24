@@ -30,7 +30,7 @@ import org.scalatestplus.mockito.MockitoSugar.mock
 import pages.JourneyRecoveryPage
 import play.api.inject.bind
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import services.{PaymentsService, PreviousRegistrationService}
 import testUtils.EtmpVatReturnData.etmpVatReturn
 import testUtils.PreviousRegistrationData.previousRegistrations
@@ -74,11 +74,11 @@ class PaymentControllerSpec extends SpecBase with BeforeAndAfterEach {
           .build()
 
         running(application) {
-          val request = FakeRequest(GET, routes.PaymentController.makePayment(waypoints, period).url)
+          val request = FakeRequest(GET, routes.PaymentController.makePayment(waypoints, iossNumber, period).url)
 
           val result = route(application, request).value
 
-          status(result) mustBe SEE_OTHER
+          status(result) `mustBe` SEE_OTHER
           redirectLocation(result).value must endWith(paymentResponse.nextUrl)
         }
       }
@@ -96,11 +96,11 @@ class PaymentControllerSpec extends SpecBase with BeforeAndAfterEach {
           .build()
 
         running(application) {
-          val request = FakeRequest(GET, routes.PaymentController.makePayment(waypoints, period).url)
+          val request = FakeRequest(GET, routes.PaymentController.makePayment(waypoints, iossNumber, period).url)
 
           val result = route(application, request).value
 
-          status(result) mustBe SEE_OTHER
+          status(result) `mustBe` SEE_OTHER
           redirectLocation(result).value must endWith(paymentResponse.nextUrl)
         }
       }
@@ -116,11 +116,11 @@ class PaymentControllerSpec extends SpecBase with BeforeAndAfterEach {
           .build()
 
         running(application) {
-          val request = FakeRequest(GET, routes.PaymentController.makePayment(waypoints, period).url)
+          val request = FakeRequest(GET, routes.PaymentController.makePayment(waypoints, iossNumber, period).url)
 
           val result = route(application, request).value
 
-          status(result) mustBe SEE_OTHER
+          status(result) `mustBe` SEE_OTHER
           redirectLocation(result).value must endWith("/pay/service-unavailable")
         }
       }
@@ -144,7 +144,7 @@ class PaymentControllerSpec extends SpecBase with BeforeAndAfterEach {
 
           val result = route(application, request).value
 
-          status(result) mustBe SEE_OTHER
+          status(result) `mustBe` SEE_OTHER
           redirectLocation(result).value must endWith(paymentResponse.nextUrl)
         }
       }
@@ -168,7 +168,7 @@ class PaymentControllerSpec extends SpecBase with BeforeAndAfterEach {
 
           val result = route(application, request).value
 
-          status(result) mustBe SEE_OTHER
+          status(result) `mustBe` SEE_OTHER
           redirectLocation(result).value must endWith(paymentResponse.nextUrl)
         }
       }
@@ -190,7 +190,7 @@ class PaymentControllerSpec extends SpecBase with BeforeAndAfterEach {
 
           val result = route(application, request).value
 
-          status(result) mustBe SEE_OTHER
+          status(result) `mustBe` SEE_OTHER
           redirectLocation(result).value must endWith("/pay/service-unavailable")
         }
       }
@@ -209,8 +209,8 @@ class PaymentControllerSpec extends SpecBase with BeforeAndAfterEach {
 
           val result = route(application, request).value
 
-          status(result) mustBe SEE_OTHER
-          redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
+          status(result) `mustBe` SEE_OTHER
+          redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
         }
       }
     }

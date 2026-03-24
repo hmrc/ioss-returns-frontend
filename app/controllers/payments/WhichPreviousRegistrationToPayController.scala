@@ -92,12 +92,12 @@ class WhichPreviousRegistrationToPayController @Inject()(
         val iossNumber = prepareData.iossNumber
         val payments = prepareData.overduePayments ++ prepareData.duePayments
         payments match {
-          case Nil => Ok(viewNoPayment(YourAccountPage(request.iossNumber).route(waypoints).url)).toFuture
+          case Nil => Ok(viewNoPayment(YourAccountPage.route(waypoints).url)).toFuture
           case payment :: Nil =>
             makePayment(iossNumber, payment)
           case _ =>
             selectedIossNumberRepository.set(SelectedIossNumber(request.userId, iossNumber)).map { _ =>
-              Redirect(WhichPreviousRegistrationVatPeriodToPayPage(iossNumber).route(waypoints))
+              Redirect(WhichPreviousRegistrationVatPeriodToPayPage(request.iossNumber).route(waypoints))
             }
         }
       case _ =>
@@ -116,7 +116,7 @@ class WhichPreviousRegistrationToPayController @Inject()(
         makePayment(iossNumber, payments.head)
       } else {
         selectedIossNumberRepository.set(SelectedIossNumber(request.userId, iossNumber)).map { _ =>
-          Redirect(WhichPreviousRegistrationVatPeriodToPayPage(iossNumber).route(waypoints))
+          Redirect(WhichPreviousRegistrationVatPeriodToPayPage(request.iossNumber).route(waypoints))
         }
       }
     }.getOrElse(Redirect(JourneyRecoveryPage.route(waypoints)).toFuture)

@@ -84,7 +84,7 @@ class SavedProgressControllerSpec extends SpecBase with BeforeAndAfterEach {
 
       running(app) {
 
-        val request = FakeRequest(GET, routes.SavedProgressController.onPageLoad(period, RedirectUrl("/test")).url)
+        val request = FakeRequest(GET, routes.SavedProgressController.onPageLoad(iossNumber, period, RedirectUrl("/test")).url)
 
         val result = route(app, request).value
 
@@ -122,7 +122,7 @@ class SavedProgressControllerSpec extends SpecBase with BeforeAndAfterEach {
 
       running(app) {
 
-        val request = FakeRequest(GET, routes.SavedProgressController.onPageLoad(period, RedirectUrl("/test")).url)
+        val request = FakeRequest(GET, routes.SavedProgressController.onPageLoad(iossNumber, period, RedirectUrl("/test")).url)
 
         val result = route(app, request).value
 
@@ -146,7 +146,7 @@ class SavedProgressControllerSpec extends SpecBase with BeforeAndAfterEach {
 
       running(app) {
 
-        val request = FakeRequest(GET, routes.SavedProgressController.onPageLoad(period, RedirectUrl("/test")).url)
+        val request = FakeRequest(GET, routes.SavedProgressController.onPageLoad(iossNumber, period, RedirectUrl("/test")).url)
 
         val result = route(app, request).value
 
@@ -168,7 +168,7 @@ class SavedProgressControllerSpec extends SpecBase with BeforeAndAfterEach {
 
       running(app) {
 
-        val request = FakeRequest(GET, routes.SavedProgressController.onPageLoad(period, RedirectUrl("/test")).url)
+        val request = FakeRequest(GET, routes.SavedProgressController.onPageLoad(iossNumber, period, RedirectUrl("/test")).url)
 
         val result = route(app, request).value
 
@@ -190,7 +190,7 @@ class SavedProgressControllerSpec extends SpecBase with BeforeAndAfterEach {
 
       running(app) {
 
-        val request = FakeRequest(GET, routes.SavedProgressController.onPageLoad(period, RedirectUrl("/test")).url)
+        val request = FakeRequest(GET, routes.SavedProgressController.onPageLoad(iossNumber, period, RedirectUrl("/test")).url)
 
         val result = route(app, request).value
 
@@ -251,7 +251,7 @@ class SavedProgressControllerSpec extends SpecBase with BeforeAndAfterEach {
 
         running(app) {
 
-          val request = FakeRequest(GET, routes.SavedProgressController.onPageLoad(period, RedirectUrl("/test")).url)
+          val request = FakeRequest(GET, routes.SavedProgressController.onPageLoad(iossNumber, period, RedirectUrl("/test")).url)
 
           val config = app.injector.instanceOf[FrontendAppConfig]
 
@@ -281,7 +281,7 @@ class SavedProgressControllerSpec extends SpecBase with BeforeAndAfterEach {
 
         running(app) {
 
-          val request = FakeRequest(GET, routes.SavedProgressController.onPageLoad(period, RedirectUrl("/test")).url)
+          val request = FakeRequest(GET, routes.SavedProgressController.onPageLoad(iossNumber, period, RedirectUrl("/test")).url)
 
           val config = app.injector.instanceOf[FrontendAppConfig]
 

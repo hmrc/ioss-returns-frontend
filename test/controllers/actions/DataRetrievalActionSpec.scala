@@ -20,18 +20,19 @@ import base.SpecBase
 import models.RegistrationWrapper
 import models.requests.{OptionalDataRequest, RegistrationRequest}
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito._
+import org.mockito.Mockito.*
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.test.FakeRequest
 import repositories.SessionRepository
+import utils.FutureSyntax.FutureOps
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class DataRetrievalActionSpec extends SpecBase with MockitoSugar {
 
-  class Harness(repository: SessionRepository) extends DataRetrievalAction(repository) {
+  class Harness(repository: SessionRepository, iossNumber: String) extends DataRetrievalAction(repository, iossNumber) {
 
     def callTransform(request: RegistrationRequest[_]): Future[OptionalDataRequest[_]] =
       transform(request)
@@ -50,7 +51,7 @@ class DataRetrievalActionSpec extends SpecBase with MockitoSugar {
 
         when(repository.get(any(), any())) thenReturn Future.successful(None)
 
-        val action = new Harness(repository)
+        val action = new Harness(repository, iossNumber)
 
         val result = action.callTransform(request).futureValue
 
@@ -65,13 +66,13 @@ class DataRetrievalActionSpec extends SpecBase with MockitoSugar {
         val repository = mock[SessionRepository]
         val request    = RegistrationRequest(FakeRequest(), testCredentials, Some(vrn), "Company Name", iossNumber, registrationWrapper, None, enrolments)
 
-        when(repository.get(any(), any())) thenReturn Future.successful(Some(emptyUserAnswers))
+        when(repository.get(any(), any())) thenReturn Some(emptyUserAnswers).toFuture
 
-        val action = new Harness(repository)
+        val action = new Harness(repository, iossNumber)
 
         val result = action.callTransform(request).futureValue
 
-        result.userAnswers.value mustEqual emptyUserAnswers
+        result.userAnswers.value `mustBe` emptyUserAnswers
       }
     }
   }

@@ -65,7 +65,7 @@ class IossOrIntermediaryController @Inject()(
           if (value == intermediaryNumber) {
             Redirect(frontendAppConfig.intermediaryDashboardUrl).toFuture
           } else {
-            Redirect(controllers.routes.YourAccountController.onPageLoad(waypoints = EmptyWaypoints, request.iossNumber)).toFuture
+            Redirect(controllers.routes.YourAccountController.onPageLoad(waypoints = EmptyWaypoints)).toFuture
           }
       )
   }

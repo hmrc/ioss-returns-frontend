@@ -17,30 +17,29 @@
 package controllers.fileUpload
 
 import base.SpecBase
-import controllers.routes
 import forms.DataErrorFormProvider
 import models.upscan.*
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
+import pages.JourneyRecoveryPage
 import pages.fileUpload.{CsvValidationErrorsPage, DataErrorPage}
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import repositories.SessionRepository
+import utils.FutureSyntax.FutureOps
 import views.html.fileUpload.DataErrorView
-
-import scala.concurrent.Future
 
 class DataErrorControllerSpec extends SpecBase with MockitoSugar {
 
   val formProvider = new DataErrorFormProvider()
   val form: Form[Boolean] = formProvider()
   private val csvErrors: Seq[CsvError] = Seq(CsvError.BlankCell(row = 4, column = CsvColumn.C))
-  private val userAnswersWithErrors = emptyUserAnswers.set(CsvValidationErrorsPage, csvErrors).success.value
+  private val userAnswersWithErrors = emptyUserAnswers.set(CsvValidationErrorsPage(iossNumber), csvErrors).success.value
 
-  lazy val dataErrorRoute: String = controllers.fileUpload.routes.DataErrorController.onPageLoad(waypoints).url
+  lazy val dataErrorRoute: String = controllers.fileUpload.routes.DataErrorController.onPageLoad(waypoints, iossNumber).url
 
   "DataError Controller" - {
 
@@ -59,10 +58,11 @@ class DataErrorControllerSpec extends SpecBase with MockitoSugar {
         val expectedParagraphs: Seq[String] =
           Seq(msgs("dataError.errorMessage.blankCell.p1", "C4"))
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(
           form,
           waypoints,
+          iossNumber,
           period,
           false,
           companyName,
@@ -76,7 +76,7 @@ class DataErrorControllerSpec extends SpecBase with MockitoSugar {
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = userAnswersWithErrors.set(DataErrorPage, true).success.value
+      val userAnswers = userAnswersWithErrors.set(DataErrorPage(iossNumber), true).success.value
 
       val application = applicationBuilder(Some(userAnswers)).build()
 
@@ -92,10 +92,11 @@ class DataErrorControllerSpec extends SpecBase with MockitoSugar {
         val expectedParagraphs: Seq[String] =
           Seq(msgs("dataError.errorMessage.blankCell.p1", "C4"))
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(
           form.fill(true),
           waypoints,
+          iossNumber,
           period,
           false,
           companyName,
@@ -111,7 +112,7 @@ class DataErrorControllerSpec extends SpecBase with MockitoSugar {
 
       val mockSessionRepository = mock[SessionRepository]
 
-      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      when(mockSessionRepository.set(any())) thenReturn true.toFuture
 
       val application =
         applicationBuilder(userAnswers = Some(emptyUserAnswers))
@@ -126,10 +127,10 @@ class DataErrorControllerSpec extends SpecBase with MockitoSugar {
             .withFormUrlEncodedBody(("value", "true"))
 
         val result = route(application, request).value
-        val expectedAnswers = emptyUserAnswers.set(DataErrorPage, true).success.value
+        val expectedAnswers = emptyUserAnswers.set(DataErrorPage(iossNumber), true).success.value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual DataErrorPage.navigate(waypoints, emptyUserAnswers, expectedAnswers).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` DataErrorPage(iossNumber).navigate(waypoints, emptyUserAnswers, expectedAnswers).url
       }
     }
 
@@ -153,10 +154,11 @@ class DataErrorControllerSpec extends SpecBase with MockitoSugar {
         val expectedParagraphs: Seq[String] =
           Seq(msgs("dataError.errorMessage.blankCell.p1", "C4"))
 
-        status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(
+        status(result) `mustBe` BAD_REQUEST
+        contentAsString(result) `mustBe` view(
           boundForm,
           waypoints,
+          iossNumber,
           period,
           false,
           companyName,
@@ -177,8 +179,8 @@ class DataErrorControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
 
@@ -193,8 +195,8 @@ class DataErrorControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
   }

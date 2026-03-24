@@ -31,7 +31,7 @@ import viewmodels.previousReturns.{PreviousRegistration, SelectedPreviousRegistr
 import views.html.previousReturns.ReturnRegistrationSelectionView
 
 import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class ReturnRegistrationSelectionController @Inject()(
                                                        override val messagesApi: MessagesApi,

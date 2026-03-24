@@ -18,15 +18,15 @@ package controllers.actions
 
 import base.SpecBase
 import connectors.ReturnStatusConnector
-import models.{Period, StandardPeriod}
 import models.SubmissionStatus.{Complete, Due, Excluded, Next, Overdue}
 import models.requests.OptionalDataRequest
+import models.{Period, StandardPeriod}
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito._
+import org.mockito.Mockito.*
 import org.mockito.{ArgumentMatchers, Mockito}
-import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.prop.TableDrivenPropertyChecks
+import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.mvc.Result
 import play.api.mvc.Results.Redirect
 import play.api.test.FakeRequest
@@ -61,14 +61,14 @@ class CheckIsCurrentReturnPeriodFilterImplSpec extends SpecBase with BeforeAndAf
 
       when(mockReturnStatusConnector.getCurrentReturns(ArgumentMatchers.eq(iossNumber))(any()))
         .thenReturn(Future.successful(Right(
-          CurrentReturns(returns = returns, excluded = false, finalReturnsCompleted = false, completeOrExcludedReturns = List.empty)
+          CurrentReturns(returns = returns, finalReturnsCompleted = false, completeOrExcludedReturns = List.empty)
         )))
 
       val request = OptionalDataRequest(FakeRequest(), enrolments, testCredentials, Some(vrn), iossNumber, companyName, registrationWrapper, None, Some(completeUserAnswers))
       val controller = new Harness(middlePeriod)
 
       val result = controller.callFilter(request).futureValue
-      result mustBe None
+      result `mustBe` None
     }
 
     "redirect to SubmittedReturnForPeriodController when it is a complete return" in {
@@ -89,7 +89,6 @@ class CheckIsCurrentReturnPeriodFilterImplSpec extends SpecBase with BeforeAndAf
       forAll(activeReturnOptions) { activeReturnOption =>
         val currentReturns = CurrentReturns(
           returns = activeReturnOption,
-          excluded = false,
           finalReturnsCompleted = false,
           completeOrExcludedReturns = completeOrExcludedReturns
         )
@@ -101,7 +100,7 @@ class CheckIsCurrentReturnPeriodFilterImplSpec extends SpecBase with BeforeAndAf
         val controller = new Harness(middlePeriod)
 
         val result = controller.callFilter(request).futureValue
-        result mustBe Some(Redirect(controllers.previousReturns.routes.SubmittedReturnForPeriodController.onPageLoad(waypoints, middlePeriod)))
+        result `mustBe` Some(Redirect(controllers.previousReturns.routes.SubmittedReturnForPeriodController.onPageLoad(waypoints, iossNumber, middlePeriod)))
       }
     }
 
@@ -124,7 +123,6 @@ class CheckIsCurrentReturnPeriodFilterImplSpec extends SpecBase with BeforeAndAf
 
         val currentReturns = CurrentReturns(
           returns = activeReturnOption,
-          excluded = false,
           finalReturnsCompleted = false,
           completeOrExcludedReturns = completeOrExcludedReturns
         )
@@ -136,7 +134,7 @@ class CheckIsCurrentReturnPeriodFilterImplSpec extends SpecBase with BeforeAndAf
         val controller = new Harness(middlePeriod)
 
         val result = controller.callFilter(request).futureValue
-        result mustBe Some(Redirect(controllers.routes.CannotStartExcludedReturnController.onPageLoad()))
+        result `mustBe` Some(Redirect(controllers.routes.CannotStartExcludedReturnController.onPageLoad(iossNumber)))
       }
     }
 
@@ -153,7 +151,6 @@ class CheckIsCurrentReturnPeriodFilterImplSpec extends SpecBase with BeforeAndAf
 
       val currentReturns = CurrentReturns(
         returns = returns,
-        excluded = false,
         finalReturnsCompleted = false,
         completeOrExcludedReturns = completeOrExcludedReturns
       )
@@ -165,7 +162,7 @@ class CheckIsCurrentReturnPeriodFilterImplSpec extends SpecBase with BeforeAndAf
       val controller = new Harness(earliestPeriod)
 
       val result = controller.callFilter(request).futureValue
-      result mustBe Some(Redirect(controllers.routes.NoOtherPeriodsAvailableController.onPageLoad()))
+      result `mustBe` Some(Redirect(controllers.routes.NoOtherPeriodsAvailableController.onPageLoad(waypoints, iossNumber)))
     }
 
     "fail when first due is not current period" in {
@@ -177,7 +174,6 @@ class CheckIsCurrentReturnPeriodFilterImplSpec extends SpecBase with BeforeAndAf
 
       val currentReturns = CurrentReturns(
         returns = returns,
-        excluded = false,
         finalReturnsCompleted = false,
         completeOrExcludedReturns = List.empty
       )
@@ -189,7 +185,7 @@ class CheckIsCurrentReturnPeriodFilterImplSpec extends SpecBase with BeforeAndAf
       val controller = new Harness(unknownPeriod)
 
       val result = controller.callFilter(request).futureValue
-      result mustBe Some(Redirect(controllers.routes.CannotStartReturnController.onPageLoad()))
+      result `mustBe` Some(Redirect(controllers.routes.CannotStartReturnController.onPageLoad()))
     }
   }
 }

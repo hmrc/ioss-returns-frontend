@@ -24,13 +24,13 @@ import utils.FutureSyntax.FutureOps
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class CheckBouncedEmailFilterImpl(iossNumber: String)(implicit val executionContext: ExecutionContext)
+class CheckBouncedEmailFilterImpl()(implicit val executionContext: ExecutionContext)
   extends ActionFilter[RegistrationRequest] {
 
   override protected def filter[A](request: RegistrationRequest[A]): Future[Option[Result]] = {
 
     if (request.registrationWrapper.registration.schemeDetails.unusableStatus) {
-      Some(Redirect(controllers.routes.InterceptUnusableEmailController.onPageLoad(iossNumber))).toFuture
+      Some(Redirect(controllers.routes.InterceptUnusableEmailController.onPageLoad(request.iossNumber))).toFuture
     } else {
       None.toFuture
     }
@@ -40,6 +40,6 @@ class CheckBouncedEmailFilterImpl(iossNumber: String)(implicit val executionCont
 
 class CheckBouncedEmailFilterProvider @Inject()()(implicit ec: ExecutionContext) {
 
-  def apply(iossNumber: String): CheckBouncedEmailFilterImpl =
-    new CheckBouncedEmailFilterImpl(iossNumber)
+  def apply(): CheckBouncedEmailFilterImpl =
+    new CheckBouncedEmailFilterImpl()
 }

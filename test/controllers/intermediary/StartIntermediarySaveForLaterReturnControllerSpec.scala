@@ -96,7 +96,7 @@ class StartIntermediarySaveForLaterReturnControllerSpec extends SpecBase with Be
         val result = route(application, request).value
 
         status(result) `mustBe` SEE_OTHER
-        redirectLocation(result).value mustBe ContinueReturnPage.navigate(userAnswers, ContinueReturn.Continue).url
+        redirectLocation(result).value `mustBe` ContinueReturnPage(iossNumber).navigate(userAnswers, ContinueReturn.Continue).url
         verify(mockSaveForLaterService, times(1)).getSavedReturnsForClient(any())(any())
         verify(mockIntermediarySelectedIossNumberRepository, times(1)).set(any())
         verify(mockSessionRepository, times(1)).set(eqTo(userAnswers))

@@ -37,10 +37,11 @@ class DashboardNavigationServiceSpec extends SpecBase with MockitoSugar {
         val result = service.getAppropriateDashboardUrl(
           isIntermediary = true,
           intermediaryEnrolmentsExist = true,
-          iossEnrolmentsExist = true
+          iossEnrolmentsExist = true,
+          iossNumber = iossNumber
         )
 
-        result mustEqual controllers.intermediary.routes.IossOrIntermediaryController.onPageLoad().url
+        result `mustBe` controllers.intermediary.routes.IossOrIntermediaryController.onPageLoad(iossNumber).url
       }
     }
 
@@ -53,10 +54,11 @@ class DashboardNavigationServiceSpec extends SpecBase with MockitoSugar {
         val result = service.getAppropriateDashboardUrl(
           isIntermediary = true,
           intermediaryEnrolmentsExist = true,
-          iossEnrolmentsExist = false
+          iossEnrolmentsExist = false,
+          iossNumber = iossNumber
         )
 
-        result mustEqual mockFrontendAppConfig.intermediaryDashboardUrl
+        result `mustBe` mockFrontendAppConfig.intermediaryDashboardUrl
       }
     }
 
@@ -69,10 +71,11 @@ class DashboardNavigationServiceSpec extends SpecBase with MockitoSugar {
         val result = service.getAppropriateDashboardUrl(
           isIntermediary = false,
           intermediaryEnrolmentsExist = false,
-          iossEnrolmentsExist = true
+          iossEnrolmentsExist = true,
+          iossNumber = iossNumber
         )
 
-        result mustEqual controllers.routes.YourAccountController.onPageLoad().url
+        result `mustBe` controllers.routes.YourAccountController.onPageLoad(waypoints).url
       }
     }
   }

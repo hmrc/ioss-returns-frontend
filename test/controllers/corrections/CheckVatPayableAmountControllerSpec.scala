@@ -22,25 +22,25 @@ import models.Country
 import org.scalacheck.Arbitrary.arbitrary
 import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, CorrectionReturnYearPage, VatAmountCorrectionCountryPage}
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import queries.corrections.{PreviouslyDeclaredCorrectionAmount, PreviouslyDeclaredCorrectionAmountQuery}
 
 class CheckVatPayableAmountControllerSpec extends SpecBase {
 
 
-  private lazy val CheckVatAmountRoute: String = routes.CheckVatPayableAmountController.onPageLoad(waypoints, index, index).url
-  private lazy val CheckVatAmountPostRoute: String = routes.CheckVatPayableAmountController.onSubmit(waypoints, index, index, incompletePromptShown = false).url
+  private lazy val CheckVatAmountRoute: String = routes.CheckVatPayableAmountController.onPageLoad(waypoints, iossNumber, index, index).url
+  private lazy val CheckVatAmountPostRoute: String = routes.CheckVatPayableAmountController.onSubmit(waypoints, iossNumber, index, index, incompletePromptShown = false).url
   private val country = arbitrary[Country].sample.value
   private val baseAnswers = emptyUserAnswers
-    .set(CorrectionCountryPage(index, index), country).success.value
-    .set(CorrectionReturnYearPage(index), periodYear).success.value
-    .set(CorrectionReturnPeriodPage(index), period).success.value
-    .set(VatAmountCorrectionCountryPage(index, index), BigDecimal(100.0)).success.value
+    .set(CorrectionCountryPage(iossNumber, index, index), country).success.value
+    .set(CorrectionReturnYearPage(iossNumber, index), periodYear).success.value
+    .set(CorrectionReturnPeriodPage(iossNumber, index), period).success.value
+    .set(VatAmountCorrectionCountryPage(iossNumber, index, index), BigDecimal(100.0)).success.value
 
   private val answersNoVat = emptyUserAnswers
-    .set(CorrectionCountryPage(index, index), country).success.value
-    .set(CorrectionReturnYearPage(index), periodYear).success.value
-    .set(CorrectionReturnPeriodPage(index), period).success.value
+    .set(CorrectionCountryPage(iossNumber, index, index), country).success.value
+    .set(CorrectionReturnYearPage(iossNumber, index), periodYear).success.value
+    .set(CorrectionReturnPeriodPage(iossNumber, index), period).success.value
 
   "CheckVatPayableAmount Controller" - {
 
@@ -58,10 +58,10 @@ class CheckVatPayableAmountControllerSpec extends SpecBase {
 
         val result = route(application, request).value
 
-        status(result) mustBe OK
-        contentAsString(result).contains("Correction amount") mustBe true
-        contentAsString(result).contains("Previous VAT total declared") mustBe true
-        contentAsString(result).contains("New VAT total") mustBe true
+        status(result) `mustBe` OK
+        contentAsString(result).contains("Correction amount") `mustBe` true
+        contentAsString(result).contains("Previous VAT total declared") `mustBe` true
+        contentAsString(result).contains("New VAT total") `mustBe` true
       }
 
     }
@@ -80,11 +80,11 @@ class CheckVatPayableAmountControllerSpec extends SpecBase {
 
         val result = route(application, request).value
 
-        status(result) mustBe OK
-        contentAsString(result).contains("Correction amount") mustBe false
-        contentAsString(result).contains("Previous VAT total declared") mustBe true
-        contentAsString(result).contains("New VAT total") mustBe false
-        contentAsString(result).contains("Some of your information is missing. You must complete this before you can submit your changes.") mustBe true
+        status(result) `mustBe` OK
+        contentAsString(result).contains("Correction amount") `mustBe` false
+        contentAsString(result).contains("Previous VAT total declared") `mustBe` true
+        contentAsString(result).contains("New VAT total") `mustBe` false
+        contentAsString(result).contains("Some of your information is missing. You must complete this before you can submit your changes.") `mustBe` true
       }
     }
 
@@ -97,8 +97,8 @@ class CheckVatPayableAmountControllerSpec extends SpecBase {
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` controllers.routes.JourneyRecoveryController.onPageLoad().url
       }
     }
 
@@ -111,8 +111,8 @@ class CheckVatPayableAmountControllerSpec extends SpecBase {
         val request = FakeRequest(POST, CheckVatAmountPostRoute)
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.corrections.routes.CorrectionListCountriesController.onPageLoad(waypoints, index).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` controllers.corrections.routes.CorrectionListCountriesController.onPageLoad(waypoints, iossNumber, index).url
       }
     }
   }

@@ -27,15 +27,13 @@ import pages.JourneyRecoveryPage
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import repositories.SelectedPreviousRegistrationRepository
 import services.PreviousRegistrationService
 import testUtils.PreviousRegistrationData.{previousRegistrations, selectedPreviousRegistration}
 import utils.FutureSyntax.FutureOps
-import viewmodels.previousReturns._
+import viewmodels.previousReturns.*
 import views.html.previousReturns.ReturnRegistrationSelectionView
-
-import scala.concurrent.Future
 
 class ReturnRegistrationSelectionControllerSpec extends SpecBase with BeforeAndAfterEach {
 
@@ -62,15 +60,15 @@ class ReturnRegistrationSelectionControllerSpec extends SpecBase with BeforeAndA
         running(application) {
           when(mockPreviousRegistrationService.getPreviousRegistrations(any())(any())) thenReturn previousRegistrations.toFuture
 
-          val request = FakeRequest(GET, routes.ReturnRegistrationSelectionController.onPageLoad(waypoints).url)
+          val request = FakeRequest(GET, routes.ReturnRegistrationSelectionController.onPageLoad(waypoints, iossNumber).url)
 
           val result = route(application, request).value
 
           val view = application.injector.instanceOf[ReturnRegistrationSelectionView]
 
-          status(result) mustBe OK
-          contentAsString(result) mustBe
-            view(waypoints, form, previousRegistrations)(request, messages(application)).toString
+          status(result) `mustBe` OK
+          contentAsString(result) `mustBe`
+            view(waypoints, form, iossNumber, previousRegistrations)(request, messages(application)).toString
         }
       }
 
@@ -85,15 +83,15 @@ class ReturnRegistrationSelectionControllerSpec extends SpecBase with BeforeAndA
           when(mockPreviousRegistrationService.getPreviousRegistrations(any())(any())) thenReturn previousRegistrations.toFuture
           when(mockSelectedPreviousRegistrationRepository.get(userAnswersId)) thenReturn Some(selectedPreviousRegistration).toFuture
 
-          val request = FakeRequest(GET, routes.ReturnRegistrationSelectionController.onPageLoad(waypoints).url)
+          val request = FakeRequest(GET, routes.ReturnRegistrationSelectionController.onPageLoad(waypoints, iossNumber).url)
 
           val result = route(application, request).value
 
           val view = application.injector.instanceOf[ReturnRegistrationSelectionView]
 
-          status(result) mustBe OK
-          contentAsString(result) mustBe
-            view(waypoints, form.fill(selectedPreviousRegistration.previousRegistration), previousRegistrations)(request, messages(application)).toString
+          status(result) `mustBe` OK
+          contentAsString(result) `mustBe`
+            view(waypoints, form.fill(selectedPreviousRegistration.previousRegistration), iossNumber, previousRegistrations)(request, messages(application)).toString
         }
       }
     }
@@ -106,12 +104,12 @@ class ReturnRegistrationSelectionControllerSpec extends SpecBase with BeforeAndA
       running(application) {
         when(mockPreviousRegistrationService.getPreviousRegistrations(any())(any())) thenReturn previousRegistrations.take(1).toFuture
 
-        val request = FakeRequest(GET, routes.ReturnRegistrationSelectionController.onPageLoad(waypoints).url)
+        val request = FakeRequest(GET, routes.ReturnRegistrationSelectionController.onPageLoad(waypoints, iossNumber).url)
 
         val result = route(application, request).value
 
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe controllers.previousReturns.routes.ViewReturnsMultipleRegController.onPageLoad(waypoints).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` controllers.previousReturns.routes.ViewReturnsMultipleRegController.onPageLoad(waypoints, iossNumber).url
       }
     }
 
@@ -123,12 +121,12 @@ class ReturnRegistrationSelectionControllerSpec extends SpecBase with BeforeAndA
       running(application) {
         when(mockPreviousRegistrationService.getPreviousRegistrations(any())(any())) thenReturn List.empty.toFuture
 
-        val request = FakeRequest(GET, routes.ReturnRegistrationSelectionController.onPageLoad(waypoints).url)
+        val request = FakeRequest(GET, routes.ReturnRegistrationSelectionController.onPageLoad(waypoints, iossNumber).url)
 
         val result = route(application, request).value
 
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
 
@@ -141,15 +139,15 @@ class ReturnRegistrationSelectionControllerSpec extends SpecBase with BeforeAndA
 
       running(application) {
         when(mockPreviousRegistrationService.getPreviousRegistrations(any())(any())) thenReturn previousRegistrations.toFuture
-        when(mockSelectedPreviousRegistrationRepository.set(any())) thenReturn Future.successful(selectedPreviousRegistration)
+        when(mockSelectedPreviousRegistrationRepository.set(any())) thenReturn selectedPreviousRegistration.toFuture
 
-        val request = FakeRequest(POST, routes.ReturnRegistrationSelectionController.onPageLoad(waypoints).url)
+        val request = FakeRequest(POST, routes.ReturnRegistrationSelectionController.onPageLoad(waypoints, iossNumber).url)
           .withFormUrlEncodedBody(("value", selectedPreviousRegistration.previousRegistration.iossNumber))
 
         val result = route(application, request).value
 
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe controllers.previousReturns.routes.ViewReturnsMultipleRegController.onPageLoad(waypoints).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` controllers.previousReturns.routes.ViewReturnsMultipleRegController.onPageLoad(waypoints, iossNumber).url
       }
     }
 
@@ -161,15 +159,15 @@ class ReturnRegistrationSelectionControllerSpec extends SpecBase with BeforeAndA
       running(application) {
         when(mockPreviousRegistrationService.getPreviousRegistrations(any())(any())) thenReturn previousRegistrations.toFuture
 
-        val request = FakeRequest(POST, routes.ReturnRegistrationSelectionController.onPageLoad(waypoints).url)
+        val request = FakeRequest(POST, routes.ReturnRegistrationSelectionController.onPageLoad(waypoints, iossNumber).url)
           .withFormUrlEncodedBody(("value", ""))
 
         val result = route(application, request).value
 
         val view = application.injector.instanceOf[ReturnRegistrationSelectionView]
 
-        status(result) mustBe BAD_REQUEST
-        contentAsString(result) mustEqual view(waypoints, form.bind(Map("value" -> "")), previousRegistrations)(request, messages(application)).toString
+        status(result) `mustBe` BAD_REQUEST
+        contentAsString(result) `mustBe` view(waypoints, form.bind(Map("value" -> "")), iossNumber, previousRegistrations)(request, messages(application)).toString
       }
     }
   }

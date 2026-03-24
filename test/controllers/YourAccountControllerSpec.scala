@@ -19,8 +19,8 @@ package controllers
 import base.SpecBase
 import config.Constants.ukCountryCodeAreaPrefix
 import config.FrontendAppConfig
-import connectors.{FinancialDataConnector, IntermediaryRegistrationConnector, RegistrationConnector, ReturnStatusConnector, SaveForLaterConnector}
-import controllers.actions.{GetRegistrationAction, GetRegistrationActionProvider}
+import connectors.*
+import controllers.actions.{GetRegistrationActionProvider, GetRegistrationWithoutUrlIossAction}
 import generators.Generators
 import models.SubmissionStatus.*
 import models.etmp.EtmpExclusion
@@ -39,7 +39,6 @@ import play.api.inject.bind
 import play.api.mvc.*
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
-import repositories.IntermediarySelectedIossNumberRepository
 import services.{AccountService, PreviousRegistrationService}
 import uk.gov.hmrc.auth.core.{Enrolment, EnrolmentIdentifier, Enrolments}
 import utils.FutureSyntax.FutureOps
@@ -58,6 +57,9 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
   private val enrolment2: Enrolment = Enrolment(iossEnrolmentKey, Seq(EnrolmentIdentifier("IOSSNumber", otherIossNumber)), "test", None)
   private val ukBasedDesAddress = vatCustomerInfo.desAddress.copy(countryCode = ukCountryCodeAreaPrefix)
   private val ukBasedVatInfo = vatCustomerInfo.copy(desAddress = ukBasedDesAddress)
+
+  private implicit val registrationRequest: RegistrationRequest[AnyContent] =
+    RegistrationRequest[AnyContent](FakeRequest(), testCredentials, Some(vrn), "Company name", iossNumber, registrationWrapper, None, enrolments)
 
   private def createRegistrationWrapperWithExclusion(effectiveDate: LocalDate): RegistrationWrapper = {
     val registration = registrationWrapper.registration
@@ -121,7 +123,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             paymentOverdue2
           ).map(_.amountOwed).sum,
           List(paymentOverdue1, paymentOverdue2).map(_.amountOwed).sum,
-          iossNumber)
+          iossNumber
+        )
         val registrationWrapper: RegistrationWrapper = arbitrary[RegistrationWrapper].sample.value
 
         when(mockFinancialDataConnector.prepareFinancialDataWithIossNumber(any())(any())) thenReturn Right(prepareData).toFuture
@@ -155,7 +158,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
           val result = route(application, request).value
 
-          status(result) mustBe OK
+          status(result) `mustBe` OK
         }
       }
     }
@@ -192,7 +195,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           bind[RegistrationConnector].toInstance(registrationConnector)
         ).build()
 
-      val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, stubClockAtArbitraryDate)(messages(application))
+      val paymentsViewModel = PaymentsViewModel(iossNumber, Seq.empty, Seq.empty, Seq.empty, stubClockAtArbitraryDate)(messages(application))
       when(mockFinancialDataConnector.prepareFinancialDataWithIossNumber(any())(any())) thenReturn
         Right(PrepareData(List.empty, List.empty, List.empty, 0, 0, iossNumber)).toFuture
 
@@ -205,8 +208,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val view = application.injector.instanceOf[YourAccountView]
         val appConfig = application.injector.instanceOf[FrontendAppConfig]
 
-        status(result) mustBe OK
-        contentAsString(result) mustBe view(
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(
           waypoints,
           registrationWrapper.getCompanyName().trim,
           iossNumber,
@@ -264,7 +267,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           bind[RegistrationConnector].toInstance(registrationConnector)
         ).build()
 
-      val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, stubClockAtArbitraryDate)(messages(application))
+      val paymentsViewModel = PaymentsViewModel(iossNumber, Seq.empty, Seq.empty, Seq.empty, stubClockAtArbitraryDate)(messages(application))
       when(mockFinancialDataConnector.prepareFinancialDataWithIossNumber(any())(any())) thenReturn
         Right(PrepareData(List.empty, List.empty, List.empty, 0, 0, iossNumber)).toFuture
 
@@ -277,8 +280,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val view = application.injector.instanceOf[YourAccountView]
         val appConfig = application.injector.instanceOf[FrontendAppConfig]
 
-        status(result) mustBe OK
-        contentAsString(result) mustBe view(
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(
           waypoints,
           registrationWrapperWithExclusion.getCompanyName().trim,
           iossNumber,
@@ -336,7 +339,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           bind[RegistrationConnector].toInstance(registrationConnector)
         ).build()
 
-      val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, stubClockAtArbitraryDate)(messages(application))
+      val paymentsViewModel = PaymentsViewModel(iossNumber, Seq.empty, Seq.empty, Seq.empty, stubClockAtArbitraryDate)(messages(application))
       when(mockFinancialDataConnector.prepareFinancialDataWithIossNumber(any())(any())) thenReturn
         Right(PrepareData(List.empty, List.empty, List.empty, 0, 0, iossNumber)).toFuture
 
@@ -349,8 +352,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val view = application.injector.instanceOf[YourAccountView]
         val appConfig = application.injector.instanceOf[FrontendAppConfig]
 
-        status(result) mustBe OK
-        contentAsString(result) mustBe view(
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(
           waypoints,
           registrationWrapperWithExclusion.getCompanyName().trim,
           iossNumber,
@@ -416,7 +419,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           bind[RegistrationConnector].toInstance(registrationConnector)
         ).build()
 
-      val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, stubClockAtArbitraryDate)(messages(application))
+      val paymentsViewModel = PaymentsViewModel(iossNumber, Seq.empty, Seq.empty, Seq.empty, stubClockAtArbitraryDate)(messages(application))
       when(mockFinancialDataConnector.prepareFinancialDataWithIossNumber(any())(any())) thenReturn
         Right(PrepareData(List.empty, List.empty, List.empty, 0, 0, iossNumber)).toFuture
 
@@ -429,8 +432,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val view = application.injector.instanceOf[YourAccountView]
         val appConfig = application.injector.instanceOf[FrontendAppConfig]
 
-        status(result) mustBe OK
-        contentAsString(result) mustBe view(
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(
           waypoints,
           registrationWrapperEmptyExclusions.getCompanyName().trim,
           iossNumber,
@@ -460,7 +463,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
 
       val enrolments: Enrolments = Enrolments(Set(enrolment1, enrolment2))
 
-      val fakeMultipleEnrolmentsGetRegistrationActionProvider = new FakeMultipleEnrolmentsGetRegistrationActionProvider(enrolments, registrationWrapper)
+      val fakeMultipleEnrolmentsGetRegistrationWithoutUrlIossAction = new FakeMultipleEnrolmentsGetRegistrationWithoutUrlIossAction(enrolments, registrationWrapper)
 
       val duePayment: Payment = Payment(
         period = nextPeriod,
@@ -507,7 +510,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         userAnswers = Some(emptyUserAnswers),
         registration = registrationWrapper,
         clock = Some(Clock.systemUTC()),
-        getRegistrationAction = Some(fakeMultipleEnrolmentsGetRegistrationActionProvider)
+        getRegistrationWithoutUrlIossAction = Some(fakeMultipleEnrolmentsGetRegistrationWithoutUrlIossAction)
       )
         .configure("urls.userResearch1" -> "https://test-url.com")
         .overrides(
@@ -518,7 +521,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           bind[RegistrationConnector].toInstance(registrationConnector)
         ).build()
 
-      val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, stubClockAtArbitraryDate)(messages(application))
+      val paymentsViewModel = PaymentsViewModel(iossNumber, Seq.empty, Seq.empty, Seq.empty, stubClockAtArbitraryDate)(messages(application))
 
       running(application) {
 
@@ -529,8 +532,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val view = application.injector.instanceOf[YourAccountView]
         val appConfig = application.injector.instanceOf[FrontendAppConfig]
 
-        status(result) mustBe OK
-        contentAsString(result) mustBe view(
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(
           waypoints,
           registrationWrapper.getCompanyName(),
           iossNumber,
@@ -567,7 +570,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
       val enrolment3: Enrolment = Enrolment(iossEnrolmentKey, Seq(EnrolmentIdentifier("IOSSNumber", additionalIossNumber)), "test", None)
       val enrolments: Enrolments = Enrolments(Set(enrolment1, enrolment2, enrolment3))
 
-      val fakeMultipleEnrolmentsGetRegistrationActionProvider = new FakeMultipleEnrolmentsGetRegistrationActionProvider(enrolments, registrationWrapper)
+      val fakeMultipleEnrolmentsGetRegistrationWithoutUrlIossAction = new FakeMultipleEnrolmentsGetRegistrationWithoutUrlIossAction(enrolments, registrationWrapper)
 
       val duePayment: Payment = Payment(
         period = nextPeriod,
@@ -614,7 +617,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         userAnswers = Some(emptyUserAnswers),
         registration = registrationWrapper,
         clock = Some(Clock.systemUTC()),
-        getRegistrationAction = Some(fakeMultipleEnrolmentsGetRegistrationActionProvider)
+        getRegistrationWithoutUrlIossAction = Some(fakeMultipleEnrolmentsGetRegistrationWithoutUrlIossAction)
       )
         .configure("urls.userResearch1" -> "https://test-url.com")
         .overrides(
@@ -625,7 +628,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           bind[RegistrationConnector].toInstance(registrationConnector)
         ).build()
 
-      val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, stubClockAtArbitraryDate)(messages(application))
+      val paymentsViewModel = PaymentsViewModel(iossNumber, Seq.empty, Seq.empty, Seq.empty, stubClockAtArbitraryDate)(messages(application))
 
       running(application) {
 
@@ -636,8 +639,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         val view = application.injector.instanceOf[YourAccountView]
         val appConfig = application.injector.instanceOf[FrontendAppConfig]
 
-        status(result) mustBe OK
-        contentAsString(result) mustBe view(
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(
           waypoints,
           registrationWrapper.getCompanyName(),
           iossNumber,
@@ -701,7 +704,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[RegistrationConnector].toInstance(registrationConnector)
           ).build()
 
-        val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, stubClockAtArbitraryDate)(messages(application))
+        val paymentsViewModel = PaymentsViewModel(iossNumber, Seq.empty, Seq.empty, Seq.empty, stubClockAtArbitraryDate)(messages(application))
         when(mockFinancialDataConnector.prepareFinancialDataWithIossNumber(any())(any())) thenReturn
           Right(PrepareData(List.empty, List.empty, List.empty, 0, 0, iossNumber)).toFuture
 
@@ -714,8 +717,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           val view = application.injector.instanceOf[YourAccountView]
           val appConfig = application.injector.instanceOf[FrontendAppConfig]
 
-          status(result) mustBe OK
-          contentAsString(result) mustBe view(
+          status(result) `mustBe` OK
+          contentAsString(result) `mustBe` view(
             waypoints,
             registrationWrapper.getCompanyName().trim,
             iossNumber,
@@ -766,7 +769,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           ).build()
 
 
-        val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, stubClockAtArbitraryDate)(messages(application))
+        val paymentsViewModel = PaymentsViewModel(iossNumber, Seq.empty, Seq.empty, Seq.empty, stubClockAtArbitraryDate)(messages(application))
         when(mockFinancialDataConnector.prepareFinancialDataWithIossNumber(any())(any())) thenReturn
           Right(PrepareData(List.empty, List.empty, List.empty, 0, 0, iossNumber)).toFuture
 
@@ -779,8 +782,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           val view = application.injector.instanceOf[YourAccountView]
           val appConfig = application.injector.instanceOf[FrontendAppConfig]
 
-          status(result) mustBe OK
-          contentAsString(result) mustBe view(
+          status(result) `mustBe` OK
+          contentAsString(result) `mustBe` view(
             waypoints,
             registrationWrapper.getCompanyName().trim,
             iossNumber,
@@ -835,7 +838,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[RegistrationConnector].toInstance(registrationConnector)
           ).build()
 
-        val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, stubClockAtArbitraryDate)(messages(application))
+        val paymentsViewModel = PaymentsViewModel(iossNumber, Seq.empty, Seq.empty, Seq.empty, stubClockAtArbitraryDate)(messages(application))
         when(mockFinancialDataConnector.prepareFinancialDataWithIossNumber(any())(any())) thenReturn
           Right(PrepareData(List.empty, List.empty, List.empty, 0, 0, iossNumber)).toFuture
 
@@ -848,8 +851,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           val view = application.injector.instanceOf[YourAccountView]
           val appConfig = application.injector.instanceOf[FrontendAppConfig]
 
-          status(result) mustBe OK
-          contentAsString(result) mustBe view(
+          status(result) `mustBe` OK
+          contentAsString(result) `mustBe` view(
             waypoints,
             registrationWrapper.getCompanyName().trim,
             iossNumber,
@@ -903,7 +906,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[RegistrationConnector].toInstance(registrationConnector)
           ).build()
 
-        val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, stubClockAtArbitraryDate)(messages(application))
+        val paymentsViewModel = PaymentsViewModel(iossNumber, Seq.empty, Seq.empty, Seq.empty, stubClockAtArbitraryDate)(messages(application))
         when(mockFinancialDataConnector.prepareFinancialDataWithIossNumber(any())(any())) thenReturn
           Right(PrepareData(List.empty, List.empty, List.empty, 0, 0, iossNumber)).toFuture
 
@@ -916,8 +919,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           val view = application.injector.instanceOf[YourAccountView]
           val appConfig = application.injector.instanceOf[FrontendAppConfig]
 
-          status(result) mustBe OK
-          contentAsString(result) mustBe view(
+          status(result) `mustBe` OK
+          contentAsString(result) `mustBe` view(
             waypoints,
             registrationWrapper.getCompanyName().trim,
             iossNumber,
@@ -972,7 +975,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[RegistrationConnector].toInstance(registrationConnector)
           ).build()
 
-        val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, stubClockAtArbitraryDate)(messages(application))
+        val paymentsViewModel = PaymentsViewModel(iossNumber, Seq.empty, Seq.empty, Seq.empty, stubClockAtArbitraryDate)(messages(application))
         when(mockFinancialDataConnector.prepareFinancialDataWithIossNumber(any())(any())) thenReturn
           Right(PrepareData(List.empty, List.empty, List.empty, 0, 0, iossNumber)).toFuture
 
@@ -985,8 +988,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           val view = application.injector.instanceOf[YourAccountView]
           val appConfig = application.injector.instanceOf[FrontendAppConfig]
 
-          status(result) mustBe OK
-          contentAsString(result) mustBe view(
+          status(result) `mustBe` OK
+          contentAsString(result) `mustBe` view(
             waypoints,
             registrationWrapper.getCompanyName().trim,
             iossNumber,
@@ -1045,7 +1048,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[RegistrationConnector].toInstance(registrationConnector)
           ).build()
 
-        val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, stubClockAtArbitraryDate)(messages(application))
+        val paymentsViewModel = PaymentsViewModel(iossNumber, Seq.empty, Seq.empty, Seq.empty, stubClockAtArbitraryDate)(messages(application))
         when(mockFinancialDataConnector.prepareFinancialDataWithIossNumber(any())(any())) thenReturn
           Right(PrepareData(List.empty, List.empty, List.empty, 0, 0, iossNumber)).toFuture
 
@@ -1058,8 +1061,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           val view = application.injector.instanceOf[YourAccountView]
           val appConfig = application.injector.instanceOf[FrontendAppConfig]
 
-          status(result) mustBe OK
-          contentAsString(result) mustBe view(
+          status(result) `mustBe` OK
+          contentAsString(result) `mustBe` view(
             waypoints,
             registrationWrapper.getCompanyName().trim,
             iossNumber,
@@ -1124,7 +1127,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
             bind[RegistrationConnector].toInstance(registrationConnector)
           ).build()
 
-        val paymentsViewModel = PaymentsViewModel(Seq.empty, Seq.empty, Seq.empty, stubClockAtArbitraryDate)(messages(application))
+        val paymentsViewModel = PaymentsViewModel(iossNumber, Seq.empty, Seq.empty, Seq.empty, stubClockAtArbitraryDate)(messages(application))
         when(mockFinancialDataConnector.prepareFinancialDataWithIossNumber(any())(any())) thenReturn
           Right(PrepareData(List.empty, List.empty, List.empty, 0, 0, iossNumber)).toFuture
 
@@ -1137,8 +1140,8 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           val view = application.injector.instanceOf[YourAccountView]
           val appConfig = application.injector.instanceOf[FrontendAppConfig]
 
-          status(result) mustBe OK
-          contentAsString(result) mustBe view(
+          status(result) `mustBe` OK
+          contentAsString(result) `mustBe` view(
             waypoints,
             registrationWrapper.getCompanyName().trim,
             iossNumber,
@@ -1169,25 +1172,12 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
   }
 }
 
-class FakeMultipleEnrolmentsGetRegistrationAction(enrolments: Enrolments, registration: RegistrationWrapper) extends GetRegistrationAction(
-  mock[AccountService],
-  mock[IntermediaryRegistrationConnector],
+class FakeMultipleEnrolmentsGetRegistrationWithoutUrlIossAction(enrolments: Enrolments, registration: RegistrationWrapper) extends GetRegistrationWithoutUrlIossAction(
   mock[RegistrationConnector],
-  mock[FrontendAppConfig],
-  None,
-  mock[IntermediarySelectedIossNumberRepository]
+  mock[AccountService],
+  mock[FrontendAppConfig]
 )(ExecutionContext.Implicits.global) {
 
   override def refine[A](request: IdentifierRequest[A]): Future[Either[Result, RegistrationRequest[A]]] =
     Right(RegistrationRequest(request.request, request.credentials, Some(request.vrn), registration.getCompanyName(), "IM9001234567", registration, None, enrolments)).toFuture
-}
-
-class FakeMultipleEnrolmentsGetRegistrationActionProvider(enrolments: Enrolments, registrationWrapper: RegistrationWrapper) extends GetRegistrationActionProvider(
-  mock[AccountService],
-  mock[IntermediaryRegistrationConnector],
-  mock[RegistrationConnector],
-  mock[IntermediarySelectedIossNumberRepository],
-  mock[FrontendAppConfig]
-)(ExecutionContext.Implicits.global) {
-  override def apply(maybeIossNumber: Option[String] = None): GetRegistrationAction = new FakeMultipleEnrolmentsGetRegistrationAction(enrolments, registrationWrapper)
 }

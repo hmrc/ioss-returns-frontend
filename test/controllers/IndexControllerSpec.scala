@@ -36,8 +36,8 @@ class IndexControllerSpec extends SpecBase {
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.YourAccountController.onPageLoad(waypoints).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` routes.YourAccountController.onPageLoad(waypoints).url
       }
     }
 
@@ -81,9 +81,9 @@ class IndexControllerSpec extends SpecBase {
 
          val result = route(application, request).value
 
-         status(result) mustEqual SEE_OTHER
-         redirectLocation(result).value mustEqual
-           controllers.intermediary.routes.IossOrIntermediaryController.onPageLoad().url
+         status(result) `mustBe` SEE_OTHER
+         redirectLocation(result).value `mustBe`
+           controllers.intermediary.routes.IossOrIntermediaryController.onPageLoad(iossNumber).url
        }
      }
 
@@ -119,8 +119,8 @@ class IndexControllerSpec extends SpecBase {
 
           val result = route(application, request).value
 
-          status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual config.intermediaryDashboardUrl
+          status(result) `mustBe` SEE_OTHER
+          redirectLocation(result).value `mustBe` config.intermediaryDashboardUrl
         }
       }
     }

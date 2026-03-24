@@ -77,7 +77,7 @@ final case class SoldToCountryListPage(iossNumber: String, override val index: O
         
       case false =>
         if (answers.isDefined(CorrectPreviousReturnPage(answers.iossNumber, 0))) {
-          CheckYourAnswersPage
+          CheckYourAnswersPage(answers.iossNumber)
         } else {
           CorrectPreviousReturnPage(answers.iossNumber, 0)
         }

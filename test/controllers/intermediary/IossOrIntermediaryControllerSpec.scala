@@ -71,7 +71,7 @@ class IossOrIntermediaryControllerSpec extends SpecBase with MockitoSugar {
 
           running(application) {
 
-            val request = FakeRequest(GET, controllers.intermediary.routes.IossOrIntermediaryController.onPageLoad().url)
+            val request = FakeRequest(GET, controllers.intermediary.routes.IossOrIntermediaryController.onPageLoad(iossNumber).url)
 
             val result = route(application, request).value
 
@@ -80,9 +80,9 @@ class IossOrIntermediaryControllerSpec extends SpecBase with MockitoSugar {
             val expectedForm = formProvider()
             val expectedEnrolmentIdentifiers = Seq(iossNumber, intermediaryNumber)
 
-            status(result) mustBe OK
-            contentAsString(result) mustBe
-              view(expectedForm, expectedEnrolmentIdentifiers, totalNumberOfEnrolments = 2)
+            status(result) `mustBe` OK
+            contentAsString(result) `mustBe`
+              view(expectedForm, iossNumber, expectedEnrolmentIdentifiers, totalNumberOfEnrolments = 2)
                 (request, messages(application)).toString
           }
         }
@@ -114,7 +114,7 @@ class IossOrIntermediaryControllerSpec extends SpecBase with MockitoSugar {
 
           running(application) {
 
-            val request = FakeRequest(GET, controllers.intermediary.routes.IossOrIntermediaryController.onPageLoad().url)
+            val request = FakeRequest(GET, controllers.intermediary.routes.IossOrIntermediaryController.onPageLoad(iossNumber).url)
 
             val result = route(application, request).value
 
@@ -123,9 +123,9 @@ class IossOrIntermediaryControllerSpec extends SpecBase with MockitoSugar {
             val expectedForm = formProvider()
             val expectedEnrolmentIdentifiers = Seq(iossNumber)
 
-            status(result) mustBe OK
-            contentAsString(result) mustBe
-              view(expectedForm, expectedEnrolmentIdentifiers, totalNumberOfEnrolments = 1)
+            status(result) `mustBe` OK
+            contentAsString(result) `mustBe`
+              view(expectedForm, iossNumber, expectedEnrolmentIdentifiers, totalNumberOfEnrolments = 1)
                 (request, messages(application)).toString
           }
         }
@@ -157,7 +157,7 @@ class IossOrIntermediaryControllerSpec extends SpecBase with MockitoSugar {
 
           running(application) {
 
-            val request = FakeRequest(GET, controllers.intermediary.routes.IossOrIntermediaryController.onPageLoad().url)
+            val request = FakeRequest(GET, controllers.intermediary.routes.IossOrIntermediaryController.onPageLoad(iossNumber).url)
 
             val result = route(application, request).value
 
@@ -166,9 +166,9 @@ class IossOrIntermediaryControllerSpec extends SpecBase with MockitoSugar {
             val expectedForm = formProvider()
             val expectedEnrolmentIdentifiers = Seq(intermediaryNumber)
 
-            status(result) mustBe OK
-            contentAsString(result) mustBe
-              view(expectedForm, expectedEnrolmentIdentifiers, totalNumberOfEnrolments = 1)
+            status(result) `mustBe` OK
+            contentAsString(result) `mustBe`
+              view(expectedForm, iossNumber, expectedEnrolmentIdentifiers, totalNumberOfEnrolments = 1)
                 (request, messages(application)).toString
           }
         }
@@ -192,13 +192,13 @@ class IossOrIntermediaryControllerSpec extends SpecBase with MockitoSugar {
 
         running(application) {
 
-          val request = FakeRequest(POST, controllers.intermediary.routes.IossOrIntermediaryController.onPageLoad().url)
+          val request = FakeRequest(POST, controllers.intermediary.routes.IossOrIntermediaryController.onPageLoad(iossNumber).url)
             .withFormUrlEncodedBody(("value", iossNumber))
 
           val result = route(application, request).value
 
-          status(result) mustBe SEE_OTHER
-          redirectLocation(result).value mustBe controllers.routes.YourAccountController.onPageLoad().url
+          status(result) `mustBe` SEE_OTHER
+          redirectLocation(result).value `mustBe` controllers.routes.YourAccountController.onPageLoad(waypoints).url
         }
       }
 
@@ -218,13 +218,13 @@ class IossOrIntermediaryControllerSpec extends SpecBase with MockitoSugar {
         running(application) {
           val config = application.injector.instanceOf[FrontendAppConfig]
 
-          val request = FakeRequest(POST, controllers.intermediary.routes.IossOrIntermediaryController.onPageLoad().url)
+          val request = FakeRequest(POST, controllers.intermediary.routes.IossOrIntermediaryController.onPageLoad(iossNumber).url)
             .withFormUrlEncodedBody(("value", intermediaryNumber))
 
           val result = route(application, request).value
 
-          status(result) mustBe SEE_OTHER
-          redirectLocation(result).value mustBe config.intermediaryDashboardUrl
+          status(result) `mustBe` SEE_OTHER
+          redirectLocation(result).value `mustBe` config.intermediaryDashboardUrl
         }
       }
 
@@ -243,7 +243,7 @@ class IossOrIntermediaryControllerSpec extends SpecBase with MockitoSugar {
 
         running(application) {
 
-          val request = FakeRequest(POST, controllers.intermediary.routes.IossOrIntermediaryController.onPageLoad().url)
+          val request = FakeRequest(POST, controllers.intermediary.routes.IossOrIntermediaryController.onPageLoad(iossNumber).url)
             .withFormUrlEncodedBody(("value", ""))
 
           val boundForm = form.bind(Map("value" -> ""))
@@ -252,9 +252,9 @@ class IossOrIntermediaryControllerSpec extends SpecBase with MockitoSugar {
 
           val result = route(application, request).value
 
-          status(result) mustBe BAD_REQUEST
-          contentAsString(result) mustBe
-            view(boundForm, Seq(iossNumber, intermediaryNumber), totalNumberOfEnrolments = 2)
+          status(result) `mustBe` BAD_REQUEST
+          contentAsString(result) `mustBe`
+            view(boundForm, iossNumber, Seq(iossNumber, intermediaryNumber), totalNumberOfEnrolments = 2)
               (request, messages(application)).toString()
         }
       }

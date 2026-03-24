@@ -22,12 +22,12 @@ import models.ContinueReturn
 import org.scalatestplus.mockito.MockitoSugar
 import pages.{ContinueReturnPage, SavedProgressPage}
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import views.html.ContinueReturnView
 
 class ContinueReturnControllerSpec extends SpecBase with MockitoSugar {
 
-  private lazy val continueReturnRoute = routes.ContinueReturnController.onPageLoad(period).url
+  private lazy val continueReturnRoute = routes.ContinueReturnController.onPageLoad(iossNumber, period).url
 
   private val formProvider = new ContinueReturnFormProvider()
   private val form = formProvider()
@@ -45,8 +45,8 @@ class ContinueReturnControllerSpec extends SpecBase with MockitoSugar {
 
         val view = application.injector.instanceOf[ContinueReturnView]
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, period, false, "CompanyName")(request, messages(application)).toString
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(form, iossNumber, period, false, "CompanyName")(request, messages(application)).toString
       }
     }
 
@@ -59,8 +59,8 @@ class ContinueReturnControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.StartReturnController.onPageLoad(period = period).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` controllers.routes.StartReturnController.onPageLoad(iossNumber = iossNumber, period = period).url
       }
     }
 
@@ -76,8 +76,8 @@ class ContinueReturnControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual ContinueReturnPage.navigate(emptyUserAnswers, ContinueReturn.values.head).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` ContinueReturnPage(iossNumber).navigate(emptyUserAnswers, ContinueReturn.values.head).url
       }
     }
 
@@ -96,8 +96,8 @@ class ContinueReturnControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, period, false, "CompanyName")(request, messages(application)).toString
+        status(result) `mustBe` BAD_REQUEST
+        contentAsString(result) `mustBe` view(boundForm, iossNumber, period, false, "CompanyName")(request, messages(application)).toString
       }
     }
 
@@ -110,8 +110,8 @@ class ContinueReturnControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` routes.JourneyRecoveryController.onPageLoad().url
       }
     }
 
@@ -126,9 +126,9 @@ class ContinueReturnControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
+        status(result) `mustBe` SEE_OTHER
 
-        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+        redirectLocation(result).value `mustBe` routes.JourneyRecoveryController.onPageLoad().url
       }
     }
   }

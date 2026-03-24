@@ -16,7 +16,7 @@
 
 package controllers
 
-import controllers.actions._
+import controllers.actions.*
 import forms.ContinueReturnFormProvider
 import models.Period
 import pages.{ContinueReturnPage, SavedProgressPage}
@@ -28,10 +28,10 @@ import views.html.ContinueReturnView
 import javax.inject.Inject
 
 class ContinueReturnController @Inject()(
-                                       cc: AuthenticatedControllerComponents,
-                                       formProvider: ContinueReturnFormProvider,
-                                       view: ContinueReturnView
-                                     ) extends FrontendBaseController with I18nSupport {
+                                          cc: AuthenticatedControllerComponents,
+                                          formProvider: ContinueReturnFormProvider,
+                                          view: ContinueReturnView
+                                        ) extends FrontendBaseController with I18nSupport {
 
   private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc

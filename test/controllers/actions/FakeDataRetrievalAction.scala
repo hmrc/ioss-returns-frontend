@@ -23,9 +23,10 @@ import repositories.SessionRepository
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class FakeDataRetrievalAction(dataToReturn: Option[UserAnswers], maybeIntermediaryNumber: Option[String])
+class FakeDataRetrievalAction(dataToReturn: Option[UserAnswers], maybeIntermediaryNumber: Option[String], iossNumber: String)
   extends DataRetrievalAction(
-    mock[SessionRepository]
+    mock[SessionRepository],
+    iossNumber
   )(ExecutionContext.Implicits.global) {
 
   override protected def transform[A](request: RegistrationRequest[A]): Future[OptionalDataRequest[A]] =
@@ -35,6 +36,6 @@ class FakeDataRetrievalAction(dataToReturn: Option[UserAnswers], maybeIntermedia
 class FakeDataRetrievalActionProvider(dataToReturn: Option[UserAnswers], maybeIntermediaryNumber: Option[String])
   extends DataRetrievalActionProvider(mock[SessionRepository])(ExecutionContext.Implicits.global) {
 
-  override def apply(): DataRetrievalAction =
-    new FakeDataRetrievalAction(dataToReturn, maybeIntermediaryNumber)
+  override def apply(requestedIossNumber: String): DataRetrievalAction =
+    new FakeDataRetrievalAction(dataToReturn, maybeIntermediaryNumber, requestedIossNumber)
 }

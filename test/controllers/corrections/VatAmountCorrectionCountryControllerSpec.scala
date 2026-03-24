@@ -21,8 +21,7 @@ import forms.corrections.VatAmountCorrectionCountryFormProvider
 import models.Country
 import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito
-import org.mockito.Mockito.when
-import org.mockito.Mockito.{times, verify}
+import org.mockito.Mockito.{times, verify, when}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
@@ -50,23 +49,23 @@ class VatAmountCorrectionCountryControllerSpec extends SpecBase with MockitoSuga
   private val validAnswerZero = BigDecimal(0)
 
   private val userAnswersWithPreviouslyUndeclaredCountry = emptyUserAnswers
-    .set(CorrectionReturnPeriodPage(index), period).success.value
-    .set(CorrectionCountryPage(index, index), selectedCountry).flatMap(_.set(UndeclaredCountryCorrectionPage(index, index), true)).success.value
+    .set(CorrectionReturnPeriodPage(iossNumber, index), period).success.value
+    .set(CorrectionCountryPage(iossNumber, index, index), selectedCountry).flatMap(_.set(UndeclaredCountryCorrectionPage(iossNumber, index, index), true)).success.value
     .set(
       PreviouslyDeclaredCorrectionAmountQuery(index, index),
       PreviouslyDeclaredCorrectionAmount(previouslyDeclared = false, amount = validAnswerZero)
     ).success.value
 
   private val userAnswersWithPreviouslyDeclaredCountry = emptyUserAnswers
-    .set(CorrectionReturnPeriodPage(index), period).success.value
-    .set(CorrectionCountryPage(index, index), selectedCountry).flatMap(_
+    .set(CorrectionReturnPeriodPage(iossNumber, index), period).success.value
+    .set(CorrectionCountryPage(iossNumber, index, index), selectedCountry).flatMap(_
       .set(
         PreviouslyDeclaredCorrectionAmountQuery(index, index),
         PreviouslyDeclaredCorrectionAmount(previouslyDeclared = true, amount = minimumCorrection)
       )
     ).success.value
 
-  private lazy val countryVatCorrectionRoute = VatAmountCorrectionCountryPage(index, index).route(waypoints).url
+  private lazy val countryVatCorrectionRoute = VatAmountCorrectionCountryPage(iossNumber, index, index).route(waypoints).url
 
   override def beforeEach(): Unit = {
     Mockito.reset(mockSessionRepository)
@@ -85,8 +84,8 @@ class VatAmountCorrectionCountryControllerSpec extends SpecBase with MockitoSuga
 
         val view = application.injector.instanceOf[VatAmountCorrectionCountryView]
 
-        status(result) mustBe OK
-        contentAsString(result) mustBe view(form, waypoints, period, index, period, index, selectedCountry, isCountryPreviouslyDeclared = false, validAnswer, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(form, waypoints, iossNumber, period, index, period, index, selectedCountry, isCountryPreviouslyDeclared = false, validAnswer, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -101,8 +100,8 @@ class VatAmountCorrectionCountryControllerSpec extends SpecBase with MockitoSuga
 
         val view = application.injector.instanceOf[VatAmountCorrectionCountryView]
 
-        status(result) mustBe OK
-        contentAsString(result) mustBe view(form, waypoints, period, index, period, index, selectedCountry, isCountryPreviouslyDeclared = true, minimumCorrection, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(form, waypoints, iossNumber, period, index, period, index, selectedCountry, isCountryPreviouslyDeclared = true, minimumCorrection, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -121,14 +120,14 @@ class VatAmountCorrectionCountryControllerSpec extends SpecBase with MockitoSuga
 
         val view = application.injector.instanceOf[VatAmountCorrectionCountryView]
 
-        status(result) mustBe OK
-        contentAsString(result) mustBe view(form, waypoints, period, index, period, index, selectedCountry, isCountryPreviouslyDeclared = true, validAnswerZero, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(form, waypoints, iossNumber, period, index, period, index, selectedCountry, isCountryPreviouslyDeclared = true, validAnswerZero, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
       val userAnswers = userAnswersWithPreviouslyUndeclaredCountry
-        .set(VatAmountCorrectionCountryPage(index, index), validAnswer).success.value
+        .set(VatAmountCorrectionCountryPage(iossNumber, index, index), validAnswer).success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers))
         .build()
@@ -140,9 +139,9 @@ class VatAmountCorrectionCountryControllerSpec extends SpecBase with MockitoSuga
 
         val result = route(application, request).value
 
-        status(result) mustBe OK
-        contentAsString(result) mustBe view(
-          form.fill(validAnswer), waypoints, period, index, period, index, selectedCountry, isCountryPreviouslyDeclared = false, minimumCorrection, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(
+          form.fill(validAnswer), waypoints, iossNumber, period, index, period, index, selectedCountry, isCountryPreviouslyDeclared = false, minimumCorrection, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -161,11 +160,10 @@ class VatAmountCorrectionCountryControllerSpec extends SpecBase with MockitoSuga
 
         val result = route(application, request).value
         val expectedAnswers = userAnswersWithPreviouslyUndeclaredCountry
-          .set(VatAmountCorrectionCountryPage(index, index), validAnswer).success.value
+          .set(VatAmountCorrectionCountryPage(iossNumber, index, index), validAnswer).success.value
 
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe VatPayableForCountryPage(index, index).route(waypoints).url
-
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` VatPayableForCountryPage(iossNumber, index, index).route(waypoints).url
         verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
       }
     }
@@ -185,9 +183,9 @@ class VatAmountCorrectionCountryControllerSpec extends SpecBase with MockitoSuga
 
         val result = route(application, request).value
 
-        status(result) mustBe BAD_REQUEST
-        contentAsString(result) mustBe view(
-          boundForm, waypoints, period, index, period, index, selectedCountry, isCountryPreviouslyDeclared = false, minimumCorrection, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
+        status(result) `mustBe` BAD_REQUEST
+        contentAsString(result) `mustBe` view(
+          boundForm, waypoints, iossNumber, period, index, period, index, selectedCountry, isCountryPreviouslyDeclared = false, minimumCorrection, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -200,8 +198,8 @@ class VatAmountCorrectionCountryControllerSpec extends SpecBase with MockitoSuga
 
         val result = route(application, request).value
 
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe controllers.routes.JourneyRecoveryController.onPageLoad().url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
 
@@ -214,8 +212,8 @@ class VatAmountCorrectionCountryControllerSpec extends SpecBase with MockitoSuga
 
         val result = route(application, request).value
 
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
 
@@ -230,9 +228,9 @@ class VatAmountCorrectionCountryControllerSpec extends SpecBase with MockitoSuga
 
         val result = route(application, request).value
 
-        status(result) mustBe SEE_OTHER
+        status(result) `mustBe` SEE_OTHER
 
-        redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
 
@@ -247,9 +245,9 @@ class VatAmountCorrectionCountryControllerSpec extends SpecBase with MockitoSuga
 
         val result = route(application, request).value
 
-        status(result) mustBe SEE_OTHER
+        status(result) `mustBe` SEE_OTHER
 
-        redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
   }

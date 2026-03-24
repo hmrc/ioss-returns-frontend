@@ -28,7 +28,7 @@ class CsvParserServiceSpec extends SpecBase with MockitoSugar with Matchers with
   "CSV Parser must" - {
 
     "parse where the string is empty" in {
-      CsvParserService.split("") mustBe Seq()
+      CsvParserService.split("") `mustBe` Seq()
     }
 
     "parse for a simple string of elements without quotes with multiple rows in the CSV with no quotes" in {
@@ -51,7 +51,7 @@ class CsvParserServiceSpec extends SpecBase with MockitoSugar with Matchers with
         Seq("France", "10%", "150.01", "£15")
       )
 
-      actual mustBe expected
+      actual `mustBe` expected
     }
 
     "populate user answers from CSV" in {
@@ -68,23 +68,20 @@ class CsvParserServiceSpec extends SpecBase with MockitoSugar with Matchers with
       val service = new CsvParserService()
       val result = service.populateUserAnswersFromCsv(emptyUserAnswers, csv)
 
-      result.isSuccess mustBe true
+      result.isSuccess `mustBe` true
       val updated = result.get
 
-      updated.get(SoldToCountryPage(Index(0))).value.name mustBe "France"
-      updated.get(SalesToCountryPage(Index(0), Index(0))).value mustBe BigDecimal(33333)
-      updated.get(VatOnSalesPage(Index(0), Index(0))).value.amount mustBe BigDecimal(4423)
+      updated.get(SoldToCountryPage(iossNumber, Index(0))).value.name `mustBe` "France"
+      updated.get(SalesToCountryPage(iossNumber, Index(0), Index(0))).value `mustBe` BigDecimal(33333)
+      updated.get(VatOnSalesPage(iossNumber, Index(0), Index(0))).value.amount `mustBe` BigDecimal(4423)
 
-      updated.get(SoldToCountryPage(Index(0))).value.name mustBe "France"
-      updated.get(SalesToCountryPage(Index(0), Index(1))).value mustBe BigDecimal(150.01)
-      updated.get(VatOnSalesPage(Index(0), Index(1))).value.amount mustBe BigDecimal(15)
+      updated.get(SoldToCountryPage(iossNumber, Index(0))).value.name `mustBe` "France"
+      updated.get(SalesToCountryPage(iossNumber, Index(0), Index(1))).value `mustBe` BigDecimal(150.01)
+      updated.get(VatOnSalesPage(iossNumber, Index(0), Index(1))).value.amount `mustBe` BigDecimal(15)
 
-      updated.get(SoldToCountryPage(Index(1))).value.name mustBe "Germany"
-      updated.get(SalesToCountryPage(Index(1), Index(0))).value mustBe BigDecimal(1200)
-      updated.get(VatOnSalesPage(Index(1), Index(0))).value.amount mustBe BigDecimal(140)
-
-
+      updated.get(SoldToCountryPage(iossNumber, Index(1))).value.name `mustBe` "Germany"
+      updated.get(SalesToCountryPage(iossNumber, Index(1), Index(0))).value `mustBe` BigDecimal(1200)
+      updated.get(VatOnSalesPage(iossNumber, Index(1), Index(0))).value.amount `mustBe` BigDecimal(140)
     }
-
   }
 }

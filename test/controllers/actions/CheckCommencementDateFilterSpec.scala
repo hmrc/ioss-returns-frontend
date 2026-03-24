@@ -18,8 +18,7 @@ package controllers.actions
 
 import base.SpecBase
 import controllers.routes
-import models.Period
-import models.requests.OptionalDataRequest
+import models.requests.DataRequest
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.mvc.Result
@@ -30,10 +29,10 @@ import play.api.test.Helpers.running
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class CheckCommencementDateOptionalFilterSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
+class CheckCommencementDateFilterSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
 
-  class Harness(startReturnPeriod: Period) extends CheckCommencementDateOptionalFilterImpl(startReturnPeriod) {
-    def callFilter(request: OptionalDataRequest[_]): Future[Option[Result]] = filter(request)
+  class Harness extends CheckCommencementDateFilterImpl() {
+    def callFilter(request: DataRequest[_]): Future[Option[Result]] = filter(request)
   }
 
   ".filter" - {
@@ -43,8 +42,8 @@ class CheckCommencementDateOptionalFilterSpec extends SpecBase with MockitoSugar
       val application = applicationBuilder(None).build()
 
       running(application) {
-        val request = OptionalDataRequest(FakeRequest(), enrolments, testCredentials, Some(vrn), iossNumber, companyName, registrationWrapper, None, Some(completeUserAnswers))
-        val controller = new Harness(period)
+        val request = DataRequest(FakeRequest(), enrolments, testCredentials, Some(vrn), iossNumber, companyName, registrationWrapper, None, completeUserAnswers)
+        val controller = new Harness()
 
         val result = controller.callFilter(request).futureValue
 
@@ -54,6 +53,7 @@ class CheckCommencementDateOptionalFilterSpec extends SpecBase with MockitoSugar
 
 
     "must redirect when there are no periods to be submitted" in {
+      
       val application = applicationBuilder(None).build()
 
       val registration = registrationWrapper.copy(registration =
@@ -61,14 +61,13 @@ class CheckCommencementDateOptionalFilterSpec extends SpecBase with MockitoSugar
           registrationWrapper.registration.schemeDetails.copy(commencementDate = period.lastDay.plusDays(1))))
 
       running(application) {
-        val request = OptionalDataRequest(FakeRequest(), enrolments, testCredentials, Some(vrn), iossNumber, companyName, registration, None, Some(completeUserAnswers))
-        val controller = new Harness(period)
+        val request = DataRequest(FakeRequest(), enrolments, testCredentials, Some(vrn), iossNumber, companyName, registration, None, completeUserAnswers)
+        val controller = new Harness()
 
         val result = controller.callFilter(request).futureValue
 
-        result.value mustEqual Redirect(routes.NoOtherPeriodsAvailableController.onPageLoad())
+        result.value `mustBe` Redirect(routes.NoOtherPeriodsAvailableController.onPageLoad(waypoints, iossNumber))
       }
     }
   }
-
 }

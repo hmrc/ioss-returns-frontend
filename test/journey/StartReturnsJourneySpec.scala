@@ -22,7 +22,6 @@ import models.UserAnswers
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatestplus.mockito.MockitoSugar.mock
 import pages.{NoOtherPeriodsAvailablePage, SoldGoodsPage, StartReturnPage, YourAccountPage}
-import pages.fileUpload.WantToUploadFilePage
 
 class StartReturnsJourneySpec extends AnyFreeSpec with JourneyHelpers with SpecBase {
 
@@ -32,18 +31,18 @@ class StartReturnsJourneySpec extends AnyFreeSpec with JourneyHelpers with SpecB
     "user can't complete any other returns other than the available return period" in {
       startingFrom(YourAccountPage, answers = UserAnswers(userAnswersId, iossNumber, period))
         .run(
-          goTo(StartReturnPage(period, mockAppConfig)),
-          submitAnswer(StartReturnPage(period, mockAppConfig), false),
-          pageMustBe(NoOtherPeriodsAvailablePage)
+          goTo(StartReturnPage(iossNumber, period, mockAppConfig)),
+          submitAnswer(StartReturnPage(iossNumber, period, mockAppConfig), false),
+          pageMustBe(NoOtherPeriodsAvailablePage(iossNumber))
         )
     }
 
     "must ask user if they made eligible sales when they start the return for the available period" in {
       startingFrom(YourAccountPage, answers = UserAnswers(userAnswersId, iossNumber, period))
         .run(
-          goTo(StartReturnPage(period, mockAppConfig)),
-          submitAnswer(StartReturnPage(period, mockAppConfig), true),
-          pageMustBe(SoldGoodsPage)
+          goTo(StartReturnPage(iossNumber, period, mockAppConfig)),
+          submitAnswer(StartReturnPage(iossNumber, period, mockAppConfig), true),
+          pageMustBe(SoldGoodsPage(iossNumber))
         )
     }
   }

@@ -80,7 +80,7 @@ class SavedProgressController @Inject()(
                 case _ => externalUrl
               }
 
-              Ok(view(request.iossNumber, period, answersExpiry, safeContinueUrl, determinedRedirect))
+              Ok(view(period, answersExpiry, safeContinueUrl, determinedRedirect))
             }
 
           case (Left(ConflictFound), externalUrl)
@@ -88,7 +88,7 @@ class SavedProgressController @Inject()(
             Redirect(appConfig.intermediaryDashboardUrl).toFuture
 
           case (Left(ConflictFound), externalUrl) =>
-            Redirect(externalUrl.getOrElse(routes.YourAccountController.onPageLoad(iossNumber = request.iossNumber).url)).toFuture
+            Redirect(externalUrl.getOrElse(routes.YourAccountController.onPageLoad().url)).toFuture
 
           case (Left(e), _) =>
             logger.error(s"Unexpected result on submit: ${e.toString}")

@@ -33,6 +33,6 @@ class DashboardNavigationService @Inject()(frontendAppConfig: FrontendAppConfig)
     (isIntermediary, intermediaryEnrolmentsExist, iossEnrolmentsExist) match {
       case (true, true, true) => routes.IossOrIntermediaryController.onPageLoad(iossNumber).url
       case (true, true, false) => frontendAppConfig.intermediaryDashboardUrl
-      case _ => controllers.routes.YourAccountController.onPageLoad(iossNumber = iossNumber).url
+      case _ => controllers.routes.YourAccountController.onPageLoad().url
     }
 }

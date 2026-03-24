@@ -19,7 +19,7 @@ package controllers
 import base.SpecBase
 import config.FrontendAppConfig
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import views.html.InterceptUnusableEmailView
 
 class InterceptUnusableEmailControllerSpec extends SpecBase {
@@ -31,15 +31,15 @@ class InterceptUnusableEmailControllerSpec extends SpecBase {
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
       running(application) {
-        val request = FakeRequest(GET, routes.InterceptUnusableEmailController.onPageLoad().url)
+        val request = FakeRequest(GET, routes.InterceptUnusableEmailController.onPageLoad(iossNumber).url)
 
         val result = route(application, request).value
 
         val view = application.injector.instanceOf[InterceptUnusableEmailView]
         val appConfig = application.injector.instanceOf[FrontendAppConfig]
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe`
           view(registrationWrapper.registration.schemeDetails.businessEmailId, appConfig.amendRegistrationUrl)(request, messages(application)).toString
       }
     }

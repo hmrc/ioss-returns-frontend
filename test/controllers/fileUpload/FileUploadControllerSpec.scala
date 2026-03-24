@@ -18,21 +18,20 @@ package controllers.fileUpload
 
 import base.SpecBase
 import connectors.UpscanInitiateConnector
-import controllers.routes
 import forms.FileUploadFormProvider
 import models.upscan.*
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
+import pages.JourneyRecoveryPage
 import pages.fileUpload.FileUploadPage
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import repositories.SessionRepository
+import utils.FutureSyntax.FutureOps
 import views.html.fileUpload.FileUploadView
-
-import scala.concurrent.Future
 
 class FileUploadControllerSpec extends SpecBase with MockitoSugar {
 
@@ -45,7 +44,7 @@ class FileUploadControllerSpec extends SpecBase with MockitoSugar {
     formFields = Map("someKey" -> "someValue")
   )
 
-  lazy val fileUploadRoute: String = controllers.fileUpload.routes.FileUploadController.onPageLoad(waypoints).url
+  lazy val fileUploadRoute: String = controllers.fileUpload.routes.FileUploadController.onPageLoad(waypoints, iossNumber).url
 
   "FileUpload Controller" - {
 
@@ -53,84 +52,82 @@ class FileUploadControllerSpec extends SpecBase with MockitoSugar {
 
       "must return OK and the correct view for a GET" in {
 
-        val mockConnector = mock[UpscanInitiateConnector]
-        val mockSessionRepository = mock[SessionRepository]
+      val mockConnector = mock[UpscanInitiateConnector]
+      val mockSessionRepository = mock[SessionRepository]
 
-        when(mockConnector.initiateV2(any(), any())(any()))
-          .thenReturn(Future.successful(fakeInitiateResponse))
-        when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
+      when(mockConnector.initiateV2(any(), any())(any())) thenReturn fakeInitiateResponse.toFuture
+      when(mockSessionRepository.set(any())) thenReturn true.toFuture
 
-        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-          .overrides(
-            bind[UpscanInitiateConnector].toInstance(mockConnector),
-            bind[SessionRepository].toInstance(mockSessionRepository)
-          ).build()
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(
+          bind[UpscanInitiateConnector].toInstance(mockConnector),
+          bind[SessionRepository].toInstance(mockSessionRepository)
+        ).build()
 
-        running(application) {
-          val request = FakeRequest(GET, fileUploadRoute)
+      running(application) {
+        val request = FakeRequest(GET, fileUploadRoute)
 
-          val result = route(application, request).value
+        val result = route(application, request).value
 
-          val view = application.injector.instanceOf[FileUploadView]
+        val view = application.injector.instanceOf[FileUploadView]
 
-          status(result) mustEqual OK
-          contentAsString(result) mustEqual view(
-            form,
-            waypoints,
-            period,
-            false,
-            companyName,
-            postTarget = fakeInitiateResponse.postTarget,
-            formFields = fakeInitiateResponse.formFields,
-            None
-          )(request, messages(application)).toString
-        }
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(
+          form,
+          waypoints,
+          period,
+          false,
+          companyName,
+          postTarget = fakeInitiateResponse.postTarget,
+          formFields = fakeInitiateResponse.formFields,
+          None
+        )(request, messages(application)).toString
       }
+    }
 
-      "must populate the view correctly on a GET when the question has previously been answered" in {
+    "must populate the view correctly on a GET when the question has previously been answered" in {
 
-        val userAnswers = emptyUserAnswers.set(FileUploadPage, csvFile).success.value
+      val userAnswers = emptyUserAnswers.set(FileUploadPage(iossNumber), csvFile).success.value
 
-        val mockConnector = mock[UpscanInitiateConnector]
-        val mockSessionRepository = mock[SessionRepository]
+      val mockConnector = mock[UpscanInitiateConnector]
+      val mockSessionRepository = mock[SessionRepository]
 
-        when(mockConnector.initiateV2(any(), any())(any()))
-          .thenReturn(Future.successful(fakeInitiateResponse))
-        when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
+      when(mockConnector.initiateV2(any(), any())(any())) thenReturn fakeInitiateResponse.toFuture
+      when(mockSessionRepository.set(any())) thenReturn true.toFuture
 
-        val application = applicationBuilder(userAnswers = Some(userAnswers))
-          .overrides(
-            bind[UpscanInitiateConnector].toInstance(mockConnector),
-            bind[SessionRepository].toInstance(mockSessionRepository)
-          ).build()
+      val application = applicationBuilder(userAnswers = Some(userAnswers))
+        .overrides(
+          bind[UpscanInitiateConnector].toInstance(mockConnector),
+          bind[SessionRepository].toInstance(mockSessionRepository)
+        ).build()
 
-        running(application) {
-          val request = FakeRequest(GET, fileUploadRoute)
+      running(application) {
+        val request = FakeRequest(GET, fileUploadRoute)
 
-          val view = application.injector.instanceOf[FileUploadView]
+        val view = application.injector.instanceOf[FileUploadView]
 
-          val result = route(application, request).value
+        val result = route(application, request).value
 
-          status(result) mustEqual OK
-          contentAsString(result) mustEqual view(
-            form,
-            waypoints,
-            period,
-            false,
-            companyName,
-            postTarget = fakeInitiateResponse.postTarget,
-            formFields = fakeInitiateResponse.formFields,
-            None
-          )(request, messages(application)).toString
-        }
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(
+          form,
+          waypoints,
+          period,
+          false,
+          companyName,
+          postTarget = fakeInitiateResponse.postTarget,
+          formFields = fakeInitiateResponse.formFields,
+          None
+        )(request, messages(application)).toString
       }
+    }
 
-      "must redirect to Journey Recovery for a GET if no existing data is found" in {
+    "must redirect to Journey Recovery for a GET if no existing data is found" in {
 
-        val application = applicationBuilder(userAnswers = None).build()
+      val application = applicationBuilder(userAnswers = None).build()
 
-        running(application) {
-          val request = FakeRequest(GET, fileUploadRoute)
+      running(application) {
+        val request = FakeRequest(GET, fileUploadRoute)
 
           val result = route(application, request).value
 
@@ -174,9 +171,8 @@ class FileUploadControllerSpec extends SpecBase with MockitoSugar {
 
           val result = route(application, request).value
 
-          status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
-        }
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
   }

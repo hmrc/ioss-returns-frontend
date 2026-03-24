@@ -36,7 +36,7 @@ class ReturnSubmissionFailureControllerSpec extends SpecBase {
       running(application) {
         val redirectUrl: String = baseRoutes.YourAccountController.onPageLoad(waypoints).url
 
-        val request = FakeRequest(GET, routes.ReturnSubmissionFailureController.onPageLoad().url)
+        val request = FakeRequest(GET, routes.ReturnSubmissionFailureController.onPageLoad(iossNumber).url)
 
         val result = route(application, request).value
 
@@ -75,7 +75,7 @@ class ReturnSubmissionFailureControllerSpec extends SpecBase {
       ).build()
 
       running(application) {
-        val request = FakeRequest(GET, routes.ReturnSubmissionFailureController.onPageLoad().url)
+        val request = FakeRequest(GET, routes.ReturnSubmissionFailureController.onPageLoad(iossNumber).url)
 
         val config = application.injector.instanceOf[FrontendAppConfig]
 

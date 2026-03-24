@@ -17,13 +17,13 @@
 package controllers.corrections
 
 import base.SpecBase
-import controllers.routes
 import forms.corrections.CorrectPreviousReturnFormProvider
 import models.etmp.EtmpExclusionReason.TransferringMSID
 import models.etmp.{EtmpDisplayRegistration, EtmpExclusion, EtmpObligationDetails, EtmpObligationsFulfilmentStatus}
 import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
+import pages.JourneyRecoveryPage
 import pages.corrections.CorrectPreviousReturnPage
 import play.api.data.Form
 import play.api.inject.bind
@@ -33,8 +33,6 @@ import repositories.SessionRepository
 import services.{ObligationsService, PartialReturnPeriodService}
 import utils.FutureSyntax.FutureOps
 import views.html.corrections.CorrectPreviousReturnView
-
-import scala.concurrent.Future
 
 class CorrectPreviousReturnControllerSpec extends SpecBase with MockitoSugar {
 
@@ -66,7 +64,7 @@ class CorrectPreviousReturnControllerSpec extends SpecBase with MockitoSugar {
   private val formProvider = new CorrectPreviousReturnFormProvider()
   private val form: Form[Boolean] = formProvider()
 
-  private lazy val correctPreviousReturnRoute: String = controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(waypoints).url
+  private lazy val correctPreviousReturnRoute: String = controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(waypoints, iossNumber).url
 
   "CorrectPreviousReturn Controller" - {
 
@@ -86,7 +84,7 @@ class CorrectPreviousReturnControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[CorrectPreviousReturnView]
 
         status(result) `mustBe` OK
-        contentAsString(result) `mustBe` view(form, waypoints, period, maybeExclusion = None, isFinalReturn = false, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
+        contentAsString(result) `mustBe` view(form, waypoints, iossNumber, period, maybeExclusion = None, isFinalReturn = false, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -119,7 +117,7 @@ class CorrectPreviousReturnControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[CorrectPreviousReturnView]
 
         status(result) `mustBe` OK
-        contentAsString(result) `mustBe` view(form, waypoints, period, maybeExclusion = Some(etmpExclusion), isFinalReturn = true, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
+        contentAsString(result) `mustBe` view(form, waypoints, iossNumber, period, maybeExclusion = Some(etmpExclusion), isFinalReturn = true, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -127,7 +125,7 @@ class CorrectPreviousReturnControllerSpec extends SpecBase with MockitoSugar {
 
       when(obligationService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
 
-      val userAnswers = emptyUserAnswers.set(CorrectPreviousReturnPage(0), true).success.value
+      val userAnswers = emptyUserAnswers.set(CorrectPreviousReturnPage(iossNumber, 0), true).success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers))
         .overrides(bind[ObligationsService].toInstance(obligationService))
@@ -144,6 +142,7 @@ class CorrectPreviousReturnControllerSpec extends SpecBase with MockitoSugar {
         contentAsString(result) `mustBe` view(
           form.fill(true),
           waypoints,
+          iossNumber,
           period,
           maybeExclusion = None,
           isFinalReturn = false,
@@ -159,7 +158,7 @@ class CorrectPreviousReturnControllerSpec extends SpecBase with MockitoSugar {
 
       val mockSessionRepository = mock[SessionRepository]
 
-      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      when(mockSessionRepository.set(any())) thenReturn true.toFuture
 
       val application =
         applicationBuilder(userAnswers = Some(emptyUserAnswers))
@@ -173,10 +172,10 @@ class CorrectPreviousReturnControllerSpec extends SpecBase with MockitoSugar {
             .withFormUrlEncodedBody(("value", "true"))
 
         val result = route(application, request).value
-        val expectedAnswers = emptyUserAnswers.set(CorrectPreviousReturnPage(0), true).success.value
+        val expectedAnswers = emptyUserAnswers.set(CorrectPreviousReturnPage(iossNumber, 0), true).success.value
 
         status(result) `mustBe` SEE_OTHER
-        redirectLocation(result).value `mustBe` CorrectPreviousReturnPage(3).navigate(waypoints, emptyUserAnswers, expectedAnswers).url
+        redirectLocation(result).value `mustBe` CorrectPreviousReturnPage(iossNumber, 3).navigate(waypoints, emptyUserAnswers, expectedAnswers).url
         verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
       }
     }
@@ -187,7 +186,7 @@ class CorrectPreviousReturnControllerSpec extends SpecBase with MockitoSugar {
 
       val mockSessionRepository = mock[SessionRepository]
 
-      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      when(mockSessionRepository.set(any())) thenReturn true.toFuture
 
       val application =
         applicationBuilder(userAnswers = Some(emptyUserAnswers))
@@ -201,10 +200,10 @@ class CorrectPreviousReturnControllerSpec extends SpecBase with MockitoSugar {
             .withFormUrlEncodedBody(("value", "true"))
 
         val result = route(application, request).value
-        val expectedAnswers = emptyUserAnswers.set(CorrectPreviousReturnPage(0), true).success.value
+        val expectedAnswers = emptyUserAnswers.set(CorrectPreviousReturnPage(iossNumber, 0), true).success.value
 
         status(result) `mustBe` SEE_OTHER
-        redirectLocation(result).value `mustBe` CorrectPreviousReturnPage(0).navigate(waypoints, emptyUserAnswers, expectedAnswers).url
+        redirectLocation(result).value `mustBe` CorrectPreviousReturnPage(iossNumber, 0).navigate(waypoints, emptyUserAnswers, expectedAnswers).url
         verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
       }
     }
@@ -232,6 +231,7 @@ class CorrectPreviousReturnControllerSpec extends SpecBase with MockitoSugar {
         contentAsString(result) `mustBe` view(
           boundForm,
           waypoints,
+          iossNumber,
           period,
           maybeExclusion = None,
           isFinalReturn = false,
@@ -251,7 +251,7 @@ class CorrectPreviousReturnControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) `mustBe` SEE_OTHER
-        redirectLocation(result).value `mustBe` routes.JourneyRecoveryController.onPageLoad().url
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
 
@@ -267,7 +267,7 @@ class CorrectPreviousReturnControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) `mustBe` SEE_OTHER
-        redirectLocation(result).value `mustBe` routes.JourneyRecoveryController.onPageLoad().url
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
   }

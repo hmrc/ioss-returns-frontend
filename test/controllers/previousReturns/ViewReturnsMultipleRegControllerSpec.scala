@@ -26,13 +26,13 @@ import org.scalatestplus.mockito.MockitoSugar.mock
 import pages.JourneyRecoveryPage
 import play.api.inject.bind
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import repositories.SelectedPreviousRegistrationRepository
 import services.{ObligationsService, PaymentsService, PreviousRegistrationService}
 import testUtils.PeriodWithFinancialData.{obligationDetails, periodsWithFinancialData, prepareData}
 import testUtils.PreviousRegistrationData.{previousRegistrations, selectedPreviousRegistration}
 import utils.FutureSyntax.FutureOps
-import viewmodels.previousReturns._
+import viewmodels.previousReturns.*
 import views.html.previousReturns.ViewReturnsMultipleRegView
 
 import java.time.YearMonth
@@ -69,15 +69,15 @@ class ViewReturnsMultipleRegControllerSpec extends SpecBase with BeforeAndAfterE
         when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn obligationDetails.toFuture
         when(mockPaymentsService.prepareFinancialDataWithIossNumber(any())(any(), any())) thenReturn prepareData.toFuture
 
-        val request = FakeRequest(GET, routes.ViewReturnsMultipleRegController.onPageLoad(waypoints).url)
+        val request = FakeRequest(GET, routes.ViewReturnsMultipleRegController.onPageLoad(waypoints, iossNumber).url)
 
         val result = route(application, request).value
 
         val view = application.injector.instanceOf[ViewReturnsMultipleRegView]
 
-        status(result) mustBe OK
-        contentAsString(result) mustBe
-          view(waypoints, selectedPreviousRegistration.previousRegistration, periodsWithFinancialData, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe`
+          view(waypoints, iossNumber, selectedPreviousRegistration.previousRegistration, periodsWithFinancialData, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -98,12 +98,12 @@ class ViewReturnsMultipleRegControllerSpec extends SpecBase with BeforeAndAfterE
         ))
         when(mockSelectedPreviousRegistrationRepository.get(userAnswersId)) thenReturn Some(selectedPreviousRegistration).toFuture
 
-        val request = FakeRequest(GET, routes.ViewReturnsMultipleRegController.onPageLoad(waypoints).url)
+        val request = FakeRequest(GET, routes.ViewReturnsMultipleRegController.onPageLoad(waypoints, iossNumber).url)
 
         val result = route(application, request).value
 
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
 
@@ -118,12 +118,12 @@ class ViewReturnsMultipleRegControllerSpec extends SpecBase with BeforeAndAfterE
         when(mockPreviousRegistrationService.getPreviousRegistrations(any())(any())) thenReturn previousRegistrations.toFuture
         when(mockSelectedPreviousRegistrationRepository.get(userAnswersId)) thenReturn None.toFuture
 
-        val request = FakeRequest(GET, routes.ViewReturnsMultipleRegController.onPageLoad(waypoints).url)
+        val request = FakeRequest(GET, routes.ViewReturnsMultipleRegController.onPageLoad(waypoints, iossNumber).url)
 
         val result = route(application, request).value
 
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
 
@@ -140,15 +140,15 @@ class ViewReturnsMultipleRegControllerSpec extends SpecBase with BeforeAndAfterE
         when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn obligationDetails.toFuture
         when(mockPaymentsService.prepareFinancialDataWithIossNumber(any())(any(), any())) thenReturn prepareData.toFuture
 
-        val request = FakeRequest(GET, routes.ViewReturnsMultipleRegController.onPageLoad(waypoints).url)
+        val request = FakeRequest(GET, routes.ViewReturnsMultipleRegController.onPageLoad(waypoints, iossNumber).url)
 
         val result = route(application, request).value
 
         val view = application.injector.instanceOf[ViewReturnsMultipleRegView]
 
-        status(result) mustBe OK
-        contentAsString(result) mustBe
-          view(waypoints, previousRegistrations.head, periodsWithFinancialData, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe`
+          view(waypoints, iossNumber, previousRegistrations.head, periodsWithFinancialData, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -160,12 +160,12 @@ class ViewReturnsMultipleRegControllerSpec extends SpecBase with BeforeAndAfterE
       running(application) {
         when(mockPreviousRegistrationService.getPreviousRegistrations(any())(any())) thenReturn List.empty.toFuture
 
-        val request = FakeRequest(GET, routes.ViewReturnsMultipleRegController.onPageLoad(waypoints).url)
+        val request = FakeRequest(GET, routes.ViewReturnsMultipleRegController.onPageLoad(waypoints, iossNumber).url)
 
         val result = route(application, request).value
 
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
   }

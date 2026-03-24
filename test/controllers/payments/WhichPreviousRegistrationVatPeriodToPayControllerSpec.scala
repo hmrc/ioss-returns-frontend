@@ -19,10 +19,10 @@ package controllers.payments
 import base.SpecBase
 import config.FrontendAppConfig
 import forms.payments.WhichPreviousRegistrationVatPeriodToPayFormProvider
-import models.payments.{Payment, PaymentResponse, PaymentStatus, PrepareData}
 import models.Period
+import models.payments.{Payment, PaymentResponse, PaymentStatus, PrepareData}
 import models.responses.UnexpectedResponseStatus
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito
 import org.mockito.Mockito.when
 import org.scalacheck.Gen
@@ -32,7 +32,7 @@ import pages.YourAccountPage
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import services.PaymentsService
 import utils.FutureSyntax.FutureOps
 import views.html.payments.{NoPaymentsView, WhichPreviousRegistrationVatPeriodToPayView}
@@ -55,7 +55,7 @@ class WhichPreviousRegistrationVatPeriodToPayControllerSpec extends SpecBase wit
 
   private val payments: List[Payment] = (duePayments ++ overduePayments).sortBy(p => (p.period.year, p.period.month)).reverse
 
-  private lazy val whichPreviousRegistrationVatPeriodToPayRoute = routes.WhichPreviousRegistrationVatPeriodToPayController.onPageLoad(waypoints).url
+  private lazy val whichPreviousRegistrationVatPeriodToPayRoute = routes.WhichPreviousRegistrationVatPeriodToPayController.onPageLoad(waypoints, iossNumber).url
 
   override def beforeEach(): Unit = {
     Mockito.reset(mockPaymentsService)
@@ -84,8 +84,8 @@ class WhichPreviousRegistrationVatPeriodToPayControllerSpec extends SpecBase wit
 
         val view = application.injector.instanceOf[WhichPreviousRegistrationVatPeriodToPayView]
 
-        status(result) mustBe OK
-        contentAsString(result) mustBe view(form, waypoints, payments, paymentError = false)(request, messages(application)).toString
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(form, waypoints, iossNumber, payments, paymentError = false)(request, messages(application)).toString
       }
     }
 
@@ -112,8 +112,8 @@ class WhichPreviousRegistrationVatPeriodToPayControllerSpec extends SpecBase wit
 
         val redirectUrl: String = YourAccountPage.route(waypoints).url
 
-        status(result) mustBe OK
-        contentAsString(result) mustBe view(redirectUrl)(request, messages(application)).toString
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(redirectUrl)(request, messages(application)).toString
       }
     }
 
@@ -139,8 +139,8 @@ class WhichPreviousRegistrationVatPeriodToPayControllerSpec extends SpecBase wit
 
         val result = route(application, request).value
 
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe paymentResponse.nextUrl
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` paymentResponse.nextUrl
       }
     }
 
@@ -172,8 +172,8 @@ class WhichPreviousRegistrationVatPeriodToPayControllerSpec extends SpecBase wit
 
         val view = application.injector.instanceOf[WhichPreviousRegistrationVatPeriodToPayView]
 
-        status(result) mustBe OK
-        contentAsString(result) mustBe view(form, waypoints, payments, paymentError = true)(request, messages(application)).toString
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(form, waypoints, iossNumber, payments, paymentError = true)(request, messages(application)).toString
       }
     }
 
@@ -201,8 +201,8 @@ class WhichPreviousRegistrationVatPeriodToPayControllerSpec extends SpecBase wit
 
         val result = route(application, request).value
 
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe paymentResponse.nextUrl
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` paymentResponse.nextUrl
       }
     }
 
@@ -232,8 +232,8 @@ class WhichPreviousRegistrationVatPeriodToPayControllerSpec extends SpecBase wit
 
         val result = route(application, request).value
 
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe paymentResponse.nextUrl
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` paymentResponse.nextUrl
       }
     }
 
@@ -267,8 +267,8 @@ class WhichPreviousRegistrationVatPeriodToPayControllerSpec extends SpecBase wit
 
         val redirectUrl: String = s"${frontendAppConfig.paymentsBaseUrl}/pay/service-unavailable"
 
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe redirectUrl
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` redirectUrl
       }
     }
 
@@ -300,8 +300,8 @@ class WhichPreviousRegistrationVatPeriodToPayControllerSpec extends SpecBase wit
 
         val result = route(application, request).value
 
-        status(result) mustBe BAD_REQUEST
-        contentAsString(result) mustBe view(boundForm, waypoints, payments, paymentError = false)(request, messages(application)).toString
+        status(result) `mustBe` BAD_REQUEST
+        contentAsString(result) `mustBe` view(boundForm, waypoints, iossNumber, payments, paymentError = false)(request, messages(application)).toString
       }
     }
   }

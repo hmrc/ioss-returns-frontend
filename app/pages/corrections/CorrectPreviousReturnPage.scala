@@ -40,7 +40,7 @@ case class CorrectPreviousReturnPage(iossNumber: String, numberOfExistingReturnP
       } else {
         CorrectionReturnSinglePeriodPage(answers.iossNumber, Index(0))
       }
-      case Some(false) => CheckYourAnswersPage
+      case Some(false) => CheckYourAnswersPage(answers.iossNumber)
       case _ => JourneyRecoveryPage
     }
   }

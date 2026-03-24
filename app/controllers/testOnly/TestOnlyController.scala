@@ -80,7 +80,6 @@ class TestOnlyController @Inject()(
         case Right(response) => Redirect(response.redirectUrl)
         case Left(_) => InternalServerError
       }
-
   }
 
   def quickAuthStub(): Action[AnyContent] = cc.actionBuilder { implicit request =>
@@ -88,7 +87,7 @@ class TestOnlyController @Inject()(
     val defaultIossNumber = "IM9001234567"
     val defaultVrn = "100000002"
     val postAction: Call = Call("POST", config.authLoginStubSignInUrl)
-    val startUrl: String = s"${config.host}${controllers.routes.YourAccountController.onPageLoad(iossNumber = defaultIossNumber)}" // TODO -> Check defaultIossNumber
+    val startUrl: String = s"${config.host}${controllers.routes.YourAccountController.onPageLoad()}"
     val redirectPolicy = UnsafePermitAll
 
     val iossNumber = request.getQueryString("ioss").getOrElse(defaultIossNumber)

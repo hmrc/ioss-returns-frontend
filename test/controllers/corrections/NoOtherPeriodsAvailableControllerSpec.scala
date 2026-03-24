@@ -31,13 +31,14 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import repositories.SessionRepository
 import uk.gov.hmrc.auth.core.{Enrolment, EnrolmentIdentifier, Enrolments}
+import utils.FutureSyntax.FutureOps
 import views.html.NoOtherPeriodsAvailableView
 
 import scala.concurrent.Future
 
 class NoOtherPeriodsAvailableControllerSpec extends SpecBase {
 
-  private lazy val NoOtherCorrectionPeriodsAvailableRoute = controllers.corrections.routes.NoOtherCorrectionPeriodsAvailableController.onPageLoad(waypoints).url
+  private lazy val NoOtherCorrectionPeriodsAvailableRoute = controllers.corrections.routes.NoOtherCorrectionPeriodsAvailableController.onPageLoad(waypoints, iossNumber).url
 
   val mockSessionRepository: SessionRepository = mock[SessionRepository]
 
@@ -48,7 +49,7 @@ class NoOtherPeriodsAvailableControllerSpec extends SpecBase {
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
       running(application) {
-        val request = FakeRequest(GET, routes.NoOtherPeriodsAvailableController.onPageLoad(waypoints).url)
+        val request = FakeRequest(GET, routes.NoOtherPeriodsAvailableController.onPageLoad(waypoints, iossNumber).url)
 
         val result = route(application, request).value
 
@@ -93,7 +94,7 @@ class NoOtherPeriodsAvailableControllerSpec extends SpecBase {
       ).build()
 
       running(application) {
-        val request = FakeRequest(GET, routes.NoOtherPeriodsAvailableController.onPageLoad(waypoints).url)
+        val request = FakeRequest(GET, routes.NoOtherPeriodsAvailableController.onPageLoad(waypoints, iossNumber).url)
 
         val result = route(application, request).value
 
@@ -110,7 +111,7 @@ class NoOtherPeriodsAvailableControllerSpec extends SpecBase {
 
     "must redirect to CheckYourAnswersController when completed correction periods are empty for a POST" in {
 
-      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      when(mockSessionRepository.set(any())) thenReturn true.toFuture
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(
@@ -123,7 +124,7 @@ class NoOtherPeriodsAvailableControllerSpec extends SpecBase {
         val result = route(application, request).value
 
         status(result) `mustBe` SEE_OTHER
-        redirectLocation(result).value `mustBe` routes.CheckYourAnswersController.onPageLoad().url
+        redirectLocation(result).value `mustBe` routes.CheckYourAnswersController.onPageLoad(waypoints, iossNumber).url
       }
     }
 
@@ -137,7 +138,7 @@ class NoOtherPeriodsAvailableControllerSpec extends SpecBase {
         val result = route(application, request).value
 
         status(result) `mustBe` SEE_OTHER
-        redirectLocation(result).value `mustBe` routes.CheckYourAnswersController.onPageLoad().url
+        redirectLocation(result).value `mustBe` routes.CheckYourAnswersController.onPageLoad(waypoints, iossNumber).url
       }
     }
 

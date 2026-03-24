@@ -28,14 +28,12 @@ case class Waypoint(
 object Waypoint {
 
   private val fragments: Map[String, Waypoint] =
-    Map(
-      CheckYourAnswersPage.urlFragment -> CheckYourAnswersPage.waypoint,
-    )
+    Map.empty
 
   def fromString(s: String): Option[Waypoint] =
     fragments.get(s)
+      .orElse(CheckYourAnswersPage.waypointFromString(s))
       .orElse(SoldToCountryListPage.waypointFromString(s))
       .orElse(CheckSalesPage.waypointFromString(s))
       .orElse(CorrectionListCountriesPage.waypointFromString(s))
-
 }

@@ -17,7 +17,6 @@
 package controllers
 
 import base.SpecBase
-import config.FrontendAppConfig
 import connectors.VatReturnConnector
 import models.external.ExternalEntryUrl
 import org.mockito.ArgumentMatchers.any
@@ -43,15 +42,15 @@ class CannotStartExcludedReturnControllerSpec extends SpecBase {
         .build()
 
       running(application) {
-        val request = FakeRequest(GET, routes.CannotStartExcludedReturnController.onPageLoad().url)
+        val request = FakeRequest(GET, routes.CannotStartExcludedReturnController.onPageLoad(iossNumber).url)
 
         val result = route(application, request).value
 
         val view = application.injector.instanceOf[CannotStartExcludedReturnView]
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual
-          view(appropriateDashboardUrl = controllers.routes.YourAccountController.onPageLoad().url)
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe`
+          view(appropriateDashboardUrl = controllers.routes.YourAccountController.onPageLoad(waypoints).url)
             (request, messages(application)).toString
       }
     }

@@ -37,7 +37,7 @@ import play.api.inject.bind
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
-import repositories.{IntermediarySelectedIossNumberRepository, SelectedIossNumberRepository}
+import repositories.SelectedIossNumberRepository
 import services.{AccountService, PaymentsService, PreviousRegistrationService}
 import uk.gov.hmrc.auth.core.{Enrolment, EnrolmentIdentifier, Enrolments}
 import utils.FutureSyntax.FutureOps
@@ -83,7 +83,7 @@ class WhichPreviousRegistrationToPayControllerSpec extends SpecBase with Mockito
 
   private val paymentResponse: PaymentResponse = PaymentResponse(journeyId = "journeyId", nextUrl = "nextUrl")
 
-  private lazy val whichPreviousRegistrationToPayRoute: String = routes.WhichPreviousRegistrationToPayController.onPageLoad(waypoints).url
+  private lazy val whichPreviousRegistrationToPayRoute: String = routes.WhichPreviousRegistrationToPayController.onPageLoad(waypoints, iossNumber).url
 
   private val mockPreviousRegistrationService: PreviousRegistrationService = mock[PreviousRegistrationService]
   private val mockPaymentsService: PaymentsService = mock[PaymentsService]
@@ -121,8 +121,8 @@ class WhichPreviousRegistrationToPayControllerSpec extends SpecBase with Mockito
 
         val view = application.injector.instanceOf[WhichPreviousRegistrationToPayView]
 
-        status(result) mustBe OK
-        contentAsString(result) mustBe view(form, waypoints, prepareDataList)(request, messages(application)).toString
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(form, waypoints, iossNumber, prepareDataList)(request, messages(application)).toString
       }
     }
 
@@ -158,8 +158,8 @@ class WhichPreviousRegistrationToPayControllerSpec extends SpecBase with Mockito
 
         val redirectUrl: String = YourAccountPage.route(waypoints).url
 
-        status(result) mustBe OK
-        contentAsString(result) mustBe view(redirectUrl)(request, messages(application)).toString
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(redirectUrl)(request, messages(application)).toString
       }
     }
 
@@ -186,8 +186,8 @@ class WhichPreviousRegistrationToPayControllerSpec extends SpecBase with Mockito
 
         val redirect = paymentResponse.nextUrl
 
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe redirect
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` redirect
       }
     }
 
@@ -225,8 +225,8 @@ class WhichPreviousRegistrationToPayControllerSpec extends SpecBase with Mockito
 
         val result = route(application, request).value
 
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe WhichPreviousRegistrationVatPeriodToPayPage.route(waypoints).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` WhichPreviousRegistrationVatPeriodToPayPage(iossNumber).route(waypoints).url
       }
     }
 
@@ -253,8 +253,8 @@ class WhichPreviousRegistrationToPayControllerSpec extends SpecBase with Mockito
 
         whenReady(result.failed) { exp =>
 
-          exp mustBe a[Exception]
-          exp.getMessage mustEqual exceptionMessage
+          exp `mustBe` a[Exception]
+          exp.getMessage `mustBe` exceptionMessage
         }
       }
     }
@@ -281,8 +281,8 @@ class WhichPreviousRegistrationToPayControllerSpec extends SpecBase with Mockito
 
         val redirect = paymentResponse.nextUrl
 
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe redirect
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` redirect
       }
     }
 
@@ -316,8 +316,8 @@ class WhichPreviousRegistrationToPayControllerSpec extends SpecBase with Mockito
 
         val result = route(application, request).value
 
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe WhichPreviousRegistrationVatPeriodToPayPage.route(waypoints).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` WhichPreviousRegistrationVatPeriodToPayPage(iossNumber).route(waypoints).url
       }
     }
 
@@ -344,8 +344,8 @@ class WhichPreviousRegistrationToPayControllerSpec extends SpecBase with Mockito
 
         val result = route(application, request).value
 
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
 
@@ -368,20 +368,19 @@ class WhichPreviousRegistrationToPayControllerSpec extends SpecBase with Mockito
 
         val result = route(application, request).value
 
-        status(result) mustBe BAD_REQUEST
-        contentAsString(result) mustBe view(boundForm, waypoints, List(prepareData))(request, messages(application)).toString
+        status(result) `mustBe` BAD_REQUEST
+        contentAsString(result) `mustBe` view(boundForm, waypoints, iossNumber, List(prepareData))(request, messages(application)).toString
       }
     }
   }
 }
 
-class FakeMultipleEnrolmentsGetRegistrationAction(enrolments: Enrolments, registration: RegistrationWrapper) extends GetRegistrationAction(
+class FakeMultipleEnrolmentsGetRegistrationAction(enrolments: Enrolments, registration: RegistrationWrapper, requestedIossNumber: String) extends GetRegistrationAction(
   mock[AccountService],
   mock[IntermediaryRegistrationConnector],
   mock[RegistrationConnector],
   mock[FrontendAppConfig],
-  None,
-  mock[IntermediarySelectedIossNumberRepository]
+  requestedIossNumber
 )(ExecutionContext.Implicits.global) {
 
   override def refine[A](request: IdentifierRequest[A]): Future[Either[Result, RegistrationRequest[A]]] =
@@ -392,8 +391,7 @@ class FakeMultipleEnrolmentsGetRegistrationActionProvider(enrolments: Enrolments
   mock[AccountService],
   mock[IntermediaryRegistrationConnector],
   mock[RegistrationConnector],
-  mock[IntermediarySelectedIossNumberRepository],
   mock[FrontendAppConfig]
 )(ExecutionContext.Implicits.global) {
-  override def apply(maybeIossNumber: Option[String] = None): GetRegistrationAction = new FakeMultipleEnrolmentsGetRegistrationAction(enrolments, registrationWrapper)
+  override def apply(requestedIossNumber: String): GetRegistrationAction = new FakeMultipleEnrolmentsGetRegistrationAction(enrolments, registrationWrapper, requestedIossNumber)
 }

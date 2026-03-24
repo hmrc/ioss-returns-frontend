@@ -58,7 +58,7 @@ class WhichVatPeriodToPayController @Inject()(
 
         payments match {
           case payment :: Nil => makePayment(request.iossNumber, payment)
-          case Nil => Ok(viewNoPayment(YourAccountPage(request.iossNumber).route(waypoints).url)).toFuture
+          case Nil => Ok(viewNoPayment(YourAccountPage.route(waypoints).url)).toFuture
           case _ => Ok(view(form, request.iossNumber, payments, paymentError = paymentError, isIntermediaryJourney = request.isIntermediary, companyName = request.companyName)).toFuture
         }
       }

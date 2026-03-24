@@ -18,13 +18,14 @@ package generators
 
 import models.Index
 import org.scalacheck.Arbitrary
-
-import pages.corrections._
+import pages.corrections.*
 
 trait PageGenerators {
 
+  val iossNumber: String = "IM9001234567"
+
   implicit lazy val arbitraryUndeclaredCountryCorrectionPage: Arbitrary[UndeclaredCountryCorrectionPage] =
-    Arbitrary(UndeclaredCountryCorrectionPage(Index(0), Index(0)))
+    Arbitrary(UndeclaredCountryCorrectionPage(iossNumber, Index(0), Index(0)))
 
   implicit lazy val arbitraryRemovePeriodCorrectionPage: Arbitrary[RemovePeriodCorrectionPage.type] =
     Arbitrary(RemovePeriodCorrectionPage)
@@ -33,13 +34,13 @@ trait PageGenerators {
     Arbitrary(RemoveCountryCorrectionPage)
 
   implicit lazy val arbitraryCountryVatCorrectionPage: Arbitrary[VatAmountCorrectionCountryPage] =
-    Arbitrary(VatAmountCorrectionCountryPage(Index(0), Index(0)))
+    Arbitrary(VatAmountCorrectionCountryPage(iossNumber, Index(0), Index(0)))
 
   implicit lazy val arbitraryCorrectionReturnPeriodPage: Arbitrary[CorrectionReturnPeriodPage.type] =
     Arbitrary(CorrectionReturnPeriodPage)
 
   implicit lazy val arbitraryCorrectionCountryPage: Arbitrary[CorrectionCountryPage] =
-    Arbitrary(CorrectionCountryPage(Index(0), Index(0)))
+    Arbitrary(CorrectionCountryPage(iossNumber, Index(0), Index(0)))
 
   implicit lazy val arbitraryCorrectPreviousReturnPage: Arbitrary[CorrectPreviousReturnPage.type] =
     Arbitrary(CorrectPreviousReturnPage)

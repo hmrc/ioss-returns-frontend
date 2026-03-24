@@ -69,7 +69,7 @@ class CheckIsCurrentReturnPeriodFilterImpl(startReturnPeriod: Period,
 
               case _ =>
                 val redirect = remapCompleteOrExcludedToRedirect(iossNumber, currentReturns)
-                  .getOrElse(Redirect(controllers.routes.CannotStartReturnController.onPageLoad(iossNumber)))
+                  .getOrElse(Redirect(controllers.routes.CannotStartReturnController.onPageLoad()))
 
                 Some(redirect)
             }

@@ -55,8 +55,8 @@ class StartPaymentAsIntermediaryControllerSpec extends SpecBase with MockitoSuga
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result) mustBe Some(controllers.payments.routes.WhichVatPeriodToPayController.onPageLoad(EmptyWaypoints).url)
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result) `mustBe` Some(controllers.payments.routes.WhichVatPeriodToPayController.onPageLoad(EmptyWaypoints, iossNumber).url)
       }
     }
 

@@ -67,7 +67,7 @@ final case class VatPeriodCorrectionsListPage(
         case None => CorrectionReturnYearPage(answers.iossNumber, Index(0))
       }
     } else {
-      CheckYourAnswersPage
+      CheckYourAnswersPage(answers.iossNumber)
     }
   }
 

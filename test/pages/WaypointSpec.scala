@@ -16,33 +16,32 @@
 
 package pages
 
+import base.SpecBase
 import models.{CheckMode, Index, NormalMode}
-import org.scalatest.OptionValues
 import org.scalatest.freespec.AnyFreeSpec
-import org.scalatest.matchers.must.Matchers
 
-class WaypointSpec extends AnyFreeSpec with Matchers with OptionValues {
+class WaypointSpec extends SpecBase {
 
   "fromString" - {
 
     "must return Check Sales when given it's Normal mode waypoint" in {
-      Waypoint.fromString("check-sales-1").value mustBe CheckSalesPage(Index(0)).waypoint(NormalMode)
+      Waypoint.fromString(s"$iossNumber-check-sales-1").value `mustBe` CheckSalesPage(iossNumber, Index(0)).waypoint(NormalMode)
     }
 
     "must return Check Sales when given it's Check mode waypoint" in {
-      Waypoint.fromString("change-check-sales-1").value mustBe CheckSalesPage(Index(0)).waypoint(CheckMode)
+      Waypoint.fromString(s"$iossNumber-change-check-sales-1").value `mustBe` CheckSalesPage(iossNumber, Index(0)).waypoint(CheckMode)
     }
 
     "must return Sold To Country List when given it's Normal mode waypoint" in {
-      Waypoint.fromString("add-sales-country-list").value mustBe SoldToCountryListPage().waypoint(NormalMode)
+      Waypoint.fromString(s"$iossNumber-add-sales-country-list").value `mustBe` SoldToCountryListPage(iossNumber).waypoint(NormalMode)
     }
 
     "must return Sold To Country List when given it's Check mode waypoint" in {
-      Waypoint.fromString("change-add-sales-country-list").value mustBe SoldToCountryListPage().waypoint(CheckMode)
+      Waypoint.fromString(s"$iossNumber-change-add-sales-country-list").value `mustBe` SoldToCountryListPage(iossNumber).waypoint(CheckMode)
     }
 
     "must return Check Your Answers when given its waypoint" in {
-      Waypoint.fromString("check-your-answers").value mustBe CheckYourAnswersPage.waypoint
+      Waypoint.fromString(s"$iossNumber-check-your-answers").value `mustBe` CheckYourAnswersPage(iossNumber).waypoint
     }
   }
 }

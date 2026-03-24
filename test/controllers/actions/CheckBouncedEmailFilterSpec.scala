@@ -52,11 +52,9 @@ class CheckBouncedEmailFilterSpec extends SpecBase with MockitoSugar {
 
           val result = controller.callFilter(request).futureValue
 
-          result.value mustEqual Redirect(controllers.routes.InterceptUnusableEmailController.onPageLoad())
-
+          result.value `mustBe` Redirect(controllers.routes.InterceptUnusableEmailController.onPageLoad(iossNumber))
         }
       }
-
     }
 
     "when the unusable email status is false" - {
@@ -73,11 +71,8 @@ class CheckBouncedEmailFilterSpec extends SpecBase with MockitoSugar {
           val result = controller.callFilter(request).futureValue
 
           result mustBe None
-
         }
       }
-
     }
-
   }
 }

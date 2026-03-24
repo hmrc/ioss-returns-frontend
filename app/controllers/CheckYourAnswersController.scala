@@ -121,8 +121,8 @@ class CheckYourAnswersController @Inject()(
     if (request.userAnswers.get(CorrectPreviousReturnPage(request.iossNumber, 0)).isDefined) {
       val correctionsSummaryList = SummaryListViewModel(
         rows = Seq(
-          CorrectPreviousReturnSummary.row(request.userAnswers, waypoints, CheckYourAnswersPage),
-          CorrectionReturnPeriodSummary.getAllRows(request.userAnswers, waypoints, CheckYourAnswersPage)
+          CorrectPreviousReturnSummary.row(request.userAnswers, waypoints, CheckYourAnswersPage(request.iossNumber)),
+          CorrectionReturnPeriodSummary.getAllRows(request.userAnswers, waypoints, CheckYourAnswersPage(request.iossNumber))
         ).flatten
       ).withCard(
         card = Card(
@@ -145,9 +145,9 @@ class CheckYourAnswersController @Inject()(
   private def getSalesFromEuSummaryList(request: DataRequest[AnyContent], waypoints: Waypoints)(implicit messages: Messages) = {
     SummaryListViewModel(
       rows = Seq(
-        SoldGoodsSummary.row(request.userAnswers, waypoints, CheckYourAnswersPage),
-        TotalNetValueOfSalesSummary.row(request.userAnswers, salesAtVatRateService.getTotalNetSales(request.userAnswers), waypoints, CheckYourAnswersPage),
-        TotalVatOnSalesSummary.row(request.userAnswers, salesAtVatRateService.getTotalVatOnSales(request.userAnswers), waypoints, CheckYourAnswersPage)
+        SoldGoodsSummary.row(request.userAnswers, waypoints, CheckYourAnswersPage(request.iossNumber)),
+        TotalNetValueOfSalesSummary.row(request.userAnswers, salesAtVatRateService.getTotalNetSales(request.userAnswers), waypoints, CheckYourAnswersPage(request.iossNumber)),
+        TotalVatOnSalesSummary.row(request.userAnswers, salesAtVatRateService.getTotalVatOnSales(request.userAnswers), waypoints, CheckYourAnswersPage(request.iossNumber))
       ).flatten
     ).withCard(
       card = Card(
@@ -243,7 +243,7 @@ class CheckYourAnswersController @Inject()(
             Redirect(frontendAppConfig.intermediaryDashboardUrl).toFuture
 
           case Left(ConflictFound) =>
-            Redirect(routes.YourAccountController.onPageLoad(iossNumber = request.iossNumber)).toFuture
+            Redirect(routes.YourAccountController.onPageLoad()).toFuture
 
           case Left(e) =>
             logger.error(s"Unexpected result on submit: $e")

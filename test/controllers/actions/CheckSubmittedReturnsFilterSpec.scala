@@ -110,7 +110,7 @@ class CheckSubmittedReturnsFilterSpec extends SpecBase with MockitoSugar with Be
 
           val result = controller.callFilter(request).futureValue
 
-          result.value mustEqual Redirect(controllers.routes.CheckYourAnswersController.onPageLoad(waypoints))
+          result.value `mustBe` Redirect(controllers.routes.CheckYourAnswersController.onPageLoad(waypoints, iossNumber))
         }
       }
 
@@ -128,7 +128,7 @@ class CheckSubmittedReturnsFilterSpec extends SpecBase with MockitoSugar with Be
 
           val result = controller.callFilter(request).futureValue
 
-          result.value mustEqual Redirect(controllers.routes.CheckYourAnswersController.onPageLoad(waypoints))
+          result.value `mustBe` Redirect(controllers.routes.CheckYourAnswersController.onPageLoad(waypoints, iossNumber))
         }
       }
     }

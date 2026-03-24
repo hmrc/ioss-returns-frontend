@@ -19,14 +19,14 @@ package controllers
 import base.SpecBase
 import forms.SalesToCountryFormProvider
 import models.{Country, UserAnswers, VatRateFromCountry}
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
 import pages.{JourneyRecoveryPage, SalesToCountryPage, SoldGoodsPage, SoldToCountryPage, VatRatesFromCountryPage}
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import repositories.SessionRepository
 import services.VatRateService
 import utils.FutureSyntax.FutureOps
@@ -45,11 +45,11 @@ class SalesToCountryControllerSpec extends SpecBase with MockitoSugar {
   val validAnswer: BigDecimal = 1234.12
 
   private val baseAnswers: UserAnswers = emptyUserAnswers
-    .set(SoldGoodsPage, true).success.value
-    .set(SoldToCountryPage(index), country).success.value
-    .set(VatRatesFromCountryPage(index, index), List[VatRateFromCountry](vatRateFromCountry)).success.value
+    .set(SoldGoodsPage(iossNumber), true).success.value
+    .set(SoldToCountryPage(iossNumber, index), country).success.value
+    .set(VatRatesFromCountryPage(iossNumber, index, index), List[VatRateFromCountry](vatRateFromCountry)).success.value
 
-  private lazy val salesToCountryRoute: String = routes.SalesToCountryController.onPageLoad(waypoints, index, index).url
+  private lazy val salesToCountryRoute: String = routes.SalesToCountryController.onPageLoad(waypoints, iossNumber, index, index).url
 
   "SalesToCountry Controller" - {
 
@@ -64,14 +64,14 @@ class SalesToCountryControllerSpec extends SpecBase with MockitoSugar {
 
         val view = application.injector.instanceOf[SalesToCountryView]
 
-        status(result) mustBe OK
-        contentAsString(result) mustBe view(form, waypoints, period, index, index, vatRateFromCountry, country, false, "Company Name")(request, messages(application)).toString
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(form, waypoints, iossNumber, period, index, index, vatRateFromCountry, country, false, "Company Name")(request, messages(application)).toString
       }
     }
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = baseAnswers.set(SalesToCountryPage(index, index), validAnswer).success.value
+      val userAnswers = baseAnswers.set(SalesToCountryPage(iossNumber, index, index), validAnswer).success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -82,8 +82,8 @@ class SalesToCountryControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustBe OK
-        contentAsString(result) mustBe view(form.fill(validAnswer), waypoints, period, index, index, vatRateFromCountry, country, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(form.fill(validAnswer), waypoints, iossNumber, period, index, index, vatRateFromCountry, country, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -107,10 +107,10 @@ class SalesToCountryControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        val expectedAnswers = baseAnswers.set(SalesToCountryPage(index, index), validAnswer).success.value
+        val expectedAnswers = baseAnswers.set(SalesToCountryPage(iossNumber, index, index), validAnswer).success.value
 
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe SalesToCountryPage(index, index).navigate(waypoints, emptyUserAnswers, expectedAnswers).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` SalesToCountryPage(iossNumber, index, index).navigate(waypoints, emptyUserAnswers, expectedAnswers).url
         verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
       }
     }
@@ -130,8 +130,8 @@ class SalesToCountryControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustBe BAD_REQUEST
-        contentAsString(result) mustBe view(boundForm, waypoints, period, index, index, vatRateFromCountry, country, false, "Company Name")(request, messages(application)).toString
+        status(result) `mustBe` BAD_REQUEST
+        contentAsString(result) `mustBe` view(boundForm, waypoints, iossNumber, period, index, index, vatRateFromCountry, country, false, "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -144,8 +144,8 @@ class SalesToCountryControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
 
@@ -158,8 +158,8 @@ class SalesToCountryControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
 
@@ -174,9 +174,9 @@ class SalesToCountryControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustBe SEE_OTHER
+        status(result) `mustBe` SEE_OTHER
 
-        redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
   }

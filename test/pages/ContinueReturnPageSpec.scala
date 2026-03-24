@@ -21,15 +21,15 @@ import pages.behaviours.PageBehaviours
 import play.api.mvc.Call
 import uk.gov.hmrc.http.HttpVerbs.GET
 
-class ContinueReturnSpec extends PageBehaviours {
+class ContinueReturnPageSpec extends PageBehaviours {
 
   "ContinueReturnPage" - {
 
-    beRetrievable[ContinueReturn](ContinueReturnPage)
+    beRetrievable[ContinueReturn](ContinueReturnPage(iossNumber))
 
-    beSettable[ContinueReturn](ContinueReturnPage)
+    beSettable[ContinueReturn](ContinueReturnPage(iossNumber))
 
-    beRemovable[ContinueReturn](ContinueReturnPage)
+    beRemovable[ContinueReturn](ContinueReturnPage(iossNumber))
 
     "must navigate" - {
 
@@ -37,15 +37,14 @@ class ContinueReturnSpec extends PageBehaviours {
 
         val answers = emptyUserAnswers.set(SavedProgressPage, "test").success.value
 
-        ContinueReturnPage.navigate(answers, ContinueReturn.Continue)
+        ContinueReturnPage(iossNumber).navigate(answers, ContinueReturn.Continue)
           .mustEqual(Call(GET, "test"))
       }
 
       "to Delete Return when the answer is Delete" in {
-        ContinueReturnPage.navigate(emptyUserAnswers, ContinueReturn.Delete)
-          .mustEqual(controllers.routes.DeleteReturnController.onPageLoad(emptyUserAnswers.period))
+        ContinueReturnPage(iossNumber).navigate(emptyUserAnswers, ContinueReturn.Delete)
+          .mustEqual(controllers.routes.DeleteReturnController.onPageLoad(iossNumber, emptyUserAnswers.period))
       }
     }
-
   }
 }

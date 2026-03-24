@@ -23,7 +23,7 @@ GET         /unauthorised                                                       
 
 GET         /cannot-use-not-registered                                                            controllers.NotRegisteredController.onPageLoad()
 
-GET         /:iossNumber/your-account                                                             controllers.YourAccountController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, iossNumber: String)
+GET         /your-account                                                                         controllers.YourAccountController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
 
 GET         /:iossNumber/:period/start-return                                                     controllers.StartReturnController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, iossNumber: String, period: Period)
 POST        /:iossNumber/:period/start-return                                                     controllers.StartReturnController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, iossNumber: String, period: Period)
@@ -48,7 +48,7 @@ GET         /:iossNumber/vat-on-sales/:countryIndex/:nextVatRateIndex           
 POST        /:iossNumber/vat-on-sales/:countryIndex/:nextVatRateIndex                             controllers.VatOnSalesController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, iossNumber: String, countryIndex: Index, nextVatRateIndex: Index)
 
 GET         /:iossNumber/no-other-months-available                                                controllers.NoOtherPeriodsAvailableController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, iossNumber: String)
-GET         /:iossNumber/cannot-start-return                                                      controllers.CannotStartReturnController.onPageLoad(iossNumber: String)
+GET         /cannot-start-return                                                                  controllers.CannotStartReturnController.onPageLoad()
 GET         /:iossNumber/cannot-start-excluded-return                                             controllers.CannotStartExcludedReturnController.onPageLoad(iossNumber: String)
 
 GET         /:iossNumber/add-sales-country-list                                                   controllers.SoldToCountryListController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, iossNumber: String)
@@ -127,12 +127,12 @@ POST        /:iossNumber/outstanding-payments                                   
 
 GET         /:iossNumber/intercept-unusable-email                                                 controllers.InterceptUnusableEmailController.onPageLoad(iossNumber: String)
 
-GET         /:iossNumber/no-welsh-service                                                         controllers.external.NoMoreWelshController.onPageLoad(iossNumber: String, redirectUrl: Option[RedirectUrl] ?= None)
+GET         /no-welsh-service                                                                     controllers.external.NoMoreWelshController.onPageLoad(redirectUrl: Option[RedirectUrl] ?= None)
 
 GET         /:iossNumber/make-payment/:period                                                     controllers.payments.PaymentController.makePayment(waypoints: Waypoints ?= EmptyWaypoints, iossNumber: String, period: Period)
 GET         /make-payment/:period/:iossNumber                                                     controllers.payments.PaymentController.makePaymentForIossNumber(waypoints: Waypoints ?= EmptyWaypoints, period: Period, iossNumber: String)
 
-GET         /:iossNumber/excluded-cannot-use-service                                              controllers.ExcludedNotPermittedController.onPageLoad(iossNumber: String)
+GET         /excluded-cannot-use-service                                                          controllers.ExcludedNotPermittedController.onPageLoad()
 
 GET         /:iossNumber/start-return                                                             controllers.StartOutstandingReturnController.onPageLoad(iossNumber: String)
 GET         /:iossNumber/no-returns-due                                                           controllers.NoReturnsDueController.onPageLoad(iossNumber: String)
