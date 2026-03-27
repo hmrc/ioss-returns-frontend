@@ -47,7 +47,7 @@ class ViewReturnsMultipleRegController @Inject()(
     implicit request =>
       previousRegistrationService.getPreviousRegistrations(request.isIntermediary).flatMap {
         case Nil =>
-          Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+          Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()).toFuture
         case registration :: Nil =>
           okView(waypoints, registration)
         case registrations =>

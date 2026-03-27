@@ -22,7 +22,7 @@
 
 @(waypoints: Waypoints, iossNumber: String)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = titleNoForm(messages("noOtherCorrectionPeriodsAvailable.title"))) {
+@layout(pageTitle = titleNoForm(messages("noOtherCorrectionPeriodsAvailable.title")), maybeIossNumber = Some(iossNumber)) {
 
     @formHelper(action = controllers.corrections.routes.NoOtherCorrectionPeriodsAvailableController.onSubmit(waypoints, iossNumber), Symbol("autoComplete") -> "off") {
 

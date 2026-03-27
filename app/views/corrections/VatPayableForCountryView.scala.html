@@ -18,7 +18,6 @@
 @import components.ButtonGroup
 @import pages.corrections.VatPayableForCountryPage
 
-
 @this(
     layout: templates.Layout,
     formHelper: FormWithCSRF,
@@ -29,7 +28,7 @@
 
 @(form: Form[_], waypoints: Waypoints, iossNumber: String, period: Period, periodIndex:Index, countryIndex: Index, selectedCountry: Country, correctionPeriod: Period, newAmount: BigDecimal, isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = title(form, messages("vatPayableForCountry.title", selectedCountry.name, currencyFormat(newAmount)))) {
+@layout(pageTitle = title(form, messages("vatPayableForCountry.title", selectedCountry.name, currencyFormat(newAmount))), maybeIossNumber = Some(iossNumber)) {
 
     @formHelper(action = controllers.corrections.routes.VatPayableForCountryController.onSubmit(waypoints, iossNumber, periodIndex, countryIndex), Symbol("autoComplete") -> "off") {
 

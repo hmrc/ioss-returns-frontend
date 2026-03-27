@@ -35,9 +35,7 @@ import play.api.i18n.Messages
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
-import services.PreviousRegistrationService
 import testUtils.EtmpVatReturnData.{arbitraryPeriodKey, etmpVatReturn}
-import testUtils.PreviousRegistrationData.previousRegistrations
 import testUtils.RegistrationData.etmpDisplayRegistration
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{Card, CardTitle}
@@ -57,12 +55,10 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
 
   private val mockVatReturnConnector: VatReturnConnector = mock[VatReturnConnector]
   private val mockFinancialDataConnector: FinancialDataConnector = mock[FinancialDataConnector]
-  private val mockPreviousRegistrationService: PreviousRegistrationService = mock[PreviousRegistrationService]
 
   override def beforeEach(): Unit = {
     Mockito.reset(mockVatReturnConnector)
     Mockito.reset(mockFinancialDataConnector)
-    Mockito.reset(mockPreviousRegistrationService)
   }
 
   "SubmittedReturnForPeriod Controller" - {
@@ -788,13 +784,11 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
             .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
             .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
-            .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
             .build()
 
           running(application) {
             when(mockVatReturnConnector.getForIossNumber(any(), any())(any())) thenReturn Right(vatReturn).toFuture
             when(mockFinancialDataConnector.getChargeForIossNumber(any(), any())(any())) thenReturn Right(Some(charge)).toFuture
-            when(mockPreviousRegistrationService.getPreviousRegistrations(any())(any())) thenReturn previousRegistrations.toFuture
 
             implicit val msgs: Messages = messages(application)
 
@@ -871,13 +865,11 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
             .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
             .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
-            .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
             .build()
 
           running(application) {
             when(mockVatReturnConnector.getForIossNumber(any(), any())(any())) thenReturn Right(vatReturnNoCorrections).toFuture
             when(mockFinancialDataConnector.getChargeForIossNumber(any(), any())(any())) thenReturn Right(Some(charge)).toFuture
-            when(mockPreviousRegistrationService.getPreviousRegistrations(any())(any())) thenReturn previousRegistrations.toFuture
 
             implicit val msgs: Messages = messages(application)
 
@@ -963,13 +955,11 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
             .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
             .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
-            .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
             .build()
 
           running(application) {
             when(mockVatReturnConnector.getForIossNumber(any(), any())(any())) thenReturn Right(vatReturnPositiveCorrections).toFuture
             when(mockFinancialDataConnector.getChargeForIossNumber(any(), any())(any())) thenReturn Right(Some(charge)).toFuture
-            when(mockPreviousRegistrationService.getPreviousRegistrations(any())(any())) thenReturn previousRegistrations.toFuture
 
             implicit val msgs: Messages = messages(application)
 
@@ -1062,13 +1052,11 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
             .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
             .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
-            .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
             .build()
 
           running(application) {
             when(mockVatReturnConnector.getForIossNumber(any(), any())(any())) thenReturn Right(nilEtmpVatReturn).toFuture
             when(mockFinancialDataConnector.getChargeForIossNumber(any(), any())(any())) thenReturn Right(None).toFuture
-            when(mockPreviousRegistrationService.getPreviousRegistrations(any())(any())) thenReturn previousRegistrations.toFuture
 
             implicit val msgs: Messages = messages(application)
 
@@ -1145,14 +1133,12 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
             .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
             .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
-            .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
             .build()
 
           running(application) {
             when(mockVatReturnConnector.getForIossNumber(any(), any())(any())) thenReturn Right(vatReturn).toFuture
             when(mockFinancialDataConnector.getChargeForIossNumber(any(), any())(any())) thenReturn
               Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "")).toFuture
-            when(mockPreviousRegistrationService.getPreviousRegistrations(any())(any())) thenReturn previousRegistrations.toFuture
 
             implicit val msgs: Messages = messages(application)
 
@@ -1256,13 +1242,11 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             val application = applicationBuilder(userAnswers = None, registration = registrationWrapper)
               .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
               .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
-              .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
               .build()
 
             running(application) {
               when(mockVatReturnConnector.getForIossNumber(any(), any())(any())) thenReturn Right(vatReturnNoCorrections).toFuture
               when(mockFinancialDataConnector.getChargeForIossNumber(any(), any())(any())) thenReturn Right(Some(charge)).toFuture
-              when(mockPreviousRegistrationService.getPreviousRegistrations(any())(any())) thenReturn previousRegistrations.toFuture
 
               implicit val msgs: Messages = messages(application)
 
@@ -1376,13 +1360,11 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             val application = applicationBuilder(userAnswers = None, registration = registrationWrapper)
               .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
               .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
-              .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
               .build()
 
             running(application) {
               when(mockVatReturnConnector.getForIossNumber(any(), any())(any())) thenReturn Right(vatReturnNoCorrections).toFuture
               when(mockFinancialDataConnector.getChargeForIossNumber(any(), any())(any())) thenReturn Right(Some(charge)).toFuture
-              when(mockPreviousRegistrationService.getPreviousRegistrations(any())(any())) thenReturn previousRegistrations.toFuture
 
               implicit val msgs: Messages = messages(application)
 
@@ -1470,33 +1452,13 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
           .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
           .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
-          .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
           .build()
 
         running(application) {
           when(mockVatReturnConnector.getForIossNumber(any(), any())(any())) thenReturn Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "")).toFuture
           when(mockFinancialDataConnector.getChargeForIossNumber(any(), any())(any())) thenReturn Right(Some(charge)).toFuture
-          when(mockPreviousRegistrationService.getPreviousRegistrations(any())(any())) thenReturn previousRegistrations.toFuture
 
           val request = FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoadForIossNumber(waypoints, iossNumber, period).url)
-
-          val result = route(application, request).value
-
-          status(result) `mustBe` SEE_OTHER
-          redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
-        }
-      }
-
-      "must redirect to Journey recovery when IOSS number is not part of previous registrations or request.iossNumber" in {
-
-        val application = applicationBuilder()
-          .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
-          .build()
-
-        running(application) {
-          when(mockPreviousRegistrationService.getPreviousRegistrations(any())(any())) thenReturn previousRegistrations.toFuture
-
-          val request = FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoadForIossNumber(waypoints, "IM9001111111", period).url)
 
           val result = route(application, request).value
 

@@ -21,28 +21,28 @@ import connectors.UpscanInitiateConnector
 import controllers.actions.*
 import forms.FileUploadFormProvider
 import models.upscan.UpscanRedirectError
-import pages.fileUpload.{DataErrorPage, FileReferencePage, FileUploadedPage}
 import pages.Waypoints
+import pages.fileUpload.{DataErrorPage, FileReferencePage, FileUploadedPage}
+import play.api.Environment
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import play.api.Environment
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.fileUpload.FileUploadView
 import utils.FutureSyntax.FutureOps
+import views.html.fileUpload.FileUploadView
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class FileUploadController @Inject()(
-                                         override val messagesApi: MessagesApi,
-                                         cc: AuthenticatedControllerComponents,
-                                         formProvider: FileUploadFormProvider,
-                                         view: FileUploadView,
-                                         upscanInitiateConnector: UpscanInitiateConnector,
-                                         appConfig: FrontendAppConfig,
-                                         environment: Environment
-                                 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                      override val messagesApi: MessagesApi,
+                                      cc: AuthenticatedControllerComponents,
+                                      formProvider: FileUploadFormProvider,
+                                      view: FileUploadView,
+                                      upscanInitiateConnector: UpscanInitiateConnector,
+                                      appConfig: FrontendAppConfig,
+                                      environment: Environment
+                                    )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
@@ -65,8 +65,8 @@ class FileUploadController @Inject()(
           val errorMsg: Option[String] = request.flash.get("upscanError").filter(_.nonEmpty)
 
           upscanInitiateConnector.initiateV2(
-            redirectOnSuccess = Some(appConfig.successEndPointTarget(iossNumber)), // TODO -> Needs iossNumber in url config
-            redirectOnError = Some(appConfig.errorEndPointTarget(iossNumber)) // TODO -> Needs iossNumber in url config
+            redirectOnSuccess = Some(appConfig.successEndPointTarget(iossNumber)),
+            redirectOnError = Some(appConfig.errorEndPointTarget(iossNumber))
           ).flatMap { initiateResponse =>
 
             for {
@@ -77,18 +77,19 @@ class FileUploadController @Inject()(
               )
               _ <- cc.sessionRepository.set(updatedAnswers)
             } yield {
-            Ok(view(
-              form = form,
-              waypoints = waypoints,
-              period = period,
-              isIntermediary = isIntermediary,
-              companyName = companyName,
-              postTarget = initiateResponse.postTarget,
-              formFields = initiateResponse.formFields,
-              errorMessage = errorMsg
-            ))
+              Ok(view(
+                form = form,
+                waypoints = waypoints,
+                iossNumber = iossNumber,
+                period = period,
+                isIntermediary = isIntermediary,
+                companyName = companyName,
+                postTarget = initiateResponse.postTarget,
+                formFields = initiateResponse.formFields,
+                errorMessage = errorMsg
+              ))
+            }
           }
-        }
       }
   }
 
@@ -109,7 +110,7 @@ class FileUploadController @Inject()(
       case UpscanRedirectError("EntityTooLarge", _) =>
         messages("fileUploaded.redirectError.EntityTooLarge")
 
-      case UpscanRedirectError("InvalidArgument",  Some(msg)) if msg.toLowerCase.contains("file") && msg.toLowerCase.contains("not found") =>
+      case UpscanRedirectError("InvalidArgument", Some(msg)) if msg.toLowerCase.contains("file") && msg.toLowerCase.contains("not found") =>
         messages("fileUpload.redirectError.fileNotFound")
 
       case UpscanRedirectError("InvalidArgument", _) =>

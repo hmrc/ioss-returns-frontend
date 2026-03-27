@@ -16,7 +16,7 @@
 
 package controllers
 
-import controllers.actions._
+import controllers.actions.*
 import forms.SoldToCountryListFormProvider
 import models.{Country, Index}
 import pages.{SoldToCountryListPage, Waypoints}
@@ -44,8 +44,7 @@ class SoldToCountryListController @Inject()(
   protected val controllerComponents: MessagesControllerComponents = cc
 
   val form: Form[Boolean] = formProvider()
-
-  // TODO -> URL IOSS NUMBER
+  
   def onPageLoad(waypoints: Waypoints, iossNumber: String): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
     implicit request =>
 

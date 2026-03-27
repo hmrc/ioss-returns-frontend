@@ -21,14 +21,13 @@ import connectors.{FinancialDataConnector, VatReturnConnector}
 import controllers.actions.*
 import logging.Logging
 import models.Period
-import pages.{JourneyRecoveryPage, Waypoints}
+import pages.Waypoints
 import play.api.Configuration
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
-import services.{PaymentsService, PreviousRegistrationService}
+import services.PaymentsService
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import utils.FutureSyntax.FutureOps
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -38,8 +37,7 @@ class PaymentController @Inject()(
                                    config: Configuration,
                                    paymentsService: PaymentsService,
                                    financialDataConnector: FinancialDataConnector,
-                                   vatReturnConnector: VatReturnConnector,
-                                   previousRegistrationService: PreviousRegistrationService
+                                   vatReturnConnector: VatReturnConnector
                                  )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
@@ -50,17 +48,9 @@ class PaymentController @Inject()(
     getAmountOwedAndRedirect(period, request.iossNumber)
   }
 
-  // TODO -> Check if correct iossNumber -> May need additional urlIossNumber param
   def makePaymentForIossNumber(waypoints: Waypoints, period: Period, iossNumber: String): Action[AnyContent] = {
     cc.authAndGetOptionalData(iossNumber).async { implicit request =>
-      previousRegistrationService.getPreviousRegistrations(request.isIntermediary).flatMap { previousRegistrations =>
-        val validIossNumbers: Seq[String] = request.iossNumber :: previousRegistrations.map(_.iossNumber)
-        if (validIossNumbers.contains(iossNumber)) {
-          getAmountOwedAndRedirect(period, iossNumber)
-        } else {
-          Redirect(JourneyRecoveryPage.route(waypoints)).toFuture
-        }
-      }
+      getAmountOwedAndRedirect(period, iossNumber)
     }
   }
 

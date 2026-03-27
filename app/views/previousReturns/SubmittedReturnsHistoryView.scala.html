@@ -27,7 +27,7 @@
 
 @(waypoints: Waypoints, iossNumber: String, periodsWithFinancialData: Map[Int, Seq[(Period, Payment)]], previousRegistrations: Seq[PreviousRegistration], isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = titleNoForm(messages("submittedReturnsHistory.title"))) {
+@layout(pageTitle = titleNoForm(messages("submittedReturnsHistory.title")), maybeIossNumber = Some(iossNumber)) {
 
   @if(isIntermediary){<p class="govuk-caption-l hmrc-caption-l">@companyName</p>}
   <h1 class="govuk-heading-l">@messages("submittedReturnsHistory.heading")</h1>

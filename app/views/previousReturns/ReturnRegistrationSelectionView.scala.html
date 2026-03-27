@@ -33,7 +33,7 @@
         previousRegistrations: Seq[PreviousRegistration]
 )(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = titleNoForm(messages("returnRegistrationSelection.title"))) {
+@layout(pageTitle = titleNoForm(messages("returnRegistrationSelection.title")), maybeIossNumber = Some(iossNumber)) {
 
   @formHelper(action = controllers.previousReturns.routes.ReturnRegistrationSelectionController.onSubmit(waypoints, iossNumber)) {
 

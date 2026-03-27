@@ -58,7 +58,7 @@ class NoOtherPeriodsAvailableControllerSpec extends SpecBase {
         val redirectUrl: String = YourAccountPage.route(waypoints).url
 
         status(result) `mustBe` OK
-        contentAsString(result) `mustBe` view(waypoints, isIntermediary = false, companyName = "CompanyName",  redirectUrl)(request, messages(application)).toString
+        contentAsString(result) `mustBe` view(waypoints, iossNumber, isIntermediary = false, companyName = "CompanyName",  redirectUrl)(request, messages(application)).toString
       }
     }
 
@@ -105,7 +105,7 @@ class NoOtherPeriodsAvailableControllerSpec extends SpecBase {
         val redirectUrl: String = config.intermediaryDashboardUrl
 
         status(result) `mustBe` OK
-        contentAsString(result) `mustBe` view(waypoints, isIntermediary = true, companyName, redirectUrl)(request, messages(application)).toString
+        contentAsString(result) `mustBe` view(waypoints, iossNumber, isIntermediary = true, companyName, redirectUrl)(request, messages(application)).toString
       }
     }
 

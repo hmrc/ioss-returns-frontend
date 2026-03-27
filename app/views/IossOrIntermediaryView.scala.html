@@ -26,7 +26,7 @@
 
 @(form: Form[_], iossNumber: String, numberOfEnrolments: Seq[String], totalNumberOfEnrolments: Int)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = title(form, messages("iossOrIntermediary.title", totalNumberOfEnrolments))) {
+@layout(pageTitle = title(form, messages("iossOrIntermediary.title", totalNumberOfEnrolments)), maybeIossNumber = Some(iossNumber)) {
 
    @formHelper(action = controllers.intermediary.routes.IossOrIntermediaryController.onSubmit(iossNumber), Symbol("autoComplete") -> "off") {
 

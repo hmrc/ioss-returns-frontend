@@ -50,7 +50,7 @@ class CannotStartExcludedReturnControllerSpec extends SpecBase {
 
         status(result) `mustBe` OK
         contentAsString(result) `mustBe`
-          view(appropriateDashboardUrl = controllers.routes.YourAccountController.onPageLoad(waypoints).url)
+          view(iossNumber, appropriateDashboardUrl = controllers.routes.YourAccountController.onPageLoad(waypoints).url)
             (request, messages(application)).toString
       }
     }

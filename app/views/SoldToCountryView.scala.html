@@ -18,7 +18,6 @@
 @import uk.gov.hmrc.hmrcfrontend.views.viewmodels.accessibleautocomplete.AccessibleAutocomplete
 @import views.html.components.ButtonGroup
 
-
 @this(
         layout: templates.Layout,
         formHelper: FormWithCSRF,
@@ -33,7 +32,7 @@
         messages("soldToCountry.intermediary.title", period.displayText)
     } else {
         messages("soldToCountry.title", period.displayText)
-    })) {
+    }), maybeIossNumber = Some(iossNumber)) {
 
   @formHelper(action = routes.SoldToCountryController.onSubmit(waypoints, iossNumber, index)) {
 

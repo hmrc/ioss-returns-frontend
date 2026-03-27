@@ -40,7 +40,7 @@ else {
     messages("vatPeriodCorrectionsList.title", periodList.size)
 }) { dynamicTitle =>
 
-    @layout(pageTitle = dynamicTitle) {
+    @layout(pageTitle = dynamicTitle, maybeIossNumber = Some(iossNumber)) {
 
         @if(isIntermediary){<p class="govuk-caption-l hmrc-caption-l">@companyName</p>}
 

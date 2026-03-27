@@ -23,7 +23,6 @@
         button: ButtonGroup
 )
 
-
 @(
     waypoints: Waypoints,
     iossNumber: String,
@@ -38,7 +37,7 @@
     companyName: String
 )(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = titleNoForm(messages("checkVatPayableAmount.title"))) {
+@layout(pageTitle = titleNoForm(messages("checkVatPayableAmount.title")), maybeIossNumber = Some(iossNumber)) {
 
     <header class="hmrc-page-heading">
         <p class="govuk-caption-l hmrc-caption-l">@{

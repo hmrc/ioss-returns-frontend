@@ -43,7 +43,7 @@ class ReturnSubmissionFailureControllerSpec extends SpecBase {
         val view = application.injector.instanceOf[ReturnSubmissionFailureView]
 
         status(result) `mustBe` OK
-        contentAsString(result) `mustBe` view(redirectUrl)(request, messages(application)).toString
+        contentAsString(result) `mustBe` view(iossNumber, redirectUrl)(request, messages(application)).toString
       }
     }
 
@@ -84,7 +84,7 @@ class ReturnSubmissionFailureControllerSpec extends SpecBase {
         val view = application.injector.instanceOf[ReturnSubmissionFailureView]
 
         status(result) `mustBe` OK
-        contentAsString(result) `mustBe` view(config.intermediaryDashboardUrl)(request, messages(application)).toString
+        contentAsString(result) `mustBe` view(iossNumber, config.intermediaryDashboardUrl)(request, messages(application)).toString
       }
     }
   }

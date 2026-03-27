@@ -125,7 +125,6 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           List(paymentOverdue1, paymentOverdue2).map(_.amountOwed).sum,
           iossNumber
         )
-        val registrationWrapper: RegistrationWrapper = arbitrary[RegistrationWrapper].sample.value
 
         when(mockFinancialDataConnector.prepareFinancialDataWithIossNumber(any())(any())) thenReturn Right(prepareData).toFuture
 
@@ -211,7 +210,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         status(result) `mustBe` OK
         contentAsString(result) `mustBe` view(
           waypoints,
-          registrationWrapper.getCompanyName().trim,
+          registrationWrapper.getCompanyName(),
           iossNumber,
           paymentsViewModel,
           appConfig.amendRegistrationUrl,
@@ -283,7 +282,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         status(result) `mustBe` OK
         contentAsString(result) `mustBe` view(
           waypoints,
-          registrationWrapperWithExclusion.getCompanyName().trim,
+          registrationWrapperWithExclusion.getCompanyName(),
           iossNumber,
           paymentsViewModel,
           appConfig.amendRegistrationUrl,
@@ -355,7 +354,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         status(result) `mustBe` OK
         contentAsString(result) `mustBe` view(
           waypoints,
-          registrationWrapperWithExclusion.getCompanyName().trim,
+          registrationWrapperWithExclusion.getCompanyName(),
           iossNumber,
           paymentsViewModel,
           appConfig.amendRegistrationUrl,
@@ -435,7 +434,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
         status(result) `mustBe` OK
         contentAsString(result) `mustBe` view(
           waypoints,
-          registrationWrapperEmptyExclusions.getCompanyName().trim,
+          registrationWrapperEmptyExclusions.getCompanyName(),
           iossNumber,
           paymentsViewModel,
           appConfig.amendRegistrationUrl,
@@ -720,7 +719,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           status(result) `mustBe` OK
           contentAsString(result) `mustBe` view(
             waypoints,
-            registrationWrapper.getCompanyName().trim,
+            registrationWrapper.getCompanyName(),
             iossNumber,
             paymentsViewModel,
             appConfig.amendRegistrationUrl,
@@ -785,7 +784,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           status(result) `mustBe` OK
           contentAsString(result) `mustBe` view(
             waypoints,
-            registrationWrapper.getCompanyName().trim,
+            registrationWrapper.getCompanyName(),
             iossNumber,
             paymentsViewModel,
             appConfig.amendRegistrationUrl,
@@ -854,7 +853,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           status(result) `mustBe` OK
           contentAsString(result) `mustBe` view(
             waypoints,
-            registrationWrapper.getCompanyName().trim,
+            registrationWrapper.getCompanyName(),
             iossNumber,
             paymentsViewModel,
             appConfig.amendRegistrationUrl,
@@ -922,7 +921,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           status(result) `mustBe` OK
           contentAsString(result) `mustBe` view(
             waypoints,
-            registrationWrapper.getCompanyName().trim,
+            registrationWrapper.getCompanyName(),
             iossNumber,
             paymentsViewModel,
             appConfig.amendRegistrationUrl,
@@ -991,7 +990,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           status(result) `mustBe` OK
           contentAsString(result) `mustBe` view(
             waypoints,
-            registrationWrapper.getCompanyName().trim,
+            registrationWrapper.getCompanyName(),
             iossNumber,
             paymentsViewModel,
             appConfig.amendRegistrationUrl,
@@ -1064,7 +1063,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           status(result) `mustBe` OK
           contentAsString(result) `mustBe` view(
             waypoints,
-            registrationWrapper.getCompanyName().trim,
+            registrationWrapper.getCompanyName(),
             iossNumber,
             paymentsViewModel,
             appConfig.amendRegistrationUrl,
@@ -1143,7 +1142,7 @@ class YourAccountControllerSpec extends SpecBase with MockitoSugar with Generato
           status(result) `mustBe` OK
           contentAsString(result) `mustBe` view(
             waypoints,
-            registrationWrapper.getCompanyName().trim,
+            registrationWrapper.getCompanyName(),
             iossNumber,
             paymentsViewModel,
             appConfig.amendRegistrationUrl,

@@ -33,17 +33,17 @@ class IndexController @Inject()(
                                ) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
-  
-  def onPageLoad: Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced() {
+
+  def onPageLoad: Action[AnyContent] = cc.authAndGetRegistrationWithoutUrlIoss {
     implicit request =>
 
-    val iossEnrolmentsExist: Boolean = findIossFromEnrolments(request.enrolments).nonEmpty
-    val intermediaryEnrolmentsExist: Boolean = findIntermediaryFromEnrolments(request.enrolments).nonEmpty
-    
-    (request.isIntermediary, intermediaryEnrolmentsExist, iossEnrolmentsExist) match {
-      case (true, true, true) => Redirect(routes.IossOrIntermediaryController.onPageLoad(request.iossNumber))
-      case (true, true, false) => Redirect(appConfig.intermediaryDashboardUrl)
-      case _ => Redirect(controllers.routes.YourAccountController.onPageLoad(waypoints = EmptyWaypoints))
-    }
+      val iossEnrolmentsExist: Boolean = findIossFromEnrolments(request.enrolments).nonEmpty
+      val intermediaryEnrolmentsExist: Boolean = findIntermediaryFromEnrolments(request.enrolments).nonEmpty
+
+      (request.isIntermediary, intermediaryEnrolmentsExist, iossEnrolmentsExist) match {
+        case (true, true, true) => Redirect(routes.IossOrIntermediaryController.onPageLoad(request.iossNumber))
+        case (true, true, false) => Redirect(appConfig.intermediaryDashboardUrl)
+        case _ => Redirect(controllers.routes.YourAccountController.onPageLoad(waypoints = EmptyWaypoints))
+      }
   }
 }

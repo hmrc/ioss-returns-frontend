@@ -24,7 +24,7 @@
 
 @(form: Form[_], waypoints: Waypoints, iossNumber: String, period: Period, countryIndex: Index, country: Country, isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = title(form, messages("deleteSoldToCountry.title", country.name))) {
+@layout(pageTitle = title(form, messages("deleteSoldToCountry.title", country.name)), maybeIossNumber = Some(iossNumber)) {
 
     @if(isIntermediary){<p class="govuk-caption-l hmrc-caption-l">@companyName</p>}
 

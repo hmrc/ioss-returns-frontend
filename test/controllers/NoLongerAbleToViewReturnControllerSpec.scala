@@ -37,7 +37,7 @@ class NoLongerAbleToViewReturnControllerSpec extends SpecBase {
         val view = application.injector.instanceOf[NoLongerAbleToViewReturnView]
 
         status(result) `mustBe` OK
-        contentAsString(result) `mustBe` view()(request, messages(application)).toString
+        contentAsString(result) `mustBe` view(iossNumber)(request, messages(application)).toString
       }
     }
   }

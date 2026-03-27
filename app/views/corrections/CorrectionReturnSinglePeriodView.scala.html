@@ -30,7 +30,7 @@
     messages("correctionReturnSinglePeriod.intermediary.title", returnPeriod.displayText)
 } else {
     messages("correctionReturnSinglePeriod.title", returnPeriod.displayText)
-})) {
+}),maybeIossNumber = Some(iossNumber)) {
     @formHelper(action = controllers.corrections.routes.CorrectionReturnSinglePeriodController.onSubmit(waypoints, iossNumber, periodIndex), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {

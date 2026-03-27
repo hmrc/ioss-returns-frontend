@@ -127,20 +127,21 @@ trait SpecBase
                                     getRegistrationWithoutUrlIossAction: Option[GetRegistrationWithoutUrlIossAction] = None,
                                     maybeIntermediaryNumber: Option[String] = None,
                                     getIdentifierAction: Option[IdentifierAction] = None,
-                                    requestedIossNumber: Option[String] = None
+                                    requestedIossNumber: Option[String] = None,
+                                    enrolments: Option[Enrolments] = None
                                   ): GuiceApplicationBuilder = {
     val clockToBind = clock.getOrElse(stubClockAtArbitraryDate)
 
     val getRegistrationActionBind = if (getRegistrationAction.nonEmpty) {
       bind[GetRegistrationActionProvider].toInstance(getRegistrationAction.get)
     } else {
-      bind[GetRegistrationActionProvider].toInstance(new FakeGetRegistrationActionProvider(registration, maybeIntermediaryNumber))
+      bind[GetRegistrationActionProvider].toInstance(new FakeGetRegistrationActionProvider(registration, maybeIntermediaryNumber, enrolments))
     }
-    
+
     val getRegistrationWithoutUrlIossActionBind = if(getRegistrationWithoutUrlIossAction.nonEmpty) {
       bind[GetRegistrationWithoutUrlIossAction].toInstance(getRegistrationWithoutUrlIossAction.get)
     } else {
-      bind[GetRegistrationWithoutUrlIossAction].toInstance(new FakeGetRegistrationWithoutUrlIossAction(registration, maybeIntermediaryNumber, requestedIossNumber = requestedIossNumber))
+      bind[GetRegistrationWithoutUrlIossAction].toInstance(new FakeGetRegistrationWithoutUrlIossAction(registration, enrolments, maybeIntermediaryNumber))
     }
 
     val getIdentifierActionBind = if (getIdentifierAction.nonEmpty) {

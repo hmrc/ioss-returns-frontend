@@ -27,14 +27,13 @@
     button: ButtonGroup
 )
 
-
 @(form: Form[_], waypoints: Waypoints, iossNumber: String, period: Period, country: Country, correctionPeriod: Period, periodIndex:Index, countryIndex: Index, isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, if(isIntermediary) {
     messages("undeclaredCountryCorrection.intermediary.title", country.name)
 } else {
     messages("undeclaredCountryCorrection.title", country.name)
-})) {
+}), maybeIossNumber = Some(iossNumber)) {
 
     @formHelper(action = controllers.corrections.routes.UndeclaredCountryCorrectionController.onSubmit(waypoints, iossNumber, periodIndex, countryIndex), Symbol("autoComplete") -> "off") {
 

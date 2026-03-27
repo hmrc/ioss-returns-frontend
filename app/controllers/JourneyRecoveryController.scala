@@ -44,7 +44,6 @@ class JourneyRecoveryController @Inject()(
      val startAgainRedirect: String = if (hasIntermediaryEnrolment) {
        frontendAppConfig.intermediaryDashboardUrl
      } else {
-       // TODO -> iossNumber???
        routes.IndexController.onPageLoad.url
      }
 

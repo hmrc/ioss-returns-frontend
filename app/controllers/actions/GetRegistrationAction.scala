@@ -43,14 +43,14 @@ class GetRegistrationAction(
 
   override protected def refine[A](request: IdentifierRequest[A]): Future[Either[Result, RegistrationRequest[A]]] = {
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request.request, request.request.session)
-    
     (for {
       maybeIossNumberFromEnrolments <- findIossFromEnrolments(request.enrolments)
       maybeIntermediaryNumber <- findIntermediaryFromEnrolments(request.enrolments)
     } yield {
       (maybeIossNumberFromEnrolments, maybeIntermediaryNumber) match {
-        case (Some(iossNumberFromEnrolments), _) if iossNumberFromEnrolments == requestedIossNumber =>
-          getIossRegistrationAndMakeRequest(iossNumberFromEnrolments, request)
+        case (Some(iossNumberFromEnrolments), _) if iossNumberFromEnrolments == requestedIossNumber
+          && findAllIossFromEnrolments(request.enrolments).contains(requestedIossNumber) =>
+          getIossRegistrationAndMakeRequest(iossNumberFromEnrolments, maybeIntermediaryNumber, request = request)
 
         case (_, Some(intermediaryNumber)) =>
           checkIntermediaryAccessAndFormRequest(intermediaryNumber, requestedIossNumber, request)
@@ -61,7 +61,11 @@ class GetRegistrationAction(
     }).flatten
   }
 
-  private def getIossRegistrationAndMakeRequest[A](iossNumber: String, request: IdentifierRequest[A])(implicit hc: HeaderCarrier) = {
+  private def getIossRegistrationAndMakeRequest[A](
+                                                    iossNumber: String,
+                                                    maybeIntermediaryNumber: Option[String],
+                                                    request: IdentifierRequest[A]
+                                                  )(implicit hc: HeaderCarrier) = {
     registrationConnector.get(iossNumber).map { registration =>
       Right(RegistrationRequest(
         request.request,
@@ -70,7 +74,7 @@ class GetRegistrationAction(
         registration.getCompanyName(),
         iossNumber,
         registration,
-        None,
+        maybeIntermediaryNumber,
         request.enrolments
       ))
     }
@@ -79,33 +83,18 @@ class GetRegistrationAction(
   private def checkIntermediaryAccessAndFormRequest[A](intermediaryNumber: String, iossNumber: String, request: IdentifierRequest[A])
                                                       (implicit hc: HeaderCarrier) = {
 
-    def buildRegistrationRequest(intermediaryNumber: String): Future[Either[Result, RegistrationRequest[A]]] = {
-      registrationConnector.get(iossNumber).map { registrationWrapper =>
-        Right(RegistrationRequest(
-          request = request.request,
-          credentials = request.credentials,
-          vrn = registrationWrapper.maybeVrn,
-          companyName = registrationWrapper.getCompanyName(),
-          iossNumber = iossNumber,
-          registrationWrapper = registrationWrapper,
-          intermediaryNumber = Some(intermediaryNumber),
-          enrolments = request.enrolments
-        ))
-      }
-    }
-
     intermediaryRegistrationConnector.get(intermediaryNumber).flatMap { currentRegistration =>
 
       val hasDirectAccess = currentRegistration.etmpDisplayRegistration.clientDetails.map(_.clientIossID).contains(iossNumber)
 
       if (hasDirectAccess) {
-        buildRegistrationRequest(intermediaryNumber)
+        getIossRegistrationAndMakeRequest(iossNumber, Some(intermediaryNumber), request)
       } else {
         val allIntermediaryEnrolments = findIntermediariesFromEnrolments(request.enrolments)
 
         findAuthorisedIntermediaryForIossClient(allIntermediaryEnrolments, iossNumber).flatMap {
           case Some(authorisedIntermediaryNumber) =>
-            buildRegistrationRequest(authorisedIntermediaryNumber)
+            getIossRegistrationAndMakeRequest(iossNumber, Some(authorisedIntermediaryNumber), request)
           case None =>
             logger.warn(
               s"Intermediary $intermediaryNumber tried to access iossNumber $iossNumber, but they aren't the intermediary of this ioss number"
@@ -133,18 +122,21 @@ class GetRegistrationAction(
   }
 
   private def findIossFromEnrolments(enrolments: Enrolments)(implicit hc: HeaderCarrier): Future[Option[String]] = {
-    val filteredIossNumbers = enrolments
-      .enrolments
-      .filter(_.key == config.iossEnrolment)
-      .flatMap(_.identifiers.filter(_.key == "IOSSNumber").map(_.value))
-      .toSeq
 
-    filteredIossNumbers match {
+    findAllIossFromEnrolments(enrolments) match {
       case firstEnrolment :: Nil => Some(firstEnrolment).toFuture
       case multipleEnrolments if multipleEnrolments.nonEmpty =>
         accountService.getLatestAccount().map(x => Some(x))
       case _ => None.toFuture
     }
+  }
+
+  private def findAllIossFromEnrolments(enrolments: Enrolments): Seq[String] = {
+    enrolments
+      .enrolments
+      .filter(_.key == config.iossEnrolment)
+      .flatMap(_.identifiers.filter(_.key == "IOSSNumber").map(_.value))
+      .toSeq
   }
 
   private def findIntermediaryFromEnrolments(enrolments: Enrolments): Future[Option[String]] = {

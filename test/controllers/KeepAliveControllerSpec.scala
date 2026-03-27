@@ -22,10 +22,9 @@ import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject.bind
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import repositories.SessionRepository
-
-import scala.concurrent.Future
+import utils.FutureSyntax.FutureOps
 
 class KeepAliveControllerSpec extends SpecBase with MockitoSugar {
 
@@ -34,7 +33,7 @@ class KeepAliveControllerSpec extends SpecBase with MockitoSugar {
     "must keep the answers alive and return OK" in {
 
       val mockSessionRepository = mock[SessionRepository]
-      when(mockSessionRepository.keepAlive(any(), any())) thenReturn Future.successful(true)
+      when(mockSessionRepository.keepAlive(any(), any())) thenReturn true.toFuture
 
       val application =
         applicationBuilder(Some(emptyUserAnswers))
@@ -43,14 +42,13 @@ class KeepAliveControllerSpec extends SpecBase with MockitoSugar {
 
       running(application) {
 
-        val request = FakeRequest(GET, routes.KeepAliveController.keepAlive.url)
+        val request = FakeRequest(GET, routes.KeepAliveController.keepAlive(iossNumber).url)
 
         val result = route(application, request).value
 
-        status(result) mustEqual OK
+        status(result) `mustBe` OK
         verify(mockSessionRepository, times(1)).keepAlive(emptyUserAnswers.userId, emptyUserAnswers.iossNumber)
       }
     }
   }
-
 }

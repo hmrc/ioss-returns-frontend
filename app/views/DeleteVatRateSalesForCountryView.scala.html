@@ -28,7 +28,7 @@
         messages("deleteVatRateSalesForCountry.intermediary.title", vatRate, country.name)
     } else {
         messages("deleteVatRateSalesForCountry.title", vatRate, country.name)
-    })) {
+    }), maybeIossNumber = Some(iossNumber)) {
 
     @if(isIntermediary){<p class="govuk-caption-l hmrc-caption-l">@companyName</p>}
 

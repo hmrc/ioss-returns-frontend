@@ -27,7 +27,6 @@
         button: ButtonGroup
 )
 
-
 @(
         form: Form[_],
         waypoints: Waypoints,
@@ -55,7 +54,7 @@
         } else {
             Some(messages("caption.fromCountry.periodAndCountry", correctionPeriod.displayText, country.name))
         }
-    )) {
+    ), maybeIossNumber = Some(iossNumber)) {
 
         @formHelper(action = controllers.corrections.routes.VatAmountCorrectionCountryController.onSubmit(waypoints, iossNumber, periodIndex, countryIndex), Symbol("autoComplete") -> "off") {
 

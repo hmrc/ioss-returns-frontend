@@ -28,7 +28,7 @@
 
 @(form: Form[_], waypoints: Waypoints, iossNumber: String, payments: List[Payment], paymentError: Boolean)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = title(form, messages("whichVatPeriodToPay.title"))) {
+@layout(pageTitle = title(form, messages("whichVatPeriodToPay.title")), maybeIossNumber = Some(iossNumber)) {
 
     @if(paymentError) {
         <div class="govuk-notification-banner" role="region" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">

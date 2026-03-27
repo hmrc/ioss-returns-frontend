@@ -92,7 +92,7 @@ class WhichPreviousRegistrationToPayController @Inject()(
         val iossNumber = prepareData.iossNumber
         val payments = prepareData.overduePayments ++ prepareData.duePayments
         payments match {
-          case Nil => Ok(viewNoPayment(YourAccountPage.route(waypoints).url)).toFuture
+          case Nil => Ok(viewNoPayment(request.iossNumber, YourAccountPage.route(waypoints).url)).toFuture
           case payment :: Nil =>
             makePayment(iossNumber, payment)
           case _ =>

@@ -37,7 +37,7 @@ class NoReturnsDueControllerSpec extends SpecBase {
         val view = application.injector.instanceOf[NoReturnsDueView]
 
         status(result) `mustBe` OK
-        contentAsString(result) `mustBe` view()(request, messages(application)).toString
+        contentAsString(result) `mustBe` view(iossNumber)(request, messages(application)).toString
       }
     }
   }

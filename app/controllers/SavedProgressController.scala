@@ -80,7 +80,7 @@ class SavedProgressController @Inject()(
                 case _ => externalUrl
               }
 
-              Ok(view(period, answersExpiry, safeContinueUrl, determinedRedirect))
+              Ok(view(request.iossNumber, period, answersExpiry, safeContinueUrl, determinedRedirect))
             }
 
           case (Left(ConflictFound), externalUrl)

@@ -46,7 +46,7 @@ case object YourAccount extends ExternalTargetPage with ParameterlessUrl {
 
 case object ReturnsHistory extends ExternalTargetPage with UrlWithOutPeriod {
   override val name: String = "returns-history"
-  override def url(iossNumber: String): String = controllers.previousReturns.routes.SubmittedReturnsHistoryController.onPageLoad(iossNumber = iossNumber).url // TODO -> Check
+  override def url(iossNumber: String): String = controllers.previousReturns.routes.SubmittedReturnsHistoryController.onPageLoad(iossNumber = iossNumber).url
 }
 
 case object StartReturn extends ExternalTargetPage with UrlWithPeriod {
@@ -61,5 +61,5 @@ case object ContinueReturn extends ExternalTargetPage with UrlWithPeriod {
 
 case object Payment extends ExternalTargetPage with UrlWithOutPeriod {
   override val name: String = "make-payment"
-  override def url(iossNumber: String): String = controllers.payments.routes.WhichVatPeriodToPayController.onPageLoad(iossNumber = iossNumber).url // TODO -> Check
+  override def url(iossNumber: String): String = controllers.payments.routes.WhichVatPeriodToPayController.onPageLoad(iossNumber = iossNumber).url
 }

@@ -32,7 +32,7 @@
         messages("soldGoods.intermediary.title", period.displayText)
     } else {
         messages("soldGoods.title", period.displayText)
-    })) {
+    }), maybeIossNumber = Some(iossNumber)) {
 
         @formHelper(action = routes.SoldGoodsController.onSubmit(waypoints, iossNumber), Symbol("autoComplete") -> "off") {
 

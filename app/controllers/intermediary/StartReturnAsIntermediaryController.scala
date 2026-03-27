@@ -50,7 +50,7 @@ class StartReturnAsIntermediaryController @Inject()(
 
   def startReturnAsIntermediary(waypoints: Waypoints, iossNumber: String): Action[AnyContent] = (
     cc.authAndIntermediaryRequired(iossNumber) andThen
-      cc.getData(iossNumber)).async { implicit request =>  // TODO -> Check if correct iossNumber -> May need additional urlIossNumber param
+      cc.getData(iossNumber)).async { implicit request =>
 
     if (config.intermediaryEnabled) {
       vatReturnService.getOldestDueReturn(iossNumber).flatMap {

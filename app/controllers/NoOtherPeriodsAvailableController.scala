@@ -48,6 +48,6 @@ class NoOtherPeriodsAvailableController @Inject()(
         request.isIntermediary, intermediaryEnrolmentsExist, iossEnrolmentsExist, request.iossNumber
       )
 
-      Ok(view(waypoints, request.isIntermediary, companyName, redirectUrl))
+      Ok(view(waypoints, request.iossNumber, request.isIntermediary, companyName, redirectUrl))
   }
 }

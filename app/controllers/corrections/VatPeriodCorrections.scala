@@ -34,8 +34,7 @@ trait VatPeriodCorrections {
   def findCorrectionsWithCountriesInAnswersWhereNoSubmissionMade(vatPeriodCorrectionsService: VatPeriodCorrectionsService)(block: => Result) = {
     CorrectionsWithCountriesInAnswersWhereNoSubmissionMadeOps((vatPeriodCorrectionsService, block))
   }
-
-  // TODO -> iossNumber????
+  
   def findPeriodOfCountryCorrectionsWithNoVatCorrectionInAnswersAndShowCountriesPage(waypoints: Waypoints,
                                                                                      period: Period,
                                                                                      incompletePromptShown: Boolean,

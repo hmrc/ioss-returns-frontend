@@ -37,6 +37,6 @@ class InterceptUnusableEmailController @Inject()(
   def onPageLoad(iossNumber: String): Action[AnyContent] = cc.authAndGetRegistration(iossNumber) {
     implicit request =>
 
-      Ok(view(request.registrationWrapper.registration.schemeDetails.businessEmailId, appConfig.amendRegistrationUrl))
+      Ok(view(request.iossNumber, request.registrationWrapper.registration.schemeDetails.businessEmailId, appConfig.amendRegistrationUrl))
   }
 }

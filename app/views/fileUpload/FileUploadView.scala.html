@@ -27,6 +27,7 @@
 @(
     form: Form[_],
     waypoints: Waypoints,
+    iossNumber: String,
     period: Period,
     isIntermediary: Boolean,
     companyName: String,
@@ -43,7 +44,7 @@
     }
 }
 
-@layout(pageTitle = title(form, messages("fileUpload.title", period.displayText))) {
+@layout(pageTitle = title(form, messages("fileUpload.title", period.displayText)), maybeIossNumber = Some(iossNumber)) {
 
     @defining(errorMessage.map(msg => form.withError("file", msg)).getOrElse(form)) { formWithUpscanError =>
         @if(formWithUpscanError.errors.nonEmpty) {

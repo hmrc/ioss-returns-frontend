@@ -26,7 +26,7 @@
 
 @(waypoints: Waypoints, iossNumber: String, previousRegistration: PreviousRegistration, periodsWithFinancialData: Map[Int, Seq[(Period, Payment)]], isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
 
-    @layout(pageTitle = titleNoForm(messages("viewReturnsMultipleReg.title", previousRegistration.startPeriod.displayText, previousRegistration.endPeriod.displayText))) {
+    @layout(pageTitle = titleNoForm(messages("viewReturnsMultipleReg.title", previousRegistration.startPeriod.displayText, previousRegistration.endPeriod.displayText)), maybeIossNumber = Some(iossNumber)) {
 
         <h1 class="govuk-heading-l">
             @messages("viewReturnsMultipleReg.heading", previousRegistration.startPeriod.displayText, previousRegistration.endPeriod.displayText)

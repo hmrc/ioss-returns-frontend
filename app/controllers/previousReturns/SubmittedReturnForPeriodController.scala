@@ -28,7 +28,6 @@ import models.{PartialReturnPeriod, Period}
 import pages.{JourneyRecoveryPage, Waypoints}
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
-import services.PreviousRegistrationService
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{Card, CardTitle, SummaryList, SummaryListRow}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -47,7 +46,6 @@ class SubmittedReturnForPeriodController @Inject()(
                                                     cc: AuthenticatedControllerComponents,
                                                     vatReturnConnector: VatReturnConnector,
                                                     financialDataConnector: FinancialDataConnector,
-                                                    previousRegistrationService: PreviousRegistrationService,
                                                     view: SubmittedReturnForPeriodView
                                                   )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
@@ -64,21 +62,13 @@ class SubmittedReturnForPeriodController @Inject()(
       } yield onPageLoad(waypoints, period, etmpVatReturnResponse, chargeResponse)).flatten
     }
   }
-
-  // TODO -> Check if correct iossNumber -> May need additional urlIossNumber param
+  
   def onPageLoadForIossNumber(waypoints: Waypoints, iossNumber: String, period: Period): Action[AnyContent] = cc.authAndGetOptionalData(iossNumber).async {
     implicit request =>
-      previousRegistrationService.getPreviousRegistrations(request.isIntermediary).flatMap { previousRegistrations =>
-        val validIossNumbers: Seq[String] = request.iossNumber :: previousRegistrations.map(_.iossNumber)
-        if (validIossNumbers.contains(iossNumber)) {
-          (for {
-            etmpVatReturnResponse <- vatReturnConnector.getForIossNumber(period, iossNumber)
-            chargeResponse <- financialDataConnector.getChargeForIossNumber(period, iossNumber)
-          } yield onPageLoad(waypoints, period, etmpVatReturnResponse, chargeResponse)).flatten
-        } else {
-          Redirect(JourneyRecoveryPage.route(waypoints)).toFuture
-        }
-      }
+      (for {
+        etmpVatReturnResponse <- vatReturnConnector.getForIossNumber(period, iossNumber)
+        chargeResponse <- financialDataConnector.getChargeForIossNumber(period, iossNumber)
+      } yield onPageLoad(waypoints, period, etmpVatReturnResponse, chargeResponse)).flatten
   }
 
   private def onPageLoad(waypoints: Waypoints, period: Period, etmpVatReturnResponse: EtmpVatReturnResponse, chargeResponse: ChargeResponse)

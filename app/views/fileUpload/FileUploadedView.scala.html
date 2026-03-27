@@ -43,7 +43,7 @@
     }
 }
 
-@layout(pageTitle = title(form, messages("fileUploaded.title"))) {
+@layout(pageTitle = title(form, messages("fileUploaded.title")), maybeIossNumber = Some(iossNumber)) {
 
     @if(!maybeOutcome.exists(o => o.status == "UPLOADED" || o.status == "FAILED")) {
         <meta http-equiv="refresh" content="1">

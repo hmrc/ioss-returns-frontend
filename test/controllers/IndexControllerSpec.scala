@@ -18,7 +18,7 @@ package controllers
 
 import base.SpecBase
 import config.FrontendAppConfig
-import controllers.actions.FakeGetRegistrationActionProvider
+import controllers.actions.FakeGetRegistrationWithoutUrlIossAction
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import uk.gov.hmrc.auth.core.{Enrolment, EnrolmentIdentifier, Enrolments}
@@ -43,49 +43,49 @@ class IndexControllerSpec extends SpecBase {
 
     "when an intermediary is present" - {
 
-     "must redirect to IossOrIntermediary page if both ioss and intermediary enrolments are present" in {
+      "must redirect to IossOrIntermediary page if both ioss and intermediary enrolments are present" in {
 
-       val bothIossAndIntermediaryEnrolments: Enrolments = Enrolments(
-         Set(
-           Enrolment(
-             key = iossEnrolmentKey,
-             identifiers = Seq(
-               EnrolmentIdentifier("IOSSNumber", iossNumber)
-             ),
-             state = "Activated"
-           ),
-           Enrolment(
-             key = intermediaryEnrolmentKey,
-             identifiers = Seq(
-               EnrolmentIdentifier("IntNumber", intermediaryNumber)
-             ),
-             state = "Activated"
-           )
-         )
-       )
+        val bothIossAndIntermediaryEnrolments: Enrolments = Enrolments(
+          Set(
+            Enrolment(
+              key = iossEnrolmentKey,
+              identifiers = Seq(
+                EnrolmentIdentifier("IOSSNumber", iossNumber)
+              ),
+              state = "Activated"
+            ),
+            Enrolment(
+              key = intermediaryEnrolmentKey,
+              identifiers = Seq(
+                EnrolmentIdentifier("IntNumber", intermediaryNumber)
+              ),
+              state = "Activated"
+            )
+          )
+        )
 
-       val fakeProvider =
-         new FakeGetRegistrationActionProvider(
-           registrationWrapper,
-           maybeIntermediaryNumber = Some(intermediaryNumber),
-           enrolments = Some(bothIossAndIntermediaryEnrolments)
-         )
+        val fakeAction =
+          new FakeGetRegistrationWithoutUrlIossAction(
+            registrationWrapper = registrationWrapper,
+            enrolments = Some(bothIossAndIntermediaryEnrolments),
+            maybeIntermediaryNumber = Some(intermediaryNumber)
+          )
 
-       val application = applicationBuilder(
-         getRegistrationAction = Some(fakeProvider)
-       ).build()
+        val application = applicationBuilder(
+          getRegistrationWithoutUrlIossAction = Some(fakeAction)
+        ).build()
 
-       running(application) {
+        running(application) {
 
-         val request = FakeRequest(GET, routes.IndexController.onPageLoad.url)
+          val request = FakeRequest(GET, routes.IndexController.onPageLoad.url)
 
-         val result = route(application, request).value
+          val result = route(application, request).value
 
-         status(result) `mustBe` SEE_OTHER
-         redirectLocation(result).value `mustBe`
-           controllers.intermediary.routes.IossOrIntermediaryController.onPageLoad(iossNumber).url
-       }
-     }
+          status(result) `mustBe` SEE_OTHER
+          redirectLocation(result).value `mustBe`
+            controllers.intermediary.routes.IossOrIntermediaryController.onPageLoad(iossNumber).url
+        }
+      }
 
       "must redirect to the intermediary dashboard if there are no ioss enrolments" in {
 
@@ -101,15 +101,15 @@ class IndexControllerSpec extends SpecBase {
           )
         )
 
-        val fakeProvider =
-          new FakeGetRegistrationActionProvider(
-            registrationWrapper,
-            maybeIntermediaryNumber = Some(intermediaryNumber),
-            enrolments = Some(onlyIntermediaryEnrolment)
+        val fakeAction =
+          new FakeGetRegistrationWithoutUrlIossAction(
+            registrationWrapper = registrationWrapper,
+            enrolments = Some(onlyIntermediaryEnrolment),
+            maybeIntermediaryNumber = Some(intermediaryNumber)
           )
 
         val application = applicationBuilder(
-          getRegistrationAction = Some(fakeProvider)
+          getRegistrationWithoutUrlIossAction = Some(fakeAction)
         ).build()
 
         running(application) {

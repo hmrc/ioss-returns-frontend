@@ -34,6 +34,6 @@ class NoLongerAbleToViewReturnController @Inject()(
 
   def onPageLoad(iossNumber: String): Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced(iossNumber) {
     implicit request =>
-      Ok(view())
+      Ok(view(request.iossNumber))
   }
 }

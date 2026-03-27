@@ -75,6 +75,7 @@ class FileUploadControllerSpec extends SpecBase with MockitoSugar {
         contentAsString(result) `mustBe` view(
           form,
           waypoints,
+          iossNumber,
           period,
           false,
           companyName,
@@ -112,6 +113,7 @@ class FileUploadControllerSpec extends SpecBase with MockitoSugar {
         contentAsString(result) `mustBe` view(
           form,
           waypoints,
+          iossNumber,
           period,
           false,
           companyName,

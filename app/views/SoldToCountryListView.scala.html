@@ -18,7 +18,6 @@
 @import viewmodels.LegendSize
 @import components.ButtonGroup
 
-
 @this(
         layout: templates.Layout,
         formHelper: FormWithCSRF,
@@ -56,7 +55,7 @@
     }
 }
 
-@layout(pageTitle = title(form, titleText)) {
+@layout(pageTitle = title(form, titleText), maybeIossNumber = Some(iossNumber)) {
 
     @if(isIntermediary){<p class="govuk-caption-l hmrc-caption-l">@{companyName + period.displayText}</p>}
     @if(form.errors.nonEmpty) {

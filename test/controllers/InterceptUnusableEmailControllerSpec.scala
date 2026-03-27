@@ -24,7 +24,7 @@ import views.html.InterceptUnusableEmailView
 
 class InterceptUnusableEmailControllerSpec extends SpecBase {
 
-  "InterceptUnusablEmail Controller" - {
+  "InterceptUnusableEmail Controller" - {
 
     "must return OK and the correct view for a GET" in {
 
@@ -40,7 +40,7 @@ class InterceptUnusableEmailControllerSpec extends SpecBase {
 
         status(result) `mustBe` OK
         contentAsString(result) `mustBe`
-          view(registrationWrapper.registration.schemeDetails.businessEmailId, appConfig.amendRegistrationUrl)(request, messages(application)).toString
+          view(iossNumber, registrationWrapper.registration.schemeDetails.businessEmailId, appConfig.amendRegistrationUrl)(request, messages(application)).toString
       }
     }
   }

@@ -113,7 +113,7 @@ class WhichPreviousRegistrationVatPeriodToPayControllerSpec extends SpecBase wit
         val redirectUrl: String = YourAccountPage.route(waypoints).url
 
         status(result) `mustBe` OK
-        contentAsString(result) `mustBe` view(redirectUrl)(request, messages(application)).toString
+        contentAsString(result) `mustBe` view(iossNumber, redirectUrl)(request, messages(application)).toString
       }
     }
 

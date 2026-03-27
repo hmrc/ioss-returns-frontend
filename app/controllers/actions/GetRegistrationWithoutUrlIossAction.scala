@@ -31,7 +31,6 @@ import utils.FutureSyntax.FutureOps
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-// TODO -> Test and Fake?
 class GetRegistrationWithoutUrlIossAction @Inject()(
                                                      val registrationConnector: RegistrationConnector,
                                                      accountService: AccountService,
@@ -42,24 +41,17 @@ class GetRegistrationWithoutUrlIossAction @Inject()(
   override protected def refine[A](request: IdentifierRequest[A]): Future[Either[Result, RegistrationRequest[A]]] = {
 
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request.request, request.request.session)
-
+    
     (for {
       maybeIossNumberFromEnrolments <- findIossFromEnrolments(request.enrolments)
+      maybeIntermediaryFromEnrolments <- findIntermediaryFromEnrolments(request.enrolments)
     } yield {
-      maybeIossNumberFromEnrolments match {
-        case Some(iossNumber) =>
-          registrationConnector.get().map { registration =>
-            Right(RegistrationRequest(
-              request = request.request,
-              credentials = request.credentials,
-              vrn = Some(request.vrn),
-              companyName = registration.getCompanyName(),
-              iossNumber = iossNumber,
-              registrationWrapper = registration,
-              intermediaryNumber = None,
-              enrolments = request.enrolments
-            ))
-          }
+      (maybeIossNumberFromEnrolments, maybeIntermediaryFromEnrolments) match {
+        case (Some(iossNumber), Some(intermediaryNumber)) =>
+          createRegistrationRequest(iossNumber, Some(intermediaryNumber), request)
+
+        case (Some(iossNumber), None) =>
+          createRegistrationRequest(iossNumber, request = request)
 
         case _ =>
           Left(Redirect(routes.NotRegisteredController.onPageLoad())).toFuture
@@ -67,6 +59,24 @@ class GetRegistrationWithoutUrlIossAction @Inject()(
     }).flatten
   }
 
+  private def createRegistrationRequest[A](
+                                            iossNumber: String,
+                                            intermediaryNumber: Option[String] = None,
+                                            request: IdentifierRequest[A]
+                                          )(implicit hc: HeaderCarrier) = {
+    registrationConnector.get().map { registration =>
+      Right(RegistrationRequest(
+        request = request.request,
+        credentials = request.credentials,
+        vrn = Some(request.vrn),
+        companyName = registration.getCompanyName(),
+        iossNumber = iossNumber,
+        registrationWrapper = registration,
+        intermediaryNumber = intermediaryNumber,
+        enrolments = request.enrolments
+      ))
+    }
+  }
 
   private def findIossFromEnrolments(enrolments: Enrolments)(implicit hc: HeaderCarrier): Future[Option[String]] = {
     val filteredIossNumbers = enrolments
@@ -81,5 +91,14 @@ class GetRegistrationWithoutUrlIossAction @Inject()(
         accountService.getLatestAccount().map(x => Some(x))
       case _ => None.toFuture
     }
+  }
+
+  private def findIntermediaryFromEnrolments(enrolments: Enrolments): Future[Option[String]] = {
+    enrolments
+      .enrolments
+      .filter(_.key == config.intermediaryEnrolment)
+      .flatMap(_.identifiers.filter(_.key == "IntNumber").map(_.value))
+      .headOption
+      .toFuture
   }
 }

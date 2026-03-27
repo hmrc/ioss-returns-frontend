@@ -17,7 +17,6 @@
 @import viewmodels.InputWidth._
 @import components.ButtonGroup
 
-
 @this(
         layout: templates.Layout,
         formHelper: FormWithCSRF,
@@ -56,7 +55,7 @@
         messages("vatOnSales.title", currencyFormat(netSales), vatRate.rateForDisplay)
     },
     Some(caption)
-)) {
+), maybeIossNumber = Some(iossNumber)) {
 
     @formHelper(action = routes.VatOnSalesController.onSubmit(waypoints, iossNumber, countryIndex, nextVatRateIndex), Symbol("autoComplete") -> "off") {
 

@@ -31,7 +31,7 @@
     isIntermediaryJourney: Boolean = false,
     companyName: String)( implicit request: Request[_], messages: Messages )
 
-@layout(pageTitle = title(form, messages("whichVatPeriodToPay.title"))) {
+@layout(pageTitle = title(form, messages("whichVatPeriodToPay.title")), maybeIossNumber = Some(iossNumber)) {
     @if(isIntermediaryJourney){<p class="govuk-caption-l hmrc-caption-l">@companyName</p>}
     @if(paymentError) {
         <div class="govuk-notification-banner" role="region" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">

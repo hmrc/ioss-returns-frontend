@@ -46,6 +46,6 @@ class ReturnSubmissionFailureController @Inject()(
           request.isIntermediary, intermediaryEnrolmentsExist, iossEnrolmentsExist, request.iossNumber
         )
 
-      Ok(view(determineRedirect))
+      Ok(view(iossNumber, determineRedirect))
   }
 }

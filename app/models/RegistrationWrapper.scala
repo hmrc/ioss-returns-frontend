@@ -22,7 +22,6 @@ import models.etmp.{EtmpDisplayRegistration, VatCustomerInfo}
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.domain.Vrn
 
-
 case class RegistrationWrapper(vatInfo: Option[VatCustomerInfo], registration: EtmpDisplayRegistration) {
   
   val maybeVrn: Option[Vrn] = {

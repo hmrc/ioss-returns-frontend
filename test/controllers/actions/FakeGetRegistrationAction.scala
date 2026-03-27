@@ -51,8 +51,8 @@ class FakeGetRegistrationAction(
       request.request,
       request.credentials,
       Some(request.vrn),
-      "Company Name",
-      "IM9001234567",
+      registration.getCompanyName(),
+      requestedIossNumber,
       registration,
       maybeIntermediaryNumber,
       enrolments.getOrElse(iossEnrolment))

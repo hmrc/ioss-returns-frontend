@@ -43,7 +43,7 @@ class TestOnlyCsvToUserAnswersController @Inject()(
       |"France","10%","150.01","£15"
       |""".stripMargin
   
-  def populateUserAnswersFromCsv(waypoints: Waypoints): Action[AnyContent] = cc.authAndRequireData().async {
+  def populateUserAnswersFromCsv(waypoints: Waypoints, iossNumber: String): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
     implicit request =>
       
       Future

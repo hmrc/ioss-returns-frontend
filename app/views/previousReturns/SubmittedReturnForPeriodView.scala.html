@@ -41,7 +41,7 @@ layout: templates.Layout,
         companyName: String
 )(implicit request: Request[_], messages: Messages)
 
-    @layout(pageTitle = titleNoForm(messages("submittedReturnForPeriod.title", period.displayText))) {
+    @layout(pageTitle = titleNoForm(messages("submittedReturnForPeriod.title", period.displayText)), maybeIossNumber = Some(iossNumber)) {
 
     @if(isIntermediary){<p class="govuk-caption-l hmrc-caption-l">@companyName</p>}
 
