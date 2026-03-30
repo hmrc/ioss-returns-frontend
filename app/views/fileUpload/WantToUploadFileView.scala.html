@@ -39,7 +39,7 @@
                     content = messages("wantToUploadFile.heading"),
                     caption = if(isIntermediary) companyName + period.displayText else period.displayText,
                     classes = "govuk-fieldset__legend--l"
-                ).asPageHeading(),
+                ),
                 items = Seq(
                     RadioItem(
                         value   = Some("true"),
