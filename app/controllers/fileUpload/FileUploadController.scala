@@ -26,6 +26,7 @@ import pages.Waypoints
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import play.api.Environment
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.fileUpload.FileUploadView
 
@@ -38,7 +39,8 @@ class FileUploadController @Inject()(
                                          formProvider: FileUploadFormProvider,
                                          view: FileUploadView,
                                          upscanInitiateConnector: UpscanInitiateConnector,
-                                         appConfig: FrontendAppConfig
+                                         appConfig: FrontendAppConfig,
+                                         environment: Environment
                                  )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
@@ -87,6 +89,15 @@ class FileUploadController @Inject()(
           }
         }
       }
+  }
+
+  def downloadTemplate(): Action[AnyContent] = cc.authAndIntermediaryEnabled().async { _ =>
+    Future.successful(
+      Ok.sendFile(
+        content = environment.getFile("conf/template/IOSS return template.ods"),
+        inline = false
+      )
+    )
   }
 
   private def errorMessage(
