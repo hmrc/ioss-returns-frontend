@@ -14,7 +14,6 @@
  * limitations under the License.
  *@
 
-@import config.FrontendAppConfig
 @import components.FileUpload
 
 @this(
@@ -22,8 +21,7 @@
     formHelper: FormWithCSRF,
     govukErrorSummary: GovukErrorSummary,
     fileUpload: FileUpload,
-    govukButton: GovukButton,
-    appConfig: FrontendAppConfig
+    govukButton: GovukButton
 )
 
 @(
@@ -60,7 +58,7 @@
         <p class="govuk-body">@messages("fileUpload.paragraph")</p>
 
         <ol class="govuk-list govuk-list--number">
-            <li>@Html(messages("fileUpload.bullet1", appConfig.downloadTemplateUrl))</li>
+            <li>@Html(messages("fileUpload.bullet1", controllers.fileUpload.routes.FileUploadController.downloadTemplate()))</li>
             <li>@messages("fileUpload.bullet2")</li>
             <li>@messages("fileUpload.bullet3")</li>
 
