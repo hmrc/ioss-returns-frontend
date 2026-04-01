@@ -38,7 +38,7 @@ import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import repositories.SelectedIossNumberRepository
-import services.{AccountService, PaymentsService, PreviousRegistrationService}
+import services.{PaymentsService, PreviousRegistrationService}
 import uk.gov.hmrc.auth.core.{Enrolment, EnrolmentIdentifier, Enrolments}
 import utils.FutureSyntax.FutureOps
 import viewmodels.payments.SelectedIossNumber
@@ -376,7 +376,6 @@ class WhichPreviousRegistrationToPayControllerSpec extends SpecBase with Mockito
 }
 
 class FakeMultipleEnrolmentsGetRegistrationAction(enrolments: Enrolments, registration: RegistrationWrapper, requestedIossNumber: String) extends GetRegistrationAction(
-  mock[AccountService],
   mock[IntermediaryRegistrationConnector],
   mock[RegistrationConnector],
   mock[FrontendAppConfig],
@@ -388,7 +387,6 @@ class FakeMultipleEnrolmentsGetRegistrationAction(enrolments: Enrolments, regist
 }
 
 class FakeMultipleEnrolmentsGetRegistrationActionProvider(enrolments: Enrolments, registrationWrapper: RegistrationWrapper) extends GetRegistrationActionProvider(
-  mock[AccountService],
   mock[IntermediaryRegistrationConnector],
   mock[RegistrationConnector],
   mock[FrontendAppConfig]

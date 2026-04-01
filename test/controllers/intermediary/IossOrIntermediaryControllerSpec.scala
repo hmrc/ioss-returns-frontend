@@ -18,7 +18,6 @@ package controllers.intermediary
 
 import base.SpecBase
 import config.FrontendAppConfig
-import controllers.actions.FakeGetRegistrationActionProvider
 import forms.IossOrIntermediaryFormProvider
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.test.FakeRequest
@@ -58,20 +57,13 @@ class IossOrIntermediaryControllerSpec extends SpecBase with MockitoSugar {
 
         "when both ioss and intermediary enrolments are present" in {
 
-          val fakeProvider =
-            new FakeGetRegistrationActionProvider(
-              registrationWrapper,
-              maybeIntermediaryNumber = Some(intermediaryNumber),
-              enrolments = Some(bothIossAndIntermediaryEnrolments)
-            )
-
           val application = applicationBuilder(
-            getRegistrationAction = Some(fakeProvider)
+            enrolments = Some(bothIossAndIntermediaryEnrolments)
           ).build()
 
           running(application) {
 
-            val request = FakeRequest(GET, controllers.intermediary.routes.IossOrIntermediaryController.onPageLoad(iossNumber).url)
+            val request = FakeRequest(GET, controllers.intermediary.routes.IossOrIntermediaryController.onPageLoad().url)
 
             val result = route(application, request).value
 
@@ -82,7 +74,7 @@ class IossOrIntermediaryControllerSpec extends SpecBase with MockitoSugar {
 
             status(result) `mustBe` OK
             contentAsString(result) `mustBe`
-              view(expectedForm, iossNumber, expectedEnrolmentIdentifiers, totalNumberOfEnrolments = 2)
+              view(expectedForm, expectedEnrolmentIdentifiers, totalNumberOfEnrolments = 2)
                 (request, messages(application)).toString
           }
         }
@@ -101,20 +93,13 @@ class IossOrIntermediaryControllerSpec extends SpecBase with MockitoSugar {
             )
           )
 
-          val fakeProvider =
-            new FakeGetRegistrationActionProvider(
-              registrationWrapper,
-              maybeIntermediaryNumber = Some(intermediaryNumber),
-              enrolments = Some(onlyIossEnrolment)
-            )
-
           val application = applicationBuilder(
-            getRegistrationAction = Some(fakeProvider)
+            enrolments = Some(onlyIossEnrolment)
           ).build()
 
           running(application) {
 
-            val request = FakeRequest(GET, controllers.intermediary.routes.IossOrIntermediaryController.onPageLoad(iossNumber).url)
+            val request = FakeRequest(GET, controllers.intermediary.routes.IossOrIntermediaryController.onPageLoad().url)
 
             val result = route(application, request).value
 
@@ -125,7 +110,7 @@ class IossOrIntermediaryControllerSpec extends SpecBase with MockitoSugar {
 
             status(result) `mustBe` OK
             contentAsString(result) `mustBe`
-              view(expectedForm, iossNumber, expectedEnrolmentIdentifiers, totalNumberOfEnrolments = 1)
+              view(expectedForm, expectedEnrolmentIdentifiers, totalNumberOfEnrolments = 1)
                 (request, messages(application)).toString
           }
         }
@@ -144,20 +129,13 @@ class IossOrIntermediaryControllerSpec extends SpecBase with MockitoSugar {
             )
           )
 
-          val fakeProvider =
-            new FakeGetRegistrationActionProvider(
-              registrationWrapper,
-              maybeIntermediaryNumber = Some(intermediaryNumber),
-              enrolments = Some(onlyIntermediaryEnrolment)
-            )
-
           val application = applicationBuilder(
-            getRegistrationAction = Some(fakeProvider)
+            enrolments = Some(onlyIntermediaryEnrolment)
           ).build()
 
           running(application) {
 
-            val request = FakeRequest(GET, controllers.intermediary.routes.IossOrIntermediaryController.onPageLoad(iossNumber).url)
+            val request = FakeRequest(GET, controllers.intermediary.routes.IossOrIntermediaryController.onPageLoad().url)
 
             val result = route(application, request).value
 
@@ -168,7 +146,7 @@ class IossOrIntermediaryControllerSpec extends SpecBase with MockitoSugar {
 
             status(result) `mustBe` OK
             contentAsString(result) `mustBe`
-              view(expectedForm, iossNumber, expectedEnrolmentIdentifiers, totalNumberOfEnrolments = 1)
+              view(expectedForm, expectedEnrolmentIdentifiers, totalNumberOfEnrolments = 1)
                 (request, messages(application)).toString
           }
         }
@@ -179,20 +157,13 @@ class IossOrIntermediaryControllerSpec extends SpecBase with MockitoSugar {
 
       "must redirect to YourAccount page if an ioss option is selected" in {
 
-        val fakeProvider =
-          new FakeGetRegistrationActionProvider(
-            registrationWrapper,
-            maybeIntermediaryNumber = Some(intermediaryNumber),
-            enrolments = Some(bothIossAndIntermediaryEnrolments)
-          )
-
         val application = applicationBuilder(
-          getRegistrationAction = Some(fakeProvider)
+          enrolments = Some(bothIossAndIntermediaryEnrolments)
         ).build()
 
         running(application) {
 
-          val request = FakeRequest(POST, controllers.intermediary.routes.IossOrIntermediaryController.onPageLoad(iossNumber).url)
+          val request = FakeRequest(POST, controllers.intermediary.routes.IossOrIntermediaryController.onPageLoad().url)
             .withFormUrlEncodedBody(("value", iossNumber))
 
           val result = route(application, request).value
@@ -204,21 +175,14 @@ class IossOrIntermediaryControllerSpec extends SpecBase with MockitoSugar {
 
       "must redirect to intermediary dashboard if an intermediary option is selected" in {
 
-        val fakeProvider =
-          new FakeGetRegistrationActionProvider(
-            registrationWrapper,
-            maybeIntermediaryNumber = Some(intermediaryNumber),
-            enrolments = Some(bothIossAndIntermediaryEnrolments)
-          )
-
         val application = applicationBuilder(
-          getRegistrationAction = Some(fakeProvider)
+          enrolments = Some(bothIossAndIntermediaryEnrolments)
         ).build()
 
         running(application) {
           val config = application.injector.instanceOf[FrontendAppConfig]
 
-          val request = FakeRequest(POST, controllers.intermediary.routes.IossOrIntermediaryController.onPageLoad(iossNumber).url)
+          val request = FakeRequest(POST, controllers.intermediary.routes.IossOrIntermediaryController.onPageLoad().url)
             .withFormUrlEncodedBody(("value", intermediaryNumber))
 
           val result = route(application, request).value
@@ -230,20 +194,13 @@ class IossOrIntermediaryControllerSpec extends SpecBase with MockitoSugar {
 
       "must return a Bad Request and errors when invalid data is submitted" in {
 
-        val fakeProvider =
-          new FakeGetRegistrationActionProvider(
-            registrationWrapper,
-            maybeIntermediaryNumber = Some(intermediaryNumber),
-            enrolments = Some(bothIossAndIntermediaryEnrolments)
-          )
-
         val application = applicationBuilder(
-          getRegistrationAction = Some(fakeProvider)
+          enrolments = Some(bothIossAndIntermediaryEnrolments)
         ).build()
 
         running(application) {
 
-          val request = FakeRequest(POST, controllers.intermediary.routes.IossOrIntermediaryController.onPageLoad(iossNumber).url)
+          val request = FakeRequest(POST, controllers.intermediary.routes.IossOrIntermediaryController.onPageLoad().url)
             .withFormUrlEncodedBody(("value", ""))
 
           val boundForm = form.bind(Map("value" -> ""))
@@ -254,7 +211,7 @@ class IossOrIntermediaryControllerSpec extends SpecBase with MockitoSugar {
 
           status(result) `mustBe` BAD_REQUEST
           contentAsString(result) `mustBe`
-            view(boundForm, iossNumber, Seq(iossNumber, intermediaryNumber), totalNumberOfEnrolments = 2)
+            view(boundForm, Seq(iossNumber, intermediaryNumber), totalNumberOfEnrolments = 2)
               (request, messages(application)).toString()
         }
       }

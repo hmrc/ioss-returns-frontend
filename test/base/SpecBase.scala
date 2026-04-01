@@ -145,9 +145,9 @@ trait SpecBase
     }
 
     val getIdentifierActionBind = if (getIdentifierAction.nonEmpty) {
-      bind[IdentifierAction].to[FakeIntermediaryIdentifierAction]
+      bind[IdentifierAction].toInstance(getIdentifierAction.get)
     } else {
-      bind[IdentifierAction].to[FakeIdentifierAction]
+      bind[IdentifierAction].toInstance(new FakeIdentifierAction(enrolments))
     }
 
     new GuiceApplicationBuilder()

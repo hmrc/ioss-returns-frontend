@@ -63,7 +63,7 @@
                             @for((period, payment) <- periodWithFinancialData) {
                                 <tr class="govuk-table__row">
                                     <td class="govuk-table__cell">
-                                        <a class="govuk-link govuk-body" href="@prevRoutes.SubmittedReturnForPeriodController.onPageLoadForIossNumber(waypoints, iossNumber, period)">@period.displayMonth</a>
+                                        <a class="govuk-link govuk-body" href="@prevRoutes.SubmittedReturnForPeriodController.onPageLoadForIossNumber(waypoints, previousRegistration.iossNumber, period)">@period.displayMonth</a>
                                     </td>
                                     <td class="govuk-table__cell govuk-table__cell--numeric">
                                     @Html(currencyFormat(payment.amountOwed))
@@ -71,7 +71,7 @@
                                     <td class="govuk-table__cell govuk-table__cell--numeric">
                                     @if(payment.paymentStatus == PaymentStatus.Unpaid || payment.paymentStatus == PaymentStatus.Unknown || payment.paymentStatus == PaymentStatus.Partial) {
                                         <a class="govuk-link" id="pay-now"
-                                           href="@paymentRoutes.PaymentController.makePaymentForIossNumber(waypoints, period, iossNumber)">
+                                           href="@paymentRoutes.PaymentController.makePaymentForIossNumber(waypoints, period, previousRegistration.iossNumber)">
                                             @messages("viewReturnsMultipleReg.payNow")
                                         </a>
                                     } else {

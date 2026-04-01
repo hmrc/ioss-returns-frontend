@@ -33,7 +33,6 @@ import org.scalatestplus.mockito.MockitoSugar
 import play.api.mvc.Result
 import play.api.mvc.Results.Redirect
 import play.api.test.FakeRequest
-import services.AccountService
 import uk.gov.hmrc.auth.core.{Enrolment, EnrolmentIdentifier, Enrolments}
 import utils.FutureSyntax.FutureOps
 
@@ -41,20 +40,17 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class GetRegistrationActionSpec extends SpecBase with MockitoSugar with EitherValues with BeforeAndAfterEach {
-
-  private val mockAccountService: AccountService = mock[AccountService]
+  
   private val mockIntermediaryRegistrationConnector: IntermediaryRegistrationConnector = mock[IntermediaryRegistrationConnector]
   private val mockRegistrationConnector: RegistrationConnector = mock[RegistrationConnector]
   private val mockAppConfig: FrontendAppConfig = mock[FrontendAppConfig]
 
   class Harness(
-                 accountService: AccountService,
                  intermediaryRegistrationConnector: IntermediaryRegistrationConnector,
                  registrationConnector: RegistrationConnector,
                  appConfig: FrontendAppConfig,
                  requestedIossNumber: String
                ) extends GetRegistrationAction(
-    accountService,
     intermediaryRegistrationConnector,
     registrationConnector,
     appConfig,
@@ -147,7 +143,6 @@ class GetRegistrationActionSpec extends SpecBase with MockitoSugar with EitherVa
 
   override def beforeEach(): Unit = {
     Mockito.reset(
-      mockAccountService,
       mockIntermediaryRegistrationConnector,
       mockRegistrationConnector,
       mockAppConfig,
@@ -184,7 +179,6 @@ class GetRegistrationActionSpec extends SpecBase with MockitoSugar with EitherVa
         when(mockRegistrationConnector.get(any())(any())) thenReturn registrationWrapper.toFuture
 
         val action = new Harness(
-          mockAccountService,
           mockIntermediaryRegistrationConnector,
           mockRegistrationConnector,
           mockAppConfig,
@@ -228,7 +222,6 @@ class GetRegistrationActionSpec extends SpecBase with MockitoSugar with EitherVa
         )
 
         val action = new Harness(
-          mockAccountService,
           mockIntermediaryRegistrationConnector,
           mockRegistrationConnector,
           mockAppConfig,
@@ -266,7 +259,6 @@ class GetRegistrationActionSpec extends SpecBase with MockitoSugar with EitherVa
         )
 
         when(mockAppConfig.iossEnrolment) thenReturn "HMRC-IOSS-ORG"
-        when(mockAccountService.getLatestAccount()(any())) thenReturn currentIoss.toFuture
         when(mockRegistrationConnector.get(any())(any())) thenReturn registrationWrapper.toFuture
 
         val request = IdentifierRequest(
@@ -277,7 +269,6 @@ class GetRegistrationActionSpec extends SpecBase with MockitoSugar with EitherVa
         )
 
         val action = new Harness(
-          mockAccountService,
           mockIntermediaryRegistrationConnector,
           mockRegistrationConnector,
           mockAppConfig,
@@ -328,7 +319,6 @@ class GetRegistrationActionSpec extends SpecBase with MockitoSugar with EitherVa
           )
 
           val action = new Harness(
-            mockAccountService,
             mockIntermediaryRegistrationConnector,
             mockRegistrationConnector,
             mockAppConfig,
@@ -372,7 +362,6 @@ class GetRegistrationActionSpec extends SpecBase with MockitoSugar with EitherVa
           )
 
           when(mockRegistrationConnector.get(any())(any())) thenReturn registrationWrapper.toFuture
-          when(mockAccountService.getLatestAccount()(any())) thenReturn iossNumber.toFuture
 
           val request = IdentifierRequest(
             FakeRequest(),
@@ -382,7 +371,6 @@ class GetRegistrationActionSpec extends SpecBase with MockitoSugar with EitherVa
           )
 
           val action = new Harness(
-            mockAccountService,
             mockIntermediaryRegistrationConnector,
             mockRegistrationConnector,
             mockAppConfig,
@@ -427,7 +415,6 @@ class GetRegistrationActionSpec extends SpecBase with MockitoSugar with EitherVa
             registrationWrapper.toFuture
 
           val action = new Harness(
-            mockAccountService,
             mockIntermediaryRegistrationConnector,
             mockRegistrationConnector,
             mockAppConfig,
@@ -476,7 +463,6 @@ class GetRegistrationActionSpec extends SpecBase with MockitoSugar with EitherVa
           )
 
           val action = new Harness(
-            mockAccountService,
             mockIntermediaryRegistrationConnector,
             mockRegistrationConnector,
             mockAppConfig,
@@ -504,7 +490,6 @@ class GetRegistrationActionSpec extends SpecBase with MockitoSugar with EitherVa
         )
 
         val action = new Harness(
-          mockAccountService,
           mockIntermediaryRegistrationConnector,
           mockRegistrationConnector,
           mockAppConfig,
@@ -535,7 +520,6 @@ class GetRegistrationActionSpec extends SpecBase with MockitoSugar with EitherVa
         )
 
         val action = new Harness(
-          mockAccountService,
           mockIntermediaryRegistrationConnector,
           mockRegistrationConnector,
           mockAppConfig,
@@ -559,7 +543,6 @@ class GetRegistrationActionSpec extends SpecBase with MockitoSugar with EitherVa
         )
 
         val action = new Harness(
-          mockAccountService,
           mockIntermediaryRegistrationConnector,
           mockRegistrationConnector,
           mockAppConfig,

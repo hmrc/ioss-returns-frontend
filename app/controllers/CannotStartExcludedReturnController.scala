@@ -44,7 +44,7 @@ class CannotStartExcludedReturnController @Inject()(
 
       val appropriateDashboardUrl: String =
         dashboardNavigationService.getAppropriateDashboardUrl(
-          request.isIntermediary, intermediaryEnrolmentsExist, iossEnrolmentsExist, request.iossNumber
+          request.isIntermediary, intermediaryEnrolmentsExist, iossEnrolmentsExist
         )
 
       Ok(view(request.iossNumber, appropriateDashboardUrl)).toFuture

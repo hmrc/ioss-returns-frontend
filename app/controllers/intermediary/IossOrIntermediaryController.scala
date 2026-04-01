@@ -40,34 +40,39 @@ class IossOrIntermediaryController @Inject()(
   protected val controllerComponents: MessagesControllerComponents = cc
   private val form = formProvider()
   
-  def onPageLoad(iossNumber: String): Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced(iossNumber) {
+  def onPageLoad(): Action[AnyContent] = cc.auth {
     implicit request =>
 
       val allEnrolments: Seq[String] = findAllEnrolments(request.enrolments)
       val totalNumberOfEnrolments: Int = allEnrolments.size
 
-      Ok(view(form, request.iossNumber, allEnrolments, totalNumberOfEnrolments))
+      Ok(view(form, allEnrolments, totalNumberOfEnrolments))
   }
 
-  def onSubmit(iossNumber: String): Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced(iossNumber).async {
+  def onSubmit(): Action[AnyContent] = cc.auth.async {
     implicit request =>
+      
+      findIntermediaryFromEnrolments(request.enrolments).headOption match {
+        case Some(intermediaryNumber) =>
+          val allEnrolments: Seq[String] = findAllEnrolments(request.enrolments)
+          val totalNumberOfEnrolments: Int = allEnrolments.size
 
-      val intermediaryNumber = request.intermediaryNumber.getOrElse("")
-      val allEnrolments: Seq[String] = findAllEnrolments(request.enrolments)
-      val totalNumberOfEnrolments: Int = allEnrolments.size
+          form.bindFromRequest().fold(
+            formWithErrors =>
+              BadRequest(view(formWithErrors, allEnrolments, totalNumberOfEnrolments)).toFuture,
 
-      form.bindFromRequest().fold(
-        formWithErrors =>
-          BadRequest(view(formWithErrors, request.iossNumber, allEnrolments, totalNumberOfEnrolments)).toFuture,
+            value =>
 
-        value =>
+              if (value == intermediaryNumber) {
+                Redirect(frontendAppConfig.intermediaryDashboardUrl).toFuture
+              } else {
+                Redirect(controllers.routes.YourAccountController.onPageLoad(waypoints = EmptyWaypoints)).toFuture
+              }
+          )
+          
+        case _ => Redirect(controllers.routes.YourAccountController.onPageLoad(waypoints = EmptyWaypoints)).toFuture
+      }
 
-          if (value == intermediaryNumber) {
-            Redirect(frontendAppConfig.intermediaryDashboardUrl).toFuture
-          } else {
-            Redirect(controllers.routes.YourAccountController.onPageLoad(waypoints = EmptyWaypoints)).toFuture
-          }
-      )
   }
 
   private def findAllEnrolments(enrolments: Enrolments): Seq[String] = {

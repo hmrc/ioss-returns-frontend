@@ -34,15 +34,15 @@ class IndexController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad: Action[AnyContent] = cc.authAndGetRegistrationWithoutUrlIoss {
+  def onPageLoad: Action[AnyContent] = cc.auth {
     implicit request =>
 
-      val iossEnrolmentsExist: Boolean = findIossFromEnrolments(request.enrolments).nonEmpty
-      val intermediaryEnrolmentsExist: Boolean = findIntermediaryFromEnrolments(request.enrolments).nonEmpty
+      val maybeIossEnrolment = findIossFromEnrolments(request.enrolments).headOption
+      val maybeIntermediaryEnrolment = findIntermediaryFromEnrolments(request.enrolments).headOption
 
-      (request.isIntermediary, intermediaryEnrolmentsExist, iossEnrolmentsExist) match {
-        case (true, true, true) => Redirect(routes.IossOrIntermediaryController.onPageLoad(request.iossNumber))
-        case (true, true, false) => Redirect(appConfig.intermediaryDashboardUrl)
+      (maybeIossEnrolment, maybeIntermediaryEnrolment) match {
+        case (Some(_), Some(_)) => Redirect(routes.IossOrIntermediaryController.onPageLoad())
+        case (None, Some(_)) => Redirect(appConfig.intermediaryDashboardUrl)
         case _ => Redirect(controllers.routes.YourAccountController.onPageLoad(waypoints = EmptyWaypoints))
       }
   }

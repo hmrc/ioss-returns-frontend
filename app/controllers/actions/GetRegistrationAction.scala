@@ -23,7 +23,6 @@ import logging.Logging
 import models.requests.{IdentifierRequest, RegistrationRequest}
 import play.api.mvc.Results.Redirect
 import play.api.mvc.{ActionRefiner, Result}
-import services.AccountService
 import uk.gov.hmrc.auth.core.Enrolments
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
@@ -33,7 +32,6 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class GetRegistrationAction(
-                             accountService: AccountService,
                              intermediaryRegistrationConnector: IntermediaryRegistrationConnector,
                              registrationConnector: RegistrationConnector,
                              config: FrontendAppConfig,
@@ -43,14 +41,14 @@ class GetRegistrationAction(
 
   override protected def refine[A](request: IdentifierRequest[A]): Future[Either[Result, RegistrationRequest[A]]] = {
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request.request, request.request.session)
+
     (for {
-      maybeIossNumberFromEnrolments <- findIossFromEnrolments(request.enrolments)
       maybeIntermediaryNumber <- findIntermediaryFromEnrolments(request.enrolments)
+      hasUrlIossEnrolment = findAllIossFromEnrolments(request.enrolments).contains(requestedIossNumber)
     } yield {
-      (maybeIossNumberFromEnrolments, maybeIntermediaryNumber) match {
-        case (Some(iossNumberFromEnrolments), _) if iossNumberFromEnrolments == requestedIossNumber
-          && findAllIossFromEnrolments(request.enrolments).contains(requestedIossNumber) =>
-          getIossRegistrationAndMakeRequest(iossNumberFromEnrolments, maybeIntermediaryNumber, request = request)
+      (hasUrlIossEnrolment, maybeIntermediaryNumber) match {
+        case (true, _) =>
+          getIossRegistrationAndMakeRequest(requestedIossNumber, maybeIntermediaryNumber, request = request)
 
         case (_, Some(intermediaryNumber)) =>
           checkIntermediaryAccessAndFormRequest(intermediaryNumber, requestedIossNumber, request)
@@ -121,16 +119,6 @@ class GetRegistrationAction(
       .map(_.collectFirst { case (intermediaryNumber, true) => intermediaryNumber })
   }
 
-  private def findIossFromEnrolments(enrolments: Enrolments)(implicit hc: HeaderCarrier): Future[Option[String]] = {
-
-    findAllIossFromEnrolments(enrolments) match {
-      case firstEnrolment :: Nil => Some(firstEnrolment).toFuture
-      case multipleEnrolments if multipleEnrolments.nonEmpty =>
-        accountService.getLatestAccount().map(x => Some(x))
-      case _ => None.toFuture
-    }
-  }
-
   private def findAllIossFromEnrolments(enrolments: Enrolments): Seq[String] = {
     enrolments
       .enrolments
@@ -156,14 +144,12 @@ class GetRegistrationAction(
 }
 
 class GetRegistrationActionProvider @Inject(
-                                             accountService: AccountService,
                                              intermediaryRegistrationConnector: IntermediaryRegistrationConnector,
                                              registrationConnector: RegistrationConnector,
                                              config: FrontendAppConfig
                                            )(implicit val executionContext: ExecutionContext) {
   def apply(requestedIossNumber: String): GetRegistrationAction = {
     new GetRegistrationAction(
-      accountService,
       intermediaryRegistrationConnector,
       registrationConnector,
       config,

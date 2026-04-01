@@ -22,7 +22,6 @@ import models.RegistrationWrapper
 import models.requests.{IdentifierRequest, RegistrationRequest}
 import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.mvc.Result
-import services.AccountService
 import uk.gov.hmrc.auth.core.{Enrolment, Enrolments}
 import utils.FutureSyntax.*
 
@@ -36,7 +35,6 @@ class FakeGetRegistrationAction(
                                  requestedIossNumber: String
                                )
   extends GetRegistrationAction(
-    mock[AccountService],
     mock[IntermediaryRegistrationConnector],
     mock[RegistrationConnector],
     mock[FrontendAppConfig],
@@ -65,7 +63,6 @@ class FakeGetRegistrationActionProvider(
                                          enrolments: Option[Enrolments] = None
                                        )
 extends GetRegistrationActionProvider(
-  mock[AccountService],
   mock[IntermediaryRegistrationConnector],
   mock[RegistrationConnector],
   mock[FrontendAppConfig]

@@ -45,7 +45,7 @@ class NoOtherPeriodsAvailableController @Inject()(
       val intermediaryEnrolmentsExist: Boolean = findIntermediaryFromEnrolments(request.enrolments).nonEmpty
 
       val redirectUrl: String = dashboardNavigationService.getAppropriateDashboardUrl(
-        request.isIntermediary, intermediaryEnrolmentsExist, iossEnrolmentsExist, request.iossNumber
+        request.isIntermediary, intermediaryEnrolmentsExist, iossEnrolmentsExist
       )
 
       Ok(view(waypoints, request.iossNumber, request.isIntermediary, companyName, redirectUrl))

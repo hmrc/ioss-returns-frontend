@@ -75,7 +75,7 @@ class SavedProgressController @Inject()(
             } yield {
 
               val determinedRedirect = (request.isIntermediary, intermediaryEnrolmentsExist, iossEnrolmentsExist) match {
-                case (true, true, true) => Some(controllers.intermediary.routes.IossOrIntermediaryController.onPageLoad(request.iossNumber).url)
+                case (true, true, true) => Some(controllers.intermediary.routes.IossOrIntermediaryController.onPageLoad().url)
                 case (true, true, false) => Some(appConfig.intermediaryDashboardUrl)
                 case _ => externalUrl
               }

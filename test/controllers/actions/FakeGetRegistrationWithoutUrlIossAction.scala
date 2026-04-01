@@ -29,6 +29,7 @@ import utils.FutureSyntax.FutureOps
 
 import scala.concurrent.{ExecutionContext, Future}
 
+// TODO -> Need this????
 class FakeGetRegistrationWithoutUrlIossAction(
                                                registrationWrapper: RegistrationWrapper,
                                                enrolments: Option[Enrolments] = None,
@@ -63,7 +64,7 @@ class FakeGetRegistrationWithoutUrlIossAction(
       case Some(e) =>
         e.enrolments.head.identifiers.head.value
       case _ =>
-        iossEnrolment.enrolments.head.identifiers.head.value
+        "IM9001234567"
     }
   }
 }

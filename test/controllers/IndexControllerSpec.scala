@@ -18,7 +18,6 @@ package controllers
 
 import base.SpecBase
 import config.FrontendAppConfig
-import controllers.actions.FakeGetRegistrationWithoutUrlIossAction
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import uk.gov.hmrc.auth.core.{Enrolment, EnrolmentIdentifier, Enrolments}
@@ -64,15 +63,8 @@ class IndexControllerSpec extends SpecBase {
           )
         )
 
-        val fakeAction =
-          new FakeGetRegistrationWithoutUrlIossAction(
-            registrationWrapper = registrationWrapper,
-            enrolments = Some(bothIossAndIntermediaryEnrolments),
-            maybeIntermediaryNumber = Some(intermediaryNumber)
-          )
-
         val application = applicationBuilder(
-          getRegistrationWithoutUrlIossAction = Some(fakeAction)
+          enrolments = Some(bothIossAndIntermediaryEnrolments)
         ).build()
 
         running(application) {
@@ -83,7 +75,7 @@ class IndexControllerSpec extends SpecBase {
 
           status(result) `mustBe` SEE_OTHER
           redirectLocation(result).value `mustBe`
-            controllers.intermediary.routes.IossOrIntermediaryController.onPageLoad(iossNumber).url
+            controllers.intermediary.routes.IossOrIntermediaryController.onPageLoad().url
         }
       }
 
@@ -101,15 +93,8 @@ class IndexControllerSpec extends SpecBase {
           )
         )
 
-        val fakeAction =
-          new FakeGetRegistrationWithoutUrlIossAction(
-            registrationWrapper = registrationWrapper,
-            enrolments = Some(onlyIntermediaryEnrolment),
-            maybeIntermediaryNumber = Some(intermediaryNumber)
-          )
-
         val application = applicationBuilder(
-          getRegistrationWithoutUrlIossAction = Some(fakeAction)
+          enrolments = Some(onlyIntermediaryEnrolment)
         ).build()
 
         running(application) {
