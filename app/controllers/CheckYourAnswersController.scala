@@ -137,7 +137,7 @@ class CheckYourAnswersController @Inject()(
     } else {
       Seq(
         (None, businessSummaryList),
-        (Some("checkYourAnswers.sales.heading"), salesFromEuSummaryList)
+        (None, salesFromEuSummaryList)
       )
     }
 
