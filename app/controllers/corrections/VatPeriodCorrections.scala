@@ -72,7 +72,7 @@ object VatPeriodCorrectionsOpSyntax {
               val correctionPeriodsWhereCountryCorrectionsEntered: List[Period] = request.userAnswers.get(DeriveCompletedCorrectionPeriods).getOrElse(List())
 
               val uncompletedCorrectionPeriods: List[Period] = allPeriodsOfCompletedStatuses
-                .map(Period.fromKey(_))
+                .map(Period.fromKey)
                 .diff(correctionPeriodsWhereCountryCorrectionsEntered).distinct.toList
 
               if (uncompletedCorrectionPeriods.nonEmpty) {
