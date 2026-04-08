@@ -127,7 +127,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 ).flatten
             ).withCard(
               card = Card(
-                title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.salesToEuNi.title"))))
+                title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.salesToEuNi.title")), headingLevel = Some(3)))
               )
             )
 
@@ -140,7 +140,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
               rows = PreviousReturnsVatOwedSummary.row(vatReturn)
             ).withCard(
               card = Card(
-                title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.vatOwed.titleWithCorrections"))))
+                title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.vatOwed.titleWithCorrections")), headingLevel = Some(3)))
               )
             )
 
@@ -207,7 +207,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 ).flatten
             ).withCard(
               card = Card(
-                title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.salesToEuNi.title"))))
+                title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.salesToEuNi.title")), headingLevel = Some(3)))
               )
             )
 
@@ -220,7 +220,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
               rows = PreviousReturnsVatOwedSummary.row(vatReturnNoCorrections)
             ).withCard(
               card = Card(
-                title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.vatOwed.title"))))
+                title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.vatOwed.title")), headingLevel = Some(3)))
               )
             )
 
@@ -298,7 +298,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 ).flatten
             ).withCard(
               card = Card(
-                title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.salesToEuNi.title"))))
+                title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.salesToEuNi.title")), headingLevel = Some(3)))
               )
             )
 
@@ -311,7 +311,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
               rows = PreviousReturnsVatOwedSummary.row(vatReturnPositiveCorrections)
             ).withCard(
               card = Card(
-                title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.vatOwed.titleWithCorrections"))))
+                title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.vatOwed.titleWithCorrections")), headingLevel = Some(3)))
               )
             )
 
@@ -474,7 +474,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 ).flatten
             ).withCard(
               card = Card(
-                title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.salesToEuNi.title"))))
+                title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.salesToEuNi.title")), headingLevel = Some(3)))
               )
             )
 
@@ -487,7 +487,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
               rows = PreviousReturnsVatOwedSummary.row(vatReturn)
             ).withCard(
               card = Card(
-                title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.vatOwed.titleWithCorrections"))))
+                title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.vatOwed.titleWithCorrections")), headingLevel = Some(3)))
               )
             )
 
@@ -592,7 +592,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                   ).flatten
               ).withCard(
                 card = Card(
-                  title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.salesToEuNi.title"))))
+                  title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.salesToEuNi.title")), headingLevel = Some(3)))
                 )
               )
 
@@ -605,7 +605,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 rows = PreviousReturnsVatOwedSummary.row(vatReturnNoCorrections)
               ).withCard(
                 card = Card(
-                  title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.vatOwed.title"))))
+                  title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.vatOwed.title")), headingLevel = Some(3)))
                 )
               )
 
@@ -709,7 +709,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                   ).flatten
               ).withCard(
                 card = Card(
-                  title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.salesToEuNi.title"))))
+                  title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.salesToEuNi.title")), headingLevel = Some(3)))
                 )
               )
 
@@ -722,7 +722,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 rows = PreviousReturnsVatOwedSummary.row(vatReturnNoCorrections)
               ).withCard(
                 card = Card(
-                  title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.vatOwed.title"))))
+                  title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.vatOwed.title")), headingLevel = Some(3)))
                 )
               )
 
@@ -816,7 +816,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 ).flatten
             ).withCard(
               card = Card(
-                title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.salesToEuNi.title"))))
+                title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.salesToEuNi.title")), headingLevel = Some(3)))
               )
             )
 
@@ -829,7 +829,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
               rows = PreviousReturnsVatOwedSummary.row(vatReturn)
             ).withCard(
               card = Card(
-                title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.vatOwed.titleWithCorrections"))))
+                title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.vatOwed.titleWithCorrections")), headingLevel = Some(3)))
               )
             )
 
@@ -898,7 +898,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 ).flatten
             ).withCard(
               card = Card(
-                title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.salesToEuNi.title"))))
+                title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.salesToEuNi.title")), headingLevel = Some(3)))
               )
             )
 
@@ -911,7 +911,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
               rows = PreviousReturnsVatOwedSummary.row(vatReturnNoCorrections)
             ).withCard(
               card = Card(
-                title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.vatOwed.title"))))
+                title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.vatOwed.title")), headingLevel = Some(3)))
               )
             )
 
@@ -989,7 +989,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 ).flatten
             ).withCard(
               card = Card(
-                title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.salesToEuNi.title"))))
+                title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.salesToEuNi.title")), headingLevel = Some(3)))
               )
             )
 
@@ -1002,7 +1002,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
               rows = PreviousReturnsVatOwedSummary.row(vatReturnPositiveCorrections)
             ).withCard(
               card = Card(
-                title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.vatOwed.titleWithCorrections"))))
+                title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.vatOwed.titleWithCorrections")), headingLevel = Some(3)))
               )
             )
 
@@ -1170,7 +1170,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 ).flatten
             ).withCard(
               card = Card(
-                title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.salesToEuNi.title"))))
+                title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.salesToEuNi.title")), headingLevel = Some(3)))
               )
             )
 
@@ -1183,7 +1183,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
               rows = PreviousReturnsVatOwedSummary.row(vatReturn)
             ).withCard(
               card = Card(
-                title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.vatOwed.titleWithCorrections"))))
+                title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.vatOwed.titleWithCorrections")), headingLevel = Some(3)))
               )
             )
 
@@ -1290,7 +1290,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                   ).flatten
               ).withCard(
                 card = Card(
-                  title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.salesToEuNi.title"))))
+                  title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.salesToEuNi.title")), headingLevel = Some(3)))
                 )
               )
 
@@ -1303,7 +1303,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 rows = PreviousReturnsVatOwedSummary.row(vatReturnNoCorrections)
               ).withCard(
                 card = Card(
-                  title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.vatOwed.title"))))
+                  title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.vatOwed.title")), headingLevel = Some(3)))
                 )
               )
 
@@ -1409,7 +1409,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                   ).flatten
               ).withCard(
                 card = Card(
-                  title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.salesToEuNi.title"))))
+                  title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.salesToEuNi.title")), headingLevel = Some(3)))
                 )
               )
 
@@ -1422,7 +1422,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
                 rows = PreviousReturnsVatOwedSummary.row(vatReturnNoCorrections)
               ).withCard(
                 card = Card(
-                  title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.vatOwed.title"))))
+                  title = Some(CardTitle(content = HtmlContent(msgs("submittedReturnForPeriod.vatOwed.title")), headingLevel = Some(3)))
                 )
               )
 

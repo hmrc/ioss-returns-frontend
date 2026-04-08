@@ -150,7 +150,7 @@ class SubmittedReturnForPeriodController @Inject()(
         ).flatten
     ).withCard(
       card = Card(
-        title = Some(CardTitle(content = HtmlContent(messages("submittedReturnForPeriod.salesToEuNi.title"))))
+        title = Some(CardTitle(content = HtmlContent(messages("submittedReturnForPeriod.salesToEuNi.title")), headingLevel = Some(3)))
       )
     )
   }
@@ -164,7 +164,7 @@ class SubmittedReturnForPeriodController @Inject()(
           HtmlContent(messages("submittedReturnForPeriod.vatOwed.title"))
         } else {
           HtmlContent(messages("submittedReturnForPeriod.vatOwed.titleWithCorrections"))
-        }))
+        }, headingLevel = Some(3)))
       )
     )
   }
