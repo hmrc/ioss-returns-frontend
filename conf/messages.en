@@ -690,10 +690,10 @@ dataError.title = There is an error in the file you uploaded
 dataError.heading = There is an error in the file you uploaded
 dataError.title.plural = There are {0} errors in the file you uploaded
 dataError.heading.plural = There are {0} errors in the file you uploaded
-dataError.subheading = Do you want to try uploading it again?
+dataError.subheading = Do you want to upload it again?
 dataError.yes = Yes
 dataError.no = No, enter the return manually
-dataError.error.required = Select yes if you want to try uploading it again
+dataError.error.required = Select yes if you want to upload it again
 dataError.change.hidden = error in the file you uploaded
 
 dataError.errorMessage.incorrectCountry.p1 = The country in cell {0} has the wrong name.
@@ -720,7 +720,7 @@ dataError.errorMessage.genericError.p1 = We cannot process your file because the
 dataError.errorMessage.genericErrors.p2 = Make sure the file:
 dataError.errorMessage.genericErrors.bullet1 = has country names in the correct format
 dataError.errorMessage.genericErrors.bullet2 = uses correct number formats for VAT rates and cash values
-dataError.errorMessage.genericErrors.bullet3 = does not contain any inappropriate characters or symbols
+dataError.errorMessage.genericErrors.bullet3 = only includes numbers, letters and the symbols £ , . %
 dataError.errorMessage.genericErrors.bullet4 = does not have any blank cells or rows between entries
 dataError.errorMessage.genericErrors.p3 = You can check the notes page on the template for more information.
 
