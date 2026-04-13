@@ -34,7 +34,7 @@ class DataRetrievalAction(sessionRepository: SessionRepository, iossNumber: Stri
         request.enrolments,
         request.credentials,
         request.vrn,
-        iossNumber, // TODO check this
+        iossNumber,
         request.companyName,
         request.registrationWrapper,
         request.intermediaryNumber,
