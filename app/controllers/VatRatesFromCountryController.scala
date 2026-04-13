@@ -44,7 +44,7 @@ class VatRatesFromCountryController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(waypoints: Waypoints, countryIndex: Index): Action[AnyContent] = cc.authAndRequireData().async {
+  def onPageLoad(waypoints: Waypoints, iossNumber: String, countryIndex: Index): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
     implicit request => {
       getCountry(waypoints, countryIndex) { country =>
         getAllVatRatesFromCountry(waypoints, countryIndex) { currentVatRatesAnswers =>
@@ -58,7 +58,7 @@ class VatRatesFromCountryController @Inject()(
 
             val nextVatRateIndex = Index(currentVatRatesAnswers.vatRatesFromCountry.map(_.size).getOrElse(0))
 
-            val answers = request.userAnswers.get(VatRatesFromCountryPage(countryIndex, nextVatRateIndex))
+            val answers = request.userAnswers.get(VatRatesFromCountryPage(request.iossNumber, countryIndex, nextVatRateIndex))
 
             val form: Form[List[VatRateFromCountry]] = formProvider(allVatRates, request.isIntermediary)
 
@@ -71,12 +71,12 @@ class VatRatesFromCountryController @Inject()(
               case 1 =>
                 answers match {
                   case Some(_) =>
-                    Redirect(RemainingVatRateFromCountryPage(countryIndex, nextVatRateIndex).route(waypoints)).toFuture
+                    Redirect(RemainingVatRateFromCountryPage(request.iossNumber, countryIndex, nextVatRateIndex).route(waypoints)).toFuture
                   case _ =>
                     addVatRateAndRedirect(currentVatRatesAnswers, remainingVatRates.toList, countryIndex, nextVatRateIndex, waypoints)
                 }
               case _ =>
-                Ok(view(preparedForm, waypoints, period, countryIndex, country, utils.ItemsHelper.checkboxItems(allVatRates), request.isIntermediary, request.companyName)).toFuture
+                Ok(view(preparedForm, waypoints, request.iossNumber, period, countryIndex, country, utils.ItemsHelper.checkboxItems(allVatRates), request.isIntermediary, request.companyName)).toFuture
             }
 
           }).flatten
@@ -85,7 +85,7 @@ class VatRatesFromCountryController @Inject()(
     }
   }
 
-  def onSubmit(waypoints: Waypoints, countryIndex: Index): Action[AnyContent] = cc.authAndRequireData().async {
+  def onSubmit(waypoints: Waypoints, iossNumber: String, countryIndex: Index): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
     implicit request =>
       getCountry(waypoints, countryIndex) { country =>
         getAllVatRatesFromCountry(waypoints, countryIndex) { currentVatRatesAnswers =>
@@ -100,7 +100,7 @@ class VatRatesFromCountryController @Inject()(
             val form = formProvider(allVatRates, request.isIntermediary)
             form.bindFromRequest().fold(
               formWithErrors =>
-                BadRequest(view(formWithErrors, waypoints, period, countryIndex, country, utils.ItemsHelper.checkboxItems(remainingVatRates).toList, request.isIntermediary, request.companyName)).toFuture,
+                BadRequest(view(formWithErrors, waypoints, request.iossNumber, period, countryIndex, country, utils.ItemsHelper.checkboxItems(remainingVatRates).toList, request.isIntermediary, request.companyName)).toFuture,
 
               value => {
                 val nextVatRateIndex = Index(currentVatRatesAnswers.vatRatesFromCountry.map(_.size).getOrElse(0))
@@ -147,10 +147,10 @@ class VatRatesFromCountryController @Inject()(
       _ <- cc.sessionRepository.set(updatedAnswers)
     } yield {
       if(additionalVatRates.isEmpty && firstIncompleteSales.isEmpty) {
-        Redirect(CheckSalesPage(countryIndex, None).route(waypoints))
+        Redirect(CheckSalesPage(request.iossNumber, countryIndex, None).route(waypoints))
       } else {
         Redirect(
-          VatRatesFromCountryPage(countryIndex, firstIncompleteSales.getOrElse(nextVatRateIndex))
+          VatRatesFromCountryPage(request.iossNumber, countryIndex, firstIncompleteSales.getOrElse(nextVatRateIndex))
           .navigate(waypoints, request.userAnswers, updatedAnswers).route
         )
       }

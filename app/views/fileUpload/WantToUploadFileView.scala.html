@@ -22,11 +22,11 @@
     govukButton: GovukButton
 )
 
-@(form: Form[_], waypoints: Waypoints, period: Period, isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, iossNumber: String, period: Period, isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = title(form, messages("wantToUploadFile.title"))) {
+@layout(pageTitle = title(form, messages("wantToUploadFile.title")), maybeIossNumber = Some(iossNumber)) {
 
-    @formHelper(action = controllers.fileUpload.routes.WantToUploadFileController.onSubmit(waypoints), Symbol("autoComplete") -> "off") {
+    @formHelper(action = controllers.fileUpload.routes.WantToUploadFileController.onSubmit(waypoints, iossNumber), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))
@@ -39,7 +39,7 @@
                     content = messages("wantToUploadFile.heading"),
                     caption = if(isIntermediary) companyName + period.displayText else period.displayText,
                     classes = "govuk-fieldset__legend--l"
-                ).asPageHeading(),
+                ),
                 items = Seq(
                     RadioItem(
                         value   = Some("true"),

@@ -26,9 +26,9 @@
         govukButton: GovukButton
 )
 
-@(form: Form[_], waypoints: Waypoints, payments: List[Payment], paymentError: Boolean)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, iossNumber: String, payments: List[Payment], paymentError: Boolean)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = title(form, messages("whichVatPeriodToPay.title"))) {
+@layout(pageTitle = title(form, messages("whichVatPeriodToPay.title")), maybeIossNumber = Some(iossNumber)) {
 
     @if(paymentError) {
         <div class="govuk-notification-banner" role="region" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
@@ -45,7 +45,7 @@
         </div>
     }
 
-    @formHelper(action = routes.WhichPreviousRegistrationVatPeriodToPayController.onSubmit(waypoints), Symbol("autoComplete") -> "off") {
+    @formHelper(action = routes.WhichPreviousRegistrationVatPeriodToPayController.onSubmit(waypoints, iossNumber), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form, errorLinkOverrides = Map("value" -> "value_0")))

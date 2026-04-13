@@ -18,7 +18,7 @@ package controllers
 
 import base.SpecBase
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import views.html.NoLongerAbleToViewReturnView
 
 class NoLongerAbleToViewReturnControllerSpec extends SpecBase {
@@ -30,14 +30,14 @@ class NoLongerAbleToViewReturnControllerSpec extends SpecBase {
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
       running(application) {
-        val request = FakeRequest(GET, routes.NoLongerAbleToViewReturnController.onPageLoad().url)
+        val request = FakeRequest(GET, routes.NoLongerAbleToViewReturnController.onPageLoad(iossNumber).url)
 
         val result = route(application, request).value
 
         val view = application.injector.instanceOf[NoLongerAbleToViewReturnView]
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view()(request, messages(application)).toString
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(iossNumber)(request, messages(application)).toString
       }
     }
   }

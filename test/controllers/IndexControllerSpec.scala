@@ -18,7 +18,6 @@ package controllers
 
 import base.SpecBase
 import config.FrontendAppConfig
-import controllers.actions.FakeGetRegistrationActionProvider
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import uk.gov.hmrc.auth.core.{Enrolment, EnrolmentIdentifier, Enrolments}
@@ -36,56 +35,49 @@ class IndexControllerSpec extends SpecBase {
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.YourAccountController.onPageLoad(waypoints).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` routes.YourAccountController.onPageLoad(waypoints).url
       }
     }
 
     "when an intermediary is present" - {
 
-     "must redirect to IossOrIntermediary page if both ioss and intermediary enrolments are present" in {
+      "must redirect to IossOrIntermediary page if both ioss and intermediary enrolments are present" in {
 
-       val bothIossAndIntermediaryEnrolments: Enrolments = Enrolments(
-         Set(
-           Enrolment(
-             key = iossEnrolmentKey,
-             identifiers = Seq(
-               EnrolmentIdentifier("IOSSNumber", iossNumber)
-             ),
-             state = "Activated"
-           ),
-           Enrolment(
-             key = intermediaryEnrolmentKey,
-             identifiers = Seq(
-               EnrolmentIdentifier("IntNumber", intermediaryNumber)
-             ),
-             state = "Activated"
-           )
-         )
-       )
+        val bothIossAndIntermediaryEnrolments: Enrolments = Enrolments(
+          Set(
+            Enrolment(
+              key = iossEnrolmentKey,
+              identifiers = Seq(
+                EnrolmentIdentifier("IOSSNumber", iossNumber)
+              ),
+              state = "Activated"
+            ),
+            Enrolment(
+              key = intermediaryEnrolmentKey,
+              identifiers = Seq(
+                EnrolmentIdentifier("IntNumber", intermediaryNumber)
+              ),
+              state = "Activated"
+            )
+          )
+        )
 
-       val fakeProvider =
-         new FakeGetRegistrationActionProvider(
-           registrationWrapper,
-           maybeIntermediaryNumber = Some(intermediaryNumber),
-           enrolments = Some(bothIossAndIntermediaryEnrolments)
-         )
+        val application = applicationBuilder(
+          enrolments = Some(bothIossAndIntermediaryEnrolments)
+        ).build()
 
-       val application = applicationBuilder(
-         getRegistrationAction = Some(fakeProvider)
-       ).build()
+        running(application) {
 
-       running(application) {
+          val request = FakeRequest(GET, routes.IndexController.onPageLoad.url)
 
-         val request = FakeRequest(GET, routes.IndexController.onPageLoad.url)
+          val result = route(application, request).value
 
-         val result = route(application, request).value
-
-         status(result) mustEqual SEE_OTHER
-         redirectLocation(result).value mustEqual
-           controllers.intermediary.routes.IossOrIntermediaryController.onPageLoad().url
-       }
-     }
+          status(result) `mustBe` SEE_OTHER
+          redirectLocation(result).value `mustBe`
+            controllers.intermediary.routes.IossOrIntermediaryController.onPageLoad().url
+        }
+      }
 
       "must redirect to the intermediary dashboard if there are no ioss enrolments" in {
 
@@ -101,15 +93,8 @@ class IndexControllerSpec extends SpecBase {
           )
         )
 
-        val fakeProvider =
-          new FakeGetRegistrationActionProvider(
-            registrationWrapper,
-            maybeIntermediaryNumber = Some(intermediaryNumber),
-            enrolments = Some(onlyIntermediaryEnrolment)
-          )
-
         val application = applicationBuilder(
-          getRegistrationAction = Some(fakeProvider)
+          enrolments = Some(onlyIntermediaryEnrolment)
         ).build()
 
         running(application) {
@@ -119,8 +104,8 @@ class IndexControllerSpec extends SpecBase {
 
           val result = route(application, request).value
 
-          status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual config.intermediaryDashboardUrl
+          status(result) `mustBe` SEE_OTHER
+          redirectLocation(result).value `mustBe` config.intermediaryDashboardUrl
         }
       }
     }

@@ -63,7 +63,7 @@ class CheckYourAnswersController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndRequireData().async {
+  def onPageLoad(waypoints: Waypoints, iossNumber: String): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
     implicit request =>
 
       val isIntermediary = request.isIntermediary
@@ -98,6 +98,7 @@ class CheckYourAnswersController @Inject()(
         Ok(view(
           waypoints,
           summaryLists,
+          request.iossNumber,
           request.userAnswers.period,
           totalVatToCountries,
           totalVatOnSales,
@@ -117,11 +118,11 @@ class CheckYourAnswersController @Inject()(
                                   salesFromEuSummaryList: SummaryList,
                                   waypoints: Waypoints
                                 )(implicit messages: Messages): Seq[(Option[String], SummaryList)] =
-    if (request.userAnswers.get(CorrectPreviousReturnPage(0)).isDefined) {
+    if (request.userAnswers.get(CorrectPreviousReturnPage(request.iossNumber, 0)).isDefined) {
       val correctionsSummaryList = SummaryListViewModel(
         rows = Seq(
-          CorrectPreviousReturnSummary.row(request.userAnswers, waypoints, CheckYourAnswersPage),
-          CorrectionReturnPeriodSummary.getAllRows(request.userAnswers, waypoints, CheckYourAnswersPage)
+          CorrectPreviousReturnSummary.row(request.userAnswers, waypoints, CheckYourAnswersPage(request.iossNumber)),
+          CorrectionReturnPeriodSummary.getAllRows(request.userAnswers, waypoints, CheckYourAnswersPage(request.iossNumber))
         ).flatten
       ).withCard(
         card = Card(
@@ -144,9 +145,9 @@ class CheckYourAnswersController @Inject()(
   private def getSalesFromEuSummaryList(request: DataRequest[AnyContent], waypoints: Waypoints)(implicit messages: Messages) = {
     SummaryListViewModel(
       rows = Seq(
-        SoldGoodsSummary.row(request.userAnswers, waypoints, CheckYourAnswersPage),
-        TotalNetValueOfSalesSummary.row(request.userAnswers, salesAtVatRateService.getTotalNetSales(request.userAnswers), waypoints, CheckYourAnswersPage),
-        TotalVatOnSalesSummary.row(request.userAnswers, salesAtVatRateService.getTotalVatOnSales(request.userAnswers), waypoints, CheckYourAnswersPage)
+        SoldGoodsSummary.row(request.userAnswers, waypoints, CheckYourAnswersPage(request.iossNumber)),
+        TotalNetValueOfSalesSummary.row(request.userAnswers, salesAtVatRateService.getTotalNetSales(request.userAnswers), waypoints, CheckYourAnswersPage(request.iossNumber)),
+        TotalVatOnSalesSummary.row(request.userAnswers, salesAtVatRateService.getTotalVatOnSales(request.userAnswers), waypoints, CheckYourAnswersPage(request.iossNumber))
       ).flatten
     ).withCard(
       card = Card(
@@ -177,7 +178,7 @@ class CheckYourAnswersController @Inject()(
     summaryListFuture
   }
 
-  def onSubmit(waypoints: Waypoints, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndRequireData().async {
+  def onSubmit(waypoints: Waypoints, iossNumber: String, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
     implicit request =>
       obligationService.getFulfilledObligations(request.iossNumber).map(_.size).flatMap {
         fulfilledObligations =>
@@ -198,24 +199,24 @@ class CheckYourAnswersController @Inject()(
 
               (redirectToFirstError, incompletePromptShown) match {
                 case (Some(redirect), true) => Redirect(redirect).toFuture
-                case (Some(_), false) => Redirect(routes.CheckYourAnswersController.onPageLoad(waypoints)).toFuture
+                case (Some(_), false) => Redirect(routes.CheckYourAnswersController.onPageLoad(waypoints, request.iossNumber)).toFuture
                 case _ =>
                   coreVatReturnService.submitCoreVatReturn(userAnswers).flatMap { remainingTotalAmountVatDueGBP =>
                     auditService.audit(ReturnsAuditModel.build(userAnswers, SubmissionResult.Success))
                     userAnswers.set(TotalAmountVatDueGBPQuery, remainingTotalAmountVatDueGBP) match {
                       case Failure(exception) =>
                         logger.error(s"Couldn't update users answers with remaining owed vat ${exception.getMessage}", exception)
-                        Future.successful(Redirect(controllers.submissionResults.routes.ReturnSubmissionFailureController.onPageLoad().url))
+                        Redirect(controllers.submissionResults.routes.ReturnSubmissionFailureController.onPageLoad(request.iossNumber).url).toFuture
                       case Success(updatedAnswers) =>
                         cc.sessionRepository.set(updatedAnswers).map(_ =>
-                          Redirect(controllers.submissionResults.routes.SuccessfullySubmittedController.onPageLoad().url)
+                          Redirect(controllers.submissionResults.routes.SuccessfullySubmittedController.onPageLoad(request.iossNumber).url)
                         )
                     }
                   }.recoverWith {
                     case e: Exception =>
                       logger.error(s"Error while submitting VAT return ${e.getMessage}", e)
                       auditService.audit(ReturnsAuditModel.build(userAnswers, SubmissionResult.Failure))
-                      saveUserAnswersOnCoreError(controllers.submissionResults.routes.ReturnSubmissionFailureController.onPageLoad())
+                      saveUserAnswersOnCoreError(controllers.submissionResults.routes.ReturnSubmissionFailureController.onPageLoad(request.iossNumber))
                   }
               }
           }
@@ -223,7 +224,7 @@ class CheckYourAnswersController @Inject()(
   }
 
   private def saveUserAnswersOnCoreError(redirectLocation: Call)(implicit request: DataRequest[AnyContent]): Future[Result] = {
-    Future.fromTry(request.userAnswers.set(SavedProgressPage, routes.CheckYourAnswersController.onPageLoad().url)).flatMap {
+    Future.fromTry(request.userAnswers.set(SavedProgressPage, routes.CheckYourAnswersController.onPageLoad(iossNumber = request.iossNumber).url)).flatMap {
       updatedAnswers =>
         val saveForLaterRequest = SaveForLaterRequest(updatedAnswers, request.iossNumber, request.userAnswers.period)
 

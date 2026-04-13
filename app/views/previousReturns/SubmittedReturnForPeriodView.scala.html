@@ -26,6 +26,7 @@ layout: templates.Layout,
 
 @(
         waypoints: Waypoints,
+        iossNumber: String,
         period: Period,
         mainSummaryList: SummaryList,
         salesToEuAndNiSummaryList: SummaryList,
@@ -40,7 +41,7 @@ layout: templates.Layout,
         companyName: String
 )(implicit request: Request[_], messages: Messages)
 
-    @layout(pageTitle = titleNoForm(messages("submittedReturnForPeriod.title", period.displayText))) {
+    @layout(pageTitle = titleNoForm(messages("submittedReturnForPeriod.title", period.displayText)), maybeIossNumber = Some(iossNumber)) {
 
     @if(isIntermediary){<p class="govuk-caption-l hmrc-caption-l">@companyName</p>}
 
@@ -64,7 +65,7 @@ layout: templates.Layout,
 
         @if(displayPayNow) {
             <p class="govuk-!-margin-bottom-5">
-                <a class="govuk-button" id="pay-now" href="@paymentRoutes.PaymentController.makePayment(waypoints, period).url">@messages("submittedReturnForPeriod.payNow")</a>
+                <a class="govuk-button" id="pay-now" href="@paymentRoutes.PaymentController.makePayment(waypoints, iossNumber, period).url">@messages("submittedReturnForPeriod.payNow")</a>
             </p>
         }
 

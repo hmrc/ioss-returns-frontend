@@ -22,13 +22,12 @@ import connectors.VatReturnHttpParser.EtmpVatReturnResponse
 import connectors.{FinancialDataConnector, VatReturnConnector}
 import controllers.actions.*
 import logging.Logging
-import models.{PartialReturnPeriod, Period}
 import models.etmp.{EtmpExclusion, EtmpExclusionReason, EtmpVatReturn}
 import models.requests.OptionalDataRequest
+import models.{PartialReturnPeriod, Period}
 import pages.{JourneyRecoveryPage, Waypoints}
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
-import services.PreviousRegistrationService
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{Card, CardTitle, SummaryList, SummaryListRow}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -47,15 +46,15 @@ class SubmittedReturnForPeriodController @Inject()(
                                                     cc: AuthenticatedControllerComponents,
                                                     vatReturnConnector: VatReturnConnector,
                                                     financialDataConnector: FinancialDataConnector,
-                                                    previousRegistrationService: PreviousRegistrationService,
                                                     view: SubmittedReturnForPeriodView
                                                   )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(waypoints: Waypoints, period: Period): Action[AnyContent] = cc.authAndGetOptionalData().async { implicit request =>
+  def onPageLoad(waypoints: Waypoints, iossNumber: String, period: Period): Action[AnyContent] =
+    cc.authAndGetOptionalData(iossNumber).async { implicit request =>
     if (isPeriodOlderThanSixYears(period)) {
-      Redirect(controllers.routes.NoLongerAbleToViewReturnController.onPageLoad()).toFuture
+      Redirect(controllers.routes.NoLongerAbleToViewReturnController.onPageLoad(request.iossNumber)).toFuture
     } else {
       (for {
         etmpVatReturnResponse <- vatReturnConnector.getForIossNumber(period, request.iossNumber)
@@ -63,20 +62,13 @@ class SubmittedReturnForPeriodController @Inject()(
       } yield onPageLoad(waypoints, period, etmpVatReturnResponse, chargeResponse)).flatten
     }
   }
-
-  def onPageLoadForIossNumber(waypoints: Waypoints, period: Period, iossNumber: String): Action[AnyContent] = cc.authAndGetOptionalData().async {
+  
+  def onPageLoadForIossNumber(waypoints: Waypoints, iossNumber: String, period: Period): Action[AnyContent] = cc.authAndGetOptionalData(iossNumber).async {
     implicit request =>
-      previousRegistrationService.getPreviousRegistrations(request.isIntermediary).flatMap { previousRegistrations =>
-        val validIossNumbers: Seq[String] = request.iossNumber :: previousRegistrations.map(_.iossNumber)
-        if (validIossNumbers.contains(iossNumber)) {
-          (for {
-            etmpVatReturnResponse <- vatReturnConnector.getForIossNumber(period, iossNumber)
-            chargeResponse <- financialDataConnector.getChargeForIossNumber(period, iossNumber)
-          } yield onPageLoad(waypoints, period, etmpVatReturnResponse, chargeResponse)).flatten
-        } else {
-          Future.successful(Redirect(JourneyRecoveryPage.route(waypoints)))
-        }
-      }
+      (for {
+        etmpVatReturnResponse <- vatReturnConnector.getForIossNumber(period, iossNumber)
+        chargeResponse <- financialDataConnector.getChargeForIossNumber(period, iossNumber)
+      } yield onPageLoad(waypoints, period, etmpVatReturnResponse, chargeResponse)).flatten
   }
 
   private def onPageLoad(waypoints: Waypoints, period: Period, etmpVatReturnResponse: EtmpVatReturnResponse, chargeResponse: ChargeResponse)
@@ -101,9 +93,10 @@ class SubmittedReturnForPeriodController @Inject()(
         val returnIsExcludedAndOutstandingAmount = currentReturnExcluded && (etmpVatReturn.totalVATAmountDueForAllMSGBP > 0 && outstanding > 0)
 
         val mainSummaryList = SummaryListViewModel(rows = getMainSummaryList(etmpVatReturn, determinedPeriod, outstandingAmount))
-        
-        Future.successful(Ok(view(
+
+        Ok(view(
           waypoints = waypoints,
+          iossNumber = request.iossNumber,
           period = determinedPeriod,
           mainSummaryList = mainSummaryList,
           salesToEuAndNiSummaryList = getSalesToEuAndNiSummaryList(etmpVatReturn),
@@ -116,7 +109,7 @@ class SubmittedReturnForPeriodController @Inject()(
           returnIsExcludedAndOutstandingAmount = returnIsExcludedAndOutstandingAmount,
           isIntermediary = request.isIntermediary,
           companyName = request.companyName
-        )))
+        )).toFuture
 
       case (Left(error), _) =>
         logger.error(s"Unexpected result from api while getting ETMP VAT return: $error")

@@ -27,7 +27,6 @@ import play.api.inject.bind
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.Success
 
-
 class VatPeriodCorrectionsListPageSpec extends PageBehaviours {
 
   "VatPeriodCorrectionsListPage" - {
@@ -39,10 +38,10 @@ class VatPeriodCorrectionsListPageSpec extends PageBehaviours {
 
           val answers =
             emptyUserAnswers
-              .set(CorrectionReturnPeriodPage(index), period).success.value
+              .set(CorrectionReturnPeriodPage(iossNumber, index), period).success.value
 
-          VatPeriodCorrectionsListPage(period, addAnother = true).navigate(waypoints, answers, answers).route
-            .mustEqual(controllers.corrections.routes.CorrectionReturnYearController.onPageLoad(waypoints, Index(1)))
+          VatPeriodCorrectionsListPage(iossNumber, period, addAnother = true).navigate(waypoints, answers, answers).route
+            .mustEqual(controllers.corrections.routes.CorrectionReturnYearController.onPageLoad(waypoints, iossNumber, Index(1)))
         }
 
         "to CorrectionReturnPeriod when there are no corrections" in {
@@ -50,8 +49,8 @@ class VatPeriodCorrectionsListPageSpec extends PageBehaviours {
           val answers =
             emptyUserAnswers
 
-          VatPeriodCorrectionsListPage(period, addAnother = true).navigate(waypoints, answers, answers).route
-            .mustEqual(controllers.corrections.routes.CorrectionReturnYearController.onPageLoad(waypoints, Index(0)))
+          VatPeriodCorrectionsListPage(iossNumber, period, addAnother = true).navigate(waypoints, answers, answers).route
+            .mustEqual(controllers.corrections.routes.CorrectionReturnYearController.onPageLoad(waypoints, iossNumber, Index(0)))
         }
       }
 
@@ -60,9 +59,9 @@ class VatPeriodCorrectionsListPageSpec extends PageBehaviours {
         "to CheckYourAnswers" in {
           val answers =
             emptyUserAnswers
-              .set(CorrectionReturnPeriodPage(index), period).success.value
-          VatPeriodCorrectionsListPage(period, addAnother = false).navigate(waypoints, answers, answers).route
-            .mustEqual(controllers.routes.CheckYourAnswersController.onPageLoad())
+              .set(CorrectionReturnPeriodPage(iossNumber, index), period).success.value
+          VatPeriodCorrectionsListPage(iossNumber, period, addAnother = false).navigate(waypoints, answers, answers).route
+            .mustEqual(controllers.routes.CheckYourAnswersController.onPageLoad(waypoints, iossNumber))
         }
       }
     }
@@ -72,8 +71,8 @@ class VatPeriodCorrectionsListPageSpec extends PageBehaviours {
         val mockReturnStatusConnector = mock[VatReturnConnector]
 
         val answers = emptyUserAnswers
-          .set(CorrectionReturnPeriodPage(index), StandardPeriod("2021", "7").get).success.value
-          .set(CorrectionReturnPeriodPage(Index(1)), StandardPeriod("2022", "1").get).success.value
+          .set(CorrectionReturnPeriodPage(iossNumber, index), StandardPeriod("2021", "7").get).success.value
+          .set(CorrectionReturnPeriodPage(iossNumber, Index(1)), StandardPeriod("2022", "1").get).success.value
 
         val application = applicationBuilder(userAnswers = Some(answers))
           .configure("bootstrap.filters.csrf.enabled" -> false)
@@ -81,7 +80,7 @@ class VatPeriodCorrectionsListPageSpec extends PageBehaviours {
           .build()
         val cc = application.injector.instanceOf(classOf[AuthenticatedControllerComponents])
 
-        val result = VatPeriodCorrectionsListPage(period, addAnother = false).cleanup(answers, cc)
+        val result = VatPeriodCorrectionsListPage(iossNumber, period, addAnother = false).cleanup(answers, cc)
         result.futureValue mustEqual Success(emptyUserAnswers)
       }
     }

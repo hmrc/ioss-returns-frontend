@@ -24,11 +24,11 @@ import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{verifyNoInteractions, when}
 import org.scalacheck.Gen
 import org.scalatestplus.mockito.MockitoSugar
-import pages._
+import pages.*
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import queries.VatRateFromCountryQuery
 import repositories.SessionRepository
 import utils.FutureSyntax.FutureOps
@@ -44,16 +44,16 @@ class DeleteVatRateSalesForCountryControllerSpec extends SpecBase with MockitoSu
   private val vatRate = vatRateFromCountry.rateForDisplay
 
   private val baseAnswers: UserAnswers = emptyUserAnswers
-    .set(SoldGoodsPage, true).success.value
-    .set(SoldToCountryPage(index), country).success.value
-    .set(VatRatesFromCountryPage(index, index), List[VatRateFromCountry](vatRateFromCountry)).success.value
-    .set(SalesToCountryPage(index, index), salesValue).success.value
-    .set(VatOnSalesPage(index, index), vatOnSalesValue).success.value
+    .set(SoldGoodsPage(iossNumber), true).success.value
+    .set(SoldToCountryPage(iossNumber, index), country).success.value
+    .set(VatRatesFromCountryPage(iossNumber, index, index), List[VatRateFromCountry](vatRateFromCountry)).success.value
+    .set(SalesToCountryPage(iossNumber, index, index), salesValue).success.value
+    .set(VatOnSalesPage(iossNumber, index, index), vatOnSalesValue).success.value
 
   private val formProvider = new DeleteVatRateSalesForCountryFormProvider()
   private val form: Form[Boolean] = formProvider(vatRate, country)
 
-  private lazy val deleteVatRateSalesForCountryRoute: String = routes.DeleteVatRateSalesForCountryController.onPageLoad(waypoints, index, index).url
+  private lazy val deleteVatRateSalesForCountryRoute: String = routes.DeleteVatRateSalesForCountryController.onPageLoad(waypoints, iossNumber, index, index).url
 
   "DeleteVatRateSalesForCountry Controller" - {
 
@@ -68,8 +68,8 @@ class DeleteVatRateSalesForCountryControllerSpec extends SpecBase with MockitoSu
 
         val view = application.injector.instanceOf[DeleteVatRateSalesForCountryView]
 
-        status(result) mustBe OK
-        contentAsString(result) mustBe view(form, waypoints, period, index, index, vatRate, country, false, "Company Name")(request, messages(application)).toString
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(form, waypoints, iossNumber, period, index, index, vatRate, country, false, "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -95,8 +95,8 @@ class DeleteVatRateSalesForCountryControllerSpec extends SpecBase with MockitoSu
 
         val expectedAnswers = baseAnswers.remove(VatRateFromCountryQuery(index, index)).success.value
 
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe DeleteVatRateSalesForCountryPage(index, index).navigate(waypoints, emptyUserAnswers, expectedAnswers).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` DeleteVatRateSalesForCountryPage(iossNumber, index, index).navigate(waypoints, emptyUserAnswers, expectedAnswers).url
       }
     }
 
@@ -121,8 +121,8 @@ class DeleteVatRateSalesForCountryControllerSpec extends SpecBase with MockitoSu
 
         val result = route(application, request).value
 
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe DeleteVatRateSalesForCountryPage(index, index).navigate(waypoints, baseAnswers, baseAnswers).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` DeleteVatRateSalesForCountryPage(iossNumber, index, index).navigate(waypoints, baseAnswers, baseAnswers).url
         verifyNoInteractions(mockSessionRepository)
       }
     }
@@ -142,8 +142,8 @@ class DeleteVatRateSalesForCountryControllerSpec extends SpecBase with MockitoSu
 
         val result = route(application, request).value
 
-        status(result) mustBe BAD_REQUEST
-        contentAsString(result) mustBe view(boundForm, waypoints, period, index, index, vatRate, country, false, "Company Name")(request, messages(application)).toString
+        status(result) `mustBe` BAD_REQUEST
+        contentAsString(result) `mustBe` view(boundForm, waypoints, iossNumber, period, index, index, vatRate, country, false, "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -156,8 +156,8 @@ class DeleteVatRateSalesForCountryControllerSpec extends SpecBase with MockitoSu
 
         val result = route(application, request).value
 
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
 
@@ -170,8 +170,8 @@ class DeleteVatRateSalesForCountryControllerSpec extends SpecBase with MockitoSu
 
         val result = route(application, request).value
 
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
 
@@ -186,8 +186,8 @@ class DeleteVatRateSalesForCountryControllerSpec extends SpecBase with MockitoSu
 
         val result = route(application, request).value
 
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
   }

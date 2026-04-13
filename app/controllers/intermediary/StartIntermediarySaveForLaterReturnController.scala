@@ -61,7 +61,7 @@ class StartIntermediarySaveForLaterReturnController @Inject()(
             _ <- intermediarySelectedIossNumberRepository.set(intermediarySelectedIossNumber)
             _ <- cc.sessionRepository.set(userAnswers)
           } yield {
-            Redirect(ContinueReturnPage.navigate(userAnswers, ContinueReturn.Continue))
+            Redirect(ContinueReturnPage(request.iossNumber).navigate(userAnswers, ContinueReturn.Continue))
           }
         }.getOrElse(Redirect(routes.StartReturnAsIntermediaryController.startReturnAsIntermediary(waypoints, iossNumber)).toFuture)
       }

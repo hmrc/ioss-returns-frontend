@@ -22,6 +22,7 @@ import models.requests.DataRequest
 import play.api.mvc.Results.Redirect
 import play.api.mvc.{ActionFilter, Result}
 import services.ExcludedTraderService
+import utils.FutureSyntax.FutureOps
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -34,9 +35,9 @@ class CheckExcludedTraderFilterImpl(frontendAppConfig: FrontendAppConfig, exclud
     if (frontendAppConfig.exclusionsEnabled &&
       request.registrationWrapper.registration.exclusions.lastOption.exists(exclusion =>
         excludedTraderService.isExcludedPeriod(exclusion, request.userAnswers.period))) {
-      Future.successful(Some(Redirect(routes.ExcludedNotPermittedController.onPageLoad())))
+      Some(Redirect(routes.ExcludedNotPermittedController.onPageLoad())).toFuture
     } else {
-      Future.successful(None)
+      None.toFuture
     }
   }
 }
@@ -46,5 +47,4 @@ class CheckExcludedTraderFilter @Inject()(frontendAppConfig: FrontendAppConfig, 
 
   def apply(): CheckExcludedTraderFilterImpl =
     new CheckExcludedTraderFilterImpl(frontendAppConfig, excludedTraderService)
-
 }

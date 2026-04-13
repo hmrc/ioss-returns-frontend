@@ -39,7 +39,6 @@ import pages.corrections.*
 import pages.{CheckYourAnswersPage, SalesToCountryPage, SoldGoodsPage, SoldToCountryPage, VatRatesFromCountryPage}
 import play.api.i18n.Messages
 import play.api.inject.bind
-import play.api.libs.json.JsString
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import queries.corrections.{PreviouslyDeclaredCorrectionAmount, PreviouslyDeclaredCorrectionAmountQuery}
@@ -119,13 +118,13 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn
             etmpObligationDetails.toFuture
 
-          val application = applicationBuilder(userAnswers = Some(completeUserAnswers.set(CorrectPreviousReturnPage(0), false).success.value))
+          val application = applicationBuilder(userAnswers = Some(completeUserAnswers.set(CorrectPreviousReturnPage(iossNumber, 0), false).success.value))
             .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
             .overrides(bind[ObligationsService].toInstance(mockObligationsService))
             .build()
 
           running(application) {
-            val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad(waypoints).url)
+            val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad(waypoints, iossNumber).url)
 
             val result = route(application, request).value
 
@@ -159,13 +158,13 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn
             etmpObligationDetails.toFuture
 
-          val application = applicationBuilder(userAnswers = Some(completeUserAnswers.set(CorrectPreviousReturnPage(0), false).success.value))
+          val application = applicationBuilder(userAnswers = Some(completeUserAnswers.set(CorrectPreviousReturnPage(iossNumber, 0), false).success.value))
             .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
             .overrides(bind[ObligationsService].toInstance(mockObligationsService))
             .build()
 
           running(application) {
-            val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad(waypoints).url)
+            val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad(waypoints, iossNumber).url)
 
             val result = route(application, request).value
 
@@ -211,8 +210,8 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
             etmpObligationDetails.toFuture
 
           val answers: UserAnswers = completeUserAnswers
-            .set(SoldGoodsPage, false).success.value
-            .set(CorrectPreviousReturnPage(0), false).success.value
+            .set(SoldGoodsPage(iossNumber), false).success.value
+            .set(CorrectPreviousReturnPage(iossNumber, 0), false).success.value
 
           val application = applicationBuilder(userAnswers = Some(answers), registration = updatedRegistrationWrapper)
             .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
@@ -223,7 +222,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           running(application) {
             implicit val msgs: Messages = messages(application)
 
-            val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad(waypoints).url)
+            val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad(waypoints, iossNumber).url)
 
             val result = route(application, request).value
 
@@ -240,9 +239,9 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
             val salesFromEuSummaryList: SummaryList = SummaryListViewModel(
               rows = Seq(
-                SoldGoodsSummary.row(answers, waypoints, CheckYourAnswersPage),
-                TotalNetValueOfSalesSummary.row(answers, None, waypoints, CheckYourAnswersPage),
-                TotalVatOnSalesSummary.row(answers, None, waypoints, CheckYourAnswersPage)
+                SoldGoodsSummary.row(answers, waypoints, CheckYourAnswersPage(iossNumber)),
+                TotalNetValueOfSalesSummary.row(answers, None, waypoints, CheckYourAnswersPage(iossNumber)),
+                TotalVatOnSalesSummary.row(answers, None, waypoints, CheckYourAnswersPage(iossNumber))
               ).flatten
             ).withCard(
               card = Card(
@@ -252,8 +251,8 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
             val correctionsSummaryList: SummaryList = SummaryListViewModel(
               rows = Seq(
-                CorrectPreviousReturnSummary.row(answers, waypoints, CheckYourAnswersPage),
-                CorrectionReturnPeriodSummary.getAllRows(answers, waypoints, CheckYourAnswersPage)
+                CorrectPreviousReturnSummary.row(answers, waypoints, CheckYourAnswersPage(iossNumber)),
+                CorrectionReturnPeriodSummary.getAllRows(answers, waypoints, CheckYourAnswersPage(iossNumber))
               ).flatten
             ).withCard(
               card = Card(
@@ -274,6 +273,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
             contentAsString(result) `mustBe` view(
               waypoints = waypoints,
               summaryLists = allSummaryLists,
+              iossNumber = iossNumber,
               period = period,
               totalVatToCountries = List.empty,
               totalVatOnSales = totalVatOnSales,
@@ -302,13 +302,13 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn
             etmpObligationDetails.toFuture
 
-          val application = applicationBuilder(userAnswers = Some(completeUserAnswers.set(CorrectPreviousReturnPage(0), true).success.value))
+          val application = applicationBuilder(userAnswers = Some(completeUserAnswers.set(CorrectPreviousReturnPage(iossNumber, 0), true).success.value))
             .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
             .overrides(bind[ObligationsService].toInstance(mockObligationsService))
             .build()
 
           running(application) {
-            val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad(waypoints).url)
+            val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad(waypoints, iossNumber).url)
 
             val result = route(application, request).value
 
@@ -336,17 +336,17 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           val previouslyDeclaredNegativeCorrectionAmount: BigDecimal = BigDecimal(-1000)
 
           val userAnswersWithCorrections: UserAnswers = emptyUserAnswers
-            .set(SoldGoodsPage, false).success.value
-            .set(CorrectPreviousReturnPage(0), true).success.value
-            .set(CorrectionReturnYearPage(index), period.year).success.value
-            .set(CorrectionReturnPeriodPage(index), period).success.value
-            .set(CorrectionCountryPage(index, index), country).success.value
+            .set(SoldGoodsPage(iossNumber), false).success.value
+            .set(CorrectPreviousReturnPage(iossNumber, 0), true).success.value
+            .set(CorrectionReturnYearPage(iossNumber, index), period.year).success.value
+            .set(CorrectionReturnPeriodPage(iossNumber, index), period).success.value
+            .set(CorrectionCountryPage(iossNumber, index, index), country).success.value
             .set(
               PreviouslyDeclaredCorrectionAmountQuery(index, index),
               PreviouslyDeclaredCorrectionAmount(previouslyDeclared = true, amount = previouslyDeclaredCorrectionAmount)
             ).success.value
-            .set(VatAmountCorrectionCountryPage(index, index), previouslyDeclaredNegativeCorrectionAmount).success.value
-            .set(VatPayableForCountryPage(index, index), true).success.value
+            .set(VatAmountCorrectionCountryPage(iossNumber, index, index), previouslyDeclaredNegativeCorrectionAmount).success.value
+            .set(VatPayableForCountryPage(iossNumber, index, index), true).success.value
 
           val totalVatToCountries: List[TotalVatToCountry] = List.empty
           val noPaymentsDue: List[TotalVatToCountry] = List(TotalVatToCountry(country = country, totalVat = previouslyDeclaredNegativeCorrectionAmount))
@@ -376,7 +376,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
             implicit val msgs: Messages = messages(application)
 
-            val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad(waypoints).url)
+            val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad(waypoints, iossNumber).url)
 
             val view = application.injector.instanceOf[CheckYourAnswersView]
 
@@ -393,9 +393,9 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
             val salesFromEuSummaryList: SummaryList = SummaryListViewModel(
               rows = Seq(
-                SoldGoodsSummary.row(userAnswersWithCorrections, waypoints, CheckYourAnswersPage),
-                TotalNetValueOfSalesSummary.row(userAnswersWithCorrections, None, waypoints, CheckYourAnswersPage),
-                TotalVatOnSalesSummary.row(userAnswersWithCorrections, None, waypoints, CheckYourAnswersPage)
+                SoldGoodsSummary.row(userAnswersWithCorrections, waypoints, CheckYourAnswersPage(iossNumber)),
+                TotalNetValueOfSalesSummary.row(userAnswersWithCorrections, None, waypoints, CheckYourAnswersPage(iossNumber)),
+                TotalVatOnSalesSummary.row(userAnswersWithCorrections, None, waypoints, CheckYourAnswersPage(iossNumber))
               ).flatten
             ).withCard(
               card = Card(
@@ -405,8 +405,8 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
             val correctionsSummaryList: SummaryList = SummaryListViewModel(
               rows = Seq(
-                CorrectPreviousReturnSummary.row(userAnswersWithCorrections, waypoints, CheckYourAnswersPage),
-                CorrectionReturnPeriodSummary.getAllRows(userAnswersWithCorrections, waypoints, CheckYourAnswersPage)
+                CorrectPreviousReturnSummary.row(userAnswersWithCorrections, waypoints, CheckYourAnswersPage(iossNumber)),
+                CorrectionReturnPeriodSummary.getAllRows(userAnswersWithCorrections, waypoints, CheckYourAnswersPage(iossNumber))
               ).flatten
             ).withCard(
               card = Card(
@@ -427,6 +427,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
               view(
                 waypoints,
                 allSummaryLists,
+                iossNumber,
                 period,
                 totalVatToCountries,
                 totalVatOnSales,
@@ -446,7 +447,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         val application = applicationBuilder(userAnswers = None).build()
 
         running(application) {
-          val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad(waypoints).url)
+          val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad(waypoints, iossNumber).url)
 
           val result = route(application, request).value
 
@@ -474,7 +475,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           .build()
 
         running(application) {
-          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, incompletePromptShown = false).url)
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, iossNumber, incompletePromptShown = false).url)
 
           val result = route(application, request).value
 
@@ -484,7 +485,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           val expectedAuditEvent = ReturnsAuditModel.build(userAnswers, SubmissionResult.Success)
 
           status(result) `mustBe` SEE_OTHER
-          redirectLocation(result).value `mustBe` controllers.submissionResults.routes.SuccessfullySubmittedController.onPageLoad().url
+          redirectLocation(result).value `mustBe` controllers.submissionResults.routes.SuccessfullySubmittedController.onPageLoad(iossNumber).url
           verify(mockAuditService, times(1)).audit(eqTo(expectedAuditEvent))(any(), any())
         }
       }
@@ -508,7 +509,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           .build()
 
         running(application) {
-          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, incompletePromptShown = false).url)
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, iossNumber, incompletePromptShown = false).url)
 
           val result = route(application, request).value
 
@@ -518,7 +519,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           val expectedAuditEvent = ReturnsAuditModel.build(userAnswers, SubmissionResult.Failure)
 
           status(result) `mustBe` SEE_OTHER
-          redirectLocation(result).value `mustBe` controllers.submissionResults.routes.ReturnSubmissionFailureController.onPageLoad().url
+          redirectLocation(result).value `mustBe` controllers.submissionResults.routes.ReturnSubmissionFailureController.onPageLoad(iossNumber).url
           verify(mockAuditService, times(1)).audit(eqTo(expectedAuditEvent))(any(), any())
         }
       }
@@ -548,7 +549,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
             .build()
 
           running(application) {
-            val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, incompletePromptShown = false).url)
+            val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, iossNumber, incompletePromptShown = false).url)
 
             val result = route(application, request).value
 
@@ -558,7 +559,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
             val expectedAuditEvent = ReturnsAuditModel.build(userAnswers, SubmissionResult.Failure)
 
             status(result) `mustBe` SEE_OTHER
-            redirectLocation(result).value `mustBe` controllers.submissionResults.routes.ReturnSubmissionFailureController.onPageLoad().url
+            redirectLocation(result).value `mustBe` controllers.submissionResults.routes.ReturnSubmissionFailureController.onPageLoad(iossNumber).url
             verify(mockAuditService, times(1)).audit(eqTo(expectedAuditEvent))(any(), any())
             verify(mockSaveForLaterConnector, times(1)).submit(any())(any())
           }
@@ -586,7 +587,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
             .build()
 
           running(application) {
-            val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, incompletePromptShown = false).url)
+            val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, iossNumber, incompletePromptShown = false).url)
 
             val result = route(application, request).value
 
@@ -625,7 +626,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         running(app) {
 
           val request =
-            FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, false).url)
+            FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, iossNumber, incompletePromptShown = false).url)
 
           val result = route(app, request).value
 
@@ -645,8 +646,6 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         when(mockObligationsService.getFulfilledObligations(any())(any()))
           .thenReturn(etmpObligationDetails.toFuture)
 
-
-
         val app = applicationBuilder(Some(completeUserAnswers))
           .overrides(bind[CoreVatReturnService].toInstance(mockCoreVatReturnService))
           .overrides(bind[SaveForLaterConnector].toInstance(mockSaveForLaterConnector))
@@ -656,7 +655,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         running(app) {
 
           val request =
-            FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, false).url)
+            FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, iossNumber, incompletePromptShown = false).url)
 
           val result = route(app, request).value
 
@@ -674,18 +673,18 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
 
         val answers = emptyUserAnswers
-          .set(SoldGoodsPage, true).success.value
-          .set(CorrectPreviousReturnPage(0), false).success.value
+          .set(SoldGoodsPage(iossNumber), true).success.value
+          .set(CorrectPreviousReturnPage(iossNumber, 0), false).success.value
 
         val app = applicationBuilder(Some(answers))
           .overrides(bind[ObligationsService].toInstance(mockObligationsService)).build()
 
         running(app) {
-          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, incompletePromptShown = false).url)
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, iossNumber, incompletePromptShown = false).url)
           val result = route(app, request).value
 
           status(result) `mustBe` SEE_OTHER
-          redirectLocation(result).value `mustBe` routes.CheckYourAnswersController.onPageLoad(waypoints).url
+          redirectLocation(result).value `mustBe` routes.CheckYourAnswersController.onPageLoad(waypoints, iossNumber).url
         }
       }
 
@@ -699,11 +698,11 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           .overrides(bind[ObligationsService].toInstance(mockObligationsService)).build()
 
         running(app) {
-          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, incompletePromptShown = true).url)
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, iossNumber, incompletePromptShown = true).url)
           val result = route(app, request).value
 
           status(result) `mustBe` SEE_OTHER
-          redirectLocation(result).value `mustBe` routes.SoldGoodsController.onPageLoad(waypoints).url
+          redirectLocation(result).value `mustBe` routes.SoldGoodsController.onPageLoad(waypoints, iossNumber).url
         }
       }
 
@@ -712,18 +711,18 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
 
         val answers = emptyUserAnswers
-          .set(SoldGoodsPage, true).success.value
+          .set(SoldGoodsPage(iossNumber), true).success.value
 
         val app = applicationBuilder(Some(answers))
           .overrides(bind[ObligationsService].toInstance(mockObligationsService)).build()
 
         running(app) {
-          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, incompletePromptShown = true).url)
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, iossNumber, incompletePromptShown = true).url)
           val result = route(app, request).value
 
           status(result) `mustBe` SEE_OTHER
           redirectLocation(result).value `mustBe`
-            controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(waypoints).url
+            controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(waypoints, iossNumber).url
         }
       }
 
@@ -732,18 +731,18 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
 
         val answers = emptyUserAnswers
-          .set(SoldGoodsPage, true).success.value
-          .set(CorrectPreviousReturnPage(0), false).success.value
+          .set(SoldGoodsPage(iossNumber), true).success.value
+          .set(CorrectPreviousReturnPage(iossNumber, 0), false).success.value
 
         val app = applicationBuilder(Some(answers))
           .overrides(bind[ObligationsService].toInstance(mockObligationsService)).build()
 
         running(app) {
-          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, incompletePromptShown = true).url)
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, iossNumber, incompletePromptShown = true).url)
           val result = route(app, request).value
 
           status(result) `mustBe` SEE_OTHER
-          redirectLocation(result).value `mustBe` routes.SoldToCountryController.onPageLoad(waypoints, index).url
+          redirectLocation(result).value `mustBe` routes.SoldToCountryController.onPageLoad(waypoints, iossNumber, index).url
         }
       }
 
@@ -752,19 +751,19 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
 
         val answers = emptyUserAnswers
-          .set(SoldGoodsPage, true).success.value
-          .set(CorrectPreviousReturnPage(0), false).success.value
-          .set(SoldToCountryPage(index), Country.euCountries.head).success.value
+          .set(SoldGoodsPage(iossNumber), true).success.value
+          .set(CorrectPreviousReturnPage(iossNumber, 0), false).success.value
+          .set(SoldToCountryPage(iossNumber, index), Country.euCountries.head).success.value
 
         val app = applicationBuilder(Some(answers))
           .overrides(bind[ObligationsService].toInstance(mockObligationsService)).build()
 
         running(app) {
-          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, incompletePromptShown = true).url)
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, iossNumber, incompletePromptShown = true).url)
           val result = route(app, request).value
 
           status(result) `mustBe` SEE_OTHER
-          redirectLocation(result).value `mustBe` routes.VatRatesFromCountryController.onPageLoad(waypoints, index).url
+          redirectLocation(result).value `mustBe` routes.VatRatesFromCountryController.onPageLoad(waypoints, iossNumber, index).url
         }
       }
 
@@ -773,20 +772,20 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
 
         val answers = emptyUserAnswers
-          .set(SoldGoodsPage, true).success.value
-          .set(CorrectPreviousReturnPage(0), false).success.value
-          .set(SoldToCountryPage(index), Country.euCountries.head).success.value
-          .set(VatRatesFromCountryPage(index, index), List[VatRateFromCountry](vatRateFromCountry)).success.value
+          .set(SoldGoodsPage(iossNumber), true).success.value
+          .set(CorrectPreviousReturnPage(iossNumber, 0), false).success.value
+          .set(SoldToCountryPage(iossNumber, index), Country.euCountries.head).success.value
+          .set(VatRatesFromCountryPage(iossNumber, index, index), List[VatRateFromCountry](vatRateFromCountry)).success.value
 
         val app = applicationBuilder(Some(answers))
           .overrides(bind[ObligationsService].toInstance(mockObligationsService)).build()
 
         running(app) {
-          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, incompletePromptShown = true).url)
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, iossNumber, incompletePromptShown = true).url)
           val result = route(app, request).value
 
           status(result) `mustBe` SEE_OTHER
-          redirectLocation(result).value `mustBe` routes.SalesToCountryController.onPageLoad(waypoints, index, index).url
+          redirectLocation(result).value `mustBe` routes.SalesToCountryController.onPageLoad(waypoints, iossNumber, index, index).url
         }
       }
 
@@ -795,21 +794,21 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
 
         val answers = emptyUserAnswers
-          .set(SoldGoodsPage, true).success.value
-          .set(CorrectPreviousReturnPage(0), false).success.value
-          .set(SoldToCountryPage(index), Country.euCountries.head).success.value
-          .set(VatRatesFromCountryPage(index, index), List[VatRateFromCountry](vatRateFromCountry)).success.value
-          .set(SalesToCountryPage(index, index), salesValue).success.value
+          .set(SoldGoodsPage(iossNumber), true).success.value
+          .set(CorrectPreviousReturnPage(iossNumber, 0), false).success.value
+          .set(SoldToCountryPage(iossNumber, index), Country.euCountries.head).success.value
+          .set(VatRatesFromCountryPage(iossNumber, index, index), List[VatRateFromCountry](vatRateFromCountry)).success.value
+          .set(SalesToCountryPage(iossNumber, index, index), salesValue).success.value
 
         val app = applicationBuilder(Some(answers))
           .overrides(bind[ObligationsService].toInstance(mockObligationsService)).build()
 
         running(app) {
-          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, incompletePromptShown = true).url)
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, iossNumber, incompletePromptShown = true).url)
           val result = route(app, request).value
 
           status(result) `mustBe` SEE_OTHER
-          redirectLocation(result).value `mustBe` routes.VatOnSalesController.onPageLoad(waypoints, index, index).url
+          redirectLocation(result).value `mustBe` routes.VatOnSalesController.onPageLoad(waypoints, iossNumber, index, index).url
         }
       }
 
@@ -818,18 +817,18 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
 
         val answers = emptyUserAnswers
-          .set(SoldGoodsPage, false).success.value
-          .set(CorrectPreviousReturnPage(0), true).success.value
+          .set(SoldGoodsPage(iossNumber), false).success.value
+          .set(CorrectPreviousReturnPage(iossNumber, 0), true).success.value
 
         val app = applicationBuilder(Some(answers))
           .overrides(bind[ObligationsService].toInstance(mockObligationsService)).build()
 
         running(app) {
-          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, incompletePromptShown = true).url)
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, iossNumber, incompletePromptShown = true).url)
           val result = route(app, request).value
 
           status(result) `mustBe` SEE_OTHER
-          redirectLocation(result).value `mustBe` controllers.corrections.routes.CorrectionReturnYearController.onPageLoad(waypoints, index).url
+          redirectLocation(result).value `mustBe` controllers.corrections.routes.CorrectionReturnYearController.onPageLoad(waypoints, iossNumber, index).url
         }
       }
 
@@ -838,20 +837,20 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
 
         val answers = emptyUserAnswers
-          .set(SoldGoodsPage, false).success.value
-          .set(CorrectPreviousReturnPage(0), true).success.value
-          .set(CorrectionReturnYearPage(index), period.year).success.value
-          .set(CorrectionReturnPeriodPage(index), period).success.value
+          .set(SoldGoodsPage(iossNumber), false).success.value
+          .set(CorrectPreviousReturnPage(iossNumber, 0), true).success.value
+          .set(CorrectionReturnYearPage(iossNumber, index), period.year).success.value
+          .set(CorrectionReturnPeriodPage(iossNumber, index), period).success.value
 
         val app = applicationBuilder(Some(answers))
           .overrides(bind[ObligationsService].toInstance(mockObligationsService)).build()
 
         running(app) {
-          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, incompletePromptShown = true).url)
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, iossNumber, incompletePromptShown = true).url)
           val result = route(app, request).value
 
           status(result) `mustBe` SEE_OTHER
-          redirectLocation(result).value `mustBe` controllers.corrections.routes.CorrectionCountryController.onPageLoad(waypoints, index, index).url
+          redirectLocation(result).value `mustBe` controllers.corrections.routes.CorrectionCountryController.onPageLoad(waypoints, iossNumber, index, index).url
         }
       }
 
@@ -860,20 +859,20 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
 
         val answers = emptyUserAnswers
-          .set(SoldGoodsPage, false).success.value
-          .set(CorrectPreviousReturnPage(0), true).success.value
-          .set(CorrectionReturnPeriodPage(index), period).success.value
-          .set(CorrectionCountryPage(index, index), Country.euCountries.head).success.value
+          .set(SoldGoodsPage(iossNumber), false).success.value
+          .set(CorrectPreviousReturnPage(iossNumber, 0), true).success.value
+          .set(CorrectionReturnPeriodPage(iossNumber, index), period).success.value
+          .set(CorrectionCountryPage(iossNumber, index, index), Country.euCountries.head).success.value
 
         val app = applicationBuilder(Some(answers))
           .overrides(bind[ObligationsService].toInstance(mockObligationsService)).build()
 
         running(app) {
-          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, incompletePromptShown = true).url)
+          val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, iossNumber, incompletePromptShown = true).url)
           val result = route(app, request).value
 
           status(result) `mustBe` SEE_OTHER
-          redirectLocation(result).value `mustBe` controllers.corrections.routes.VatAmountCorrectionCountryController.onPageLoad(waypoints, index, index).url
+          redirectLocation(result).value `mustBe` controllers.corrections.routes.VatAmountCorrectionCountryController.onPageLoad(waypoints, iossNumber, index, index).url
         }
       }
     }

@@ -20,23 +20,25 @@ import base.SpecBase
 import connectors.ReturnStatusConnector
 import forms.StartReturnFormProvider
 import models.SubmissionStatus.{Complete, Due, Excluded, Next, Overdue}
-import models.{PartialReturnPeriod, StandardPeriod, SubmissionStatus}
 import models.etmp.EtmpExclusion
 import models.etmp.EtmpExclusionReason.{NoLongerSupplies, Reversal}
+import models.{PartialReturnPeriod, StandardPeriod, SubmissionStatus}
 import org.mockito.ArgumentMatchers.any
-import org.mockito.{ArgumentMatchers, Mockito}
 import org.mockito.Mockito.when
+import org.mockito.{ArgumentMatchers, Mockito}
 import org.scalacheck.Gen
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.prop.TableDrivenPropertyChecks
-import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import org.scalatestplus.mockito.MockitoSugar.mock
-import pages.{EmptyWaypoints, NoOtherPeriodsAvailablePage, SoldGoodsPage, WantToUploadFilePage}
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
+import pages.fileUpload.WantToUploadFilePage
+import pages.{EmptyWaypoints, NoOtherPeriodsAvailablePage, SoldGoodsPage}
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import services.PartialReturnPeriodService
+import utils.FutureSyntax.FutureOps
 import viewmodels.yourAccount.{CurrentReturns, Return}
 import views.html.StartReturnView
 
@@ -52,7 +54,7 @@ class StartReturnControllerSpec
   val formProvider = new StartReturnFormProvider()
   val form: Form[Boolean] = formProvider()
 
-  lazy val startReturnRoute: String = routes.StartReturnController.onPageLoad(waypoints, period).url
+  lazy val startReturnRoute: String = routes.StartReturnController.onPageLoad(waypoints, iossNumber, period).url
 
   private val mockReturnStatusConnector: ReturnStatusConnector = mock[ReturnStatusConnector]
   private val mockPartialReturnPeriodService = mock[PartialReturnPeriodService]
@@ -92,8 +94,8 @@ class StartReturnControllerSpec
           val request = FakeRequest(GET, startReturnRoute)
           val result = route(application, request).value
 
-          status(result) mustBe SEE_OTHER
-          redirectLocation(result).value mustEqual routes.CannotStartReturnController.onPageLoad().url
+          status(result) `mustBe` SEE_OTHER
+          redirectLocation(result).value `mustBe` routes.CannotStartReturnController.onPageLoad().url
         }
       }
 
@@ -114,8 +116,7 @@ class StartReturnControllerSpec
             ArgumentMatchers.eq(iossNumber),
             ArgumentMatchers.eq(registrationWrapper),
             ArgumentMatchers.eq(period)
-          )(any()))
-            .thenReturn(Future.successful(None))
+          )(any())) thenReturn None.toFuture
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
             .overrides(bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector))
@@ -128,8 +129,8 @@ class StartReturnControllerSpec
 
             val view = application.injector.instanceOf[StartReturnView]
 
-            status(result) mustBe OK
-            contentAsString(result) mustBe view(form, waypoints, period, None, isFinalReturn = false, None, isIntermediary = false, companyName = "", List.empty)(request, messages(application)).toString
+            status(result) `mustBe` OK
+            contentAsString(result) `mustBe` view(form, waypoints, iossNumber, period, None, isFinalReturn = false, None, isIntermediary = false, companyName = "", List.empty)(request, messages(application)).toString
           }
         }
       }
@@ -151,8 +152,7 @@ class StartReturnControllerSpec
             ArgumentMatchers.eq(iossNumber),
             ArgumentMatchers.eq(registrationWrapper),
             ArgumentMatchers.eq(period)
-          )(any()))
-            .thenReturn(Future.successful(maybePartialReturn))
+          )(any())) thenReturn maybePartialReturn.toFuture
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
             .overrides(bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector))
@@ -165,10 +165,11 @@ class StartReturnControllerSpec
 
             val view = application.injector.instanceOf[StartReturnView]
 
-            status(result) mustBe OK
-            contentAsString(result) mustBe view(
+            status(result) `mustBe` OK
+            contentAsString(result) `mustBe` view(
               form,
               waypoints,
+              iossNumber,
               period,
               None,
               isFinalReturn = false,
@@ -185,8 +186,8 @@ class StartReturnControllerSpec
       "must redirect when the status is Complete or Excluded" in {
         val options = Table(
           ("status", "redirect call"),
-          (Complete, () => controllers.previousReturns.routes.SubmittedReturnForPeriodController.onPageLoad(EmptyWaypoints, period).url),
-          (Excluded, () => routes.CannotStartExcludedReturnController.onPageLoad().url)
+          (Complete, () => controllers.previousReturns.routes.SubmittedReturnForPeriodController.onPageLoad(EmptyWaypoints, iossNumber, period).url),
+          (Excluded, () => routes.CannotStartExcludedReturnController.onPageLoad(iossNumber).url)
         )
 
         forAll(options) { (submissionStatus, redirectCall) =>
@@ -206,8 +207,8 @@ class StartReturnControllerSpec
             val request = FakeRequest(GET, startReturnRoute)
             val result = route(application, request).value
 
-            status(result) mustBe SEE_OTHER
-            redirectLocation(result).value mustEqual redirectCall()
+            status(result) `mustBe` SEE_OTHER
+            redirectLocation(result).value `mustBe` redirectCall()
           }
         }
       }
@@ -227,8 +228,8 @@ class StartReturnControllerSpec
           val request = FakeRequest(GET, startReturnRoute)
           val result = route(application, request).value
 
-          status(result) mustBe SEE_OTHER
-          redirectLocation(result).value mustEqual routes.NoOtherPeriodsAvailableController.onPageLoad().url
+          status(result) `mustBe` SEE_OTHER
+          redirectLocation(result).value `mustBe` routes.NoOtherPeriodsAvailableController.onPageLoad(waypoints, iossNumber).url
         }
       }
 
@@ -254,8 +255,7 @@ class StartReturnControllerSpec
           ArgumentMatchers.eq(iossNumber),
           ArgumentMatchers.eq(registrationWrapperWithExclusion),
           ArgumentMatchers.eq(period)
-        )(any()))
-          .thenReturn(Future.successful(None))
+        )(any())) thenReturn None.toFuture
 
         val application = applicationBuilder(
           userAnswers = Some(emptyUserAnswers),
@@ -271,10 +271,11 @@ class StartReturnControllerSpec
 
           val view = application.injector.instanceOf[StartReturnView]
 
-          status(result) mustBe OK
-          contentAsString(result) mustBe view(
+          status(result) `mustBe` OK
+          contentAsString(result) `mustBe` view(
             form,
             waypoints,
+            iossNumber,
             period,
             Some(noLongerSuppliesExclusion),
             isFinalReturn = false,
@@ -294,8 +295,7 @@ class StartReturnControllerSpec
           ArgumentMatchers.eq(iossNumber),
           ArgumentMatchers.eq(registrationWrapper),
           ArgumentMatchers.eq(period)
-        )(any()))
-          .thenReturn(Future.successful(None))
+        )(any())) thenReturn None.toFuture
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
           .overrides(bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector))
@@ -306,7 +306,7 @@ class StartReturnControllerSpec
           val request = FakeRequest(GET, startReturnRoute)
           val result = route(application, request).value
 
-          status(result) mustBe OK
+          status(result) `mustBe` OK
           contentAsString(result) mustNot include("overdue return")
         }
       }
@@ -331,8 +331,7 @@ class StartReturnControllerSpec
           ArgumentMatchers.eq(iossNumber),
           ArgumentMatchers.eq(intermediaryRegistration),
           ArgumentMatchers.eq(period)
-        )(any()))
-          .thenReturn(Future.successful(None))
+        )(any())) thenReturn None.toFuture
 
         val application = applicationBuilder(
           userAnswers = Some(emptyUserAnswers),
@@ -347,7 +346,7 @@ class StartReturnControllerSpec
           val request = FakeRequest(GET, startReturnRoute)
           val result = route(application, request).value
 
-          status(result) mustBe OK
+          status(result) `mustBe` OK
           contentAsString(result) mustNot include("overdue return")
         }
       }
@@ -378,8 +377,7 @@ class StartReturnControllerSpec
           ArgumentMatchers.eq(iossNumber),
           ArgumentMatchers.eq(intermediaryRegistration),
           ArgumentMatchers.eq(period)
-        )(any()))
-          .thenReturn(Future.successful(None))
+        )(any())) thenReturn None.toFuture
 
         val application = applicationBuilder(
           userAnswers = Some(emptyUserAnswers),
@@ -394,7 +392,7 @@ class StartReturnControllerSpec
           val request = FakeRequest(GET, startReturnRoute)
           val result = route(application, request).value
 
-          status(result) mustBe OK
+          status(result) `mustBe` OK
           contentAsString(result) must include(previousPeriod.displayText)
           contentAsString(result) must include("overdue return")
         }
@@ -429,8 +427,7 @@ class StartReturnControllerSpec
           ArgumentMatchers.eq(iossNumber),
           ArgumentMatchers.eq(intermediaryRegistration),
           ArgumentMatchers.eq(period)
-        )(any()))
-          .thenReturn(Future.successful(None))
+        )(any())) thenReturn None.toFuture
 
         val application = applicationBuilder(
           userAnswers = Some(emptyUserAnswers),
@@ -445,7 +442,7 @@ class StartReturnControllerSpec
           val request = FakeRequest(GET, startReturnRoute)
           val result = route(application, request).value
 
-          status(result) mustBe OK
+          status(result) `mustBe` OK
           contentAsString(result) must include(period.displayText)
           contentAsString(result) must include(period1.displayText)
           contentAsString(result) must include("overdue return")
@@ -484,8 +481,7 @@ class StartReturnControllerSpec
           ArgumentMatchers.eq(iossNumber),
           ArgumentMatchers.eq(intermediaryRegistration),
           ArgumentMatchers.eq(period)
-        )(any()))
-          .thenReturn(Future.successful(None))
+        )(any())) thenReturn None.toFuture
 
         val application = applicationBuilder(
           userAnswers = Some(emptyUserAnswers),
@@ -500,13 +496,15 @@ class StartReturnControllerSpec
           val request = FakeRequest(GET, startReturnRoute)
           val result = route(application, request).value
 
-          status(result) mustBe OK
+          status(result) `mustBe` OK
           contentAsString(result) must include("4")
           contentAsString(result) must include("overdue return")
         }
       }
 
-      "must return OK and the correct view for a GET when a trader has reversed an exclusion and the period's last day is before their exclusion effective date" in {
+      "must return OK and the correct view for a GET when a trader has reversed an exclusion and the period's last day " +
+        "is before their exclusion effective date" in {
+
         val effectiveDate = period.lastDay.minusDays(numberOfDays)
 
         val reversalExclusion = EtmpExclusion(
@@ -528,8 +526,7 @@ class StartReturnControllerSpec
           ArgumentMatchers.eq(iossNumber),
           ArgumentMatchers.eq(registrationWrapperWithExclusion),
           ArgumentMatchers.eq(period)
-        )(any()))
-          .thenReturn(Future.successful(None))
+        )(any())) thenReturn None.toFuture
 
         val application = applicationBuilder(
           userAnswers = Some(emptyUserAnswers),
@@ -545,10 +542,11 @@ class StartReturnControllerSpec
 
           val view = application.injector.instanceOf[StartReturnView]
 
-          status(result) mustBe OK
-          contentAsString(result) mustBe view(
+          status(result) `mustBe` OK
+          contentAsString(result) `mustBe` view(
             form,
             waypoints,
+            iossNumber,
             period,
             Some(reversalExclusion),
             isFinalReturn = false,
@@ -588,8 +586,8 @@ class StartReturnControllerSpec
             .thenReturn(Future.successful(
               Right(emptyCurrentReturns.copy(returns = List(createReturn(submissionStatus, period))))
             ))
-          when(mockPartialReturnPeriodService.getPartialReturnPeriod(any(), any(), any())(any()))
-            .thenReturn(Future.successful(None))
+
+          when(mockPartialReturnPeriodService.getPartialReturnPeriod(any(), any(), any())(any())) thenReturn None.toFuture
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
             .configure(
@@ -606,8 +604,8 @@ class StartReturnControllerSpec
 
             val result = route(application, request).value
 
-            status(result) mustBe SEE_OTHER
-            redirectLocation(result).value mustBe SoldGoodsPage.route(waypoints).url
+            status(result) `mustBe` SEE_OTHER
+            redirectLocation(result).value `mustBe` SoldGoodsPage(iossNumber).route(waypoints).url
           }
         }
       }
@@ -626,8 +624,8 @@ class StartReturnControllerSpec
             .thenReturn(Future.successful(
               Right(emptyCurrentReturns.copy(returns = List(createReturn(submissionStatus, period))))
             ))
-          when(mockPartialReturnPeriodService.getPartialReturnPeriod(any(), any(), any())(any()))
-            .thenReturn(Future.successful(None))
+
+          when(mockPartialReturnPeriodService.getPartialReturnPeriod(any(), any(), any())(any())) thenReturn None.toFuture
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
             .configure(
@@ -644,8 +642,8 @@ class StartReturnControllerSpec
 
             val result = route(application, request).value
 
-            status(result) mustBe SEE_OTHER
-            redirectLocation(result).value mustBe WantToUploadFilePage.route(waypoints).url
+            status(result) `mustBe` SEE_OTHER
+            redirectLocation(result).value `mustBe` WantToUploadFilePage(iossNumber).route(waypoints).url
           }
         }
       }
@@ -664,8 +662,8 @@ class StartReturnControllerSpec
             .thenReturn(Future.successful(
               Right(emptyCurrentReturns.copy(returns = List(createReturn(submissionStatus, period))))
             ))
-          when(mockPartialReturnPeriodService.getPartialReturnPeriod(any(), any(), any())(any()))
-            .thenReturn(Future.successful(None))
+
+          when(mockPartialReturnPeriodService.getPartialReturnPeriod(any(), any(), any())(any())) thenReturn None.toFuture
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
             .overrides(bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector))
@@ -680,8 +678,8 @@ class StartReturnControllerSpec
 
             val result = route(application, request).value
 
-            status(result) mustBe SEE_OTHER
-            redirectLocation(result).value mustBe NoOtherPeriodsAvailablePage.route(waypoints).url
+            status(result) `mustBe` SEE_OTHER
+            redirectLocation(result).value `mustBe` NoOtherPeriodsAvailablePage(iossNumber).route(waypoints).url
           }
         }
       }
@@ -704,8 +702,8 @@ class StartReturnControllerSpec
 
           val result = route(application, request).value
 
-          status(result) mustBe SEE_OTHER
-          redirectLocation(result).value mustBe NoOtherPeriodsAvailablePage.route(waypoints).url
+          status(result) `mustBe` SEE_OTHER
+          redirectLocation(result).value `mustBe` NoOtherPeriodsAvailablePage(iossNumber).route(waypoints).url
         }
       }
 
@@ -713,8 +711,8 @@ class StartReturnControllerSpec
       "must redirect when the return is marked as complete or excluded as it is not current" in {
         val options = Table(
           ("status", "redirect call"),
-          (Complete, () => controllers.previousReturns.routes.SubmittedReturnForPeriodController.onPageLoad(EmptyWaypoints, period).url),
-          (Excluded, () => routes.CannotStartExcludedReturnController.onPageLoad().url)
+          (Complete, () => controllers.previousReturns.routes.SubmittedReturnForPeriodController.onPageLoad(EmptyWaypoints, iossNumber, period).url),
+          (Excluded, () => routes.CannotStartExcludedReturnController.onPageLoad(iossNumber).url)
         )
 
         forAll(options) { (submissionStatus, redirectCall) =>
@@ -737,8 +735,8 @@ class StartReturnControllerSpec
 
             val result = route(application, request).value
 
-            status(result) mustBe SEE_OTHER
-            redirectLocation(result).value mustBe redirectCall()
+            status(result) `mustBe` SEE_OTHER
+            redirectLocation(result).value `mustBe` redirectCall()
           }
         }
       }
@@ -759,8 +757,7 @@ class StartReturnControllerSpec
               Right(emptyCurrentReturns.copy(returns = List(createReturn(submissionStatus, period))))
             ))
 
-          when(mockPartialReturnPeriodService.getPartialReturnPeriod(any(), any(), any())(any()))
-            .thenReturn(Future.successful(None))
+          when(mockPartialReturnPeriodService.getPartialReturnPeriod(any(), any(), any())(any())) thenReturn None.toFuture
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
             .overrides(bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector))
@@ -778,8 +775,8 @@ class StartReturnControllerSpec
 
             val result = route(application, request).value
 
-            status(result) mustBe BAD_REQUEST
-            contentAsString(result) mustBe view(boundForm, waypoints, period, None, isFinalReturn = false, None, isIntermediary = false,
+            status(result) `mustBe` BAD_REQUEST
+            contentAsString(result) `mustBe` view(boundForm, waypoints, iossNumber, period, None, isFinalReturn = false, None, isIntermediary = false,
               companyName = "", List.empty)(request, messages(application)).toString
           }
         }
@@ -798,8 +795,7 @@ class StartReturnControllerSpec
               Right(emptyCurrentReturns.copy(returns = List(createReturn(submissionStatus, period))))
             ))
 
-          when(mockPartialReturnPeriodService.getPartialReturnPeriod(any(), any(), any())(any()))
-            .thenReturn(Future.successful(None))
+          when(mockPartialReturnPeriodService.getPartialReturnPeriod(any(), any(), any())(any())) thenReturn None.toFuture
 
           val effectiveDate = Gen.choose(
             period.firstDay.minusDays(1 + numberOfDays),
@@ -826,8 +822,8 @@ class StartReturnControllerSpec
 
             val result = route(application, request).value
 
-            status(result) mustEqual SEE_OTHER
-            redirectLocation(result).value mustEqual routes.ExcludedNotPermittedController.onPageLoad().url
+            status(result) `mustBe` SEE_OTHER
+            redirectLocation(result).value `mustBe` routes.ExcludedNotPermittedController.onPageLoad().url
           }
         }
       }

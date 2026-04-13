@@ -23,8 +23,8 @@ import play.api.i18n.Messages
 import queries.AllCorrectionPeriodsQuery
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
-import viewmodels.govuk.summarylist._
-import viewmodels.implicits._
+import viewmodels.govuk.summarylist.*
+import viewmodels.implicits.*
 
 object CorrectionReturnPeriodSummary {
 
@@ -44,7 +44,7 @@ object CorrectionReturnPeriodSummary {
         actions = Seq(
           ActionItemViewModel(
             "site.change",
-            VatPeriodCorrectionsListPage(period, addAnother = true).changeLink(waypoints, sourcePage).url
+            VatPeriodCorrectionsListPage(answers.iossNumber, period, addAnother = true).changeLink(waypoints, sourcePage).url
           ).withVisuallyHiddenText(messages("correctionReturnPeriod.change.hidden"))
             .withAttribute(("id", "change-correction-periods"))
         )

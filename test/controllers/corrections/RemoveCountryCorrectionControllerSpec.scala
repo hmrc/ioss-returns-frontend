@@ -17,17 +17,17 @@
 package controllers.corrections
 
 import base.SpecBase
-import controllers.routes
 import forms.corrections.RemoveCountryCorrectionFormProvider
 import models.{Country, UserAnswers}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
+import pages.JourneyRecoveryPage
 import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, RemoveCountryCorrectionPage, VatAmountCorrectionCountryPage}
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import queries.{CorrectionPeriodQuery, CorrectionToCountryQuery}
 import repositories.SessionRepository
 import utils.FutureSyntax.FutureOps
@@ -40,11 +40,11 @@ class RemoveCountryCorrectionControllerSpec extends SpecBase with MockitoSugar {
   private val form: Form[Boolean] = formProvider(country)
 
   private lazy val removeCountryCorrectionRoute: String =
-    controllers.corrections.routes.RemoveCountryCorrectionController.onPageLoad(waypoints, index, index).url
+    controllers.corrections.routes.RemoveCountryCorrectionController.onPageLoad(waypoints, iossNumber, index, index).url
 
   private val answers: UserAnswers = completedUserAnswersWithCorrections
-    .set(CorrectionReturnPeriodPage(index), period).success.value
-    .set(CorrectionCountryPage(index, index), country).success.value
+    .set(CorrectionReturnPeriodPage(iossNumber, index), period).success.value
+    .set(CorrectionCountryPage(iossNumber, index, index), country).success.value
 
   "RemoveCountryCorrection Controller" - {
 
@@ -59,8 +59,8 @@ class RemoveCountryCorrectionControllerSpec extends SpecBase with MockitoSugar {
 
         val view = application.injector.instanceOf[RemoveCountryCorrectionView]
 
-        status(result) mustBe OK
-        contentAsString(result) mustBe view(form, waypoints, period, index, index, country, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(form, waypoints, iossNumber, period, index, index, country, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -87,8 +87,8 @@ class RemoveCountryCorrectionControllerSpec extends SpecBase with MockitoSugar {
           .remove(CorrectionToCountryQuery(index, index)).success.value
           .remove(CorrectionPeriodQuery(index)).success.value
 
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe RemoveCountryCorrectionPage(index, index).navigate(waypoints, answers, expectedAnswers).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` RemoveCountryCorrectionPage(iossNumber, index, index).navigate(waypoints, answers, expectedAnswers).url
       }
     }
 
@@ -97,8 +97,8 @@ class RemoveCountryCorrectionControllerSpec extends SpecBase with MockitoSugar {
       val additionalCountry: Country = arbitraryCountry.arbitrary.suchThat(_ != country).sample.value
 
       val multipleAnswers: UserAnswers = answers
-        .set(CorrectionCountryPage(index, index + 1), additionalCountry).success.value
-        .set(VatAmountCorrectionCountryPage(index, index + 1), arbitraryBigDecimal.arbitrary.sample.value).success.value
+        .set(CorrectionCountryPage(iossNumber, index, index + 1), additionalCountry).success.value
+        .set(VatAmountCorrectionCountryPage(iossNumber, index, index + 1), arbitraryBigDecimal.arbitrary.sample.value).success.value
 
       val mockSessionRepository = mock[SessionRepository]
 
@@ -120,8 +120,8 @@ class RemoveCountryCorrectionControllerSpec extends SpecBase with MockitoSugar {
         val expectedAnswers = multipleAnswers
           .remove(CorrectionToCountryQuery(index, index)).success.value
 
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe RemoveCountryCorrectionPage(index, index).navigate(waypoints, multipleAnswers, expectedAnswers).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` RemoveCountryCorrectionPage(iossNumber, index, index).navigate(waypoints, multipleAnswers, expectedAnswers).url
       }
     }
 
@@ -140,8 +140,8 @@ class RemoveCountryCorrectionControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustBe BAD_REQUEST
-        contentAsString(result) mustBe view(boundForm, waypoints, period, index, index, country, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
+        status(result) `mustBe` BAD_REQUEST
+        contentAsString(result) `mustBe` view(boundForm, waypoints, iossNumber, period, index, index, country, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -154,8 +154,8 @@ class RemoveCountryCorrectionControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe routes.JourneyRecoveryController.onPageLoad().url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
 
@@ -170,8 +170,8 @@ class RemoveCountryCorrectionControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe routes.JourneyRecoveryController.onPageLoad().url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
   }

@@ -24,14 +24,14 @@
     button: ButtonGroup
 )
 
-@(form: Form[_], waypoints: Waypoints, period: Period, returnPeriod: Period, periodIndex: Index, isIntermediary: Boolean)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, iossNumber: String, period: Period, returnPeriod: Period, periodIndex: Index, isIntermediary: Boolean)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, if(isIntermediary) {
     messages("correctionReturnSinglePeriod.intermediary.title", returnPeriod.displayText)
 } else {
     messages("correctionReturnSinglePeriod.title", returnPeriod.displayText)
-})) {
-    @formHelper(action = controllers.corrections.routes.CorrectionReturnSinglePeriodController.onSubmit(waypoints, periodIndex), Symbol("autoComplete") -> "off") {
+}),maybeIossNumber = Some(iossNumber)) {
+    @formHelper(action = controllers.corrections.routes.CorrectionReturnSinglePeriodController.onSubmit(waypoints, iossNumber, periodIndex), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))
@@ -45,7 +45,7 @@
         )
 
         @button(
-            "site.continue", controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(waypoints, periodIndex).url, period, waypoints
+            "site.continue", controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(waypoints, iossNumber, periodIndex).url, iossNumber, period, waypoints
         )
     }
 }

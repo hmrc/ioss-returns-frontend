@@ -17,7 +17,6 @@
 @import viewmodels.InputWidth._
 @import components.ButtonGroup
 
-
 @this(
         layout: templates.Layout,
         formHelper: FormWithCSRF,
@@ -29,6 +28,7 @@
 @(
         form: Form[_],
         waypoints: Waypoints,
+        iossNumber: String,
         period: Period,
         countryIndex: Index,
         nextVatRateIndex: Index,
@@ -55,9 +55,9 @@
         messages("vatOnSales.title", currencyFormat(netSales), vatRate.rateForDisplay)
     },
     Some(caption)
-)) {
+), maybeIossNumber = Some(iossNumber)) {
 
-    @formHelper(action = routes.VatOnSalesController.onSubmit(waypoints, countryIndex, nextVatRateIndex), Symbol("autoComplete") -> "off") {
+    @formHelper(action = routes.VatOnSalesController.onSubmit(waypoints, iossNumber, countryIndex, nextVatRateIndex), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))
@@ -103,7 +103,7 @@
         )
 
         @button(
-            "site.continue", routes.VatOnSalesController.onPageLoad(waypoints, countryIndex, nextVatRateIndex).url, period, waypoints
+            "site.continue", routes.VatOnSalesController.onPageLoad(waypoints, iossNumber, countryIndex, nextVatRateIndex).url, iossNumber, period, waypoints
         )
     }
 }

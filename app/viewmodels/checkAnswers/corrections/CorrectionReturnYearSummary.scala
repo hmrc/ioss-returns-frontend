@@ -24,13 +24,13 @@ import play.api.i18n.Messages
 import play.twirl.api.HtmlFormat
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
-import viewmodels.govuk.summarylist._
-import viewmodels.implicits._
+import viewmodels.govuk.summarylist.*
+import viewmodels.implicits.*
 
 object CorrectionReturnYearSummary  {
 
   def row(answers: UserAnswers, waypoints: Waypoints, index: Index)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(CorrectionReturnYearPage(index)).map {
+    answers.get(CorrectionReturnYearPage(answers.iossNumber, index)).map {
       answer =>
 
         val value = ValueViewModel(
@@ -43,7 +43,7 @@ object CorrectionReturnYearSummary  {
           key     = "correctionReturnYear.checkYourAnswersLabel",
           value   = value,
           actions = Seq(
-            ActionItemViewModel("site.change", controllers.corrections.routes.CorrectionReturnYearController.onPageLoad(waypoints, index).url)
+            ActionItemViewModel("site.change", controllers.corrections.routes.CorrectionReturnYearController.onPageLoad(waypoints, answers.iossNumber, index).url)
               .withVisuallyHiddenText(messages("correctionReturnYear.change.hidden"))
           )
         )

@@ -57,13 +57,13 @@ class VatReturnService @Inject()(
   }
 
   private def getSales(answers: UserAnswers): ValidationResult[List[SalesToCountry]] =
-    answers.get(SoldGoodsPage) match {
+    answers.get(SoldGoodsPage(answers.iossNumber)) match {
       case Some(true) =>
         processSales(answers)
       case Some(false) =>
         List.empty[SalesToCountry].validNec
       case None =>
-        DataMissingError(SoldGoodsPage).invalidNec
+        DataMissingError(SoldGoodsPage(answers.iossNumber)).invalidNec
     }
 
   private def processSales(answers: UserAnswers): ValidationResult[List[SalesToCountry]] = {
@@ -84,15 +84,19 @@ class VatReturnService @Inject()(
     }
   }
 
-  private def processSalesToCountry(answers: UserAnswers, countryIndex: Index, vatRateIndex: Index): ValidationResult[List[SalesDetails]] =
-    answers.get(VatRatesFromCountryPage(countryIndex, vatRateIndex)) match {
+  private def processSalesToCountry(
+                                     answers: UserAnswers,
+                                     countryIndex: Index,
+                                     vatRateIndex: Index
+                                   ): ValidationResult[List[SalesDetails]] =
+    answers.get(VatRatesFromCountryPage(answers.iossNumber, countryIndex, vatRateIndex)) match {
       case Some(list) if list.nonEmpty =>
         list.zipWithIndex.map {
           case (vatRate, index) =>
             processSalesAtVatRate(answers, countryIndex, Index(index), vatRate)
         }.sequence
       case _ =>
-        DataMissingError(VatRatesFromCountryPage(countryIndex, vatRateIndex)).invalidNec
+        DataMissingError(VatRatesFromCountryPage(answers.iossNumber, countryIndex, vatRateIndex)).invalidNec
     }
 
   private def processSalesAtVatRate(

@@ -29,7 +29,7 @@ class KeepAliveController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def keepAlive: Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced.async {
+  def keepAlive(iossNumber: String): Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced(iossNumber).async {
     implicit request =>
       cc.sessionRepository
         .keepAlive(request.userId, request.iossNumber)

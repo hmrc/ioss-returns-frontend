@@ -21,24 +21,24 @@ import models.{Index, UserAnswers}
 import play.api.mvc.Call
 import queries.DeriveNumberOfVatRatesFromCountry
 
-case class DeleteVatRateSalesForCountryPage(countryIndex: Index, vatRateIndex: Index) extends Page {
+case class DeleteVatRateSalesForCountryPage(iossNumber: String, countryIndex: Index, vatRateIndex: Index) extends Page {
 
   override def route(waypoints: Waypoints): Call =
-    routes.DeleteVatRateSalesForCountryController.onPageLoad(waypoints, countryIndex, vatRateIndex)
+    routes.DeleteVatRateSalesForCountryController.onPageLoad(waypoints, iossNumber, countryIndex, vatRateIndex)
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
     answers.get(DeriveNumberOfVatRatesFromCountry(countryIndex)) match {
       case Some(n) if n > 0 =>
-        CheckSalesPage(countryIndex)
+        CheckSalesPage(answers.iossNumber, countryIndex)
       case _ =>
-        VatRatesFromCountryPage(countryIndex, vatRateIndex)
+        VatRatesFromCountryPage(answers.iossNumber, countryIndex, vatRateIndex)
     }
 
   override protected def nextPageCheckMode(waypoints: NonEmptyWaypoints, answers: UserAnswers): Page =
     answers.get(DeriveNumberOfVatRatesFromCountry(countryIndex)) match {
       case Some(n) if n > 0 =>
-        CheckSalesPage(countryIndex)
+        CheckSalesPage(answers.iossNumber, countryIndex)
       case _ =>
-        VatRatesFromCountryPage(countryIndex, vatRateIndex)
+        VatRatesFromCountryPage(answers.iossNumber, countryIndex, vatRateIndex)
     }
 }

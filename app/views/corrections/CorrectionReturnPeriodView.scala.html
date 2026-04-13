@@ -25,13 +25,13 @@
     button: ButtonGroup
 )
 
-@(form: Form[_], waypoints: Waypoints, period: Period, obligationMonths: Seq[Period], periodIndex: Index, isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, iossNumber: String, period: Period, obligationMonths: Seq[Period], periodIndex: Index, isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = title(form, messages("correctionReturnPeriod.title"))) {
+@layout(pageTitle = title(form, messages("correctionReturnPeriod.title")), maybeIossNumber = Some(iossNumber)) {
 
     @if(isIntermediary){<p class="govuk-caption-l hmrc-caption-l">@companyName</p>}
 
-    @formHelper(action = controllers.corrections.routes.CorrectionReturnPeriodController.onSubmit(waypoints, periodIndex), Symbol("autoComplete") -> "off") {
+    @formHelper(action = controllers.corrections.routes.CorrectionReturnPeriodController.onSubmit(waypoints, iossNumber, periodIndex), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form, errorLinkOverrides = Map("value" -> s"value_${obligationMonths.head.displayMonth}")))
@@ -46,7 +46,7 @@
         )
 
         @button(
-            "site.continue", controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(waypoints, periodIndex).url, period, waypoints
+            "site.continue", controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(waypoints, iossNumber, periodIndex).url, iossNumber, period, waypoints
         )
     }
 }

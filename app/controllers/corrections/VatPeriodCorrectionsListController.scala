@@ -16,7 +16,7 @@
 
 package controllers.corrections
 
-import controllers.actions._
+import controllers.actions.*
 import models.Period
 import models.corrections.PeriodWithCorrections
 import pages.Waypoints
@@ -28,11 +28,12 @@ import queries.AllCorrectionPeriodsQuery
 import services.VatPeriodCorrectionsService
 import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.ListItem
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.FutureSyntax.FutureOps
 import viewmodels.checkAnswers.corrections.VatPeriodCorrectionsListSummary
 import views.html.corrections.VatPeriodCorrectionsListView
 
 import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class VatPeriodCorrectionsListController @Inject()(
                                                     cc: AuthenticatedControllerComponents,
@@ -43,14 +44,14 @@ class VatPeriodCorrectionsListController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(waypoints: Waypoints, period: Period): Action[AnyContent] = cc.authAndRequireData().async {
+  def onPageLoad(waypoints: Waypoints, iossNumber: String, period: Period): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
     implicit request =>
-      VatPeriodCorrectionsListPage(period, addAnother = false).cleanup(request.userAnswers, cc).flatMap { result =>
+      VatPeriodCorrectionsListPage(request.iossNumber, period, addAnother = false).cleanup(request.userAnswers, cc).flatMap { result =>
         result.fold(
-          _ => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())),
+          _ => Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()).toFuture,
           _ =>
             findCorrectionsWithCountriesInAnswersWhereNoSubmissionMade(vatPeriodCorrectionsService) {
-              Redirect(controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onPageLoad(waypoints, period))
+              Redirect(controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onPageLoad(waypoints, request.iossNumber, period))
             } orWhenEmpty {
               val periodWithCorrections: Option[List[PeriodWithCorrections]] = request.userAnswers
                 .get(AllCorrectionPeriodsQuery)
@@ -58,13 +59,13 @@ class VatPeriodCorrectionsListController @Inject()(
 
               val completedCorrectionPeriodsModel: Seq[ListItem] = VatPeriodCorrectionsListSummary.getCompletedRows(waypoints, request.userAnswers)
 
-              Ok(view(waypoints, period, completedCorrectionPeriodsModel, incompletePeriods, isIntermediary = request.isIntermediary, companyName = request.companyName))
+              Ok(view(waypoints, request.iossNumber, period, completedCorrectionPeriodsModel, incompletePeriods, isIntermediary = request.isIntermediary, companyName = request.companyName))
             })
 
       }
   }
 
-  def onSubmit(waypoints: Waypoints, period: Period, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndRequireData() {
+  def onSubmit(waypoints: Waypoints, iossNumber: String, period: Period, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndRequireData(iossNumber) {
     implicit request =>
       val periodWithCorrections: Option[List[PeriodWithCorrections]] = request.userAnswers
         .get(AllCorrectionPeriodsQuery)
@@ -78,7 +79,7 @@ class VatPeriodCorrectionsListController @Inject()(
         request,
         correctionPeriodsWithNoVatCorrection
       ) orWhenEmpty {
-        Redirect(VatPeriodCorrectionsListPage(period, addAnother = false).navigate(waypoints, request.userAnswers, request.userAnswers).url)
+        Redirect(VatPeriodCorrectionsListPage(request.iossNumber, period, addAnother = false).navigate(waypoints, request.userAnswers, request.userAnswers).url)
       }
   }
 }

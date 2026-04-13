@@ -22,23 +22,21 @@ import play.api.libs.json.JsPath
 import play.api.mvc.Call
 import queries.{DeriveNumberOfCorrectionPeriods, DeriveNumberOfCorrections}
 
-case class RemoveCountryCorrectionPage(periodIndex: Index, countryIndex: Index) extends QuestionPage[Boolean] {
+case class RemoveCountryCorrectionPage(iossNumber: String, periodIndex: Index, countryIndex: Index) extends QuestionPage[Boolean] {
 
   override def path: JsPath = JsPath \ toString
 
   override def toString: String = "removeCountryCorrection"
 
   override def route(waypoints: Waypoints): Call =
-    controllers.corrections.routes.RemoveCountryCorrectionController.onPageLoad(waypoints, periodIndex, countryIndex)
+    controllers.corrections.routes.RemoveCountryCorrectionController.onPageLoad(waypoints, iossNumber, periodIndex, countryIndex)
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
     answers.get(DeriveNumberOfCorrections(periodIndex)) match {
-      case Some(n) if n > 0 => CorrectionListCountriesPage(periodIndex, Some(countryIndex))
+      case Some(n) if n > 0 => CorrectionListCountriesPage(answers.iossNumber, periodIndex, Some(countryIndex))
       case _ => answers.get(DeriveNumberOfCorrectionPeriods) match {
-        case Some(n) if n > 0 => VatPeriodCorrectionsListPage(answers.period, addAnother = false, None)
-        case _ => CorrectPreviousReturnPage(0)
+        case Some(n) if n > 0 => VatPeriodCorrectionsListPage(answers.iossNumber, answers.period, addAnother = false, None)
+        case _ => CorrectPreviousReturnPage(answers.iossNumber, 0)
       }
     }
-
-
 }

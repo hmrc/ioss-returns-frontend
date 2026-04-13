@@ -22,17 +22,17 @@ import pages.corrections.CorrectPreviousReturnPage
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
-case object SoldGoodsPage extends QuestionPage[Boolean] {
+case class SoldGoodsPage(iossNumber: String) extends QuestionPage[Boolean] {
 
   override def path: JsPath = JsPath \ toString
 
   override def toString: String = "soldGoods"
 
-  override def route(waypoints: Waypoints): Call = routes.SoldGoodsController.onPageLoad(waypoints)
+  override def route(waypoints: Waypoints): Call = routes.SoldGoodsController.onPageLoad(waypoints, iossNumber)
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
     answers.get(this).map {
-      case true => SoldToCountryPage(Index(0))
-      case false => CorrectPreviousReturnPage(0)
+      case true => SoldToCountryPage(answers.iossNumber, Index(0))
+      case false => CorrectPreviousReturnPage(answers.iossNumber, 0)
     }.orRecover
 }

@@ -22,7 +22,6 @@ import pages.EmptyWaypoints
 
 import java.time.Month
 
-
 class ExternalTargetPageSpec extends SpecBase {
 
   "ExternalTargetPage" - {
@@ -30,37 +29,37 @@ class ExternalTargetPageSpec extends SpecBase {
     "return the correct URL for YourAccount" in {
       val url = YourAccount.url
 
-      url mustBe controllers.routes.YourAccountController.onPageLoad().url
+      url `mustBe` controllers.routes.YourAccountController.onPageLoad(waypoints).url
     }
 
     "return the correct URL for ReturnsHistory" in {
 
-      val url = ReturnsHistory.url
+      val url = ReturnsHistory.url(iossNumber)
 
-      url mustBe controllers.previousReturns.routes.SubmittedReturnsHistoryController.onPageLoad().url
+      url `mustBe` controllers.previousReturns.routes.SubmittedReturnsHistoryController.onPageLoad(waypoints, iossNumber).url
     }
 
     "generate the correct URL for StartReturn with a given period" in {
 
       val period = StandardPeriod(2023, Month.JANUARY)
-      val url = StartReturn.url(period)
+      val url = StartReturn.url(iossNumber, period)
 
-      url mustBe controllers.routes.StartReturnController.onPageLoad(EmptyWaypoints, period).url
+      url `mustBe` controllers.routes.StartReturnController.onPageLoad(EmptyWaypoints, iossNumber, period).url
     }
 
     "generate the correct URL for ContinueReturn with a given period" in {
 
       val period = StandardPeriod(2023, Month.JANUARY)
-      val url = ContinueReturn.url(period)
+      val url = ContinueReturn.url(iossNumber, period)
 
-      url mustBe controllers.routes.YourAccountController.onPageLoad().url
+      url `mustBe` controllers.routes.ContinueReturnController.onPageLoad(iossNumber, period).url
     }
 
     "return the correct URL for Payment" in {
 
-      val url = Payment.url
+      val url = Payment.url(iossNumber)
 
-      url mustBe controllers.payments.routes.WhichVatPeriodToPayController.onPageLoad().url
+      url `mustBe` controllers.payments.routes.WhichVatPeriodToPayController.onPageLoad(waypoints, iossNumber).url
     }
   }
 }

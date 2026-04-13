@@ -28,7 +28,11 @@ sealed trait ParameterlessUrl {
 }
 
 sealed trait UrlWithPeriod {
-  def url(period: Period) : String
+  def url(iossNumber: String, period: Period) : String
+}
+
+sealed trait UrlWithOutPeriod {
+  def url(iossNumber: String) : String
 }
 
 sealed trait UrlWithPeriodAndAmount {
@@ -40,22 +44,22 @@ case object YourAccount extends ExternalTargetPage with ParameterlessUrl {
   override val url: String = controllers.routes.YourAccountController.onPageLoad().url
 }
 
-case object ReturnsHistory extends ExternalTargetPage with ParameterlessUrl {
+case object ReturnsHistory extends ExternalTargetPage with UrlWithOutPeriod {
   override val name: String = "returns-history"
-  override val url: String = controllers.previousReturns.routes.SubmittedReturnsHistoryController.onPageLoad().url
+  override def url(iossNumber: String): String = controllers.previousReturns.routes.SubmittedReturnsHistoryController.onPageLoad(iossNumber = iossNumber).url
 }
 
 case object StartReturn extends ExternalTargetPage with UrlWithPeriod {
   override val name: String = "start-your-return"
-  override def url(period: Period): String = controllers.routes.StartReturnController.onPageLoad(EmptyWaypoints, period).url
+  override def url(iossNumber: String, period: Period): String = controllers.routes.StartReturnController.onPageLoad(EmptyWaypoints, iossNumber, period).url
 }
 
 case object ContinueReturn extends ExternalTargetPage with UrlWithPeriod {
   override val name: String = "continue-your-return"
-  override def url(period: Period): String = controllers.routes.YourAccountController.onPageLoad().url // TODO - implement when save and come back exists
+  override def url(iossNumber: String, period: Period): String = controllers.routes.ContinueReturnController.onPageLoad(iossNumber, period).url
 }
 
-case object Payment extends ExternalTargetPage with ParameterlessUrl {
+case object Payment extends ExternalTargetPage with UrlWithOutPeriod {
   override val name: String = "make-payment"
-  override val url: String = controllers.payments.routes.WhichVatPeriodToPayController.onPageLoad().url
+  override def url(iossNumber: String): String = controllers.payments.routes.WhichVatPeriodToPayController.onPageLoad(iossNumber = iossNumber).url
 }

@@ -21,7 +21,7 @@ import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Arbitrary, Gen}
 import org.scalatest.TryValues
 import pages.QuestionPage
-import pages.corrections._
+import pages.corrections.*
 import play.api.libs.json.{JsValue, Json}
 
 import java.time.Month
@@ -68,7 +68,7 @@ trait UserAnswersGenerator extends TryValues {
 
   implicit lazy val arbitraryUserData: Arbitrary[UserAnswers] = {
 
-    import models._
+    import models.*
 
     Arbitrary {
       for {

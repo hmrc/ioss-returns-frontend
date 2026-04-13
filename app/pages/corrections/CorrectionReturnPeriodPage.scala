@@ -21,21 +21,18 @@ import pages.{JourneyRecoveryPage, Page, QuestionPage, Waypoints}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
-
-
-
-case class CorrectionReturnPeriodPage(index: Index) extends QuestionPage[Period] {
+case class CorrectionReturnPeriodPage(iossNumber: String, index: Index) extends QuestionPage[Period] {
 
   override def path: JsPath = JsPath \ "corrections" \ index.position \ toString
 
   override def toString: String = "correctionReturnPeriod"
 
   override def route(waypoints: Waypoints): Call =
-    controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(waypoints, index)
+    controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(waypoints, iossNumber, index)
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
-    answers.get(CorrectionReturnPeriodPage(index)) match {
-      case Some(_) => CorrectionCountryPage(index, Index(0))
+    answers.get(CorrectionReturnPeriodPage(answers.iossNumber, index)) match {
+      case Some(_) => CorrectionCountryPage(answers.iossNumber, index, Index(0))
       case _ => JourneyRecoveryPage
     }
 }

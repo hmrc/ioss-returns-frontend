@@ -58,40 +58,47 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
   def intermediaryRequired: IntermediaryRequiredFilter
   
   def intermediaryEnabled: IntermediaryEnabledFilter
-
+  
+  def getRegistrationWithoutUrlIoss: GetRegistrationWithoutUrlIossAction
+  
   def auth: ActionBuilder[IdentifierRequest, AnyContent] =
     actionBuilder andThen identify
 
-  def authAndGetRegistration(iossNumber: Option[String] = None): ActionBuilder[RegistrationRequest, AnyContent] = {
+  def authAndGetRegistrationWithoutUrlIoss: ActionBuilder[RegistrationRequest, AnyContent] = {
+    auth andThen
+      getRegistrationWithoutUrlIoss
+  }
+  
+  def authAndGetRegistration(iossNumber: String): ActionBuilder[RegistrationRequest, AnyContent] = {
     auth andThen
       getRegistration(iossNumber)
   }
-
-  def authAndGetRegistrationAndCheckBounced: ActionBuilder[RegistrationRequest, AnyContent] = {
-    authAndGetRegistration() andThen
+  
+  def authAndGetRegistrationAndCheckBounced(iossNumber: String): ActionBuilder[RegistrationRequest, AnyContent] = {
+    authAndGetRegistration(iossNumber) andThen
       checkBouncedEmail()
   }
-
-  def authAndGetOptionalData(): ActionBuilder[OptionalDataRequest, AnyContent] = {
-    authAndGetRegistrationAndCheckBounced andThen getData()
+  
+  def authAndGetOptionalData(iossNumber: String): ActionBuilder[OptionalDataRequest, AnyContent] = {
+    authAndGetRegistrationAndCheckBounced(iossNumber) andThen getData(iossNumber)
+  }
+  
+  def authAndRequireData(iossNumber: String): ActionBuilder[DataRequest, AnyContent] = {
+    authAndGetOptionalData(iossNumber) andThen requireData andThen checkExcludedTrader() andThen checkCommencementDate()
   }
 
-  def authAndRequireData(): ActionBuilder[DataRequest, AnyContent] = {
-    authAndGetOptionalData() andThen requireData andThen checkExcludedTrader() andThen checkCommencementDate()
-  }
-
-  def authAndGetDataAndCorrectionEligible(): ActionBuilder[DataRequest, AnyContent] = {
-    authAndRequireData() andThen
+  def authAndGetDataAndCorrectionEligible(iossNumber: String): ActionBuilder[DataRequest, AnyContent] = {
+    authAndRequireData(iossNumber) andThen
       requirePreviousReturns()
   }
 
   def authAndIntermediaryRequired(iossNumber: String): ActionBuilder[RegistrationRequest, AnyContent] = {
-    authAndGetRegistration(Some(iossNumber)) andThen
+    authAndGetRegistration(iossNumber) andThen
       intermediaryRequired()
   }
   
-  def authAndIntermediaryEnabled(): ActionBuilder[DataRequest, AnyContent] = {
-    authAndRequireData() andThen
+  def authAndIntermediaryEnabled(iossNumber: String): ActionBuilder[DataRequest, AnyContent] = {
+    authAndRequireData(iossNumber) andThen
       intermediaryEnabled()
   }
 
@@ -119,5 +126,6 @@ case class DefaultAuthenticatedControllerComponents @Inject()(
                                                                checkCommencementDateOptional: CheckCommencementDateOptionalFilter,
                                                                checkIsCurrentReturnPeriodFilter: CheckIsCurrentReturnPeriodFilter,
                                                                intermediaryRequired: IntermediaryRequiredFilter,
-                                                               intermediaryEnabled: IntermediaryEnabledFilter
+                                                               intermediaryEnabled: IntermediaryEnabledFilter,
+                                                               getRegistrationWithoutUrlIoss: GetRegistrationWithoutUrlIossAction
                                                              ) extends AuthenticatedControllerComponents

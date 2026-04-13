@@ -20,22 +20,21 @@ import base.SpecBase
 import config.Constants.{maxCurrencyAmount, minCurrencyAmount}
 import forms.RemainingVatRateFromCountryFormProvider
 import models.{Country, UserAnswers, VatOnSales, VatRateFromCountry}
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.{reset, times, verify, when}
 import org.scalacheck.Gen
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
-import pages._
+import pages.*
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import queries.{AllSalesByCountryQuery, OptionalSalesAtVatRate, SalesToCountryWithOptionalSales, VatRateWithOptionalSalesFromCountry}
 import repositories.SessionRepository
 import services.VatRateService
 import utils.FutureSyntax.FutureOps
 import views.html.RemainingVatRateFromCountryView
-
 
 class RemainingVatRateFromCountryControllerSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
 
@@ -72,15 +71,15 @@ class RemainingVatRateFromCountryControllerSpec extends SpecBase with MockitoSug
   )
 
   val completedUserAnswers: UserAnswers = emptyUserAnswers
-    .set(SoldGoodsPage, true).success.value
-    .set(SoldToCountryPage(index), country).success.value
-    .set(VatRatesFromCountryPage(index, index), currentlyAnsweredVatRates).success.value
-    .set(SalesToCountryPage(index, index), salesValue).success.value
-    .set(VatOnSalesPage(index, index), vatOnSalesValue).success.value
-    .set(SalesToCountryPage(index, index. +(1)), salesValue2).success.value
-    .set(VatOnSalesPage(index, index. +(1)), vatOnSalesValue2).success.value
+    .set(SoldGoodsPage(iossNumber), true).success.value
+    .set(SoldToCountryPage(iossNumber, index), country).success.value
+    .set(VatRatesFromCountryPage(iossNumber, index, index), currentlyAnsweredVatRates).success.value
+    .set(SalesToCountryPage(iossNumber, index, index), salesValue).success.value
+    .set(VatOnSalesPage(iossNumber, index, index), vatOnSalesValue).success.value
+    .set(SalesToCountryPage(iossNumber, index, index. +(1)), salesValue2).success.value
+    .set(VatOnSalesPage(iossNumber, index, index. +(1)), vatOnSalesValue2).success.value
 
-  lazy val remainingVatRateFromCountryRoute: String = routes.RemainingVatRateFromCountryController.onPageLoad(waypoints, index, index).url
+  lazy val remainingVatRateFromCountryRoute: String = routes.RemainingVatRateFromCountryController.onPageLoad(waypoints, iossNumber, index, index).url
 
   private val mockVatRateService = mock[VatRateService]
 
@@ -105,10 +104,10 @@ class RemainingVatRateFromCountryControllerSpec extends SpecBase with MockitoSug
 
         val view = application.injector.instanceOf[RemainingVatRateFromCountryView]
 
-        status(result) mustBe OK
+        status(result) `mustBe` OK
 
-        contentAsString(result) mustBe
-          view(form, waypoints, period, index, index, remainingVatRate.rateForDisplay, country, false, "CompanyName")(request, messages(application)).toString
+        contentAsString(result) `mustBe`
+          view(form, waypoints, iossNumber, period, index, index, remainingVatRate.rateForDisplay, country, false, "CompanyName")(request, messages(application)).toString
       }
     }
 
@@ -116,7 +115,7 @@ class RemainingVatRateFromCountryControllerSpec extends SpecBase with MockitoSug
 
       when(mockVatRateService.getRemainingVatRatesForCountry(any(), any(), any())(any())) thenReturn Seq(remainingVatRate).toFuture
 
-      val userAnswers = completedUserAnswers.set(RemainingVatRateFromCountryPage(index, index), true).success.value
+      val userAnswers = completedUserAnswers.set(RemainingVatRateFromCountryPage(iossNumber, index, index), true).success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers))
         .overrides(bind[VatRateService].toInstance(mockVatRateService))
@@ -129,10 +128,10 @@ class RemainingVatRateFromCountryControllerSpec extends SpecBase with MockitoSug
 
         val result = route(application, request).value
 
-        status(result) mustBe OK
+        status(result) `mustBe` OK
 
-        contentAsString(result) mustBe
-          view(form.fill(true), waypoints, period, index, index, remainingVatRate.rateForDisplay, country, false, "Company Name")(request, messages(application)).toString
+        contentAsString(result) `mustBe`
+          view(form.fill(true), waypoints, iossNumber, period, index, index, remainingVatRate.rateForDisplay, country, false, "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -158,11 +157,11 @@ class RemainingVatRateFromCountryControllerSpec extends SpecBase with MockitoSug
         val result = route(application, request).value
 
         val expectedAnswers = completedUserAnswers
-          .set(RemainingVatRateFromCountryPage(index, index), true).success.value
+          .set(RemainingVatRateFromCountryPage(iossNumber, index, index), true).success.value
           .set(AllSalesByCountryQuery(index), vatRatesAndSales).success.value
 
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe RemainingVatRateFromCountryPage(index, index).navigate(waypoints, completedUserAnswers, expectedAnswers).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` RemainingVatRateFromCountryPage(iossNumber, index, index).navigate(waypoints, completedUserAnswers, expectedAnswers).url
         verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
       }
     }
@@ -186,10 +185,10 @@ class RemainingVatRateFromCountryControllerSpec extends SpecBase with MockitoSug
 
         val result = route(application, request).value
 
-        status(result) mustBe BAD_REQUEST
+        status(result) `mustBe` BAD_REQUEST
 
-        contentAsString(result) mustBe
-          view(boundForm, waypoints, period, index, index, remainingVatRate.rateForDisplay, country, false, "Company Name")(request, messages(application)).toString
+        contentAsString(result) `mustBe`
+          view(boundForm, waypoints, iossNumber, period, index, index, remainingVatRate.rateForDisplay, country, false, "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -202,8 +201,8 @@ class RemainingVatRateFromCountryControllerSpec extends SpecBase with MockitoSug
 
         val result = route(application, request).value
 
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
 
@@ -216,8 +215,8 @@ class RemainingVatRateFromCountryControllerSpec extends SpecBase with MockitoSug
 
         val result = route(application, request).value
 
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
 
@@ -232,8 +231,8 @@ class RemainingVatRateFromCountryControllerSpec extends SpecBase with MockitoSug
 
         val result = route(application, request).value
 
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
   }

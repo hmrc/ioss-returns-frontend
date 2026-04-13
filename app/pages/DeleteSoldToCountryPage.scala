@@ -21,16 +21,16 @@ import models.{Index, UserAnswers}
 import play.api.mvc.Call
 import queries.DeriveNumberOfSales
 
-case class DeleteSoldToCountryPage(index: Index) extends Page {
+case class DeleteSoldToCountryPage(iossNumber: String, index: Index) extends Page {
 
   override def route(waypoints: Waypoints): Call =
-    routes.DeleteSoldToCountryController.onPageLoad(waypoints, index)
+    routes.DeleteSoldToCountryController.onPageLoad(waypoints, iossNumber, index)
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
     answers.get(DeriveNumberOfSales) match {
       case Some(n) if n > 0 =>
-        SoldToCountryListPage()
+        SoldToCountryListPage(answers.iossNumber)
       case _ =>
-        SoldGoodsPage
+        SoldGoodsPage(answers.iossNumber)
     }
 }

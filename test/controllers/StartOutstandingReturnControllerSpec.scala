@@ -26,7 +26,7 @@ import org.scalatestplus.mockito.MockitoSugar
 import pages.EmptyWaypoints
 import play.api.inject.bind
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import utils.FutureSyntax.FutureOps
 import viewmodels.yourAccount.{CurrentReturns, Return}
 
@@ -53,7 +53,6 @@ class StartOutstandingReturnControllerSpec extends SpecBase with MockitoSugar wi
             inProgress = false,
             isOldest = true
           )),
-          excluded = false,
           finalReturnsCompleted = false
         )).toFuture
 
@@ -62,12 +61,12 @@ class StartOutstandingReturnControllerSpec extends SpecBase with MockitoSugar wi
         .build()
 
       running(application) {
-        val request = FakeRequest(GET, routes.StartOutstandingReturnController.onPageLoad().url)
+        val request = FakeRequest(GET, routes.StartOutstandingReturnController.onPageLoad(iossNumber).url)
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result) mustBe Some(routes.StartReturnController.onPageLoad(EmptyWaypoints, period).url)
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result) `mustBe` Some(routes.StartReturnController.onPageLoad(EmptyWaypoints, iossNumber, period).url)
       }
     }
 
@@ -75,8 +74,7 @@ class StartOutstandingReturnControllerSpec extends SpecBase with MockitoSugar wi
 
       when(mockReturnStatusConnector.getCurrentReturns(any())(any())) thenReturn
         Right(CurrentReturns(
-          Seq.empty,
-          excluded = false,
+          returns = Seq.empty,
           finalReturnsCompleted = false
         )).toFuture
 
@@ -85,12 +83,12 @@ class StartOutstandingReturnControllerSpec extends SpecBase with MockitoSugar wi
         .build()
 
       running(application) {
-        val request = FakeRequest(GET, routes.StartOutstandingReturnController.onPageLoad().url)
+        val request = FakeRequest(GET, routes.StartOutstandingReturnController.onPageLoad(iossNumber).url)
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result) mustBe Some(routes.NoReturnsDueController.onPageLoad().url)
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result) `mustBe` Some(routes.NoReturnsDueController.onPageLoad(iossNumber).url)
       }
     }
   }

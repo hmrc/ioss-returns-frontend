@@ -24,11 +24,11 @@
         govukButton: GovukButton,
 )
 
-@(form: Form[_], period: Period, isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], iossNumber: String, period: Period, isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = title(form, messages("deleteReturn.title"))) {
+@layout(pageTitle = title(form, messages("deleteReturn.title")), maybeIossNumber = Some(iossNumber)) {
 
-  @formHelper(action = routes.DeleteReturnController.onSubmit(period), Symbol("autoComplete") -> "off") {
+  @formHelper(action = routes.DeleteReturnController.onSubmit(iossNumber, period), Symbol("autoComplete") -> "off") {
 
     @if(form.errors.nonEmpty) {
       @govukErrorSummary(ErrorSummaryViewModel(form))

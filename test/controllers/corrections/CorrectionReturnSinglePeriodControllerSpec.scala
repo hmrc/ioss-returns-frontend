@@ -17,18 +17,18 @@
 package controllers.corrections
 
 import base.SpecBase
-import controllers.routes
 import forms.corrections.CorrectionReturnSinglePeriodFormProvider
 import models.Period
 import models.etmp.{EtmpObligationDetails, EtmpObligationsFulfilmentStatus}
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
+import pages.JourneyRecoveryPage
 import pages.corrections.{CorrectionReturnPeriodPage, CorrectionReturnSinglePeriodPage}
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import repositories.SessionRepository
 import services.ObligationsService
 import utils.ConvertPeriodKey
@@ -36,7 +36,6 @@ import utils.FutureSyntax.FutureOps
 import views.html.corrections.CorrectionReturnSinglePeriodView
 
 import java.time.{Clock, Instant, LocalDate, ZoneId}
-import scala.concurrent.Future
 
 class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSugar {
 
@@ -63,9 +62,9 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
   val formProvider = new CorrectionReturnSinglePeriodFormProvider()
   val form: Form[Boolean] = formProvider()
 
-  private val userAnswers = emptyUserAnswers.set(CorrectionReturnPeriodPage(index), period).success.value
+  private val userAnswers = emptyUserAnswers.set(CorrectionReturnPeriodPage(iossNumber, index), period).success.value
 
-  lazy val correctionReturnSinglePeriodRoute: String = controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(waypoints, index).url
+  lazy val correctionReturnSinglePeriodRoute: String = controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(waypoints, iossNumber, index).url
 
   "CorrectionReturnSinglePeriod Controller" - {
 
@@ -86,8 +85,8 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
 
           val view = application.injector.instanceOf[CorrectionReturnSinglePeriodView]
 
-          status(result) mustEqual OK
-          contentAsString(result) mustEqual view(form, waypoints, period, monthNames.head, index, isIntermediary = false)(request, messages(application)).toString
+          status(result) `mustBe` OK
+          contentAsString(result) `mustBe` view(form, waypoints, iossNumber, period, monthNames.head, index, isIntermediary = false)(request, messages(application)).toString
         }
       }
     }
@@ -107,8 +106,8 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
 
         val result = route(application, request).value
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, waypoints, period, period, index, isIntermediary = false)(request, messages(application)).toString
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(form, waypoints, iossNumber, period, period, index, isIntermediary = false)(request, messages(application)).toString
       }
     }
 
@@ -118,7 +117,7 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
 
       when(obligationService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
 
-      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      when(mockSessionRepository.set(any())) thenReturn true.toFuture
 
       val application =
         applicationBuilder(userAnswers = Some(userAnswers), clock = Some(stubbedClock))
@@ -133,11 +132,11 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
 
         val result = route(application, request).value
         val expectedAnswers = emptyUserAnswers
-          .set(CorrectionReturnPeriodPage(index), period).success.value
-          .set(CorrectionReturnSinglePeriodPage(index), true).success.value
+          .set(CorrectionReturnPeriodPage(iossNumber, index), period).success.value
+          .set(CorrectionReturnSinglePeriodPage(iossNumber, index), true).success.value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual CorrectionReturnSinglePeriodPage(index).navigate(waypoints, emptyUserAnswers, expectedAnswers).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` CorrectionReturnSinglePeriodPage(iossNumber, index).navigate(waypoints, emptyUserAnswers, expectedAnswers).url
         verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
       }
     }
@@ -161,8 +160,8 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
 
         val result = route(application, request).value
 
-        status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, waypoints, period, period, index, isIntermediary = false)(request, messages(application)).toString
+        status(result) `mustBe` BAD_REQUEST
+        contentAsString(result) `mustBe` view(boundForm, waypoints, iossNumber, period, period, index, isIntermediary = false)(request, messages(application)).toString
       }
     }
 
@@ -175,8 +174,8 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
 
@@ -191,8 +190,8 @@ class CorrectionReturnSinglePeriodControllerSpec extends SpecBase with MockitoSu
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
   }

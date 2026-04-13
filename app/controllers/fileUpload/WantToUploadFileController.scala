@@ -30,31 +30,31 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class WantToUploadFileController @Inject()(
-                                         override val messagesApi: MessagesApi,
-                                         cc: AuthenticatedControllerComponents,
-                                         formProvider: WantToUploadFileFormProvider,
-                                         view: WantToUploadFileView
-                                 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                            override val messagesApi: MessagesApi,
+                                            cc: AuthenticatedControllerComponents,
+                                            formProvider: WantToUploadFileFormProvider,
+                                            view: WantToUploadFileView
+                                          )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
   val form: Form[Boolean] = formProvider()
 
-  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndIntermediaryEnabled() {
+  def onPageLoad(waypoints: Waypoints, iossNumber: String): Action[AnyContent] = cc.authAndIntermediaryEnabled(iossNumber) {
     implicit request =>
 
       val period = request.userAnswers.period
       val isIntermediary = request.isIntermediary
       val companyName = request.companyName
-      val preparedForm = request.userAnswers.get(WantToUploadFilePage) match {
+      val preparedForm = request.userAnswers.get(WantToUploadFilePage(iossNumber)) match {
         case None => form
         case Some(value) => form.fill(value)
       }
 
-      Ok(view(preparedForm, waypoints, period, isIntermediary, companyName))
+      Ok(view(preparedForm, waypoints, iossNumber, period, isIntermediary, companyName))
   }
 
-  def onSubmit(waypoints: Waypoints): Action[AnyContent] = cc.authAndRequireData().async {
+  def onSubmit(waypoints: Waypoints, iossNumber: String): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
     implicit request =>
 
       val period = request.userAnswers.period
@@ -62,13 +62,13 @@ class WantToUploadFileController @Inject()(
       val companyName = request.companyName
       form.bindFromRequest().fold(
         formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, waypoints, period, isIntermediary, companyName))),
+          Future.successful(BadRequest(view(formWithErrors, waypoints, iossNumber, period, isIntermediary, companyName))),
 
         value =>
           for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(WantToUploadFilePage, value))
-            _              <- cc.sessionRepository.set(updatedAnswers)
-          } yield Redirect(WantToUploadFilePage.navigate(waypoints, request.userAnswers, updatedAnswers).route)
+            updatedAnswers <- Future.fromTry(request.userAnswers.set(WantToUploadFilePage(iossNumber), value))
+            _ <- cc.sessionRepository.set(updatedAnswers)
+          } yield Redirect(WantToUploadFilePage(iossNumber).navigate(waypoints, request.userAnswers, updatedAnswers).route)
       )
   }
 }

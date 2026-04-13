@@ -17,11 +17,11 @@
 package controllers.fileUpload
 
 import base.SpecBase
-import controllers.routes
 import forms.WantToUploadFileFormProvider
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
+import pages.JourneyRecoveryPage
 import pages.fileUpload.WantToUploadFilePage
 import play.api.data.Form
 import play.api.inject.bind
@@ -29,9 +29,8 @@ import play.api.mvc.Call
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import repositories.SessionRepository
+import utils.FutureSyntax.FutureOps
 import views.html.fileUpload.WantToUploadFileView
-
-import scala.concurrent.Future
 
 class WantToUploadFileControllerSpec extends SpecBase with MockitoSugar {
 
@@ -40,7 +39,7 @@ class WantToUploadFileControllerSpec extends SpecBase with MockitoSugar {
   val formProvider = new WantToUploadFileFormProvider()
   val form: Form[Boolean] = formProvider()
 
-  lazy val wantToUploadFileRoute: String = controllers.fileUpload.routes.WantToUploadFileController.onPageLoad(waypoints).url
+  lazy val wantToUploadFileRoute: String = controllers.fileUpload.routes.WantToUploadFileController.onPageLoad(waypoints, iossNumber).url
 
   "WantToUploadFile Controller" - {
 
@@ -55,14 +54,14 @@ class WantToUploadFileControllerSpec extends SpecBase with MockitoSugar {
 
         val view = application.injector.instanceOf[WantToUploadFileView]
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, waypoints, period, false, companyName)(request, messages(application)).toString
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(form, waypoints, iossNumber, period, false, companyName)(request, messages(application)).toString
       }
     }
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = emptyUserAnswers.set(WantToUploadFilePage, true).success.value
+      val userAnswers = emptyUserAnswers.set(WantToUploadFilePage(iossNumber), true).success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -73,8 +72,8 @@ class WantToUploadFileControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(true), waypoints, period, false, companyName)(request, messages(application)).toString
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(form.fill(true), waypoints, iossNumber, period, false, companyName)(request, messages(application)).toString
       }
     }
 
@@ -82,7 +81,7 @@ class WantToUploadFileControllerSpec extends SpecBase with MockitoSugar {
 
       val mockSessionRepository = mock[SessionRepository]
 
-      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      when(mockSessionRepository.set(any())) thenReturn true.toFuture
 
       val application =
         applicationBuilder(userAnswers = Some(emptyUserAnswers))
@@ -98,8 +97,8 @@ class WantToUploadFileControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.fileUpload.routes.FileUploadController.onPageLoad(waypoints).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` controllers.fileUpload.routes.FileUploadController.onPageLoad(waypoints, iossNumber).url
       }
     }
 
@@ -118,8 +117,8 @@ class WantToUploadFileControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, waypoints, period, false, companyName)(request, messages(application)).toString
+        status(result) `mustBe` BAD_REQUEST
+        contentAsString(result) `mustBe` view(boundForm, waypoints, iossNumber, period, false, companyName)(request, messages(application)).toString
       }
     }
 
@@ -132,8 +131,8 @@ class WantToUploadFileControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
 
@@ -148,8 +147,8 @@ class WantToUploadFileControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
   }

@@ -42,12 +42,15 @@ class CheckIsCurrentReturnPeriodFilterImpl(startReturnPeriod: Period,
     returnStatusConnector.getCurrentReturns(request.iossNumber).map { (currentReturnsResponse: Either[ErrorResponse, CurrentReturns]) =>
       currentReturnsResponse match {
         case Left(value: ErrorResponse) => throw new RuntimeException(s"failed getting current returns: $value")
-        case Right(currentReturns: CurrentReturns) => processCurrentReturns(currentReturns)
+        case Right(currentReturns: CurrentReturns) => processCurrentReturns(request.iossNumber, currentReturns)
       }
     }
   }
 
-  private def processCurrentReturns(currentReturns: CurrentReturns): Option[Result] = {
+  private def processCurrentReturns(
+                                     iossNumber: String,
+                                     currentReturns: CurrentReturns
+                                   ): Option[Result] = {
     val exceptionOrReturn = NextReturnCalculation.calculateNonNextReturn(currentReturns.returns)
 
     exceptionOrReturn match {
@@ -55,8 +58,8 @@ class CheckIsCurrentReturnPeriodFilterImpl(startReturnPeriod: Period,
       case Right(actionableReturn) =>
         actionableReturn match {
           case NextReturn(_) =>
-            val redirect = remapCompleteOrExcludedToRedirect(currentReturns)
-              .getOrElse(Redirect(controllers.routes.NoOtherPeriodsAvailableController.onPageLoad(EmptyWaypoints)))
+            val redirect = remapCompleteOrExcludedToRedirect(iossNumber, currentReturns)
+              .getOrElse(Redirect(controllers.routes.NoOtherPeriodsAvailableController.onPageLoad(EmptyWaypoints, iossNumber)))
 
             Some(redirect)
           case other: OtherReturn =>
@@ -65,7 +68,7 @@ class CheckIsCurrentReturnPeriodFilterImpl(startReturnPeriod: Period,
                 None
 
               case _ =>
-                val redirect = remapCompleteOrExcludedToRedirect(currentReturns)
+                val redirect = remapCompleteOrExcludedToRedirect(iossNumber, currentReturns)
                   .getOrElse(Redirect(controllers.routes.CannotStartReturnController.onPageLoad()))
 
                 Some(redirect)
@@ -74,15 +77,18 @@ class CheckIsCurrentReturnPeriodFilterImpl(startReturnPeriod: Period,
     }
   }
 
-  private def remapCompleteOrExcludedToRedirect(currentReturns: CurrentReturns): Option[Result] = {
+  private def remapCompleteOrExcludedToRedirect(
+                                                 iossNumber: String,
+                                                 currentReturns: CurrentReturns
+                                               ): Option[Result] = {
     currentReturns.completeOrExcludedReturns.find(_.period == startReturnPeriod).map {
       foundCompleteOrExcludedReturn =>
         val submissionStatus = foundCompleteOrExcludedReturn.submissionStatus
         submissionStatus match {
           case Complete =>
-            Redirect(controllers.previousReturns.routes.SubmittedReturnForPeriodController.onPageLoad(EmptyWaypoints, startReturnPeriod))
+            Redirect(controllers.previousReturns.routes.SubmittedReturnForPeriodController.onPageLoad(EmptyWaypoints, iossNumber, startReturnPeriod))
           case Excluded | Expired =>
-            Redirect(controllers.routes.CannotStartExcludedReturnController.onPageLoad())
+            Redirect(controllers.routes.CannotStartExcludedReturnController.onPageLoad(iossNumber))
           case _ =>
             throw new RuntimeException(s"Unexpected status found in foundCompleteOrExcludedReturn $submissionStatus")
         }

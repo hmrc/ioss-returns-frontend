@@ -17,7 +17,7 @@
 package controllers.corrections
 
 import controllers.corrections.VatPeriodCorrectionsOpSyntax.{CorrectionsWithCountriesInAnswersWhereNoSubmissionMadeOps, PeriodOfCountryCorrectionsWithNoVatCorrectionInAnswersAndShowCountriesPageOps}
-import controllers.{routes => baseRoutes}
+import controllers.routes as baseRoutes
 import models.etmp.EtmpObligationsFulfilmentStatus
 import models.requests.DataRequest
 import models.{Index, Period}
@@ -30,12 +30,11 @@ import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
 
-
 trait VatPeriodCorrections {
   def findCorrectionsWithCountriesInAnswersWhereNoSubmissionMade(vatPeriodCorrectionsService: VatPeriodCorrectionsService)(block: => Result) = {
     CorrectionsWithCountriesInAnswersWhereNoSubmissionMadeOps((vatPeriodCorrectionsService, block))
   }
-
+  
   def findPeriodOfCountryCorrectionsWithNoVatCorrectionInAnswersAndShowCountriesPage(waypoints: Waypoints,
                                                                                      period: Period,
                                                                                      incompletePromptShown: Boolean,
@@ -73,7 +72,7 @@ object VatPeriodCorrectionsOpSyntax {
               val correctionPeriodsWhereCountryCorrectionsEntered: List[Period] = request.userAnswers.get(DeriveCompletedCorrectionPeriods).getOrElse(List())
 
               val uncompletedCorrectionPeriods: List[Period] = allPeriodsOfCompletedStatuses
-                .map(Period.fromKey(_))
+                .map(Period.fromKey)
                 .diff(correctionPeriodsWhereCountryCorrectionsEntered).distinct.toList
 
               if (uncompletedCorrectionPeriods.nonEmpty) {
@@ -114,11 +113,11 @@ object VatPeriodCorrectionsOpSyntax {
           correctionPeriodsWhereCountryCorrectionsEntered,
           incompletePeriodsWithCountryButNoVatCorrection
         ).map(index =>
-          Redirect(controllers.corrections.routes.CorrectionListCountriesController.onPageLoad(waypoints, Index(index)))
+          Redirect(controllers.corrections.routes.CorrectionListCountriesController.onPageLoad(waypoints, request.iossNumber, Index(index)))
         )
           .getOrElse(Redirect(baseRoutes.JourneyRecoveryController.onPageLoad()))
       } else {
-        Redirect(routes.VatPeriodCorrectionsListController.onPageLoad(waypoints, period))
+        Redirect(routes.VatPeriodCorrectionsListController.onPageLoad(waypoints, request.iossNumber, period))
       }
     }
 

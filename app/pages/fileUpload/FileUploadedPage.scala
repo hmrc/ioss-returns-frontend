@@ -22,31 +22,31 @@ import pages.{CheckYourAnswersPage, Page, QuestionPage, SoldGoodsPage, Waypoints
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
-case object FileUploadedPage extends QuestionPage[Boolean] {
+case class FileUploadedPage(iossNumber: String) extends QuestionPage[Boolean] {
 
   override def path: JsPath = JsPath \ toString
 
   override def toString: String = "fileUploaded"
 
-  override def route(waypoints: Waypoints): Call = controllers.fileUpload.routes.FileUploadedController.onPageLoad(waypoints)
+  override def route(waypoints: Waypoints): Call = controllers.fileUpload.routes.FileUploadedController.onPageLoad(waypoints, iossNumber)
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page = {
-    val status = answers.get(FileUploadStatusPage).map(_.toUpperCase)
+    val status = answers.get(FileUploadStatusPage(answers.iossNumber)).map(_.toUpperCase)
     (status, answers.get(this)) match {
       case (Some("UPLOADED"), Some(true)) =>
-        if (answers.isDefined(CorrectPreviousReturnPage(0))) {
-          CheckYourAnswersPage
+        if (answers.isDefined(CorrectPreviousReturnPage(answers.iossNumber, 0))) {
+          CheckYourAnswersPage(answers.iossNumber)
         } else {
-          CorrectPreviousReturnPage(0)
+          CorrectPreviousReturnPage(answers.iossNumber, 0)
         }
       case (Some("UPLOADED"), Some(false)) =>
-        FileUploadPage
+        FileUploadPage(answers.iossNumber)
 
       case (Some("FAILED"), Some(true)) =>
-        FileUploadPage
+        FileUploadPage(answers.iossNumber)
 
       case (Some("FAILED"), Some(false)) =>
-        SoldGoodsPage
+        SoldGoodsPage(answers.iossNumber)
 
       case _ =>
         this

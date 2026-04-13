@@ -29,10 +29,10 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.inject.bind
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import services.{ObligationsService, PaymentsService, PreviousRegistrationService}
 import testUtils.EtmpVatReturnData.etmpVatReturn
-import testUtils.PeriodWithFinancialData._
+import testUtils.PeriodWithFinancialData.*
 import testUtils.PreviousRegistrationData.previousRegistrations
 import utils.FutureSyntax.FutureOps
 import views.html.previousReturns.SubmittedReturnsHistoryView
@@ -70,14 +70,14 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
         when(mockPaymentsService.prepareFinancialDataWithIossNumber(any())(any(), any())) thenReturn prepareData.toFuture
         when(mockPreviousRegistrationService.getPreviousRegistrations(any())(any())) thenReturn previousRegistrations.toFuture
 
-        val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
+        val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad(waypoints, iossNumber).url)
 
         val result = route(application, request).value
 
         val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
 
-        status(result) mustBe OK
-        contentAsString(result) mustBe view(waypoints, periodsWithFinancialData, previousRegistrations, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(waypoints, iossNumber, periodsWithFinancialData, previousRegistrations, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -97,14 +97,14 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
         when(mockPaymentsService.prepareFinancialDataWithIossNumber(any())(any(), any())) thenReturn emptyPrepareData.toFuture
         when(mockPreviousRegistrationService.getPreviousRegistrations(any())(any())) thenReturn previousRegistrations.toFuture
 
-        val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
+        val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad(waypoints, iossNumber).url)
 
         val result = route(application, request).value
 
         val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
 
-        status(result) mustBe OK
-        contentAsString(result) mustBe view(waypoints, periodsWithFinancialData, previousRegistrations, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(waypoints, iossNumber, periodsWithFinancialData, previousRegistrations, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -149,14 +149,14 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
         when(mockPreviousRegistrationService.getPreviousRegistrations(any())(any())) thenReturn previousRegistrations.toFuture
         when(mockVatReturnConnector.getForIossNumber(any(), any())(any())) thenReturn Right(etmpVatReturn).toFuture
 
-        val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
+        val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad(waypoints, iossNumber).url)
 
         val result = route(application, request).value
 
         val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
 
-        status(result) mustBe OK
-        contentAsString(result) mustBe view(waypoints, periodsWithFinancialData, previousRegistrations, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(waypoints, iossNumber, periodsWithFinancialData, previousRegistrations, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -207,14 +207,14 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
         when(mockPreviousRegistrationService.getPreviousRegistrations(any())(any())) thenReturn previousRegistrations.toFuture
         when(mockVatReturnConnector.getForIossNumber(any(), any())(any())) thenReturn Right(emptyCorrectionsAndGoodsSuppliedVatReturn).toFuture
 
-        val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
+        val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad(waypoints, iossNumber).url)
 
         val result = route(application, request).value
 
         val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
 
-        status(result) mustBe OK
-        contentAsString(result) mustBe view(waypoints, periodsWithFinancialData, previousRegistrations, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(waypoints, iossNumber, periodsWithFinancialData, previousRegistrations, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -258,14 +258,14 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
         when(mockPreviousRegistrationService.getPreviousRegistrations(any())(any())) thenReturn previousRegistrations.toFuture
         when(mockPaymentsService.prepareFinancialDataWithIossNumber(any())(any(), any())) thenReturn prepareData.toFuture
 
-        val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
+        val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad(waypoints, iossNumber).url)
 
         val result = route(application, request).value
 
         val view = application.injector.instanceOf[SubmittedReturnsHistoryView]
 
-        status(result) mustBe OK
-        contentAsString(result) mustBe view(waypoints, periodsWithFinancialData, previousRegistrations, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(waypoints, iossNumber, periodsWithFinancialData, previousRegistrations, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -283,11 +283,11 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
         when(mockPaymentsService.prepareFinancialDataWithIossNumber(any())(any(), any())) thenReturn Future.failed(new Exception("Some exception"))
         when(mockPreviousRegistrationService.getPreviousRegistrations(any())(any())) thenReturn previousRegistrations.toFuture
 
-        val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
+        val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad(waypoints, iossNumber).url)
 
         val result = route(application, request).value
 
-        whenReady(result.failed) { exp => exp mustBe a[Exception] }
+        whenReady(result.failed) { exp => exp `mustBe` a[Exception] }
       }
     }
 
@@ -307,12 +307,12 @@ class SubmittedReturnsHistoryControllerSpec extends SpecBase with BeforeAndAfter
         when(mockPreviousRegistrationService.getPreviousRegistrations(any())(any())) thenReturn previousRegistrations.toFuture
         when(mockVatReturnConnector.getForIossNumber(any(), any())(any())) thenReturn Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "error")).toFuture
 
-        val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad().url)
+        val request = FakeRequest(GET, routes.SubmittedReturnsHistoryController.onPageLoad(waypoints, iossNumber).url)
 
         val result = route(application, request).value.failed
 
         whenReady(result) { exp =>
-          exp mustBe a[IllegalStateException]
+          exp `mustBe` a[IllegalStateException]
           exp.getMessage must include(exp.getLocalizedMessage)
         }
       }

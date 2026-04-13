@@ -23,18 +23,18 @@ import repositories.SessionRepository
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class DataRetrievalAction(sessionRepository: SessionRepository)
+class DataRetrievalAction(sessionRepository: SessionRepository, iossNumber: String)
                          (implicit val executionContext: ExecutionContext)
   extends ActionTransformer[RegistrationRequest, OptionalDataRequest] {
 
   override protected def transform[A](request: RegistrationRequest[A]): Future[OptionalDataRequest[A]] =
-    sessionRepository.get(request.userId, request.iossNumber).map { maybeUserAnswers =>
+    sessionRepository.get(request.userId, iossNumber).map { maybeUserAnswers =>
       OptionalDataRequest(
         request.request,
         request.enrolments,
         request.credentials,
         request.vrn,
-        request.iossNumber,
+        iossNumber,
         request.companyName,
         request.registrationWrapper,
         request.intermediaryNumber,
@@ -46,6 +46,6 @@ class DataRetrievalAction(sessionRepository: SessionRepository)
 class DataRetrievalActionProvider @Inject()(repository: SessionRepository)
                                            (implicit ec: ExecutionContext) {
 
-  def apply(): DataRetrievalAction =
-    new DataRetrievalAction(repository)
+  def apply(iossNumber: String): DataRetrievalAction =
+    new DataRetrievalAction(repository, iossNumber)
 }

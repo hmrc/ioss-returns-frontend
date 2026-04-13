@@ -23,14 +23,13 @@ import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalacheck.Arbitrary
 import org.scalatestplus.mockito.MockitoSugar
-import pages.SoldToCountryPage
+import pages.{JourneyRecoveryPage, SoldToCountryPage}
 import play.api.inject.bind
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import repositories.SessionRepository
+import utils.FutureSyntax.FutureOps
 import views.html.SoldToCountryView
-
-import scala.concurrent.Future
 
 class SoldToCountryControllerSpec extends SpecBase with MockitoSugar {
 
@@ -38,7 +37,7 @@ class SoldToCountryControllerSpec extends SpecBase with MockitoSugar {
   private val form = formProvider(index, Seq.empty)
   private val country: Country = Arbitrary.arbitrary[Country].sample.value
 
-  lazy val soldToCountryRoute: String = routes.SoldToCountryController.onPageLoad(waypoints, index).url
+  lazy val soldToCountryRoute: String = routes.SoldToCountryController.onPageLoad(waypoints, iossNumber, index).url
 
   "SoldToCountry Controller" - {
 
@@ -53,14 +52,14 @@ class SoldToCountryControllerSpec extends SpecBase with MockitoSugar {
 
         val view = application.injector.instanceOf[SoldToCountryView]
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, waypoints, period, index, false, "Company Name")(request, messages(application)).toString
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(form, waypoints, iossNumber, period, index, false, "Company Name")(request, messages(application)).toString
       }
     }
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = emptyUserAnswers.set(SoldToCountryPage(index), country).success.value
+      val userAnswers = emptyUserAnswers.set(SoldToCountryPage(iossNumber, index), country).success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -71,8 +70,8 @@ class SoldToCountryControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(country), waypoints, period, index, false, "Company Name")(request, messages(application)).toString
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(form.fill(country), waypoints, iossNumber, period, index, false, "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -80,7 +79,7 @@ class SoldToCountryControllerSpec extends SpecBase with MockitoSugar {
 
       val mockSessionRepository = mock[SessionRepository]
 
-      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      when(mockSessionRepository.set(any())) thenReturn true.toFuture
 
       val application =
         applicationBuilder(userAnswers = Some(emptyUserAnswers))
@@ -96,8 +95,8 @@ class SoldToCountryControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.VatRatesFromCountryController.onPageLoad(waypoints, index).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` routes.VatRatesFromCountryController.onPageLoad(waypoints, iossNumber, index).url
       }
     }
 
@@ -116,8 +115,8 @@ class SoldToCountryControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, waypoints, period, index, false, "Company Name")(request, messages(application)).toString
+        status(result) `mustBe` BAD_REQUEST
+        contentAsString(result) `mustBe` view(boundForm, waypoints, iossNumber, period, index, false, "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -130,8 +129,8 @@ class SoldToCountryControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
 
@@ -146,8 +145,8 @@ class SoldToCountryControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
   }

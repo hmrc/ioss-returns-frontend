@@ -38,10 +38,8 @@ import testUtils.RegistrationData.{emptyUserAnswers, testCredentials}
 
 import java.time.LocalDate
 
-
 class CompletionChecksSpec extends SpecBase with MockitoSugar {
-
-
+  
   implicit val request: DataRequest[AnyContent] = mock[DataRequest[AnyContent]]
   private val country = arbitrary[Country].sample.value
   private val vatAmountOnSales = 100
@@ -148,7 +146,7 @@ class CompletionChecksSpec extends SpecBase with MockitoSugar {
 
           val result = TestCompletionChecks.getIncompleteCorrectionsToCountry(index, index)
 
-          result mustBe None
+          result `mustBe` None
         }
       }
 
@@ -164,7 +162,7 @@ class CompletionChecksSpec extends SpecBase with MockitoSugar {
 
           val result = TestCompletionChecks.getIncompleteCorrectionsToCountry(index, index)
 
-          result mustBe Some(incompleteCorrection)
+          result `mustBe` Some(incompleteCorrection)
         }
       }
     }
@@ -183,7 +181,7 @@ class CompletionChecksSpec extends SpecBase with MockitoSugar {
 
           val result = TestCompletionChecks.getIncompleteCorrections(index)
 
-          result mustBe empty
+          result `mustBe` empty
         }
       }
 
@@ -199,7 +197,7 @@ class CompletionChecksSpec extends SpecBase with MockitoSugar {
 
           val result = TestCompletionChecks.getIncompleteCorrections(index)
 
-          result mustBe List(incompleteCorrection)
+          result `mustBe` List(incompleteCorrection)
         }
       }
     }
@@ -221,7 +219,7 @@ class CompletionChecksSpec extends SpecBase with MockitoSugar {
             List(CorrectionToCountry(country, None))
           )
 
-          result mustBe None
+          result `mustBe` None
         }
       }
 
@@ -237,7 +235,7 @@ class CompletionChecksSpec extends SpecBase with MockitoSugar {
 
           val result = TestCompletionChecks.firstIndexedIncompleteCorrection(index, List(incompleteCorrection))
 
-          result mustBe Some((incompleteCorrection, 0))
+          result `mustBe` Some((incompleteCorrection, 0))
         }
       }
     }
@@ -258,7 +256,7 @@ class CompletionChecksSpec extends SpecBase with MockitoSugar {
 
           val result = TestCompletionChecks.getIncompleteVatRateAndSales(index)
 
-           result mustBe empty
+           result `mustBe` empty
         }
 
       }
@@ -276,7 +274,7 @@ class CompletionChecksSpec extends SpecBase with MockitoSugar {
 
           val result = TestCompletionChecks.getIncompleteVatRateAndSales(index)
 
-           result mustBe Seq((incompleteVatRateNoSales, 0))
+           result `mustBe` Seq((incompleteVatRateNoSales, 0))
         }
       }
 
@@ -293,7 +291,7 @@ class CompletionChecksSpec extends SpecBase with MockitoSugar {
 
           val result = TestCompletionChecks.getIncompleteVatRateAndSales(index)
 
-          result mustBe Seq((incompleteVatRateNoVat, 0))
+          result `mustBe` Seq((incompleteVatRateNoVat, 0))
         }
       }
     }
@@ -314,7 +312,7 @@ class CompletionChecksSpec extends SpecBase with MockitoSugar {
 
           val result = TestCompletionChecks.getCountriesWithIncompleteSales()
 
-          result mustBe empty
+          result `mustBe` empty
         }
       }
 
@@ -332,7 +330,7 @@ class CompletionChecksSpec extends SpecBase with MockitoSugar {
 
           val result = TestCompletionChecks.getCountriesWithIncompleteSales()
 
-          result mustBe List(country)
+          result `mustBe` List(country)
         }
       }
 
@@ -357,7 +355,7 @@ class CompletionChecksSpec extends SpecBase with MockitoSugar {
 
           val result = TestCompletionChecks.getCountriesWithIncompleteSales()
 
-          result mustBe List(country, secondCountry)
+          result `mustBe` List(country, secondCountry)
         }
       }
 
@@ -381,7 +379,7 @@ class CompletionChecksSpec extends SpecBase with MockitoSugar {
 
           val result = TestCompletionChecks.firstIndexedIncompleteCountrySales(noIncompleteCountries)
 
-          result mustBe empty
+          result `mustBe` empty
         }
       }
 
@@ -400,7 +398,7 @@ class CompletionChecksSpec extends SpecBase with MockitoSugar {
 
           val result = TestCompletionChecks.firstIndexedIncompleteCountrySales(incompleteCountries)
 
-          result mustBe Some((vatRateAndSalesFromCountryIncomplete, 0))
+          result `mustBe` Some((vatRateAndSalesFromCountryIncomplete, 0))
         }
       }
     }
@@ -410,7 +408,7 @@ class CompletionChecksSpec extends SpecBase with MockitoSugar {
       "must return true if the SoldGoods page has been answered" in {
 
         val userAnswers = emptyUserAnswers
-          .set(SoldGoodsPage, false).success.value
+          .set(SoldGoodsPage(iossNumber), false).success.value
 
         val application = applicationBuilder(Some(userAnswers)).build()
 
@@ -419,7 +417,7 @@ class CompletionChecksSpec extends SpecBase with MockitoSugar {
 
           val result = TestCompletionChecks.soldGoodsAnswered
 
-          result mustBe true
+          result `mustBe` true
         }
       }
 
@@ -434,7 +432,7 @@ class CompletionChecksSpec extends SpecBase with MockitoSugar {
 
           val result = TestCompletionChecks.soldGoodsAnswered
 
-          result mustBe false
+          result `mustBe` false
         }
       }
     }
@@ -444,7 +442,7 @@ class CompletionChecksSpec extends SpecBase with MockitoSugar {
       "must return true if CorrectPreviousReturn page has been answered and there is more than one fulfilled obligation" in {
 
         val userAnswers = emptyUserAnswers
-          .set(CorrectPreviousReturnPage(0), true).success.value
+          .set(CorrectPreviousReturnPage(iossNumber, 0), true).success.value
 
         val application = applicationBuilder(Some(userAnswers)).build()
 
@@ -453,14 +451,14 @@ class CompletionChecksSpec extends SpecBase with MockitoSugar {
 
           val result = TestCompletionChecks.correctPreviousReturnAnswered(numberOfFulfilledObligations = 2)
 
-          result mustBe Some(true)
+          result `mustBe` Some(true)
         }
       }
 
       "must return none if CorrectPreviousReturn page has been answered but there are no fulfilled obligations" in {
 
         val userAnswers = emptyUserAnswers
-          .set(CorrectPreviousReturnPage(0), true).success.value
+          .set(CorrectPreviousReturnPage(iossNumber, 0), true).success.value
 
         val application = applicationBuilder(Some(userAnswers)).build()
 
@@ -469,7 +467,7 @@ class CompletionChecksSpec extends SpecBase with MockitoSugar {
 
           val result = TestCompletionChecks.correctPreviousReturnAnswered(numberOfFulfilledObligations = 0)
 
-          result mustBe empty
+          result `mustBe` empty
         }
       }
 
@@ -484,7 +482,7 @@ class CompletionChecksSpec extends SpecBase with MockitoSugar {
 
           val result = TestCompletionChecks.correctPreviousReturnAnswered(numberOfFulfilledObligations = 2)
 
-          result mustBe Some(false)
+          result `mustBe` Some(false)
         }
       }
 
@@ -503,14 +501,14 @@ class CompletionChecksSpec extends SpecBase with MockitoSugar {
 
           val result = TestCompletionChecks.incompleteReturnsJourneyRedirect(waypoints, numberOfFulfilledObligations = 2)
 
-          result mustBe Some(Redirect(routes.SoldGoodsController.onPageLoad(waypoints)))
+          result `mustBe` Some(Redirect(routes.SoldGoodsController.onPageLoad(waypoints, iossNumber)))
         }
       }
 
       "must redirect to the CorrectPreviousReturn controller if it has not been answered" in {
 
         val userAnswers = emptyUserAnswers
-          .set(SoldGoodsPage, false).success.value
+          .set(SoldGoodsPage(iossNumber), false).success.value
 
         val application = applicationBuilder(Some(userAnswers)).build()
 
@@ -519,15 +517,15 @@ class CompletionChecksSpec extends SpecBase with MockitoSugar {
 
           val result = TestCompletionChecks.incompleteReturnsJourneyRedirect(waypoints, numberOfFulfilledObligations = 2)
 
-          result mustBe Some(Redirect(corrections.routes.CorrectPreviousReturnController.onPageLoad(waypoints)))
+          result `mustBe` Some(Redirect(corrections.routes.CorrectPreviousReturnController.onPageLoad(waypoints, iossNumber)))
         }
       }
 
       "must return none when SoldGoods and CorrectPreviousReturn have been answered" in {
 
         val userAnswers = emptyUserAnswers
-          .set(SoldGoodsPage, false).success.value
-          .set(CorrectPreviousReturnPage(0), true).success.value
+          .set(SoldGoodsPage(iossNumber), false).success.value
+          .set(CorrectPreviousReturnPage(iossNumber, 0), true).success.value
 
         val application = applicationBuilder(Some(userAnswers)).build()
 
@@ -536,9 +534,7 @@ class CompletionChecksSpec extends SpecBase with MockitoSugar {
 
           val result = TestCompletionChecks.incompleteReturnsJourneyRedirect(waypoints, numberOfFulfilledObligations = 2)
 
-          result mustBe empty
-
-
+          result `mustBe` empty
         }
       }
     }

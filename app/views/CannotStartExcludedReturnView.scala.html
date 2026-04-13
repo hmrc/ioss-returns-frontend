@@ -22,9 +22,9 @@
         govukButton: GovukButton
 )
 
-@(appropriateDashboardUrl: String)(implicit request: Request[_], messages: Messages)
+@(iossNumber: String, appropriateDashboardUrl: String)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = titleNoForm(messages("cannotStartExcludedReturn.title"))) {
+@layout(pageTitle = titleNoForm(messages("cannotStartExcludedReturn.title")), maybeIossNumber = Some(iossNumber)) {
 
     <h1 class="govuk-heading-l">@messages("cannotStartExcludedReturn.heading")</h1>
 

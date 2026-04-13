@@ -24,9 +24,9 @@
         govukButton: GovukButton
 )
 
-@(waypoints: Waypoints, previousRegistration: PreviousRegistration, periodsWithFinancialData: Map[Int, Seq[(Period, Payment)]], isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
+@(waypoints: Waypoints, iossNumber: String, previousRegistration: PreviousRegistration, periodsWithFinancialData: Map[Int, Seq[(Period, Payment)]], isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
 
-    @layout(pageTitle = titleNoForm(messages("viewReturnsMultipleReg.title", previousRegistration.startPeriod.displayText, previousRegistration.endPeriod.displayText))) {
+    @layout(pageTitle = titleNoForm(messages("viewReturnsMultipleReg.title", previousRegistration.startPeriod.displayText, previousRegistration.endPeriod.displayText)), maybeIossNumber = Some(iossNumber)) {
 
         <h1 class="govuk-heading-l">
             @messages("viewReturnsMultipleReg.heading", previousRegistration.startPeriod.displayText, previousRegistration.endPeriod.displayText)
@@ -63,7 +63,7 @@
                             @for((period, payment) <- periodWithFinancialData) {
                                 <tr class="govuk-table__row">
                                     <td class="govuk-table__cell">
-                                        <a class="govuk-link govuk-body" href="@prevRoutes.SubmittedReturnForPeriodController.onPageLoadForIossNumber(waypoints, period, previousRegistration.iossNumber)">@period.displayMonth</a>
+                                        <a class="govuk-link govuk-body" href="@prevRoutes.SubmittedReturnForPeriodController.onPageLoadForIossNumber(waypoints, previousRegistration.iossNumber, period)">@period.displayMonth</a>
                                     </td>
                                     <td class="govuk-table__cell govuk-table__cell--numeric">
                                     @Html(currencyFormat(payment.amountOwed))
@@ -88,7 +88,7 @@
             </div>
 
             <p class="govuk-body">
-                <a class="govuk-link" id="submitted-returns-history" href="@prevRoutes.SubmittedReturnsHistoryController.onPageLoad(waypoints)">@messages("viewReturnsMultipleReg.returnToCurrentRegistration")</a>
+                <a class="govuk-link" id="submitted-returns-history" href="@prevRoutes.SubmittedReturnsHistoryController.onPageLoad(waypoints, iossNumber)">@messages("viewReturnsMultipleReg.returnToCurrentRegistration")</a>
             </p>
         }
     }

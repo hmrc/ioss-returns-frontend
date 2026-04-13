@@ -22,8 +22,6 @@ import models.RegistrationWrapper
 import models.requests.{IdentifierRequest, RegistrationRequest}
 import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.mvc.Result
-import repositories.IntermediarySelectedIossNumberRepository
-import services.AccountService
 import uk.gov.hmrc.auth.core.{Enrolment, Enrolments}
 import utils.FutureSyntax.*
 
@@ -33,15 +31,14 @@ import scala.concurrent.{ExecutionContext, Future}
 class FakeGetRegistrationAction(
                                  registration: RegistrationWrapper,
                                  maybeIntermediaryNumber: Option[String],
-                                 enrolments: Option[Enrolments] = None
+                                 enrolments: Option[Enrolments] = None,
+                                 requestedIossNumber: String
                                )
   extends GetRegistrationAction(
-    mock[AccountService],
     mock[IntermediaryRegistrationConnector],
     mock[RegistrationConnector],
     mock[FrontendAppConfig],
-    None,
-    mock[IntermediarySelectedIossNumberRepository]
+    requestedIossNumber
   ) {
 
   private val iossEnrolmentKey = "HMRC-IOSS-ORG"
@@ -52,8 +49,8 @@ class FakeGetRegistrationAction(
       request.request,
       request.credentials,
       Some(request.vrn),
-      "Company Name",
-      "IM9001234567",
+      registration.getCompanyName(),
+      requestedIossNumber,
       registration,
       maybeIntermediaryNumber,
       enrolments.getOrElse(iossEnrolment))
@@ -66,12 +63,10 @@ class FakeGetRegistrationActionProvider(
                                          enrolments: Option[Enrolments] = None
                                        )
 extends GetRegistrationActionProvider(
-  mock[AccountService],
   mock[IntermediaryRegistrationConnector],
   mock[RegistrationConnector],
-  mock[IntermediarySelectedIossNumberRepository],
   mock[FrontendAppConfig]
 )(ExecutionContext.Implicits.global) {
 
-  override def apply(maybeIossNumber: Option[String] = None): GetRegistrationAction = new FakeGetRegistrationAction(registrationWrapper, maybeIntermediaryNumber, enrolments)
+  override def apply(requestedIossNumber: String): GetRegistrationAction = new FakeGetRegistrationAction(registrationWrapper, maybeIntermediaryNumber, enrolments, requestedIossNumber)
 }

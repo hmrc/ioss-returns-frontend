@@ -19,7 +19,7 @@ package controllers
 import base.SpecBase
 import forms.VatOnSalesFormProvider
 import models.{Country, VatOnSales, VatOnSalesChoice, VatRateFromCountry}
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.{times, verify, when}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.mockito.MockitoSugar
@@ -27,7 +27,7 @@ import pages.{JourneyRecoveryPage, SalesToCountryPage, SoldToCountryPage, VatOnS
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import repositories.SessionRepository
 import services.VatRateService
 import utils.FutureSyntax.FutureOps
@@ -35,7 +35,7 @@ import views.html.VatOnSalesView
 
 class VatOnSalesControllerSpec extends SpecBase with MockitoSugar {
 
-  lazy val vatOnSalesRoute: String = routes.VatOnSalesController.onPageLoad(waypoints, index, vatRateIndex).url
+  lazy val vatOnSalesRoute: String = routes.VatOnSalesController.onPageLoad(waypoints, iossNumber, index, vatRateIndex).url
   val vatRateService: VatRateService = mock[VatRateService]
   val vatRateFromCountry: VatRateFromCountry = arbitraryVatRateFromCountry.arbitrary.sample.value
   val netSales: BigDecimal = BigDecimal(400)
@@ -52,9 +52,9 @@ class VatOnSalesControllerSpec extends SpecBase with MockitoSugar {
     "must return OK and the correct view for a GET" in {
       when(vatRateService.standardVatOnSales(any(), any())) thenReturn standardVatOnSales
       val userAnswers = for {
-        answer1 <- emptyUserAnswers.set(SoldToCountryPage(index), country)
-        answer2 <- answer1.set(VatRatesFromCountryPage(index, index), List(vatRateFromCountry))
-        answer3 <- answer2.set(SalesToCountryPage(index, vatRateIndex), validAnswer)
+        answer1 <- emptyUserAnswers.set(SoldToCountryPage(iossNumber, index), country)
+        answer2 <- answer1.set(VatRatesFromCountryPage(iossNumber, index, index), List(vatRateFromCountry))
+        answer3 <- answer2.set(SalesToCountryPage(iossNumber, index, vatRateIndex), validAnswer)
       } yield answer3
       val application = applicationBuilder(userAnswers = Some(userAnswers.success.value))
         .overrides(bind[VatRateService].toInstance(vatRateService))
@@ -67,18 +67,18 @@ class VatOnSalesControllerSpec extends SpecBase with MockitoSugar {
 
         val view = application.injector.instanceOf[VatOnSalesView]
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, waypoints, period, index, vatRateIndex, country, vatRateFromCountry, netSales, standardVatOnSales, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(form, waypoints, iossNumber, period, index, vatRateIndex, country, vatRateFromCountry, netSales, standardVatOnSales, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
       when(vatRateService.standardVatOnSales(any(), any())) thenReturn standardVatOnSales
       val userAnswers = for {
-        answer1 <- emptyUserAnswers.set(SoldToCountryPage(index), country)
-        answer2 <- answer1.set(VatRatesFromCountryPage(index, index), List(vatRateFromCountry))
-        answer3 <- answer2.set(SalesToCountryPage(index, vatRateIndex), validAnswer)
-        answer4 <- answer3.set(VatOnSalesPage(index, vatRateIndex), validVatOnSales)
+        answer1 <- emptyUserAnswers.set(SoldToCountryPage(iossNumber, index), country)
+        answer2 <- answer1.set(VatRatesFromCountryPage(iossNumber, index, index), List(vatRateFromCountry))
+        answer3 <- answer2.set(SalesToCountryPage(iossNumber, index, vatRateIndex), validAnswer)
+        answer4 <- answer3.set(VatOnSalesPage(iossNumber, index, vatRateIndex), validVatOnSales)
       } yield answer4
 
       val application = applicationBuilder(userAnswers = Some(userAnswers.success.value))
@@ -92,8 +92,8 @@ class VatOnSalesControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(validVatOnSales), waypoints, period, index, vatRateIndex, country, vatRateFromCountry, netSales, standardVatOnSales, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(form.fill(validVatOnSales), waypoints, iossNumber, period, index, vatRateIndex, country, vatRateFromCountry, netSales, standardVatOnSales, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -101,9 +101,9 @@ class VatOnSalesControllerSpec extends SpecBase with MockitoSugar {
       when(vatRateService.standardVatOnSales(any(), any())) thenReturn standardVatOnSales
 
       val userAnswers = for {
-        answer1 <- emptyUserAnswers.set(SoldToCountryPage(index), country)
-        answer2 <- answer1.set(VatRatesFromCountryPage(index, index), List(vatRateFromCountry))
-        answer3 <- answer2.set(SalesToCountryPage(index, vatRateIndex), validAnswer)
+        answer1 <- emptyUserAnswers.set(SoldToCountryPage(iossNumber, index), country)
+        answer2 <- answer1.set(VatRatesFromCountryPage(iossNumber, index, index), List(vatRateFromCountry))
+        answer3 <- answer2.set(SalesToCountryPage(iossNumber, index, vatRateIndex), validAnswer)
       } yield answer3
       val mockSessionRepository = mock[SessionRepository]
 
@@ -125,10 +125,10 @@ class VatOnSalesControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         val expectedAnswers = userAnswers
-          .map(_.set(VatOnSalesPage(index, vatRateIndex), validVatOnSales)).success.value
+          .map(_.set(VatOnSalesPage(iossNumber, index, vatRateIndex), validVatOnSales)).success.value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual VatOnSalesPage(index, vatRateIndex).navigate(waypoints, userAnswers.success.value, expectedAnswers.success.value).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` VatOnSalesPage(iossNumber, index, vatRateIndex).navigate(waypoints, userAnswers.success.value, expectedAnswers.success.value).url
         verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers.success.value))
       }
     }
@@ -136,9 +136,9 @@ class VatOnSalesControllerSpec extends SpecBase with MockitoSugar {
     "must return a Bad Request and errors when invalid data is submitted" in {
       when(vatRateService.standardVatOnSales(any(), any())) thenReturn standardVatOnSales
       val userAnswers = for {
-        answer1 <- emptyUserAnswers.set(SoldToCountryPage(index), country)
-        answer2 <- answer1.set(VatRatesFromCountryPage(index, index), List(vatRateFromCountry))
-        answer3 <- answer2.set(SalesToCountryPage(index, vatRateIndex), validAnswer)
+        answer1 <- emptyUserAnswers.set(SoldToCountryPage(iossNumber, index), country)
+        answer2 <- answer1.set(VatRatesFromCountryPage(iossNumber, index, index), List(vatRateFromCountry))
+        answer3 <- answer2.set(SalesToCountryPage(iossNumber, index, vatRateIndex), validAnswer)
       } yield answer3
       val application = applicationBuilder(userAnswers = Some(userAnswers.success.value))
         .overrides(bind[VatRateService].toInstance(vatRateService))
@@ -155,8 +155,8 @@ class VatOnSalesControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, waypoints, period, index, vatRateIndex, country, vatRateFromCountry, netSales, standardVatOnSales, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
+        status(result) `mustBe` BAD_REQUEST
+        contentAsString(result) `mustBe` view(boundForm, waypoints, iossNumber, period, index, vatRateIndex, country, vatRateFromCountry, netSales, standardVatOnSales, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -171,8 +171,8 @@ class VatOnSalesControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
 
@@ -189,9 +189,9 @@ class VatOnSalesControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustBe SEE_OTHER
+        status(result) `mustBe` SEE_OTHER
 
-        redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
   }

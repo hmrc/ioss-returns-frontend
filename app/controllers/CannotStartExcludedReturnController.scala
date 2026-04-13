@@ -23,10 +23,10 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.intermediary.DashboardNavigationService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.EnrolmentIdentifiers.{findIntermediaryFromEnrolments, findIossFromEnrolments}
+import utils.FutureSyntax.FutureOps
 import views.html.CannotStartExcludedReturnView
 
 import javax.inject.Inject
-import scala.concurrent.Future
 
 class CannotStartExcludedReturnController @Inject()(
                                                      cc: AuthenticatedControllerComponents,
@@ -35,8 +35,8 @@ class CannotStartExcludedReturnController @Inject()(
                                                    ) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
-
-  def onPageLoad(): Action[AnyContent] = cc.authAndGetOptionalData().async {
+  
+  def onPageLoad(iossNumber: String): Action[AnyContent] = cc.authAndGetOptionalData(iossNumber).async {
     implicit request =>
 
       val iossEnrolmentsExist: Boolean = findIossFromEnrolments(request.enrolments).nonEmpty
@@ -47,6 +47,6 @@ class CannotStartExcludedReturnController @Inject()(
           request.isIntermediary, intermediaryEnrolmentsExist, iossEnrolmentsExist
         )
 
-      Future.successful(Ok(view(appropriateDashboardUrl)))
+      Ok(view(request.iossNumber, appropriateDashboardUrl)).toFuture
   }
 }

@@ -21,33 +21,34 @@ import connectors.UpscanInitiateConnector
 import controllers.actions.*
 import forms.FileUploadFormProvider
 import models.upscan.UpscanRedirectError
-import pages.fileUpload.{DataErrorPage, FileReferencePage, FileUploadedPage}
 import pages.Waypoints
+import pages.fileUpload.{DataErrorPage, FileReferencePage, FileUploadedPage}
+import play.api.Environment
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import play.api.Environment
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.FutureSyntax.FutureOps
 import views.html.fileUpload.FileUploadView
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class FileUploadController @Inject()(
-                                         override val messagesApi: MessagesApi,
-                                         cc: AuthenticatedControllerComponents,
-                                         formProvider: FileUploadFormProvider,
-                                         view: FileUploadView,
-                                         upscanInitiateConnector: UpscanInitiateConnector,
-                                         appConfig: FrontendAppConfig,
-                                         environment: Environment
-                                 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                      override val messagesApi: MessagesApi,
+                                      cc: AuthenticatedControllerComponents,
+                                      formProvider: FileUploadFormProvider,
+                                      view: FileUploadView,
+                                      upscanInitiateConnector: UpscanInitiateConnector,
+                                      appConfig: FrontendAppConfig,
+                                      environment: Environment
+                                    )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
   val form: Form[String] = formProvider()
 
-  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndIntermediaryEnabled().async {
+  def onPageLoad(waypoints: Waypoints, iossNumber: String): Action[AnyContent] = cc.authAndIntermediaryEnabled(iossNumber).async {
     implicit request =>
 
       val period = request.userAnswers.period
@@ -58,40 +59,41 @@ class FileUploadController @Inject()(
       redirectError match {
         case Some(redirectErr) =>
           val msg = errorMessage(Some(redirectErr)).getOrElse("")
-          Future.successful(Redirect(routes.FileUploadController.onPageLoad(waypoints)).flashing("upscanError" -> msg))
+          Redirect(routes.FileUploadController.onPageLoad(waypoints, iossNumber)).flashing("upscanError" -> msg).toFuture
 
         case None =>
           val errorMsg: Option[String] = request.flash.get("upscanError").filter(_.nonEmpty)
 
           upscanInitiateConnector.initiateV2(
-            redirectOnSuccess = Some(appConfig.successEndPointTarget),
-            redirectOnError = Some(appConfig.errorEndPointTarget)
+            redirectOnSuccess = Some(appConfig.successEndPointTarget(iossNumber)),
+            redirectOnError = Some(appConfig.errorEndPointTarget(iossNumber))
           ).flatMap { initiateResponse =>
 
             for {
-              cleanedAnswers <- Future.fromTry(request.userAnswers.remove(FileUploadedPage))
-              dataErrorAnswers <- Future.fromTry(cleanedAnswers.remove(DataErrorPage))
+              cleanedAnswers <- Future.fromTry(request.userAnswers.remove(FileUploadedPage(iossNumber)))
+              dataErrorAnswers <- Future.fromTry(cleanedAnswers.remove(DataErrorPage(iossNumber)))
               updatedAnswers <- Future.fromTry(
-                dataErrorAnswers.set(FileReferencePage, initiateResponse.fileReference.reference)
+                dataErrorAnswers.set(FileReferencePage(iossNumber), initiateResponse.fileReference.reference)
               )
               _ <- cc.sessionRepository.set(updatedAnswers)
             } yield {
-            Ok(view(
-              form = form,
-              waypoints = waypoints,
-              period = period,
-              isIntermediary = isIntermediary,
-              companyName = companyName,
-              postTarget = initiateResponse.postTarget,
-              formFields = initiateResponse.formFields,
-              errorMessage = errorMsg
-            ))
+              Ok(view(
+                form = form,
+                waypoints = waypoints,
+                iossNumber = iossNumber,
+                period = period,
+                isIntermediary = isIntermediary,
+                companyName = companyName,
+                postTarget = initiateResponse.postTarget,
+                formFields = initiateResponse.formFields,
+                errorMessage = errorMsg
+              ))
+            }
           }
-        }
       }
   }
 
-  def downloadTemplate(): Action[AnyContent] = cc.authAndIntermediaryEnabled().async { _ =>
+  def downloadTemplate(iossNumber: String): Action[AnyContent] = cc.authAndIntermediaryEnabled(iossNumber).async { _ =>
     Future.successful(
       Ok.sendFile(
         content = environment.getFile("conf/template/IOSS return template.ods"),
@@ -108,7 +110,7 @@ class FileUploadController @Inject()(
       case UpscanRedirectError("EntityTooLarge", _) =>
         messages("fileUploaded.redirectError.EntityTooLarge")
 
-      case UpscanRedirectError("InvalidArgument",  Some(msg)) if msg.toLowerCase.contains("file") && msg.toLowerCase.contains("not found") =>
+      case UpscanRedirectError("InvalidArgument", Some(msg)) if msg.toLowerCase.contains("file") && msg.toLowerCase.contains("not found") =>
         messages("fileUpload.redirectError.fileNotFound")
 
       case UpscanRedirectError("InvalidArgument", _) =>

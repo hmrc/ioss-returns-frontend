@@ -23,7 +23,7 @@ import play.api.libs.json.JsPath
 import play.api.mvc.Call
 import queries.corrections.PreviouslyDeclaredCorrectionAmountQuery
 
-final case class CorrectionCountryPage(periodIndex: Index, countryIndex: Index) extends QuestionPage[Country] {
+final case class CorrectionCountryPage(iossNumber: String, periodIndex: Index, countryIndex: Index) extends QuestionPage[Country] {
 
   override def path: JsPath =
     JsPath \ corrections \ periodIndex.position \ correctionsToCountry \ countryIndex.position \ toString
@@ -31,12 +31,12 @@ final case class CorrectionCountryPage(periodIndex: Index, countryIndex: Index) 
   override def toString: String = "correctionCountry"
 
   override def route(waypoints: Waypoints): Call =
-    controllers.corrections.routes.CorrectionCountryController.onPageLoad(waypoints, periodIndex, countryIndex)
+    controllers.corrections.routes.CorrectionCountryController.onPageLoad(waypoints, iossNumber, periodIndex, countryIndex)
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page = {
     answers.get(PreviouslyDeclaredCorrectionAmountQuery(periodIndex, countryIndex)) match {
-      case Some(n) if n.amount > 0 => VatAmountCorrectionCountryPage(periodIndex, countryIndex)
-      case _ => UndeclaredCountryCorrectionPage(periodIndex, countryIndex)
+      case Some(n) if n.amount > 0 => VatAmountCorrectionCountryPage(answers.iossNumber, periodIndex, countryIndex)
+      case _ => UndeclaredCountryCorrectionPage(answers.iossNumber, periodIndex, countryIndex)
     }
   }
 }

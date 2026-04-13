@@ -43,14 +43,14 @@ class TestOnlyCsvToUserAnswersController @Inject()(
       |"France","10%","150.01","£15"
       |""".stripMargin
   
-  def populateUserAnswersFromCsv(waypoints: Waypoints): Action[AnyContent] = cc.authAndRequireData().async {
+  def populateUserAnswersFromCsv(waypoints: Waypoints, iossNumber: String): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
     implicit request =>
       
       Future
         .fromTry(csvParser.populateUserAnswersFromCsv(request.userAnswers, inlineCsv))
         .flatMap { updatedAnswers =>
           cc.sessionRepository.set(updatedAnswers).map { _ =>
-            Redirect(controllers.routes.CheckYourAnswersController.onPageLoad(waypoints))
+            Redirect(controllers.routes.CheckYourAnswersController.onPageLoad(waypoints, request.iossNumber))
           }
         }
         .recover { case _ =>

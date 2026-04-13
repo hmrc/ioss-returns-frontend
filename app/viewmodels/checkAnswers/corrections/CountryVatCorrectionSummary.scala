@@ -24,13 +24,13 @@ import play.twirl.api.Html
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
 import viewmodels.govuk.all.currencyFormat
-import viewmodels.govuk.summarylist._
-import viewmodels.implicits._
+import viewmodels.govuk.summarylist.*
+import viewmodels.implicits.*
 
 object CountryVatCorrectionSummary {
 
   def row(answers: UserAnswers, waypoints: Waypoints, periodIndex: Index, countryIndex: Index)(implicit messages: Messages): Option[SummaryListRow] = {
-    answers.get(VatAmountCorrectionCountryPage(periodIndex, countryIndex)).map {
+    answers.get(VatAmountCorrectionCountryPage(answers.iossNumber, periodIndex, countryIndex)).map {
       answer =>
 
         SummaryListRowViewModel(
@@ -40,7 +40,7 @@ object CountryVatCorrectionSummary {
             ActionItemViewModel(
               "site.change",
               controllers.corrections.routes.VatAmountCorrectionCountryController.onPageLoad(
-                waypoints, periodIndex, countryIndex
+                waypoints, answers.iossNumber, periodIndex, countryIndex
               ).url
             ).withVisuallyHiddenText(messages("vatAmountCorrectionCountry.change.hidden"))
               .withAttribute(("id", "change-correction-amount"))

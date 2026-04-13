@@ -16,7 +16,7 @@
 
 package controllers.corrections
 
-import controllers.actions._
+import controllers.actions.*
 import logging.Logging
 import models.StandardPeriod
 import pages.Waypoints
@@ -25,6 +25,7 @@ import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import queries.corrections.DeriveCompletedCorrectionPeriods
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.FutureSyntax.FutureOps
 import views.html.corrections.NoOtherCorrectionPeriodsAvailableView
 
 import javax.inject.Inject
@@ -32,28 +33,28 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Failure
 
 class NoOtherCorrectionPeriodsAvailableController @Inject()(
-                                       override val messagesApi: MessagesApi,
-                                       cc: AuthenticatedControllerComponents,
-                                       view: NoOtherCorrectionPeriodsAvailableView
-                                     )(implicit val ec: ExecutionContext)  extends FrontendBaseController with I18nSupport with Logging {
+                                                             override val messagesApi: MessagesApi,
+                                                             cc: AuthenticatedControllerComponents,
+                                                             view: NoOtherCorrectionPeriodsAvailableView
+                                                           )(implicit val ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = (cc.actionBuilder andThen cc.identify) {
+  def onPageLoad(waypoints: Waypoints, iossNumber: String): Action[AnyContent] = cc.auth {
     implicit request =>
-      Ok(view(waypoints))
+      Ok(view(waypoints, iossNumber))
   }
 
-  def onSubmit(waypoints: Waypoints): Action[AnyContent] = cc.authAndRequireData().async {
+  def onSubmit(waypoints: Waypoints, iossNumber: String): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
     implicit request =>
 
       val completedCorrectionPeriods: List[StandardPeriod] = request.userAnswers.get(DeriveCompletedCorrectionPeriods).getOrElse(List.empty)
 
-      if(completedCorrectionPeriods.isEmpty) {
+      if (completedCorrectionPeriods.isEmpty) {
         val cleanup = for {
-          updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectPreviousReturnPage(0), false))
-          _              <- cc.sessionRepository.set(updatedAnswers)
-        } yield Redirect(controllers.routes.CheckYourAnswersController.onPageLoad(waypoints))
+          updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectPreviousReturnPage(request.iossNumber, 0), false))
+          _ <- cc.sessionRepository.set(updatedAnswers)
+        } yield Redirect(controllers.routes.CheckYourAnswersController.onPageLoad(waypoints, request.iossNumber))
 
         cleanup.onComplete {
           case Failure(exception) => logger.error(s"Could not perform cleanup: ${exception.getLocalizedMessage} ")
@@ -61,8 +62,7 @@ class NoOtherCorrectionPeriodsAvailableController @Inject()(
         }
         cleanup
       } else {
-        Future.successful(Redirect(controllers.routes.CheckYourAnswersController.onPageLoad(waypoints)))
+        Redirect(controllers.routes.CheckYourAnswersController.onPageLoad(waypoints, request.iossNumber)).toFuture
       }
-
   }
 }

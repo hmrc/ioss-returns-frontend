@@ -59,14 +59,14 @@ trait SpecBase
   val enrolments: Enrolments = Enrolments(Set(Enrolment(iossEnrolmentKey, Seq.empty, "test", None)))
   val testCredentials: Credentials = Credentials(userAnswersId, "GGW")
   val vrn: Vrn = Vrn("123456789")
-  val iossNumber: String = "IM9001234567"
+  override val iossNumber: String = "IM9001234567"
   val intermediaryNumber: String = "IN9007654321"
   val period: StandardPeriod = StandardPeriod(2024, Month.MARCH)
   val waypoints: Waypoints = EmptyWaypoints
   val index: Index = Index(0)
   val vatRateIndex: Index = Index(0)
   val companyName: String = "Test Company Name"
-  val vatRates = List(VatRateFromCountry(BigDecimal(20), VatRateType.Standard, LocalDate.of(2023, 3, 1), None))
+  val vatRates: List[VatRateFromCountry] = List(VatRateFromCountry(BigDecimal(20), VatRateType.Standard, LocalDate.of(2023, 3, 1), None))
   val twentyPercentVatRate = VatRateFromCountry(20, VatRateType.Reduced, arbitrary[LocalDate].sample.value)
   val fivePercentVatRate = VatRateFromCountry(5, VatRateType.Reduced, arbitrary[LocalDate].sample.value)
 
@@ -92,18 +92,18 @@ trait SpecBase
   def emptyUserAnswers: UserAnswers = UserAnswers(userAnswersId, iossNumber, period, lastUpdated = arbitraryInstant)
 
   def completeUserAnswers: UserAnswers = emptyUserAnswers
-    .set(SoldGoodsPage, true).success.value
-    .set(CorrectPreviousReturnPage(0), false).success.value
-    .set(SoldToCountryPage(index), Country("HR", "Croatia")).success.value
-    .set(VatRatesFromCountryPage(index, index), vatRates).success.value
-    .set(SalesToCountryPage(index, index), BigDecimal(100)).success.value
-    .set(VatOnSalesPage(index, index), VatOnSales(VatOnSalesChoice.Standard, BigDecimal(20))).success.value
+    .set(SoldGoodsPage(iossNumber), true).success.value
+    .set(CorrectPreviousReturnPage(iossNumber, 0), false).success.value
+    .set(SoldToCountryPage(iossNumber, index), Country("HR", "Croatia")).success.value
+    .set(VatRatesFromCountryPage(iossNumber, index, index), vatRates).success.value
+    .set(SalesToCountryPage(iossNumber, index, index), BigDecimal(100)).success.value
+    .set(VatOnSalesPage(iossNumber, index, index), VatOnSales(VatOnSalesChoice.Standard, BigDecimal(20))).success.value
 
   val completedUserAnswersWithCorrections: UserAnswers = completeUserAnswers
-    .set(CorrectPreviousReturnPage(0), true).success.value
-    .set(CorrectionReturnYearPage(index), 2023).success.value
-    .set(CorrectionReturnPeriodPage(index), period).success.value
-    .set(CorrectionCountryPage(index, index), Country("DE", "Germany")).success.value
+    .set(CorrectPreviousReturnPage(iossNumber, 0), true).success.value
+    .set(CorrectionReturnYearPage(iossNumber, index), 2023).success.value
+    .set(CorrectionReturnPeriodPage(iossNumber, index), period).success.value
+    .set(CorrectionCountryPage(iossNumber, index, index), Country("DE", "Germany")).success.value
 
   val vatCustomerInfo: VatCustomerInfo =
     VatCustomerInfo(
@@ -124,21 +124,30 @@ trait SpecBase
                                     clock: Option[Clock] = None,
                                     registration: RegistrationWrapper = registrationWrapper,
                                     getRegistrationAction: Option[GetRegistrationActionProvider] = None,
+                                    getRegistrationWithoutUrlIossAction: Option[GetRegistrationWithoutUrlIossAction] = None,
                                     maybeIntermediaryNumber: Option[String] = None,
-                                    getIdentifierAction: Option[IdentifierAction] = None
+                                    getIdentifierAction: Option[IdentifierAction] = None,
+                                    requestedIossNumber: Option[String] = None,
+                                    enrolments: Option[Enrolments] = None
                                   ): GuiceApplicationBuilder = {
     val clockToBind = clock.getOrElse(stubClockAtArbitraryDate)
 
-    val getRegistrationActionBind = if(getRegistrationAction.nonEmpty) {
+    val getRegistrationActionBind = if (getRegistrationAction.nonEmpty) {
       bind[GetRegistrationActionProvider].toInstance(getRegistrationAction.get)
     } else {
-      bind[GetRegistrationActionProvider].toInstance(new FakeGetRegistrationActionProvider(registration, maybeIntermediaryNumber))
+      bind[GetRegistrationActionProvider].toInstance(new FakeGetRegistrationActionProvider(registration, maybeIntermediaryNumber, enrolments))
     }
 
-    val getIdentifierActionBind = if(getIdentifierAction.nonEmpty) {
-      bind[IdentifierAction].to[FakeIntermediaryIdentifierAction]
+    val getRegistrationWithoutUrlIossActionBind = if(getRegistrationWithoutUrlIossAction.nonEmpty) {
+      bind[GetRegistrationWithoutUrlIossAction].toInstance(getRegistrationWithoutUrlIossAction.get)
     } else {
-      bind[IdentifierAction].to[FakeIdentifierAction]
+      bind[GetRegistrationWithoutUrlIossAction].toInstance(new FakeGetRegistrationWithoutUrlIossAction(registration, enrolments, maybeIntermediaryNumber))
+    }
+
+    val getIdentifierActionBind = if (getIdentifierAction.nonEmpty) {
+      bind[IdentifierAction].toInstance(getIdentifierAction.get)
+    } else {
+      bind[IdentifierAction].toInstance(new FakeIdentifierAction(enrolments))
     }
 
     new GuiceApplicationBuilder()
@@ -151,7 +160,8 @@ trait SpecBase
         bind[CheckBouncedEmailFilterProvider].toInstance(new FakeCheckBouncedEmailFilterProvider()),
         bind[CheckSubmittedReturnsFilterProvider].toInstance(new FakeCheckSubmittedReturnsFilterProvider()),
         bind[IntermediaryRequiredFilter].toInstance(new FakeIntermediaryRequiredFilter()),
-        bind[IntermediaryEnabledFilter].toInstance(new FakeIntermediaryEnabledFilter())
+        bind[IntermediaryEnabledFilter].toInstance(new FakeIntermediaryEnabledFilter()),
+        getRegistrationWithoutUrlIossActionBind
       )
   }
 

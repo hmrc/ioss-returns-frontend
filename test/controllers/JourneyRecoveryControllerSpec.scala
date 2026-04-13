@@ -18,13 +18,16 @@ package controllers
 
 import base.SpecBase
 import config.FrontendAppConfig
-import controllers.actions.FakeIntermediaryIdentifierAction
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
+import uk.gov.hmrc.auth.core.{Enrolment, Enrolments}
 import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl
 import views.html.{JourneyRecoveryContinueView, JourneyRecoveryStartAgainView}
 
 class JourneyRecoveryControllerSpec extends SpecBase {
+
+  private val intermediaryEnrolmentKey = "HMRC-IOSS-INT"
+  private val enrolments: Enrolments = Enrolments(Set(Enrolment(intermediaryEnrolmentKey, Seq.empty, "test", None)))
 
   "JourneyRecovery Controller" - {
 
@@ -71,11 +74,9 @@ class JourneyRecoveryControllerSpec extends SpecBase {
 
       "must return OK and the start again view for an Intermediary" in {
 
-        val fakeIntermediaryIdentifierAction: FakeIntermediaryIdentifierAction = FakeIntermediaryIdentifierAction()
-
         val application = applicationBuilder(
           userAnswers = None,
-          getIdentifierAction = Some(fakeIntermediaryIdentifierAction)
+          enrolments = Some(enrolments)
         ).build()
 
         running(application) {

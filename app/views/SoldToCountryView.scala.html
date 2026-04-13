@@ -18,7 +18,6 @@
 @import uk.gov.hmrc.hmrcfrontend.views.viewmodels.accessibleautocomplete.AccessibleAutocomplete
 @import views.html.components.ButtonGroup
 
-
 @this(
         layout: templates.Layout,
         formHelper: FormWithCSRF,
@@ -27,15 +26,15 @@
         button: ButtonGroup
 )
 
-@(form: Form[_], waypoints: Waypoints, period: Period, index: Index, isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, iossNumber: String, period: Period, index: Index, isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, if(isIntermediary) {
         messages("soldToCountry.intermediary.title", period.displayText)
     } else {
         messages("soldToCountry.title", period.displayText)
-    })) {
+    }), maybeIossNumber = Some(iossNumber)) {
 
-  @formHelper(action = routes.SoldToCountryController.onSubmit(waypoints, index)) {
+  @formHelper(action = routes.SoldToCountryController.onSubmit(waypoints, iossNumber, index)) {
 
     @if(form.errors.nonEmpty) {
       @govukErrorSummary(ErrorSummaryViewModel(form))
@@ -63,7 +62,7 @@
     )
 
     @button(
-      "site.continue", routes.SoldToCountryController.onPageLoad(waypoints, index).url, period, waypoints
+      "site.continue", routes.SoldToCountryController.onPageLoad(waypoints, iossNumber, index).url, iossNumber, period, waypoints
     )
   }
 }

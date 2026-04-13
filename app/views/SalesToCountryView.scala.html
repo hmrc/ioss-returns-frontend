@@ -17,7 +17,6 @@
 @import viewmodels.InputWidth._
 @import pages.SalesToCountryPage
 
-
 @this(
         layout: templates.Layout,
         formHelper: FormWithCSRF,
@@ -26,7 +25,7 @@
         button: ButtonGroup
 )
 
-@(form: Form[_], waypoints: Waypoints, period: Period, countryIndex: Index, nextVatRateIndex: Index, vatRate: VatRateFromCountry, country: Country, isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, iossNumber: String, period: Period, countryIndex: Index, nextVatRateIndex: Index, vatRate: VatRateFromCountry, country: Country, isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
 
 @caption = @{
     if(isIntermediary) {
@@ -40,9 +39,9 @@
     form,
     messages("salesToCountry.title", vatRate.rateForDisplay),
     Some(caption)
-)) {
+), maybeIossNumber = Some(iossNumber)) {
 
-    @formHelper(action = routes.SalesToCountryController.onSubmit(waypoints, countryIndex, nextVatRateIndex), Symbol("autoComplete") -> "off") {
+    @formHelper(action = routes.SalesToCountryController.onSubmit(waypoints, iossNumber, countryIndex, nextVatRateIndex), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))
@@ -68,7 +67,7 @@
         )
 
         @button(
-            "site.continue", SalesToCountryPage(countryIndex, nextVatRateIndex).route(waypoints).url, period, waypoints
+            "site.continue", SalesToCountryPage(iossNumber, countryIndex, nextVatRateIndex).route(waypoints).url, iossNumber, period, waypoints
         )
     }
 }

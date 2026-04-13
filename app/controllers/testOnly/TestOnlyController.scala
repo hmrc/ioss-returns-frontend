@@ -80,7 +80,6 @@ class TestOnlyController @Inject()(
         case Right(response) => Redirect(response.redirectUrl)
         case Left(_) => InternalServerError
       }
-
   }
 
   def quickAuthStub(): Action[AnyContent] = cc.actionBuilder { implicit request =>

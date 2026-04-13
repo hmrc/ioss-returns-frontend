@@ -29,8 +29,8 @@ object VatPeriodCorrectionsListSummary {
         case (correctionPeriod, index) =>
           ListItem(
             name = correctionPeriod.displayText,
-            changeUrl = controllers.corrections.routes.CorrectionListCountriesController.onPageLoad(waypoints, Index(index)).url,
-            removeUrl = controllers.corrections.routes.RemovePeriodCorrectionController.onPageLoad(waypoints, Index(index)).url
+            changeUrl = controllers.corrections.routes.CorrectionListCountriesController.onPageLoad(waypoints, answers.iossNumber, Index(index)).url,
+            removeUrl = controllers.corrections.routes.RemovePeriodCorrectionController.onPageLoad(waypoints, answers.iossNumber, Index(index)).url
           )
       }
   }

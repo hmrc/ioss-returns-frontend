@@ -45,15 +45,15 @@ class SoldToCountryListControllerSpec extends SpecBase with MockitoSugar {
   private val salesValue: BigDecimal = Gen.chooseNum(minCurrencyAmount, maxCurrencyAmount).sample.value
 
   private val baseAnswers: UserAnswers = emptyUserAnswers
-    .set(SoldGoodsPage, true).success.value
-    .set(SoldToCountryPage(index), country).success.value
-    .set(VatRatesFromCountryPage(index, index), List[VatRateFromCountry](vatRateFromCountry)).success.value
-    .set(SalesToCountryPage(index, vatRateIndex), salesValue).success.value
-    .set(VatOnSalesPage(index, vatRateIndex), arbitraryVatOnSales.arbitrary.sample.value).success.value
+    .set(SoldGoodsPage(iossNumber), true).success.value
+    .set(SoldToCountryPage(iossNumber, index), country).success.value
+    .set(VatRatesFromCountryPage(iossNumber, index, index), List[VatRateFromCountry](vatRateFromCountry)).success.value
+    .set(SalesToCountryPage(iossNumber, index, vatRateIndex), salesValue).success.value
+    .set(VatOnSalesPage(iossNumber, index, vatRateIndex), arbitraryVatOnSales.arbitrary.sample.value).success.value
 
-  private lazy val soldToCountryListRoute: String = routes.SoldToCountryListController.onPageLoad(waypoints).url
-  private lazy val soldToCountryPostRoute: String = routes.SoldToCountryListController.onSubmit(waypoints, incompletePromptShown = false).url
-  private lazy val soldToCountryPostRouteTrue: String = routes.SoldToCountryListController.onSubmit(waypoints, incompletePromptShown = true).url
+  private lazy val soldToCountryListRoute: String = routes.SoldToCountryListController.onPageLoad(waypoints, iossNumber).url
+  private lazy val soldToCountryPostRoute: String = routes.SoldToCountryListController.onSubmit(waypoints, iossNumber, incompletePromptShown = false).url
+  private lazy val soldToCountryPostRouteTrue: String = routes.SoldToCountryListController.onSubmit(waypoints, iossNumber, incompletePromptShown = true).url
 
   "SoldToCountryList Controller" - {
 
@@ -69,16 +69,16 @@ class SoldToCountryListControllerSpec extends SpecBase with MockitoSugar {
 
         val view = application.injector.instanceOf[SoldToCountryListView]
 
-        val list = SoldToCountryListSummary.addToListRows(baseAnswers, waypoints, SoldToCountryListPage())
+        val list = SoldToCountryListSummary.addToListRows(baseAnswers, waypoints, SoldToCountryListPage(iossNumber))
 
-        status(result) mustBe OK
-        contentAsString(result) mustBe view(form, waypoints, period, list, canAddSales = true, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(form, waypoints, iossNumber, period, list, canAddSales = true, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = baseAnswers.set(SoldToCountryListPage(), true).success.value
+      val userAnswers = baseAnswers.set(SoldToCountryListPage(iossNumber), true).success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -90,10 +90,10 @@ class SoldToCountryListControllerSpec extends SpecBase with MockitoSugar {
 
         val view = application.injector.instanceOf[SoldToCountryListView]
 
-        val list = SoldToCountryListSummary.addToListRows(baseAnswers, waypoints, SoldToCountryListPage())
+        val list = SoldToCountryListSummary.addToListRows(baseAnswers, waypoints, SoldToCountryListPage(iossNumber))
 
-        status(result) mustBe OK
-        contentAsString(result) must not be view(form.fill(true), waypoints, period, list, canAddSales = true, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
+        status(result) `mustBe` OK
+        contentAsString(result) must not be view(form.fill(true), waypoints, iossNumber, period, list, canAddSales = true, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -101,10 +101,10 @@ class SoldToCountryListControllerSpec extends SpecBase with MockitoSugar {
 
       val userAnswers = (0 to Country.euCountriesWithNI.size).foldLeft(baseAnswers) { (userAnswers: UserAnswers, index: Int) =>
         userAnswers
-          .set(SoldToCountryPage(Index(index)), country).success.value
-          .set(VatRatesFromCountryPage(Index(index), Index(index)), List[VatRateFromCountry](vatRateFromCountry)).success.value
-          .set(SalesToCountryPage(Index(index), vatRateIndex), salesValue).success.value
-          .set(VatOnSalesPage(Index(index), vatRateIndex), arbitraryVatOnSales.arbitrary.sample.value).success.value
+          .set(SoldToCountryPage(iossNumber, Index(index)), country).success.value
+          .set(VatRatesFromCountryPage(iossNumber, Index(index), Index(index)), List[VatRateFromCountry](vatRateFromCountry)).success.value
+          .set(SalesToCountryPage(iossNumber, Index(index), vatRateIndex), salesValue).success.value
+          .set(VatOnSalesPage(iossNumber, Index(index), vatRateIndex), arbitraryVatOnSales.arbitrary.sample.value).success.value
       }
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
@@ -117,10 +117,10 @@ class SoldToCountryListControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        val list = SoldToCountryListSummary.addToListRows(userAnswers, waypoints, SoldToCountryListPage())
+        val list = SoldToCountryListSummary.addToListRows(userAnswers, waypoints, SoldToCountryListPage(iossNumber))
 
-        status(result) mustBe OK
-        contentAsString(result) mustBe view(form, waypoints, period, list, canAddSales = false, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(form, waypoints, iossNumber, period, list, canAddSales = false, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -128,10 +128,10 @@ class SoldToCountryListControllerSpec extends SpecBase with MockitoSugar {
 
       val userAnswers = (0 until (Country.euCountriesWithNI.size -1)).foldLeft(baseAnswers) { (userAnswers: UserAnswers, index: Int) =>
         userAnswers
-          .set(SoldToCountryPage(Index(index)), country).success.value
-          .set(VatRatesFromCountryPage(Index(index), Index(index)), List[VatRateFromCountry](vatRateFromCountry)).success.value
-          .set(SalesToCountryPage(Index(index), vatRateIndex), salesValue).success.value
-          .set(VatOnSalesPage(Index(index), vatRateIndex), arbitraryVatOnSales.arbitrary.sample.value).success.value
+          .set(SoldToCountryPage(iossNumber, Index(index)), country).success.value
+          .set(VatRatesFromCountryPage(iossNumber, Index(index), Index(index)), List[VatRateFromCountry](vatRateFromCountry)).success.value
+          .set(SalesToCountryPage(iossNumber, Index(index), vatRateIndex), salesValue).success.value
+          .set(VatOnSalesPage(iossNumber, Index(index), vatRateIndex), arbitraryVatOnSales.arbitrary.sample.value).success.value
       }
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
@@ -144,10 +144,10 @@ class SoldToCountryListControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        val list = SoldToCountryListSummary.addToListRows(userAnswers, waypoints, SoldToCountryListPage())
+        val list = SoldToCountryListSummary.addToListRows(userAnswers, waypoints, SoldToCountryListPage(iossNumber))
 
-        status(result) mustBe OK
-        contentAsString(result) mustBe view(form, waypoints, period, list, canAddSales = true, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(form, waypoints, iossNumber, period, list, canAddSales = true, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -170,10 +170,10 @@ class SoldToCountryListControllerSpec extends SpecBase with MockitoSugar {
             .withFormUrlEncodedBody(("value", "true"))
 
         val result = route(application, request).value
-        val expectedAnswers = baseAnswers.set(SoldToCountryListPage(), true).success.value
+        val expectedAnswers = baseAnswers.set(SoldToCountryListPage(iossNumber), true).success.value
 
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe SoldToCountryListPage().navigate(waypoints, baseAnswers, expectedAnswers).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` SoldToCountryListPage(iossNumber).navigate(waypoints, baseAnswers, expectedAnswers).url
         verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
       }
     }
@@ -194,10 +194,10 @@ class SoldToCountryListControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        val list = SoldToCountryListSummary.addToListRows(baseAnswers, waypoints, SoldToCountryListPage())
+        val list = SoldToCountryListSummary.addToListRows(baseAnswers, waypoints, SoldToCountryListPage(iossNumber))
 
-        status(result) mustBe BAD_REQUEST
-        contentAsString(result) mustBe view(boundForm, waypoints, period, list, canAddSales = true, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
+        status(result) `mustBe` BAD_REQUEST
+        contentAsString(result) `mustBe` view(boundForm, waypoints, iossNumber, period, list, canAddSales = true, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -210,8 +210,8 @@ class SoldToCountryListControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
 
@@ -224,8 +224,8 @@ class SoldToCountryListControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
 
@@ -240,16 +240,16 @@ class SoldToCountryListControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
 
     "must return OK and the correct view for a GET with incomplete sales data" in {
 
       val userAnswers = baseAnswers
-        .set(SoldToCountryPage(Index(0)), country).success.value
-        .remove(SalesToCountryPage(Index(0), vatRateIndex)).success.value
+        .set(SoldToCountryPage(iossNumber, Index(0)), country).success.value
+        .remove(SalesToCountryPage(iossNumber, Index(0), vatRateIndex)).success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -261,13 +261,14 @@ class SoldToCountryListControllerSpec extends SpecBase with MockitoSugar {
 
         val view = application.injector.instanceOf[SoldToCountryListView]
 
-        val salesSummary = SoldToCountryListSummary.addToListRows(userAnswers, waypoints, SoldToCountryListPage())
+        val salesSummary = SoldToCountryListSummary.addToListRows(userAnswers, waypoints, SoldToCountryListPage(iossNumber))
         val incompleteCountries = Seq(country)
 
-        status(result) mustBe OK
-        contentAsString(result) mustBe view(
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(
           form,
           waypoints,
+          iossNumber,
           period,
           salesSummary,
           canAddSales = true,
@@ -291,17 +292,17 @@ class SoldToCountryListControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe routes.VatRatesFromCountryController.onPageLoad(waypoints, Index(0)).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` routes.VatRatesFromCountryController.onPageLoad(waypoints, iossNumber, Index(0)).url
       }
     }
 
     "must redirect to CheckSalesController when incompletePromptShown is true and the first incomplete country has VAT rates" in {
 
       val userAnswers = baseAnswers
-        .set(SoldToCountryPage(Index(0)), country).success.value
-        .set(VatRatesFromCountryPage(Index(0), Index(0)), List(vatRateFromCountry)).success.value
-        .remove(SalesToCountryPage(Index(0), vatRateIndex)).success.value
+        .set(SoldToCountryPage(iossNumber, Index(0)), country).success.value
+        .set(VatRatesFromCountryPage(iossNumber, Index(0), Index(0)), List(vatRateFromCountry)).success.value
+        .remove(SalesToCountryPage(iossNumber, Index(0), vatRateIndex)).success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -310,16 +311,16 @@ class SoldToCountryListControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe routes.CheckSalesController.onPageLoad(waypoints, Index(0)).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` routes.CheckSalesController.onPageLoad(waypoints, iossNumber, Index(0)).url
       }
     }
 
     "must redirect to SoldToCountryListController when incompletePromptShown is false" in {
 
       val userAnswers = baseAnswers
-        .set(SoldToCountryPage(Index(0)), country).success.value
-        .remove(SalesToCountryPage(Index(0), vatRateIndex)).success.value
+        .set(SoldToCountryPage(iossNumber, Index(0)), country).success.value
+        .remove(SalesToCountryPage(iossNumber, Index(0), vatRateIndex)).success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -328,8 +329,8 @@ class SoldToCountryListControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe routes.SoldToCountryListController.onPageLoad(waypoints).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` routes.SoldToCountryListController.onPageLoad(waypoints, iossNumber).url
       }
     }
   }

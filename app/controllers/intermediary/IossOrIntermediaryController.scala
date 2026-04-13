@@ -16,17 +16,17 @@
 
 package controllers.intermediary
 
-import controllers.actions.AuthenticatedControllerComponents
 import config.FrontendAppConfig
+import controllers.actions.AuthenticatedControllerComponents
 import forms.IossOrIntermediaryFormProvider
 import pages.EmptyWaypoints
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.auth.core.Enrolments
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.IossOrIntermediaryView
 import utils.EnrolmentIdentifiers.*
 import utils.FutureSyntax.FutureOps
+import views.html.IossOrIntermediaryView
 
 import javax.inject.Inject
 
@@ -40,7 +40,7 @@ class IossOrIntermediaryController @Inject()(
   protected val controllerComponents: MessagesControllerComponents = cc
   private val form = formProvider()
   
-  def onPageLoad(): Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced {
+  def onPageLoad(): Action[AnyContent] = cc.auth {
     implicit request =>
 
       val allEnrolments: Seq[String] = findAllEnrolments(request.enrolments)
@@ -49,25 +49,30 @@ class IossOrIntermediaryController @Inject()(
       Ok(view(form, allEnrolments, totalNumberOfEnrolments))
   }
 
-  def onSubmit(): Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced.async {
+  def onSubmit(): Action[AnyContent] = cc.auth.async {
     implicit request =>
+      
+      findIntermediaryFromEnrolments(request.enrolments).headOption match {
+        case Some(intermediaryNumber) =>
+          val allEnrolments: Seq[String] = findAllEnrolments(request.enrolments)
+          val totalNumberOfEnrolments: Int = allEnrolments.size
 
-      val intermediaryNumber = request.intermediaryNumber.getOrElse("")
-      val allEnrolments: Seq[String] = findAllEnrolments(request.enrolments)
-      val totalNumberOfEnrolments: Int = allEnrolments.size
+          form.bindFromRequest().fold(
+            formWithErrors =>
+              BadRequest(view(formWithErrors, allEnrolments, totalNumberOfEnrolments)).toFuture,
 
-      form.bindFromRequest().fold(
-        formWithErrors =>
-          BadRequest(view(formWithErrors, allEnrolments, totalNumberOfEnrolments)).toFuture,
+            value =>
 
-        value =>
+              if (value == intermediaryNumber) {
+                Redirect(frontendAppConfig.intermediaryDashboardUrl).toFuture
+              } else {
+                Redirect(controllers.routes.YourAccountController.onPageLoad(waypoints = EmptyWaypoints)).toFuture
+              }
+          )
+          
+        case _ => Redirect(controllers.routes.YourAccountController.onPageLoad(waypoints = EmptyWaypoints)).toFuture
+      }
 
-          if (value == intermediaryNumber) {
-            Redirect(frontendAppConfig.intermediaryDashboardUrl).toFuture
-          } else {
-            Redirect(controllers.routes.YourAccountController.onPageLoad(waypoints = EmptyWaypoints)).toFuture
-          }
-      )
   }
 
   private def findAllEnrolments(enrolments: Enrolments): Seq[String] = {

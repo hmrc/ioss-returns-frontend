@@ -22,21 +22,21 @@ import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
 
-case class RemainingVatRateFromCountryPage(countryIndex: Index, vatRateIndex: Index) extends QuestionPage[Boolean] {
+case class RemainingVatRateFromCountryPage(iossNumber: String, countryIndex: Index, vatRateIndex: Index) extends QuestionPage[Boolean] {
 
   override def path: JsPath = JsPath \ toString
 
   override def toString: String = "remainingVatRateFromCountry"
 
   override def route(waypoints: Waypoints): Call =
-    routes.RemainingVatRateFromCountryController.onPageLoad(waypoints, countryIndex, vatRateIndex)
+    routes.RemainingVatRateFromCountryController.onPageLoad(waypoints, iossNumber, countryIndex, vatRateIndex)
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
     answers.get(this) match {
       case Some(true) =>
-        SalesToCountryPage(countryIndex, vatRateIndex)
+        SalesToCountryPage(answers.iossNumber, countryIndex, vatRateIndex)
       case Some(false) =>
-        CheckSalesPage(countryIndex)
+        CheckSalesPage(answers.iossNumber, countryIndex)
       case _ =>
         JourneyRecoveryPage
     }

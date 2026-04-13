@@ -36,14 +36,14 @@ class ReturnSubmissionFailureControllerSpec extends SpecBase {
       running(application) {
         val redirectUrl: String = baseRoutes.YourAccountController.onPageLoad(waypoints).url
 
-        val request = FakeRequest(GET, routes.ReturnSubmissionFailureController.onPageLoad().url)
+        val request = FakeRequest(GET, routes.ReturnSubmissionFailureController.onPageLoad(iossNumber).url)
 
         val result = route(application, request).value
 
         val view = application.injector.instanceOf[ReturnSubmissionFailureView]
 
         status(result) `mustBe` OK
-        contentAsString(result) `mustBe` view(redirectUrl)(request, messages(application)).toString
+        contentAsString(result) `mustBe` view(iossNumber, redirectUrl)(request, messages(application)).toString
       }
     }
 
@@ -75,7 +75,7 @@ class ReturnSubmissionFailureControllerSpec extends SpecBase {
       ).build()
 
       running(application) {
-        val request = FakeRequest(GET, routes.ReturnSubmissionFailureController.onPageLoad().url)
+        val request = FakeRequest(GET, routes.ReturnSubmissionFailureController.onPageLoad(iossNumber).url)
 
         val config = application.injector.instanceOf[FrontendAppConfig]
 
@@ -84,7 +84,7 @@ class ReturnSubmissionFailureControllerSpec extends SpecBase {
         val view = application.injector.instanceOf[ReturnSubmissionFailureView]
 
         status(result) `mustBe` OK
-        contentAsString(result) `mustBe` view(config.intermediaryDashboardUrl)(request, messages(application)).toString
+        contentAsString(result) `mustBe` view(iossNumber, config.intermediaryDashboardUrl)(request, messages(application)).toString
       }
     }
   }

@@ -26,15 +26,15 @@
         button: ButtonGroup
 )
 
-@(form: Form[_], waypoints: Waypoints, period: Period, isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, iossNumber: String, period: Period, isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
 
     @layout(pageTitle = title(form, if(isIntermediary) {
         messages("soldGoods.intermediary.title", period.displayText)
     } else {
         messages("soldGoods.title", period.displayText)
-    })) {
+    }), maybeIossNumber = Some(iossNumber)) {
 
-        @formHelper(action = routes.SoldGoodsController.onSubmit(waypoints), Symbol("autoComplete") -> "off") {
+        @formHelper(action = routes.SoldGoodsController.onSubmit(waypoints, iossNumber), Symbol("autoComplete") -> "off") {
 
             @if(form.errors.nonEmpty) {
                 @govukErrorSummary(ErrorSummaryViewModel(form))
@@ -56,7 +56,7 @@
             )
 
         @button(
-            "site.continue", routes.SoldGoodsController.onPageLoad(waypoints).url, period, waypoints
+            "site.continue", routes.SoldGoodsController.onPageLoad(waypoints, iossNumber).url, iossNumber, period, waypoints
         )
     }
 }

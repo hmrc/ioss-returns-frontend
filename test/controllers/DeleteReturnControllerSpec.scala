@@ -37,7 +37,7 @@ class DeleteReturnControllerSpec extends SpecBase with MockitoSugar {
   private val formProvider = new DeleteReturnFormProvider()
   private val form = formProvider()
 
-  private lazy val deleteReturnRoute = routes.DeleteReturnController.onPageLoad(period).url
+  private lazy val deleteReturnRoute = routes.DeleteReturnController.onPageLoad(iossNumber, period).url
 
   "DeleteReturn Controller" - {
 
@@ -53,7 +53,7 @@ class DeleteReturnControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[DeleteReturnView]
 
         status(result) `mustBe` OK
-        contentAsString(result) `mustBe` view(form, period,  false, "CompanyName")(request, messages(application)).toString
+        contentAsString(result) `mustBe` view(form, iossNumber, period,  false, "CompanyName")(request, messages(application)).toString
       }
     }
 
@@ -71,7 +71,7 @@ class DeleteReturnControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) `mustBe` SEE_OTHER
-        redirectLocation(result).value `mustBe` controllers.routes.ContinueReturnController.onPageLoad(period).url
+        redirectLocation(result).value `mustBe` controllers.routes.ContinueReturnController.onPageLoad(iossNumber, period).url
       }
     }
 
@@ -120,7 +120,7 @@ class DeleteReturnControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) `mustBe` BAD_REQUEST
-        contentAsString(result) `mustBe` view(boundForm, period, false, "CompanyName")(request, messages(application)).toString
+        contentAsString(result) `mustBe` view(boundForm, iossNumber, period, false, "CompanyName")(request, messages(application)).toString
       }
     }
 

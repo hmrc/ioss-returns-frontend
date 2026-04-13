@@ -56,7 +56,7 @@ class WhichPreviousRegistrationToPayController @Inject()(
 
   val form: Form[String] = formProvider()
 
-  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced.async {
+  def onPageLoad(waypoints: Waypoints, iossNumber: String): Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced(iossNumber).async {
     implicit request =>
 
       previousRegistrationService.getPreviousRegistrationPrepareFinancialData(request.isIntermediary).flatMap { preparedDataList =>
@@ -64,14 +64,14 @@ class WhichPreviousRegistrationToPayController @Inject()(
       }
   }
 
-  def onSubmit(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced.async {
+  def onSubmit(waypoints: Waypoints, iossNumber: String): Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced(iossNumber).async {
     implicit request =>
 
       previousRegistrationService.getPreviousRegistrationPrepareFinancialData(request.isIntermediary).flatMap { preparedDataList =>
 
         form.bindFromRequest().fold(
           formWithErrors =>
-            BadRequest(view(formWithErrors, waypoints, preparedDataList)).toFuture,
+            BadRequest(view(formWithErrors, waypoints, request.iossNumber, preparedDataList)).toFuture,
 
           value =>
             getSelectedItemAndDetermineRedirect(waypoints, preparedDataList, value)
@@ -92,16 +92,16 @@ class WhichPreviousRegistrationToPayController @Inject()(
         val iossNumber = prepareData.iossNumber
         val payments = prepareData.overduePayments ++ prepareData.duePayments
         payments match {
-          case Nil => Ok(viewNoPayment(YourAccountPage.route(waypoints).url)).toFuture
+          case Nil => Ok(viewNoPayment(request.iossNumber, YourAccountPage.route(waypoints).url)).toFuture
           case payment :: Nil =>
             makePayment(iossNumber, payment)
           case _ =>
             selectedIossNumberRepository.set(SelectedIossNumber(request.userId, iossNumber)).map { _ =>
-              Redirect(WhichPreviousRegistrationVatPeriodToPayPage.route(waypoints))
+              Redirect(WhichPreviousRegistrationVatPeriodToPayPage(request.iossNumber).route(waypoints))
             }
         }
       case _ =>
-        Ok(view(form, waypoints, prepareDataList)).toFuture
+        Ok(view(form, waypoints, request.iossNumber, prepareDataList)).toFuture
     }
   }
 
@@ -116,7 +116,7 @@ class WhichPreviousRegistrationToPayController @Inject()(
         makePayment(iossNumber, payments.head)
       } else {
         selectedIossNumberRepository.set(SelectedIossNumber(request.userId, iossNumber)).map { _ =>
-          Redirect(WhichPreviousRegistrationVatPeriodToPayPage.route(waypoints))
+          Redirect(WhichPreviousRegistrationVatPeriodToPayPage(request.iossNumber).route(waypoints))
         }
       }
     }.getOrElse(Redirect(JourneyRecoveryPage.route(waypoints)).toFuture)

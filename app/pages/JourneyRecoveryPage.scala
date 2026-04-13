@@ -23,5 +23,4 @@ object JourneyRecoveryPage extends Page {
 
   override def route(waypoints: Waypoints): Call =
     routes.JourneyRecoveryController.onPageLoad()
-
 }

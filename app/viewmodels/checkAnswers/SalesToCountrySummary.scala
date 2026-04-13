@@ -22,21 +22,21 @@ import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
 import utils.CurrencyFormatter.currencyFormat
-import viewmodels.govuk.summarylist._
-import viewmodels.implicits._
+import viewmodels.govuk.summarylist.*
+import viewmodels.implicits.*
 
 object SalesToCountrySummary {
 
   def row(answers: UserAnswers, waypoints: Waypoints, countryIndex: Index, vatRateIndex: Index, vatRate: VatRateFromCountry, sourcePage: AddItemPage)
          (implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(SalesToCountryPage(countryIndex, vatRateIndex)).map {
+    answers.get(SalesToCountryPage(answers.iossNumber, countryIndex, vatRateIndex)).map {
       answer =>
 
         SummaryListRowViewModel(
           key = "salesToCountry.checkYourAnswersLabel",
           value = ValueViewModel(HtmlContent(currencyFormat(answer))).withCssClass("govuk-table__cell--numeric"),
           actions = Seq(
-            ActionItemViewModel("site.change", SalesToCountryPage(countryIndex, vatRateIndex).changeLink(waypoints, sourcePage).url)
+            ActionItemViewModel("site.change", SalesToCountryPage(answers.iossNumber, countryIndex, vatRateIndex).changeLink(waypoints, sourcePage).url)
               .withVisuallyHiddenText(messages("salesToCountry.change.hidden", vatRate.rateForDisplay))
               .withAttribute(("id", s"change-net-value-sales-${vatRate.rate}-percent"))
           )

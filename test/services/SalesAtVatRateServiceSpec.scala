@@ -41,41 +41,41 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar {
 
       "must show correct total vat from one country, to one country, with one vat rate" in {
 
-        service.getTotalVatOnSales(completeUserAnswers) mustBe Some(BigDecimal(20))
+        service.getTotalVatOnSales(completeUserAnswers) `mustBe` Some(BigDecimal(20))
       }
 
       "must show correct total vat from one country with multiple vat rates" in {
 
         val answers = emptyUserAnswers
-          .set(SoldGoodsPage, true).success.value
-          .set(SoldToCountryPage(index), croatia).success.value
-          .set(VatRatesFromCountryPage(index0, index0), List(twentyPercentVatRate, fivePercentVatRate)).success.value
-          .set(SalesToCountryPage(index0, index0), BigDecimal(100)).success.value
-          .set(VatOnSalesPage(index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
-          .set(SalesToCountryPage(index0, index1), BigDecimal(200)).success.value
-          .set(VatOnSalesPage(index0, index1), VatOnSales(Standard, BigDecimal(10))).success.value
+          .set(SoldGoodsPage(iossNumber), true).success.value
+          .set(SoldToCountryPage(iossNumber, index), croatia).success.value
+          .set(VatRatesFromCountryPage(iossNumber, index0, index0), List(twentyPercentVatRate, fivePercentVatRate)).success.value
+          .set(SalesToCountryPage(iossNumber, index0, index0), BigDecimal(100)).success.value
+          .set(VatOnSalesPage(iossNumber, index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
+          .set(SalesToCountryPage(iossNumber, index0, index1), BigDecimal(200)).success.value
+          .set(VatOnSalesPage(iossNumber, index0, index1), VatOnSales(Standard, BigDecimal(10))).success.value
 
-        service.getTotalVatOnSales(answers) mustBe Some(BigDecimal(30))
+        service.getTotalVatOnSales(answers) `mustBe` Some(BigDecimal(30))
       }
 
       "must show correct total vat from multiple countries with multiple vat rates" in {
 
         val answers = emptyUserAnswers
-          .set(SoldGoodsPage, true).success.value
-          .set(SoldToCountryPage(index0), croatia).success.value
-          .set(VatRatesFromCountryPage(index0, index0), List(twentyPercentVatRate, fivePercentVatRate)).success.value
-          .set(SalesToCountryPage(index0, index0), BigDecimal(100)).success.value
-          .set(VatOnSalesPage(index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
-          .set(SalesToCountryPage(index0, index1), BigDecimal(200)).success.value
-          .set(VatOnSalesPage(index0, index1), VatOnSales(Standard, BigDecimal(10))).success.value
-          .set(SoldToCountryPage(index1), estonia).success.value
-          .set(VatRatesFromCountryPage(index1, index0), List(twentyPercentVatRate, fivePercentVatRate)).success.value
-          .set(SalesToCountryPage(index1, index0), BigDecimal(300)).success.value
-          .set(VatOnSalesPage(index1, index0), VatOnSales(Standard, BigDecimal(60))).success.value
-          .set(SalesToCountryPage(index1, index1), BigDecimal(400)).success.value
-          .set(VatOnSalesPage(index1, index1), VatOnSales(Standard, BigDecimal(20))).success.value
+          .set(SoldGoodsPage(iossNumber), true).success.value
+          .set(SoldToCountryPage(iossNumber, index0), croatia).success.value
+          .set(VatRatesFromCountryPage(iossNumber, index0, index0), List(twentyPercentVatRate, fivePercentVatRate)).success.value
+          .set(SalesToCountryPage(iossNumber, index0, index0), BigDecimal(100)).success.value
+          .set(VatOnSalesPage(iossNumber, index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
+          .set(SalesToCountryPage(iossNumber, index0, index1), BigDecimal(200)).success.value
+          .set(VatOnSalesPage(iossNumber, index0, index1), VatOnSales(Standard, BigDecimal(10))).success.value
+          .set(SoldToCountryPage(iossNumber, index1), estonia).success.value
+          .set(VatRatesFromCountryPage(iossNumber, index1, index0), List(twentyPercentVatRate, fivePercentVatRate)).success.value
+          .set(SalesToCountryPage(iossNumber, index1, index0), BigDecimal(300)).success.value
+          .set(VatOnSalesPage(iossNumber, index1, index0), VatOnSales(Standard, BigDecimal(60))).success.value
+          .set(SalesToCountryPage(iossNumber, index1, index1), BigDecimal(400)).success.value
+          .set(VatOnSalesPage(iossNumber, index1, index1), VatOnSales(Standard, BigDecimal(20))).success.value
 
-        service.getTotalVatOnSales(answers) mustBe Some(BigDecimal(110))
+        service.getTotalVatOnSales(answers) `mustBe` Some(BigDecimal(110))
       }
     }
 
@@ -83,41 +83,41 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar {
 
       "must show correct net total sales for one country from with one vat rate" in {
 
-        service.getTotalNetSales(completeUserAnswers) mustBe Some(BigDecimal(100))
+        service.getTotalNetSales(completeUserAnswers) `mustBe` Some(BigDecimal(100))
       }
 
       "must show correct net total sales for one country from with multiple vat rates" in {
 
         val answers = emptyUserAnswers
-          .set(SoldGoodsPage, true).success.value
-          .set(SoldToCountryPage(index), croatia).success.value
-          .set(VatRatesFromCountryPage(index0, index0), List(twentyPercentVatRate, fivePercentVatRate)).success.value
-          .set(SalesToCountryPage(index0, index0), BigDecimal(100)).success.value
-          .set(VatOnSalesPage(index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
-          .set(SalesToCountryPage(index0, index1), BigDecimal(200)).success.value
-          .set(VatOnSalesPage(index0, index1), VatOnSales(Standard, BigDecimal(20))).success.value
+          .set(SoldGoodsPage(iossNumber), true).success.value
+          .set(SoldToCountryPage(iossNumber, index), croatia).success.value
+          .set(VatRatesFromCountryPage(iossNumber, index0, index0), List(twentyPercentVatRate, fivePercentVatRate)).success.value
+          .set(SalesToCountryPage(iossNumber, index0, index0), BigDecimal(100)).success.value
+          .set(VatOnSalesPage(iossNumber, index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
+          .set(SalesToCountryPage(iossNumber, index0, index1), BigDecimal(200)).success.value
+          .set(VatOnSalesPage(iossNumber, index0, index1), VatOnSales(Standard, BigDecimal(20))).success.value
 
-        service.getTotalNetSales(answers) mustBe Some(BigDecimal(300))
+        service.getTotalNetSales(answers) `mustBe` Some(BigDecimal(300))
       }
 
       "must show correct net total sales for multiple country from with multiple vat rates" in {
 
         val answers = emptyUserAnswers
-          .set(SoldGoodsPage, true).success.value
-          .set(SoldToCountryPage(index0), croatia).success.value
-          .set(VatRatesFromCountryPage(index0, index0), List(twentyPercentVatRate, fivePercentVatRate)).success.value
-          .set(SalesToCountryPage(index0, index0), BigDecimal(100)).success.value
-          .set(VatOnSalesPage(index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
-          .set(SalesToCountryPage(index0, index1), BigDecimal(200)).success.value
-          .set(VatOnSalesPage(index0, index1), VatOnSales(Standard, BigDecimal(20))).success.value
-          .set(SoldToCountryPage(index1), estonia).success.value
-          .set(VatRatesFromCountryPage(index1, index0), List(twentyPercentVatRate, fivePercentVatRate)).success.value
-          .set(SalesToCountryPage(index1, index0), BigDecimal(300)).success.value
-          .set(VatOnSalesPage(index1, index0), VatOnSales(Standard, BigDecimal(20))).success.value
-          .set(SalesToCountryPage(index1, index1), BigDecimal(400)).success.value
-          .set(VatOnSalesPage(index1, index1), VatOnSales(Standard, BigDecimal(20))).success.value
+          .set(SoldGoodsPage(iossNumber), true).success.value
+          .set(SoldToCountryPage(iossNumber, index0), croatia).success.value
+          .set(VatRatesFromCountryPage(iossNumber, index0, index0), List(twentyPercentVatRate, fivePercentVatRate)).success.value
+          .set(SalesToCountryPage(iossNumber, index0, index0), BigDecimal(100)).success.value
+          .set(VatOnSalesPage(iossNumber, index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
+          .set(SalesToCountryPage(iossNumber, index0, index1), BigDecimal(200)).success.value
+          .set(VatOnSalesPage(iossNumber, index0, index1), VatOnSales(Standard, BigDecimal(20))).success.value
+          .set(SoldToCountryPage(iossNumber, index1), estonia).success.value
+          .set(VatRatesFromCountryPage(iossNumber, index1, index0), List(twentyPercentVatRate, fivePercentVatRate)).success.value
+          .set(SalesToCountryPage(iossNumber, index1, index0), BigDecimal(300)).success.value
+          .set(VatOnSalesPage(iossNumber, index1, index0), VatOnSales(Standard, BigDecimal(20))).success.value
+          .set(SalesToCountryPage(iossNumber, index1, index1), BigDecimal(400)).success.value
+          .set(VatOnSalesPage(iossNumber, index1, index1), VatOnSales(Standard, BigDecimal(20))).success.value
 
-        service.getTotalNetSales(answers) mustBe Some(BigDecimal(1000))
+        service.getTotalNetSales(answers) `mustBe` Some(BigDecimal(1000))
       }
     }
 
@@ -128,69 +128,69 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar {
         "must return correct total vat to eu countries for one country with one vat rate" in {
 
           val ua = emptyUserAnswers
-            .set(SoldGoodsPage, true).success.value
-            .set(SoldToCountryPage(index0), belgium).success.value
-            .set(VatRatesFromCountryPage(index0, index0), List(twentyPercentVatRate)).success.value
-            .set(SalesToCountryPage(index0, index0), BigDecimal(100)).success.value
-            .set(VatOnSalesPage(index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
+            .set(SoldGoodsPage(iossNumber), true).success.value
+            .set(SoldToCountryPage(iossNumber, index0), belgium).success.value
+            .set(VatRatesFromCountryPage(iossNumber, index0, index0), List(twentyPercentVatRate)).success.value
+            .set(SalesToCountryPage(iossNumber, index0, index0), BigDecimal(100)).success.value
+            .set(VatOnSalesPage(iossNumber, index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
 
           val expected = List(TotalVatToCountry(belgium, BigDecimal(20)))
 
-          service.getVatOwedToCountries(ua) mustBe expected
+          service.getVatOwedToCountries(ua) `mustBe` expected
         }
 
         "must return correct total vat to eu countries for one country with one vat rate and a correction for another country" in {
 
           val ua = emptyUserAnswers
-            .set(SoldGoodsPage, true).success.value
-            .set(SoldToCountryPage(index0), spain).success.value
-            .set(VatRatesFromCountryPage(index0, index0), List(twentyPercentVatRate)).success.value
-            .set(SalesToCountryPage(index0, index0), BigDecimal(100)).success.value
-            .set(VatOnSalesPage(index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
-            .set(CorrectionReturnPeriodPage(index0), period).success.value
-            .set(CorrectionCountryPage(index0, index0), belgium).success.value
-            .set(VatAmountCorrectionCountryPage(index0, index0), BigDecimal(100)).success.value
+            .set(SoldGoodsPage(iossNumber), true).success.value
+            .set(SoldToCountryPage(iossNumber, index0), spain).success.value
+            .set(VatRatesFromCountryPage(iossNumber, index0, index0), List(twentyPercentVatRate)).success.value
+            .set(SalesToCountryPage(iossNumber, index0, index0), BigDecimal(100)).success.value
+            .set(VatOnSalesPage(iossNumber, index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
+            .set(CorrectionReturnPeriodPage(iossNumber, index0), period).success.value
+            .set(CorrectionCountryPage(iossNumber, index0, index0), belgium).success.value
+            .set(VatAmountCorrectionCountryPage(iossNumber, index0, index0), BigDecimal(100)).success.value
 
           val expected = List(
             TotalVatToCountry(belgium, BigDecimal(100)),
             TotalVatToCountry(spain, BigDecimal(20))
           )
 
-          service.getVatOwedToCountries(ua) mustBe expected
+          service.getVatOwedToCountries(ua) `mustBe` expected
         }
 
         "must return correct total vat to eu countries for one country with multiple vat rates" in {
 
           val answers = emptyUserAnswers
-            .set(SoldGoodsPage, true).success.value
-            .set(SoldToCountryPage(index0), croatia).success.value
-            .set(VatRatesFromCountryPage(index0, index0), List(twentyPercentVatRate, fivePercentVatRate)).success.value
-            .set(SalesToCountryPage(index0, index0), BigDecimal(100)).success.value
-            .set(VatOnSalesPage(index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
-            .set(SalesToCountryPage(index0, index1), BigDecimal(200)).success.value
-            .set(VatOnSalesPage(index0, index1), VatOnSales(Standard, BigDecimal(20))).success.value
+            .set(SoldGoodsPage(iossNumber), true).success.value
+            .set(SoldToCountryPage(iossNumber, index0), croatia).success.value
+            .set(VatRatesFromCountryPage(iossNumber, index0, index0), List(twentyPercentVatRate, fivePercentVatRate)).success.value
+            .set(SalesToCountryPage(iossNumber, index0, index0), BigDecimal(100)).success.value
+            .set(VatOnSalesPage(iossNumber, index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
+            .set(SalesToCountryPage(iossNumber, index0, index1), BigDecimal(200)).success.value
+            .set(VatOnSalesPage(iossNumber, index0, index1), VatOnSales(Standard, BigDecimal(20))).success.value
 
           val expected = List(TotalVatToCountry(croatia, BigDecimal(40)))
 
-          service.getVatOwedToCountries(answers) mustBe expected
+          service.getVatOwedToCountries(answers) `mustBe` expected
         }
 
         "must return correct total vat to eu countries for multiple countries with multiple vat rates" in {
 
           val answers = emptyUserAnswers
-            .set(SoldGoodsPage, true).success.value
-            .set(SoldToCountryPage(index0), croatia).success.value
-            .set(VatRatesFromCountryPage(index0, index0), List(twentyPercentVatRate, fivePercentVatRate)).success.value
-            .set(SalesToCountryPage(index0, index0), BigDecimal(100)).success.value
-            .set(VatOnSalesPage(index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
-            .set(SalesToCountryPage(index0, index1), BigDecimal(100)).success.value
-            .set(VatOnSalesPage(index0, index1), VatOnSales(Standard, BigDecimal(20))).success.value
-            .set(SoldToCountryPage(index1), spain).success.value
-            .set(VatRatesFromCountryPage(index1, index0), List(twentyPercentVatRate, fivePercentVatRate)).success.value
-            .set(SalesToCountryPage(index1, index0), BigDecimal(100)).success.value
-            .set(VatOnSalesPage(index1, index0), VatOnSales(Standard, BigDecimal(20))).success.value
-            .set(SalesToCountryPage(index1, index1), BigDecimal(200)).success.value
-            .set(VatOnSalesPage(index1, index1), VatOnSales(Standard, BigDecimal(40))).success.value
+            .set(SoldGoodsPage(iossNumber), true).success.value
+            .set(SoldToCountryPage(iossNumber, index0), croatia).success.value
+            .set(VatRatesFromCountryPage(iossNumber, index0, index0), List(twentyPercentVatRate, fivePercentVatRate)).success.value
+            .set(SalesToCountryPage(iossNumber, index0, index0), BigDecimal(100)).success.value
+            .set(VatOnSalesPage(iossNumber, index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
+            .set(SalesToCountryPage(iossNumber, index0, index1), BigDecimal(100)).success.value
+            .set(VatOnSalesPage(iossNumber, index0, index1), VatOnSales(Standard, BigDecimal(20))).success.value
+            .set(SoldToCountryPage(iossNumber, index1), spain).success.value
+            .set(VatRatesFromCountryPage(iossNumber, index1, index0), List(twentyPercentVatRate, fivePercentVatRate)).success.value
+            .set(SalesToCountryPage(iossNumber, index1, index0), BigDecimal(100)).success.value
+            .set(VatOnSalesPage(iossNumber, index1, index0), VatOnSales(Standard, BigDecimal(20))).success.value
+            .set(SalesToCountryPage(iossNumber, index1, index1), BigDecimal(200)).success.value
+            .set(VatOnSalesPage(iossNumber, index1, index1), VatOnSales(Standard, BigDecimal(40))).success.value
 
           service.getVatOwedToCountries(answers) must contain theSameElementsAs List(
             TotalVatToCountry(spain, BigDecimal(60)),
@@ -201,24 +201,24 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar {
         "must return correct total vat to eu countries for multiple countries with multiple vat rates and multiple corrections" in {
 
           val answers = emptyUserAnswers
-            .set(SoldGoodsPage, true).success.value
-            .set(SoldToCountryPage(index0), croatia).success.value
-            .set(VatRatesFromCountryPage(index0, index0), List(twentyPercentVatRate, fivePercentVatRate)).success.value
-            .set(SalesToCountryPage(index0, index0), BigDecimal(100)).success.value
-            .set(VatOnSalesPage(index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
-            .set(SalesToCountryPage(index0, index1), BigDecimal(100)).success.value
-            .set(VatOnSalesPage(index0, index1), VatOnSales(Standard, BigDecimal(20))).success.value
-            .set(SoldToCountryPage(index1), spain).success.value
-            .set(VatRatesFromCountryPage(index1, index0), List(twentyPercentVatRate, fivePercentVatRate)).success.value
-            .set(SalesToCountryPage(index1, index0), BigDecimal(100)).success.value
-            .set(VatOnSalesPage(index1, index0), VatOnSales(Standard, BigDecimal(20))).success.value
-            .set(SalesToCountryPage(index1, index1), BigDecimal(200)).success.value
-            .set(VatOnSalesPage(index1, index1), VatOnSales(Standard, BigDecimal(40))).success.value
-            .set(CorrectionReturnPeriodPage(index0), period).success.value
-            .set(CorrectionCountryPage(index0, index0), belgium).success.value
-            .set(VatAmountCorrectionCountryPage(index0, index0), BigDecimal(100)).success.value
-            .set(CorrectionCountryPage(index0, index0), spain).success.value
-            .set(VatAmountCorrectionCountryPage(index0, index0), BigDecimal(-50)).success.value
+            .set(SoldGoodsPage(iossNumber), true).success.value
+            .set(SoldToCountryPage(iossNumber, index0), croatia).success.value
+            .set(VatRatesFromCountryPage(iossNumber, index0, index0), List(twentyPercentVatRate, fivePercentVatRate)).success.value
+            .set(SalesToCountryPage(iossNumber, index0, index0), BigDecimal(100)).success.value
+            .set(VatOnSalesPage(iossNumber, index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
+            .set(SalesToCountryPage(iossNumber, index0, index1), BigDecimal(100)).success.value
+            .set(VatOnSalesPage(iossNumber, index0, index1), VatOnSales(Standard, BigDecimal(20))).success.value
+            .set(SoldToCountryPage(iossNumber, index1), spain).success.value
+            .set(VatRatesFromCountryPage(iossNumber, index1, index0), List(twentyPercentVatRate, fivePercentVatRate)).success.value
+            .set(SalesToCountryPage(iossNumber, index1, index0), BigDecimal(100)).success.value
+            .set(VatOnSalesPage(iossNumber, index1, index0), VatOnSales(Standard, BigDecimal(20))).success.value
+            .set(SalesToCountryPage(iossNumber, index1, index1), BigDecimal(200)).success.value
+            .set(VatOnSalesPage(iossNumber, index1, index1), VatOnSales(Standard, BigDecimal(40))).success.value
+            .set(CorrectionReturnPeriodPage(iossNumber, index0), period).success.value
+            .set(CorrectionCountryPage(iossNumber, index0, index0), belgium).success.value
+            .set(VatAmountCorrectionCountryPage(iossNumber, index0, index0), BigDecimal(100)).success.value
+            .set(CorrectionCountryPage(iossNumber, index0, index0), spain).success.value
+            .set(VatAmountCorrectionCountryPage(iossNumber, index0, index0), BigDecimal(-50)).success.value
 
 
           service.getVatOwedToCountries(answers) must contain theSameElementsAs List(
@@ -233,31 +233,31 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar {
         "must return correct total vat to eu countries for one country with one vat rate" in {
 
           val ua = emptyUserAnswers
-            .set(SoldGoodsPage, true).success.value
-            .set(SoldToCountryPage(index0), belgium).success.value
-            .set(VatRatesFromCountryPage(index0, index0), List(twentyPercentVatRate)).success.value
-            .set(SalesToCountryPage(index0, index0), BigDecimal(100)).success.value
-            .set(VatOnSalesPage(index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
+            .set(SoldGoodsPage(iossNumber), true).success.value
+            .set(SoldToCountryPage(iossNumber, index0), belgium).success.value
+            .set(VatRatesFromCountryPage(iossNumber, index0, index0), List(twentyPercentVatRate)).success.value
+            .set(SalesToCountryPage(iossNumber, index0, index0), BigDecimal(100)).success.value
+            .set(VatOnSalesPage(iossNumber, index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
 
           val expected = List(TotalVatToCountry(belgium, BigDecimal(20)))
 
-          service.getVatOwedToCountries(ua) mustBe expected
+          service.getVatOwedToCountries(ua) `mustBe` expected
         }
 
         "must return correct total vat to eu countries for one country with multiple vat rates" in {
 
           val answers = emptyUserAnswers
-            .set(SoldGoodsPage, true).success.value
-            .set(SoldToCountryPage(index0), belgium).success.value
-            .set(VatRatesFromCountryPage(index0, index0), List(twentyPercentVatRate, fivePercentVatRate)).success.value
-            .set(SalesToCountryPage(index0, index0), BigDecimal(100)).success.value
-            .set(VatOnSalesPage(index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
-            .set(SalesToCountryPage(index0, index1), BigDecimal(200)).success.value
-            .set(VatOnSalesPage(index0, index1), VatOnSales(Standard, BigDecimal(20))).success.value
+            .set(SoldGoodsPage(iossNumber), true).success.value
+            .set(SoldToCountryPage(iossNumber, index0), belgium).success.value
+            .set(VatRatesFromCountryPage(iossNumber, index0, index0), List(twentyPercentVatRate, fivePercentVatRate)).success.value
+            .set(SalesToCountryPage(iossNumber, index0, index0), BigDecimal(100)).success.value
+            .set(VatOnSalesPage(iossNumber, index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
+            .set(SalesToCountryPage(iossNumber, index0, index1), BigDecimal(200)).success.value
+            .set(VatOnSalesPage(iossNumber, index0, index1), VatOnSales(Standard, BigDecimal(20))).success.value
 
           val expected = List(TotalVatToCountry(belgium, BigDecimal(40)))
 
-          service.getVatOwedToCountries(answers) mustBe expected
+          service.getVatOwedToCountries(answers) `mustBe` expected
         }
       }
     }
@@ -269,62 +269,62 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar {
         "must return correct total when there is a positive correction " in {
 
           val ua = emptyUserAnswers
-            .set(SoldGoodsPage, true).success.value
-            .set(SoldToCountryPage(index0), croatia).success.value
-            .set(VatRatesFromCountryPage(index0, index0), List(twentyPercentVatRate)).success.value
-            .set(SalesToCountryPage(index0, index0), BigDecimal(100)).success.value
-            .set(VatOnSalesPage(index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
-            .set(CorrectionReturnPeriodPage(index0), period).success.value
-            .set(CorrectionCountryPage(index0, index0), belgium).success.value
-            .set(VatAmountCorrectionCountryPage(index0, index0), BigDecimal(100)).success.value
+            .set(SoldGoodsPage(iossNumber), true).success.value
+            .set(SoldToCountryPage(iossNumber, index0), croatia).success.value
+            .set(VatRatesFromCountryPage(iossNumber, index0, index0), List(twentyPercentVatRate)).success.value
+            .set(SalesToCountryPage(iossNumber, index0, index0), BigDecimal(100)).success.value
+            .set(VatOnSalesPage(iossNumber, index0, index0), VatOnSales(Standard, BigDecimal(20))).success.value
+            .set(CorrectionReturnPeriodPage(iossNumber, index0), period).success.value
+            .set(CorrectionCountryPage(iossNumber, index0, index0), belgium).success.value
+            .set(VatAmountCorrectionCountryPage(iossNumber, index0, index0), BigDecimal(100)).success.value
 
-          service.getTotalVatOwedAfterCorrections(ua) mustBe BigDecimal(120)
+          service.getTotalVatOwedAfterCorrections(ua) `mustBe` BigDecimal(120)
 
         }
 
         "must return correct total when there is a negative correction" in {
 
           val ua = emptyUserAnswers
-            .set(SoldGoodsPage, true).success.value
-            .set(SoldToCountryPage(index0), croatia).success.value
-            .set(VatRatesFromCountryPage(index0, index0), List(twentyPercentVatRate)).success.value
-            .set(SalesToCountryPage(index0, index0), BigDecimal(1000)).success.value
-            .set(VatOnSalesPage(index0, index0), VatOnSales(Standard, BigDecimal(200))).success.value
-            .set(CorrectionReturnPeriodPage(index0), period).success.value
-            .set(CorrectionCountryPage(index0, index0), belgium).success.value
-            .set(VatAmountCorrectionCountryPage(index0, index0), BigDecimal(-100)).success.value
+            .set(SoldGoodsPage(iossNumber), true).success.value
+            .set(SoldToCountryPage(iossNumber, index0), croatia).success.value
+            .set(VatRatesFromCountryPage(iossNumber, index0, index0), List(twentyPercentVatRate)).success.value
+            .set(SalesToCountryPage(iossNumber, index0, index0), BigDecimal(1000)).success.value
+            .set(VatOnSalesPage(iossNumber, index0, index0), VatOnSales(Standard, BigDecimal(200))).success.value
+            .set(CorrectionReturnPeriodPage(iossNumber, index0), period).success.value
+            .set(CorrectionCountryPage(iossNumber, index0, index0), belgium).success.value
+            .set(VatAmountCorrectionCountryPage(iossNumber, index0, index0), BigDecimal(-100)).success.value
 
-          service.getTotalVatOwedAfterCorrections(ua) mustBe BigDecimal(200)
+          service.getTotalVatOwedAfterCorrections(ua) `mustBe` BigDecimal(200)
         }
 
         "must return zero when the correction makes the total amount negative for a country" in {
 
           val ua = emptyUserAnswers
-            .set(SoldGoodsPage, true).success.value
-            .set(SoldToCountryPage(index0), croatia).success.value
-            .set(VatRatesFromCountryPage(index0, index0), List(twentyPercentVatRate)).success.value
-            .set(SalesToCountryPage(index0, index0), BigDecimal(1000)).success.value
-            .set(VatOnSalesPage(index0, index0), VatOnSales(Standard, BigDecimal(100))).success.value
-            .set(CorrectionReturnPeriodPage(index0), period).success.value
-            .set(CorrectionCountryPage(index0, index0), croatia).success.value
-            .set(VatAmountCorrectionCountryPage(index0, index0), BigDecimal(-1000)).success.value
+            .set(SoldGoodsPage(iossNumber), true).success.value
+            .set(SoldToCountryPage(iossNumber, index0), croatia).success.value
+            .set(VatRatesFromCountryPage(iossNumber, index0, index0), List(twentyPercentVatRate)).success.value
+            .set(SalesToCountryPage(iossNumber, index0, index0), BigDecimal(1000)).success.value
+            .set(VatOnSalesPage(iossNumber, index0, index0), VatOnSales(Standard, BigDecimal(100))).success.value
+            .set(CorrectionReturnPeriodPage(iossNumber, index0), period).success.value
+            .set(CorrectionCountryPage(iossNumber, index0, index0), croatia).success.value
+            .set(VatAmountCorrectionCountryPage(iossNumber, index0, index0), BigDecimal(-1000)).success.value
 
-          service.getTotalVatOwedAfterCorrections(ua) mustBe BigDecimal(0)
+          service.getTotalVatOwedAfterCorrections(ua) `mustBe` BigDecimal(0)
         }
 
         "must not subtract the negative amount for one country from the positive total for other countries" in {
 
           val ua = emptyUserAnswers
-            .set(SoldGoodsPage, true).success.value
-            .set(SoldToCountryPage(index0), croatia).success.value
-            .set(VatRatesFromCountryPage(index0, index0), List(twentyPercentVatRate)).success.value
-            .set(SalesToCountryPage(index0, index0), BigDecimal(1000)).success.value
-            .set(VatOnSalesPage(index0, index0), VatOnSales(Standard, BigDecimal(100))).success.value
-            .set(CorrectionReturnPeriodPage(index0), period).success.value
-            .set(CorrectionCountryPage(index0, index0), estonia).success.value
-            .set(VatAmountCorrectionCountryPage(index0, index0), BigDecimal(-1000)).success.value
+            .set(SoldGoodsPage(iossNumber), true).success.value
+            .set(SoldToCountryPage(iossNumber, index0), croatia).success.value
+            .set(VatRatesFromCountryPage(iossNumber, index0, index0), List(twentyPercentVatRate)).success.value
+            .set(SalesToCountryPage(iossNumber, index0, index0), BigDecimal(1000)).success.value
+            .set(VatOnSalesPage(iossNumber, index0, index0), VatOnSales(Standard, BigDecimal(100))).success.value
+            .set(CorrectionReturnPeriodPage(iossNumber, index0), period).success.value
+            .set(CorrectionCountryPage(iossNumber, index0, index0), estonia).success.value
+            .set(VatAmountCorrectionCountryPage(iossNumber, index0, index0), BigDecimal(-1000)).success.value
 
-          service.getTotalVatOwedAfterCorrections(ua) mustBe BigDecimal(100)
+          service.getTotalVatOwedAfterCorrections(ua) `mustBe` BigDecimal(100)
         }
       }
     }

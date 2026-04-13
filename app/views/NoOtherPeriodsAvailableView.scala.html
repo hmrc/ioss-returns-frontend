@@ -21,13 +21,13 @@
         govukButton: GovukButton
 )
 
-@(waypoints: Waypoints, isIntermediary: Boolean, companyName: String, redirectUrl: String)(implicit request: Request[_], messages: Messages)
+@(waypoints: Waypoints, iossNumber: String, isIntermediary: Boolean, companyName: String, redirectUrl: String)(implicit request: Request[_], messages: Messages)
 
     @layout(pageTitle = titleNoForm(if(isIntermediary) {
         messages("noOtherPeriodsAvailable.intermediary.title", companyName)
     } else {
         messages("noOtherPeriodsAvailable.title")
-    })) {
+    }), maybeIossNumber = Some(iossNumber)) {
 
         <h1 class="govuk-heading-l">@if(isIntermediary) {
             @messages("noOtherPeriodsAvailable.intermediary.heading", companyName)

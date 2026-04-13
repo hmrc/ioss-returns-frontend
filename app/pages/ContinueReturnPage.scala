@@ -23,7 +23,7 @@ import play.api.libs.json.JsPath
 import play.api.mvc.Call
 import uk.gov.hmrc.http.HttpVerbs.GET
 
-case object ContinueReturnPage extends QuestionPage[ContinueReturn] {
+case class ContinueReturnPage(iossNumber: String) extends QuestionPage[ContinueReturn] {
 
   override def path: JsPath = JsPath \ toString
 
@@ -32,11 +32,11 @@ case object ContinueReturnPage extends QuestionPage[ContinueReturn] {
   def navigate(answers: UserAnswers, questionAnswer: ContinueReturn): Call =
     (questionAnswer, answers.get(SavedProgressPage)) match {
       case (Continue, Some(url)) => Call(GET, url)
-      case (Delete, _) =>  controllers.routes.DeleteReturnController.onPageLoad(answers.period)
+      case (Delete, _) =>  controllers.routes.DeleteReturnController.onPageLoad(answers.iossNumber, answers.period)
       case _ => routes.JourneyRecoveryController.onPageLoad()
     }
 
   override def route(waypoints: Waypoints): Call = {
-    routes.ContinueReturnController.onPageLoad(???)
+    routes.ContinueReturnController.onPageLoad(iossNumber, ???)
   }
 }

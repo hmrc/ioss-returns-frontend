@@ -23,15 +23,14 @@ import play.api.libs.json.JsPath
 import play.api.mvc.Call
 import queries.Gettable
 
-case class VatOnSalesPage(countryIndex: Index, vatRateIndex: Index) extends QuestionPage[VatOnSales] {
+case class VatOnSalesPage(iossNumber: String, countryIndex: Index, vatRateIndex: Index) extends QuestionPage[VatOnSales] {
 
   override def path: JsPath = JsPath \ PageConstants.sales \ countryIndex.position \ PageConstants.vatRates \ vatRateIndex.position \ salesAtVatRate \ toString
 
   override def toString: String = "vatOnSales"
 
-  override def route(waypoints: Waypoints): Call = routes.VatOnSalesController.onPageLoad(waypoints, countryIndex, vatRateIndex)
-
-
+  override def route(waypoints: Waypoints): Call = routes.VatOnSalesController.onPageLoad(waypoints, iossNumber, countryIndex, vatRateIndex)
+  
   override protected def nextPageCheckMode(waypoints: NonEmptyWaypoints, answers: UserAnswers): Page = {
     nextPageNormalMode(waypoints, answers, answers) match {
       case questionPage: Page with Gettable[_] =>
@@ -51,16 +50,16 @@ case class VatOnSalesPage(countryIndex: Index, vatRateIndex: Index) extends Ques
   }
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page = {
-    answers.get(VatRatesFromCountryPage(countryIndex, vatRateIndex)).map { rates =>
+    answers.get(VatRatesFromCountryPage(answers.iossNumber, countryIndex, vatRateIndex)).map { rates =>
         if (rates.size > vatRateIndex.position + 1) {
-          val targetPage: SalesToCountryPage = SalesToCountryPage(countryIndex, vatRateIndex + 1)
+          val targetPage: SalesToCountryPage = SalesToCountryPage(answers.iossNumber, countryIndex, vatRateIndex + 1)
           if (answers.get(targetPage).isDefined) {
-            CheckSalesPage(countryIndex)
+            CheckSalesPage(answers.iossNumber, countryIndex)
           } else {
             targetPage
           }
         } else {
-          CheckSalesPage(countryIndex)
+          CheckSalesPage(answers.iossNumber, countryIndex)
         }
     }.getOrElse(JourneyRecoveryPage)
   }

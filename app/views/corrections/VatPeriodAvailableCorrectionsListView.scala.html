@@ -29,7 +29,7 @@
         govukWarningText: GovukWarningText
 )
 
-@(form: Form[_], waypoints: Waypoints, period: Period, periodList: Seq[ListItem], incompletePeriods: Seq[Period], isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, iossNumber: String, period: Period, periodList: Seq[ListItem], incompletePeriods: Seq[Period], isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
 
 @defining(if(periodList.size == 0) {
     messages("vatPeriodCorrectionsList.title.empty")
@@ -40,7 +40,7 @@ else {
     messages("vatPeriodCorrectionsList.title", periodList.size)
 }) { dynamicTitle =>
 
-    @layout(pageTitle = dynamicTitle) {
+    @layout(pageTitle = dynamicTitle, maybeIossNumber = Some(iossNumber)) {
 
         @if(isIntermediary){<p class="govuk-caption-l hmrc-caption-l">@companyName</p>}
 
@@ -62,7 +62,7 @@ else {
         @addToList(periodList, itemSize = Long, "vatPeriodCorrectionsList.change.hidden", "vatPeriodCorrectionsList.remove.hidden")
 
         @if(incompletePeriods.isEmpty) {
-            @formHelper(action = controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onSubmit(waypoints, period, false), Symbol("autoComplete") -> "off") {
+            @formHelper(action = controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onSubmit(waypoints, iossNumber, period, false), Symbol("autoComplete") -> "off") {
                 @govukRadios(
                     RadiosViewModel.yesNo(
                         field = form("value"),
@@ -71,10 +71,10 @@ else {
                         ).withSize(LegendSize.Medium)
                     )
                 )
-                @button("site.continue", controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onPageLoad(waypoints, period).url, period, waypoints)
+                @button("site.continue", controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onPageLoad(waypoints, iossNumber, period).url, iossNumber, period, waypoints)
             }
         } else {
-            @formHelper(action = controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onSubmit(waypoints, period, true), Symbol("autoComplete") -> "off") {
+            @formHelper(action = controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onSubmit(waypoints, iossNumber, period, true), Symbol("autoComplete") -> "off") {
                 @govukButton(
                     ButtonViewModel(messages("error.resolve_missing_answers"))
                 )

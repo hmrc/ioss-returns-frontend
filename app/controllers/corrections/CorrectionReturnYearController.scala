@@ -17,7 +17,7 @@
 package controllers.corrections
 
 import controllers.CheckCorrectionsTimeLimit.isOlderThanThreeYears
-import controllers.actions._
+import controllers.actions.*
 import forms.corrections.CorrectionReturnYearFormProvider
 import models.{Index, Period}
 import pages.Waypoints
@@ -48,7 +48,7 @@ class CorrectionReturnYearController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible().async {
+  def onPageLoad(waypoints: Waypoints, iossNumber: String, index: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(iossNumber).async {
     implicit request =>
 
       val period = request.userAnswers.period
@@ -64,22 +64,22 @@ class CorrectionReturnYearController @Inject()(
       filteredFulfilledObligations.map { obligations =>
 
         if (obligations.size < 2) {
-          Redirect(controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(waypoints, index))
+          Redirect(controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(waypoints, request.iossNumber, index))
         } else {
           val periodKeys = obligations.map(obligation => ConvertPeriodKey.yearFromEtmpPeriodKey(obligation.periodKey)).distinct
 
           val form: Form[Int] = formProvider(index, periodKeys)
-          val preparedForm = request.userAnswers.get(CorrectionReturnYearPage(index)) match {
+          val preparedForm = request.userAnswers.get(CorrectionReturnYearPage(request.iossNumber, index)) match {
             case None => form
             case Some(value) => form.fill(value)
           }
 
-          Ok(view(preparedForm, waypoints, period, utils.ItemsHelper.radioButtonItems(periodKeys), index, request.isIntermediary, request.companyName))
+          Ok(view(preparedForm, waypoints, request.iossNumber, period, utils.ItemsHelper.radioButtonItems(periodKeys), index, request.isIntermediary, request.companyName))
         }
       }
   }
 
-  def onSubmit(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible().async {
+  def onSubmit(waypoints: Waypoints, iossNumber: String, index: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(iossNumber).async {
     implicit request =>
 
       val period = request.userAnswers.period
@@ -98,16 +98,16 @@ class CorrectionReturnYearController @Inject()(
         form.bindFromRequest().fold(
           formWithErrors =>
             if (obligations.size < 2) {
-              Redirect(controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(waypoints, index)).toFuture
+              Redirect(controllers.corrections.routes.CorrectionReturnSinglePeriodController.onPageLoad(waypoints, request.iossNumber, index)).toFuture
             } else {
-              BadRequest(view(formWithErrors, waypoints, period, utils.ItemsHelper.radioButtonItems(periodKeys), index, request.isIntermediary, request.companyName)).toFuture
+              BadRequest(view(formWithErrors, waypoints, request.iossNumber, period, utils.ItemsHelper.radioButtonItems(periodKeys), index, request.isIntermediary, request.companyName)).toFuture
             },
 
           value =>
             for {
-              updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionReturnYearPage(index), value))
+              updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionReturnYearPage(request.iossNumber, index), value))
               _ <- cc.sessionRepository.set(updatedAnswers)
-            } yield Redirect(CorrectionReturnYearPage(index).navigate(waypoints, request.userAnswers, updatedAnswers).route)
+            } yield Redirect(CorrectionReturnYearPage(request.iossNumber, index).navigate(waypoints, request.userAnswers, updatedAnswers).route)
         )
       }
   }

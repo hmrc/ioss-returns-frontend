@@ -37,13 +37,11 @@ import utils.FutureSyntax.FutureOps
 
 import scala.concurrent.{ExecutionContext, Future}
 
-
 class IdentifierAction @Inject()(
                                   override val authConnector: AuthConnector,
                                   config: FrontendAppConfig,
-                                  urlBuilderService: UrlBuilderService,
-                                )
-                                (implicit val executionContext: ExecutionContext)
+                                  urlBuilderService: UrlBuilderService
+                                )(implicit val executionContext: ExecutionContext)
   extends ActionRefiner[Request, IdentifierRequest]
     with AuthorisedFunctions with Logging {
 
@@ -106,6 +104,7 @@ class IdentifierAction @Inject()(
                                         vrn: Vrn,
                                         enrolments: Enrolments
                                       ): Either[Result, IdentifierRequest[A]] = {
+
     val identifierRequest = IdentifierRequest(request, credentials, vrn, enrolments)
     Right(identifierRequest)
   }

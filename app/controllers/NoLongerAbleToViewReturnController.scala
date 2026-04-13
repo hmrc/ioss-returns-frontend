@@ -16,23 +16,24 @@
 
 package controllers
 
-import controllers.actions._
-import javax.inject.Inject
+import controllers.actions.*
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.NoLongerAbleToViewReturnView
 
+import javax.inject.Inject
+
 class NoLongerAbleToViewReturnController @Inject()(
-                                       override val messagesApi: MessagesApi,
-                                       cc: AuthenticatedControllerComponents,
-                                       view: NoLongerAbleToViewReturnView
-                                     ) extends FrontendBaseController with I18nSupport {
+                                                    override val messagesApi: MessagesApi,
+                                                    cc: AuthenticatedControllerComponents,
+                                                    view: NoLongerAbleToViewReturnView
+                                                  ) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad: Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced  {
+  def onPageLoad(iossNumber: String): Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced(iossNumber) {
     implicit request =>
-      Ok(view())
+      Ok(view(request.iossNumber))
   }
 }

@@ -25,18 +25,17 @@ import pages.SoldGoodsPage
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import repositories.SessionRepository
+import utils.FutureSyntax.FutureOps
 import views.html.SoldGoodsView
-
-import scala.concurrent.Future
 
 class SoldGoodsControllerSpec extends SpecBase with MockitoSugar {
 
   val formProvider = new SoldGoodsFormProvider()
   val form: Form[Boolean] = formProvider()
 
-  lazy val soldGoodsRoute: String = routes.SoldGoodsController.onPageLoad(waypoints).url
+  lazy val soldGoodsRoute: String = routes.SoldGoodsController.onPageLoad(waypoints, iossNumber).url
 
   "SoldGoods Controller" - {
 
@@ -51,14 +50,14 @@ class SoldGoodsControllerSpec extends SpecBase with MockitoSugar {
 
         val view = application.injector.instanceOf[SoldGoodsView]
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, waypoints, period, false, "Company Name")(request, messages(application)).toString
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(form, waypoints, iossNumber, period, false, "Company Name")(request, messages(application)).toString
       }
     }
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = emptyUserAnswers.set(SoldGoodsPage, true).success.value
+      val userAnswers = emptyUserAnswers.set(SoldGoodsPage(iossNumber), true).success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -69,8 +68,8 @@ class SoldGoodsControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(true), waypoints, period, false, "Company Name")(request, messages(application)).toString
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(form.fill(true), waypoints, iossNumber, period, false, "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -78,7 +77,7 @@ class SoldGoodsControllerSpec extends SpecBase with MockitoSugar {
 
       val mockSessionRepository = mock[SessionRepository]
 
-      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      when(mockSessionRepository.set(any())) thenReturn true.toFuture
 
       val application =
         applicationBuilder(userAnswers = Some(emptyUserAnswers))
@@ -94,8 +93,8 @@ class SoldGoodsControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.SoldToCountryController.onPageLoad(waypoints, index).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` routes.SoldToCountryController.onPageLoad(waypoints, iossNumber, index).url
       }
     }
 
@@ -114,8 +113,8 @@ class SoldGoodsControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, waypoints, period, false, "Company Name")(request, messages(application)).toString
+        status(result) `mustBe` BAD_REQUEST
+        contentAsString(result) `mustBe` view(boundForm, waypoints, iossNumber, period, false, "Company Name")(request, messages(application)).toString
       }
     }
   }

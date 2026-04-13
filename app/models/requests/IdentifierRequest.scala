@@ -27,5 +27,6 @@ case class IdentifierRequest[A](
                                  vrn: Vrn,
                                  enrolments: Enrolments
                                ) extends WrappedRequest[A](request) {
+  
   val userId: String = credentials.providerId
 }

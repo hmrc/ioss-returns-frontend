@@ -35,9 +35,7 @@ import play.api.i18n.Messages
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
-import services.PreviousRegistrationService
 import testUtils.EtmpVatReturnData.{arbitraryPeriodKey, etmpVatReturn}
-import testUtils.PreviousRegistrationData.previousRegistrations
 import testUtils.RegistrationData.etmpDisplayRegistration
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{Card, CardTitle}
@@ -57,12 +55,10 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
 
   private val mockVatReturnConnector: VatReturnConnector = mock[VatReturnConnector]
   private val mockFinancialDataConnector: FinancialDataConnector = mock[FinancialDataConnector]
-  private val mockPreviousRegistrationService: PreviousRegistrationService = mock[PreviousRegistrationService]
 
   override def beforeEach(): Unit = {
     Mockito.reset(mockVatReturnConnector)
     Mockito.reset(mockFinancialDataConnector)
-    Mockito.reset(mockPreviousRegistrationService)
   }
 
   "SubmittedReturnForPeriod Controller" - {
@@ -78,12 +74,12 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
 
         running(application) {
 
-          val request = FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoad(waypoints, oldPeriod).url)
+          val request = FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoad(waypoints, iossNumber, oldPeriod).url)
 
           val result = route(application, request).value
 
-          status(result) mustBe SEE_OTHER
-          redirectLocation(result) mustBe Some(controllers.routes.NoLongerAbleToViewReturnController.onPageLoad().url)
+          status(result) `mustBe` SEE_OTHER
+          redirectLocation(result) `mustBe` Some(controllers.routes.NoLongerAbleToViewReturnController.onPageLoad(iossNumber).url)
         }
       }
 
@@ -102,7 +98,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
 
             implicit val msgs: Messages = messages(application)
 
-            val request = FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoad(waypoints, determinedPeriod).url)
+            val request = FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoad(waypoints, iossNumber, determinedPeriod).url)
 
             val result = route(application, request).value
 
@@ -147,10 +143,11 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             val outstandingAmount: BigDecimal = charge.outstandingAmount
             val vatDeclared = vatReturn.totalVATAmountDueForAllMSGBP
 
-            status(result) mustBe OK
-            contentAsString(result) mustBe
+            status(result) `mustBe` OK
+            contentAsString(result) `mustBe`
               view(
                 waypoints,
+                iossNumber,
                 determinedPeriod,
                 mainSummaryList,
                 salesToEuAndNiSummaryList,
@@ -182,7 +179,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
 
             implicit val msgs: Messages = messages(application)
 
-            val request = FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoad(waypoints, determinedPeriod).url)
+            val request = FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoad(waypoints, iossNumber, determinedPeriod).url)
 
             val result = route(application, request).value
 
@@ -227,10 +224,11 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             val outstandingAmount: BigDecimal = charge.outstandingAmount
             val vatDeclared = vatReturn.totalVATAmountDueForAllMSGBP
 
-            status(result) mustBe OK
-            contentAsString(result) mustBe
+            status(result) `mustBe` OK
+            contentAsString(result) `mustBe`
               view(
                 waypoints,
+                iossNumber,
                 determinedPeriod,
                 mainSummaryList,
                 salesToEuAndNiSummaryList,
@@ -273,7 +271,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
 
             val determinedPeriod: Period = fromEtmpPeriodKey(vatReturnPositiveCorrections.periodKey)
 
-            val request = FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoad(waypoints, determinedPeriod).url)
+            val request = FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoad(waypoints, iossNumber, determinedPeriod).url)
 
             val result = route(application, request).value
 
@@ -318,10 +316,11 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             val outstandingAmount: BigDecimal = charge.outstandingAmount
             val vatDeclared = vatReturnPositiveCorrections.totalVATAmountDueForAllMSGBP
 
-            status(result) mustBe OK
-            contentAsString(result) mustBe
+            status(result) `mustBe` OK
+            contentAsString(result) `mustBe`
               view(
                 waypoints,
+                iossNumber,
                 determinedPeriod,
                 mainSummaryList,
                 salesToEuAndNiSummaryList,
@@ -371,7 +370,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
 
             val determinedPeriod: Period = fromEtmpPeriodKey(nilEtmpVatReturn.periodKey)
 
-            val request = FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoad(waypoints, determinedPeriod).url)
+            val request = FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoad(waypoints, iossNumber, determinedPeriod).url)
 
             val result = route(application, request).value
 
@@ -416,10 +415,11 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             val outstandingAmount: BigDecimal = BigDecimal(0)
             val vatDeclared = nilEtmpVatReturn.totalVATAmountDueForAllMSGBP
 
-            status(result) mustBe OK
-            contentAsString(result) mustBe
+            status(result) `mustBe` OK
+            contentAsString(result) `mustBe`
               view(
                 waypoints,
+                iossNumber,
                 determinedPeriod,
                 mainSummaryList,
                 salesToEuAndNiSummaryList,
@@ -449,7 +449,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
 
             implicit val msgs: Messages = messages(application)
 
-            val request = FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoad(waypoints, determinedPeriod).url)
+            val request = FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoad(waypoints, iossNumber, determinedPeriod).url)
 
             val result = route(application, request).value
 
@@ -494,10 +494,11 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             val outstandingAmount: BigDecimal = vatReturn.totalVATAmountPayable
             val vatDeclared = vatReturn.totalVATAmountDueForAllMSGBP
 
-            status(result) mustBe OK
-            contentAsString(result) mustBe
+            status(result) `mustBe` OK
+            contentAsString(result) `mustBe`
               view(
                 waypoints,
+                iossNumber,
                 determinedPeriod,
                 mainSummaryList,
                 salesToEuAndNiSummaryList,
@@ -558,7 +559,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
 
               val request =
                 OptionalDataRequest(
-                  FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoad(waypoints, exceededPeriod).url),
+                  FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoad(waypoints, iossNumber, exceededPeriod).url),
                   enrolments,
                   testCredentials,
                   Some(vrn),
@@ -612,10 +613,11 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
               val outstandingAmount: BigDecimal = charge.outstandingAmount
               val vatDeclared = vatReturnNoCorrections.totalVATAmountDueForAllMSGBP
 
-              status(result) mustBe OK
-              contentAsString(result) mustBe
+              status(result) `mustBe` OK
+              contentAsString(result) `mustBe`
                 view(
                   waypoints,
+                  iossNumber,
                   exceededPeriod,
                   mainSummaryList,
                   salesToEuAndNiSummaryList,
@@ -675,7 +677,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
 
               val request =
                 OptionalDataRequest(
-                  FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoad(waypoints, exceededPeriod).url),
+                  FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoad(waypoints, iossNumber, exceededPeriod).url),
                   enrolments,
                   testCredentials,
                   Some(vrn),
@@ -729,10 +731,11 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
               val outstandingAmount: BigDecimal = charge.outstandingAmount
               val vatDeclared = vatReturnNoCorrections.totalVATAmountDueForAllMSGBP
 
-              status(result) mustBe OK
-              contentAsString(result) mustBe
+              status(result) `mustBe` OK
+              contentAsString(result) `mustBe`
                 view(
                   waypoints,
+                  iossNumber,
                   exceededPeriod,
                   mainSummaryList,
                   salesToEuAndNiSummaryList,
@@ -762,12 +765,12 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
           when(mockVatReturnConnector.getForIossNumber(any(), any())(any())) thenReturn Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "")).toFuture
           when(mockFinancialDataConnector.getChargeForIossNumber(any(), any())(any())) thenReturn Right(Some(charge)).toFuture
 
-          val request = FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoad(waypoints, period).url)
+          val request = FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoad(waypoints, iossNumber, period).url)
 
           val result = route(application, request).value
 
-          status(result) mustBe SEE_OTHER
-          redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
+          status(result) `mustBe` SEE_OTHER
+          redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
         }
       }
     }
@@ -781,17 +784,15 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
             .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
             .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
-            .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
             .build()
 
           running(application) {
             when(mockVatReturnConnector.getForIossNumber(any(), any())(any())) thenReturn Right(vatReturn).toFuture
             when(mockFinancialDataConnector.getChargeForIossNumber(any(), any())(any())) thenReturn Right(Some(charge)).toFuture
-            when(mockPreviousRegistrationService.getPreviousRegistrations(any())(any())) thenReturn previousRegistrations.toFuture
 
             implicit val msgs: Messages = messages(application)
 
-            val request = FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoadForIossNumber(waypoints, determinedPeriod, iossNumber).url)
+            val request = FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoadForIossNumber(waypoints, iossNumber, determinedPeriod).url)
 
             val result = route(application, request).value
 
@@ -836,10 +837,11 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             val outstandingAmount: BigDecimal = charge.outstandingAmount
             val vatDeclared = vatReturn.totalVATAmountDueForAllMSGBP
 
-            status(result) mustBe OK
-            contentAsString(result) mustBe
+            status(result) `mustBe` OK
+            contentAsString(result) `mustBe`
               view(
                 waypoints,
+                iossNumber,
                 determinedPeriod,
                 mainSummaryList,
                 salesToEuAndNiSummaryList,
@@ -863,17 +865,15 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
             .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
             .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
-            .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
             .build()
 
           running(application) {
             when(mockVatReturnConnector.getForIossNumber(any(), any())(any())) thenReturn Right(vatReturnNoCorrections).toFuture
             when(mockFinancialDataConnector.getChargeForIossNumber(any(), any())(any())) thenReturn Right(Some(charge)).toFuture
-            when(mockPreviousRegistrationService.getPreviousRegistrations(any())(any())) thenReturn previousRegistrations.toFuture
 
             implicit val msgs: Messages = messages(application)
 
-            val request = FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoadForIossNumber(waypoints, determinedPeriod, iossNumber).url)
+            val request = FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoadForIossNumber(waypoints, iossNumber, determinedPeriod).url)
 
             val result = route(application, request).value
 
@@ -918,10 +918,11 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             val outstandingAmount: BigDecimal = charge.outstandingAmount
             val vatDeclared = vatReturnNoCorrections.totalVATAmountDueForAllMSGBP
 
-            status(result) mustBe OK
-            contentAsString(result) mustBe
+            status(result) `mustBe` OK
+            contentAsString(result) `mustBe`
               view(
                 waypoints,
+                iossNumber,
                 determinedPeriod,
                 mainSummaryList,
                 salesToEuAndNiSummaryList,
@@ -954,17 +955,15 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
             .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
             .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
-            .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
             .build()
 
           running(application) {
             when(mockVatReturnConnector.getForIossNumber(any(), any())(any())) thenReturn Right(vatReturnPositiveCorrections).toFuture
             when(mockFinancialDataConnector.getChargeForIossNumber(any(), any())(any())) thenReturn Right(Some(charge)).toFuture
-            when(mockPreviousRegistrationService.getPreviousRegistrations(any())(any())) thenReturn previousRegistrations.toFuture
 
             implicit val msgs: Messages = messages(application)
 
-            val request = FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoadForIossNumber(waypoints, determinedPeriod, iossNumber).url)
+            val request = FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoadForIossNumber(waypoints, iossNumber, determinedPeriod).url)
 
             val result = route(application, request).value
 
@@ -1009,10 +1008,11 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             val outstandingAmount: BigDecimal = charge.outstandingAmount
             val vatDeclared = vatReturnPositiveCorrections.totalVATAmountDueForAllMSGBP
 
-            status(result) mustBe OK
-            contentAsString(result) mustBe
+            status(result) `mustBe` OK
+            contentAsString(result) `mustBe`
               view(
                 waypoints,
+                iossNumber,
                 determinedPeriod,
                 mainSummaryList,
                 salesToEuAndNiSummaryList,
@@ -1052,19 +1052,17 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
             .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
             .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
-            .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
             .build()
 
           running(application) {
             when(mockVatReturnConnector.getForIossNumber(any(), any())(any())) thenReturn Right(nilEtmpVatReturn).toFuture
             when(mockFinancialDataConnector.getChargeForIossNumber(any(), any())(any())) thenReturn Right(None).toFuture
-            when(mockPreviousRegistrationService.getPreviousRegistrations(any())(any())) thenReturn previousRegistrations.toFuture
 
             implicit val msgs: Messages = messages(application)
 
             val determinedPeriod: Period = fromEtmpPeriodKey(nilEtmpVatReturn.periodKey)
 
-            val request = FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoadForIossNumber(waypoints, determinedPeriod, iossNumber).url)
+            val request = FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoadForIossNumber(waypoints, iossNumber, determinedPeriod).url)
 
             val result = route(application, request).value
 
@@ -1109,10 +1107,11 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             val outstandingAmount: BigDecimal = BigDecimal(0)
             val vatDeclared = nilEtmpVatReturn.totalVATAmountDueForAllMSGBP
 
-            status(result) mustBe OK
-            contentAsString(result) mustBe
+            status(result) `mustBe` OK
+            contentAsString(result) `mustBe`
               view(
                 waypoints,
+                iossNumber,
                 determinedPeriod,
                 mainSummaryList,
                 salesToEuAndNiSummaryList,
@@ -1134,18 +1133,16 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
             .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
             .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
-            .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
             .build()
 
           running(application) {
             when(mockVatReturnConnector.getForIossNumber(any(), any())(any())) thenReturn Right(vatReturn).toFuture
             when(mockFinancialDataConnector.getChargeForIossNumber(any(), any())(any())) thenReturn
               Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "")).toFuture
-            when(mockPreviousRegistrationService.getPreviousRegistrations(any())(any())) thenReturn previousRegistrations.toFuture
 
             implicit val msgs: Messages = messages(application)
 
-            val request = FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoadForIossNumber(waypoints, determinedPeriod, iossNumber).url)
+            val request = FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoadForIossNumber(waypoints, iossNumber, determinedPeriod).url)
 
             val result = route(application, request).value
 
@@ -1190,10 +1187,11 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             val outstandingAmount: BigDecimal = vatReturn.totalVATAmountPayable
             val vatDeclared = vatReturn.totalVATAmountDueForAllMSGBP
 
-            status(result) mustBe OK
-            contentAsString(result) mustBe
+            status(result) `mustBe` OK
+            contentAsString(result) `mustBe`
               view(
                 waypoints,
+                iossNumber,
                 determinedPeriod,
                 mainSummaryList,
                 salesToEuAndNiSummaryList,
@@ -1244,19 +1242,17 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             val application = applicationBuilder(userAnswers = None, registration = registrationWrapper)
               .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
               .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
-              .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
               .build()
 
             running(application) {
               when(mockVatReturnConnector.getForIossNumber(any(), any())(any())) thenReturn Right(vatReturnNoCorrections).toFuture
               when(mockFinancialDataConnector.getChargeForIossNumber(any(), any())(any())) thenReturn Right(Some(charge)).toFuture
-              when(mockPreviousRegistrationService.getPreviousRegistrations(any())(any())) thenReturn previousRegistrations.toFuture
 
               implicit val msgs: Messages = messages(application)
 
               val request =
                 OptionalDataRequest(
-                  FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoadForIossNumber(waypoints, exceededPeriod, iossNumber).url),
+                  FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoadForIossNumber(waypoints, iossNumber, exceededPeriod).url),
                   enrolments,
                   testCredentials,
                   Some(vrn),
@@ -1310,10 +1306,11 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
               val outstandingAmount: BigDecimal = charge.outstandingAmount
               val vatDeclared = vatReturnNoCorrections.totalVATAmountDueForAllMSGBP
 
-              status(result) mustBe OK
-              contentAsString(result) mustBe
+              status(result) `mustBe` OK
+              contentAsString(result) `mustBe`
                 view(
                   waypoints,
+                  iossNumber,
                   exceededPeriod,
                   mainSummaryList,
                   salesToEuAndNiSummaryList,
@@ -1363,19 +1360,17 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
             val application = applicationBuilder(userAnswers = None, registration = registrationWrapper)
               .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
               .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
-              .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
               .build()
 
             running(application) {
               when(mockVatReturnConnector.getForIossNumber(any(), any())(any())) thenReturn Right(vatReturnNoCorrections).toFuture
               when(mockFinancialDataConnector.getChargeForIossNumber(any(), any())(any())) thenReturn Right(Some(charge)).toFuture
-              when(mockPreviousRegistrationService.getPreviousRegistrations(any())(any())) thenReturn previousRegistrations.toFuture
 
               implicit val msgs: Messages = messages(application)
 
               val request =
                 OptionalDataRequest(
-                  FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoadForIossNumber(waypoints, exceededPeriod, iossNumber).url),
+                  FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoadForIossNumber(waypoints, iossNumber, exceededPeriod).url),
                   enrolments,
                   testCredentials,
                   Some(vrn),
@@ -1429,10 +1424,11 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
               val outstandingAmount: BigDecimal = charge.outstandingAmount
               val vatDeclared = vatReturnNoCorrections.totalVATAmountDueForAllMSGBP
 
-              status(result) mustBe OK
-              contentAsString(result) mustBe
+              status(result) `mustBe` OK
+              contentAsString(result) `mustBe`
                 view(
                   waypoints,
+                  iossNumber,
                   exceededPeriod,
                   mainSummaryList,
                   salesToEuAndNiSummaryList,
@@ -1456,38 +1452,18 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
           .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
           .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
-          .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
           .build()
 
         running(application) {
           when(mockVatReturnConnector.getForIossNumber(any(), any())(any())) thenReturn Left(UnexpectedResponseStatus(INTERNAL_SERVER_ERROR, "")).toFuture
           when(mockFinancialDataConnector.getChargeForIossNumber(any(), any())(any())) thenReturn Right(Some(charge)).toFuture
-          when(mockPreviousRegistrationService.getPreviousRegistrations(any())(any())) thenReturn previousRegistrations.toFuture
 
-          val request = FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoadForIossNumber(waypoints, period, iossNumber).url)
-
-          val result = route(application, request).value
-
-          status(result) mustBe SEE_OTHER
-          redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
-        }
-      }
-
-      "must redirect to Journey recovery when IOSS number is not part of previous registrations or request.iossNumber" in {
-
-        val application = applicationBuilder()
-          .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
-          .build()
-
-        running(application) {
-          when(mockPreviousRegistrationService.getPreviousRegistrations(any())(any())) thenReturn previousRegistrations.toFuture
-
-          val request = FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoadForIossNumber(waypoints, period, "IM9001111111").url)
+          val request = FakeRequest(GET, routes.SubmittedReturnForPeriodController.onPageLoadForIossNumber(waypoints, iossNumber, period).url)
 
           val result = route(application, request).value
 
-          status(result) mustBe SEE_OTHER
-          redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
+          status(result) `mustBe` SEE_OTHER
+          redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
         }
       }
     }
@@ -1507,7 +1483,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
           val privateMethodCall = PrivateMethod[Boolean](Symbol("hasActiveWindowExpired"))
           val result = controller invokePrivate privateMethodCall(dueDate)
 
-          result mustBe true
+          result `mustBe` true
         }
       }
 
@@ -1524,7 +1500,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
           val privateMethodCall = PrivateMethod[Boolean](Symbol("hasActiveWindowExpired"))
           val result = controller invokePrivate privateMethodCall(dueDate)
 
-          result mustBe false
+          result `mustBe` false
         }
       }
 
@@ -1541,7 +1517,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
           val privateMethodCall = PrivateMethod[Boolean](Symbol("hasActiveWindowExpired"))
           val result = controller invokePrivate privateMethodCall(dueDate)
 
-          result mustBe false
+          result `mustBe` false
         }
       }
     }
@@ -1562,7 +1538,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
           val privateMethodCall = PrivateMethod[Boolean](Symbol("isCurrentlyExcluded"))
           val result = controller invokePrivate privateMethodCall(etmpExclusionWithReversal)
 
-          result mustBe false
+          result `mustBe` false
         }
       }
 
@@ -1580,7 +1556,7 @@ class SubmittedReturnForPeriodControllerSpec extends SpecBase with BeforeAndAfte
           val privateMethodCall = PrivateMethod[Boolean](Symbol("isCurrentlyExcluded"))
           val result = controller invokePrivate privateMethodCall(etmpExclusionWithoutReversal)
 
-          result mustBe true
+          result `mustBe` true
         }
       }
     }

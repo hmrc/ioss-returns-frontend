@@ -22,9 +22,9 @@
         govukPanel: GovukPanel
 )
 
-@(redirectUrl: String)(implicit request: Request[_], messages: Messages)
+@(iossNumber: String, redirectUrl: String)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = titleNoForm(messages("returnSubmissionFailure.title")), showBackLink = false) {
+@layout(pageTitle = titleNoForm(messages("returnSubmissionFailure.title")), maybeIossNumber = Some(iossNumber), showBackLink = false) {
 
     @govukPanel(Panel(
         title = Text(messages("returnSubmissionFailure.title")),

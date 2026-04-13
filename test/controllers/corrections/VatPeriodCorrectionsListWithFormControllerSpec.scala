@@ -27,12 +27,14 @@ import org.mockito.Mockito
 import org.mockito.Mockito.when
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
+import pages.JourneyRecoveryPage
 import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, VatAmountCorrectionCountryPage}
 import play.api.inject.bind
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.ListItem
+import utils.FutureSyntax.FutureOps
 import views.html.corrections.VatPeriodAvailableCorrectionsListView
 
 import java.time.{LocalDate, Month}
@@ -41,24 +43,23 @@ import scala.concurrent.Future
 class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
 
   private lazy val vatPeriodCorrectionsListRoute = controllers.corrections.routes.VatPeriodCorrectionsListWithFormController
-    .onPageLoad(waypoints, periodJuly2021).url
+    .onPageLoad(waypoints, iossNumber, periodJuly2021).url
 
   private def addCorrectionPeriods(userAnswers: UserAnswers, periods: Seq[Period]): Option[UserAnswers] = //Some(userAnswers)
     periods.zipWithIndex
       .foldLeft(Option(userAnswers))((ua, indexedPeriod) =>
-        ua.flatMap(_.set(CorrectionReturnPeriodPage(Index(indexedPeriod._2)), indexedPeriod._1).toOption)
-          .flatMap(_.set(CorrectionCountryPage(Index(indexedPeriod._2), Index(0)), Country.euCountries.head).toOption)
-          .flatMap(_.set(VatAmountCorrectionCountryPage(Index(indexedPeriod._2), Index(0)), BigDecimal(200.0)).toOption))
+        ua.flatMap(_.set(CorrectionReturnPeriodPage(iossNumber, Index(indexedPeriod._2)), indexedPeriod._1).toOption)
+          .flatMap(_.set(CorrectionCountryPage(iossNumber, Index(indexedPeriod._2), Index(0)), Country.euCountries.head).toOption)
+          .flatMap(_.set(VatAmountCorrectionCountryPage(iossNumber, Index(indexedPeriod._2), Index(0)), BigDecimal(200.0)).toOption))
 
   private def getStatusResponse(
                                  periods: Seq[StandardPeriod],
                                  status: EtmpObligationsFulfilmentStatus = EtmpObligationsFulfilmentStatus.Fulfilled
                                ): Future[EtmpObligations] = {
-    Future.successful {
-
+    {
       val details = periods.map(p => EtmpObligationDetails(status, p.toEtmpPeriodString)) //Period//PeriodWithStatus(period, Complete))))
       EtmpObligations(obligations = Seq(EtmpObligation(details)))
-    }
+    }.toFuture
   }
 
   private val mockVatReturnConnector = mock[VatReturnConnector]
@@ -100,7 +101,7 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
 
         whenReady(result.failed) { exp =>
 
-          exp.getMessage mustEqual exceptionMessage
+          exp.getMessage `mustBe` exceptionMessage
         }
       }
     }
@@ -117,8 +118,8 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
       running(application) {
         implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, vatPeriodCorrectionsListRoute)
         val result = route(application, request).value
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
 
@@ -144,16 +145,16 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
           val request = FakeRequest(GET, vatPeriodCorrectionsListRoute)
           val result = route(application, request).value
 
-          status(result) mustEqual OK
+          status(result) `mustBe` OK
           val responseString = contentAsString(result)
           val doc = Jsoup.parse(responseString)
 
-          doc.getElementsByClass("govuk-heading-l").get(0).text() mustEqual expectedTitle
+          doc.getElementsByClass("govuk-heading-l").get(0).text() `mustBe` expectedTitle
           doc.getElementsByClass("govuk-table__row").size() mustBe expectedTableRows
 
           val view = application.injector.instanceOf[VatPeriodAvailableCorrectionsListView]
-          responseString mustEqual
-            view(form, waypoints, periodJuly2021, completedCorrectionsModel, List.empty, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
+          responseString `mustBe`
+            view(form, waypoints, iossNumber, periodJuly2021, completedCorrectionsModel, List.empty, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
         }
       }
 
@@ -170,8 +171,8 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
           val completedCorrectionsModel = Seq(
             ListItem(
               name = "July 2021",
-              changeUrl = controllers.corrections.routes.CorrectionListCountriesController.onPageLoad(waypoints, index).url,
-              removeUrl = controllers.corrections.routes.RemovePeriodCorrectionController.onPageLoad(waypoints, index).url
+              changeUrl = controllers.corrections.routes.CorrectionListCountriesController.onPageLoad(waypoints, iossNumber, index).url,
+              removeUrl = controllers.corrections.routes.RemovePeriodCorrectionController.onPageLoad(waypoints, iossNumber, index).url
             )
           )
 
@@ -188,18 +189,18 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
           running(application) {
             val request = FakeRequest(GET, vatPeriodCorrectionsListRoute)
             val result = route(application, request).value
-            status(result) mustEqual OK
+            status(result) `mustBe` OK
 
             val responseString = contentAsString(result)
             val doc = Jsoup.parse(responseString)
 
-            doc.getElementsByClass("govuk-heading-l").get(0).text() mustEqual expectedTitle
-            doc.getElementsByClass("hmrc-add-to-a-list__contents").size() mustEqual expectedTableRows
+            doc.getElementsByClass("govuk-heading-l").get(0).text() `mustBe` expectedTitle
+            doc.getElementsByClass("hmrc-add-to-a-list__contents").size() `mustBe` expectedTableRows
 
             val view = application.injector.instanceOf[VatPeriodAvailableCorrectionsListView]
 
-            responseString mustEqual
-              view(form, waypoints, periodJuly2021, completedCorrectionsModel, List.empty, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
+            responseString `mustBe`
+              view(form, waypoints, iossNumber, periodJuly2021, completedCorrectionsModel, List.empty, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
           }
         }
 
@@ -216,9 +217,9 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
             val request = FakeRequest(GET, vatPeriodCorrectionsListRoute)
 
             val result = route(application, request).value
-            status(result) mustEqual SEE_OTHER
-            redirectLocation(result).value mustEqual
-              controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(waypoints, periodJuly2021).url
+            status(result) `mustBe` SEE_OTHER
+            redirectLocation(result).value `mustBe`
+              controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(waypoints, iossNumber, periodJuly2021).url
           }
         }
       }
@@ -236,11 +237,11 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
       running(application) {
         val request = FakeRequest(POST,
           controllers.corrections.routes.VatPeriodCorrectionsListWithFormController
-            .onSubmit(waypoints, periodJuly2021, incompletePromptShown = false).url)
+            .onSubmit(waypoints, iossNumber, periodJuly2021, incompletePromptShown = false).url)
 
         val result = route(application, request).value
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(waypoints, periodJuly2021).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(waypoints, iossNumber, periodJuly2021).url
       }
     }
 
@@ -256,10 +257,10 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
       running(application) {
         implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(POST,
           controllers.corrections.routes.VatPeriodCorrectionsListWithFormController
-            .onSubmit(waypoints, periodJuly2021, incompletePromptShown = false).url)
+            .onSubmit(waypoints, iossNumber, periodJuly2021, incompletePromptShown = false).url)
         val result = route(application, request).value
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
 
@@ -273,12 +274,12 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
 
       running(application) {
         val request = FakeRequest(
-          POST, controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onSubmit(waypoints, period, incompletePromptShown = false).url)
+          POST, controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onSubmit(waypoints, iossNumber, period, incompletePromptShown = false).url)
 
         val result = route(application, request).value
 
         whenReady(result.failed) {
-          exp => exp.getMessage mustEqual exceptionMessage
+          exp => exp.getMessage `mustBe` exceptionMessage
         }
       }
     }
@@ -296,8 +297,8 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
       running(application) {
         implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, vatPeriodCorrectionsListRoute)
         val result = route(application, request).value
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
   }

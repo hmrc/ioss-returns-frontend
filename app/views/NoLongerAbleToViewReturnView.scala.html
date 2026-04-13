@@ -19,9 +19,9 @@
         govukButton: GovukButton
 )
 
-@()(implicit request: Request[_], messages: Messages)
+@(iossNumber: String)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = titleNoForm(messages("noLongerAbleToViewReturn.title"))) {
+@layout(pageTitle = titleNoForm(messages("noLongerAbleToViewReturn.title")), maybeIossNumber = Some(iossNumber)) {
 
     <h1 class="govuk-heading-l">@messages("noLongerAbleToViewReturn.heading")</h1>
 

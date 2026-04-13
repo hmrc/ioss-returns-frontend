@@ -20,13 +20,13 @@ import pages.{QuestionPage, Waypoints}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
-case object FileReferencePage extends QuestionPage[String] {
+case class FileReferencePage(iossNumber: String) extends QuestionPage[String] {
   
   override def path: JsPath = JsPath \ toString
   
   override def toString: String = "fileReference"
 
   override def route(waypoints: Waypoints): Call =
-    controllers.fileUpload.routes.FileUploadController.onPageLoad(waypoints)
+    controllers.fileUpload.routes.FileUploadController.onPageLoad(waypoints, iossNumber)
 }
 

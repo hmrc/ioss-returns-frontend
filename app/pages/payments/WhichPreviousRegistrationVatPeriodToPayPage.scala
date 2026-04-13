@@ -22,12 +22,12 @@ import pages.{QuestionPage, Waypoints}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
-case object WhichPreviousRegistrationVatPeriodToPayPage extends QuestionPage[Period] {
+case class WhichPreviousRegistrationVatPeriodToPayPage(iossNumber: String) extends QuestionPage[Period] {
 
   override def path: JsPath = JsPath \ toString
 
   override def toString: String = "whichPreviousRegistrationVatPeriodToPay"
 
   override def route(waypoints: Waypoints): Call =
-    routes.WhichPreviousRegistrationVatPeriodToPayController.onPageLoad(waypoints)
+    routes.WhichPreviousRegistrationVatPeriodToPayController.onPageLoad(waypoints, iossNumber)
 }

@@ -23,9 +23,9 @@
         button: ButtonGroup
 )
 
-
 @(
     waypoints: Waypoints,
+    iossNumber: String,
     period: Period,
     summaryList: SummaryList,
     country: Country,
@@ -37,7 +37,7 @@
     companyName: String
 )(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = titleNoForm(messages("checkVatPayableAmount.title"))) {
+@layout(pageTitle = titleNoForm(messages("checkVatPayableAmount.title")), maybeIossNumber = Some(iossNumber)) {
 
     <header class="hmrc-page-heading">
         <p class="govuk-caption-l hmrc-caption-l">@{
@@ -60,11 +60,11 @@
     @govukSummaryList(summaryList)
 
     @if(countryCorrectionComplete) {
-        @formHelper(action = controllers.corrections.routes.CheckVatPayableAmountController.onSubmit(waypoints, periodIndex, countryIndex, false)) {
+        @formHelper(action = controllers.corrections.routes.CheckVatPayableAmountController.onSubmit(waypoints, iossNumber, periodIndex, countryIndex, false)) {
 
             <p class="govuk-!-margin-bottom-9" style="margin-top:50px;">
                 <div class="govuk-button-group">
-                    @button("site.continue", controllers.corrections.routes.CheckVatPayableAmountController.onPageLoad(waypoints, periodIndex, countryIndex).url, period, waypoints
+                    @button("site.continue", controllers.corrections.routes.CheckVatPayableAmountController.onPageLoad(waypoints, iossNumber, periodIndex, countryIndex).url, iossNumber, period, waypoints
                     )
                 </div>
             </p>
@@ -73,7 +73,7 @@
         <h2 class="govuk-heading-m push--top">@messages("error.missing_answers_header")</h2>
         <p class="govuk-body">@messages("error.missing_answers_prompt", country.name)</p>
 
-        @formHelper(action = controllers.corrections.routes.CheckVatPayableAmountController.onSubmit(waypoints, periodIndex, countryIndex, true)) {
+        @formHelper(action = controllers.corrections.routes.CheckVatPayableAmountController.onSubmit(waypoints, iossNumber, periodIndex, countryIndex, true)) {
             @govukButton(
                 ButtonViewModel(messages("error.resolve_missing_answers"))
             )

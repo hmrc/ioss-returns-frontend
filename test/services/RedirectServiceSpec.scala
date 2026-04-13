@@ -55,7 +55,7 @@ class RedirectServiceSpec extends SpecBase with BeforeAndAfterEach {
 
       "must return a list of VAT Return validation errors when users answers contains validation errors for a VAT Return" in {
 
-        val validationError: ValidationError = DataMissingError(SalesToCountryPage(Index(0), Index(0)))
+        val validationError: ValidationError = DataMissingError(SalesToCountryPage(iossNumber, Index(0), Index(0)))
 
         when(mockVatReturnService.fromUserAnswers(any(), any(), any())) thenReturn validationError.invalidNec
         when(mockCorrectionService.fromUserAnswers(any(), any(), any())) thenReturn List.empty.validNec
@@ -79,7 +79,7 @@ class RedirectServiceSpec extends SpecBase with BeforeAndAfterEach {
 
       "must return a list of Correction validation errors when users answers contains validation errors for Corrections" in {
 
-        val validationError: ValidationError = DataMissingError(CorrectionCountryPage(Index(0), Index(0)))
+        val validationError: ValidationError = DataMissingError(CorrectionCountryPage(iossNumber, Index(0), Index(0)))
 
         when(mockCorrectionService.fromUserAnswers(any(), any(), any())) thenReturn validationError.invalidNec
         when(mockVatReturnService.fromUserAnswers(any(), any(), any())) thenReturn List.empty.validNec
@@ -104,8 +104,8 @@ class RedirectServiceSpec extends SpecBase with BeforeAndAfterEach {
       "must return a list of both VAT Return and Correction validation errors when users answers contains validation " +
         "errors for both VAT Return and Corrections" in {
 
-        val vatReturnValidationError: ValidationError = DataMissingError(SalesToCountryPage(Index(0), Index(0)))
-        val correctionValidationError: ValidationError = DataMissingError(CorrectionCountryPage(Index(0), Index(0)))
+        val vatReturnValidationError: ValidationError = DataMissingError(SalesToCountryPage(iossNumber, Index(0), Index(0)))
+        val correctionValidationError: ValidationError = DataMissingError(CorrectionCountryPage(iossNumber, Index(0), Index(0)))
 
         when(mockVatReturnService.fromUserAnswers(any(), any(), any())) thenReturn vatReturnValidationError.invalidNec
         when(mockCorrectionService.fromUserAnswers(any(), any(), any())) thenReturn correctionValidationError.invalidNec
@@ -155,7 +155,7 @@ class RedirectServiceSpec extends SpecBase with BeforeAndAfterEach {
       "must redirect to Sold To Country Controller when there's no data for sales present" in {
 
         val updatedUserAnswers: UserAnswers = completeUserAnswers
-          .remove(SalesToCountryPage(Index(0), Index(0))).success.value
+          .remove(SalesToCountryPage(iossNumber, Index(0), Index(0))).success.value
 
         val application = applicationBuilder(userAnswers = Some(updatedUserAnswers))
           .build()
@@ -170,14 +170,14 @@ class RedirectServiceSpec extends SpecBase with BeforeAndAfterEach {
 
           val result = service.getRedirect(waypoints, List(validationError)).headOption
 
-          result `mustBe` Some(routes.SoldToCountryController.onPageLoad(waypoints, Index(0)))
+          result `mustBe` Some(routes.SoldToCountryController.onPageLoad(waypoints, iossNumber, Index(0)))
         }
       }
 
       "must redirect to Vat Rates From Country Controller when there's no vat rates data present" in {
 
         val updatedUserAnswers: UserAnswers = completeUserAnswers
-          .remove(VatRatesFromCountryPage(Index(0), Index(0))).success.value
+          .remove(VatRatesFromCountryPage(iossNumber, Index(0), Index(0))).success.value
 
         val application = applicationBuilder(userAnswers = Some(updatedUserAnswers))
           .build()
@@ -188,18 +188,18 @@ class RedirectServiceSpec extends SpecBase with BeforeAndAfterEach {
 
           val service = new RedirectService(cc, mockCorrectionService, mockVatReturnService)
 
-          val validationError = DataMissingError(VatRatesFromCountryPage(Index(0), Index(0)))
+          val validationError = DataMissingError(VatRatesFromCountryPage(iossNumber, Index(0), Index(0)))
 
           val result = service.getRedirect(waypoints, List(validationError)).headOption
 
-          result `mustBe` Some(routes.VatRatesFromCountryController.onPageLoad(waypoints, Index(0)))
+          result `mustBe` Some(routes.VatRatesFromCountryController.onPageLoad(waypoints, iossNumber, Index(0)))
         }
       }
 
       "must redirect to Sales To Country Controller when there's no vat rates data for a selected country present" in {
 
         val updatedUserAnswers: UserAnswers = completeUserAnswers
-          .remove(SalesToCountryPage(Index(0), Index(0))).success.value
+          .remove(SalesToCountryPage(iossNumber, Index(0), Index(0))).success.value
 
         val application = applicationBuilder(userAnswers = Some(updatedUserAnswers))
           .build()
@@ -214,14 +214,14 @@ class RedirectServiceSpec extends SpecBase with BeforeAndAfterEach {
 
           val result = service.getRedirect(waypoints, List(validationError)).headOption
 
-          result `mustBe` Some(routes.SalesToCountryController.onPageLoad(waypoints, Index(0), Index(0)))
+          result `mustBe` Some(routes.SalesToCountryController.onPageLoad(waypoints, iossNumber, Index(0), Index(0)))
         }
       }
 
       "must redirect to Vat On Sales Controller when there's no vat charged on sales at vat rate data for a selected country present" in {
 
         val updatedUserAnswers: UserAnswers = completeUserAnswers
-          .remove(VatOnSalesPage(Index(0), Index(0))).success.value
+          .remove(VatOnSalesPage(iossNumber, Index(0), Index(0))).success.value
 
         val application = applicationBuilder(userAnswers = Some(updatedUserAnswers))
           .build()
@@ -236,14 +236,14 @@ class RedirectServiceSpec extends SpecBase with BeforeAndAfterEach {
 
           val result = service.getRedirect(waypoints, List(validationError)).headOption
 
-          result `mustBe` Some(routes.VatOnSalesController.onPageLoad(waypoints, Index(0), Index(0)))
+          result `mustBe` Some(routes.VatOnSalesController.onPageLoad(waypoints, iossNumber, Index(0), Index(0)))
         }
       }
 
       "must redirect to Correction Return Year Controller when there's no corrections data present" in {
 
         val updatedUserAnswers: UserAnswers = completedUserAnswersWithCorrections
-          .remove(CorrectionReturnYearPage(Index(0))).success.value
+          .remove(CorrectionReturnYearPage(iossNumber, Index(0))).success.value
 
         val application = applicationBuilder(userAnswers = Some(updatedUserAnswers))
           .build()
@@ -258,14 +258,14 @@ class RedirectServiceSpec extends SpecBase with BeforeAndAfterEach {
 
           val result = service.getRedirect(waypoints, List(validationError)).headOption
 
-          result `mustBe` Some(correctionRoutes.CorrectionReturnYearController.onPageLoad(waypoints, Index(0)))
+          result `mustBe` Some(correctionRoutes.CorrectionReturnYearController.onPageLoad(waypoints, iossNumber, Index(0)))
         }
       }
 
       "must redirect to Correction Country Controller when there's no correction countries for period data present" in {
 
         val updatedUserAnswers: UserAnswers = completedUserAnswersWithCorrections
-          .remove(CorrectionReturnPeriodPage(Index(0))).success.value
+          .remove(CorrectionReturnPeriodPage(iossNumber, Index(0))).success.value
 
         val application = applicationBuilder(userAnswers = Some(updatedUserAnswers))
           .build()
@@ -280,14 +280,14 @@ class RedirectServiceSpec extends SpecBase with BeforeAndAfterEach {
 
           val result = service.getRedirect(waypoints, List(validationError)).headOption
 
-          result `mustBe` Some(correctionRoutes.CorrectionCountryController.onPageLoad(waypoints, Index(0), Index(0)))
+          result `mustBe` Some(correctionRoutes.CorrectionCountryController.onPageLoad(waypoints, iossNumber, Index(0), Index(0)))
         }
       }
 
       "must redirect to Vat Amount Correction Country Controller when there's no correction to country for period data present" in {
 
         val updatedUserAnswers: UserAnswers = completedUserAnswersWithCorrections
-          .remove(CorrectionCountryPage(Index(0), Index(0))).success.value
+          .remove(CorrectionCountryPage(iossNumber, Index(0), Index(0))).success.value
 
         val application = applicationBuilder(userAnswers = Some(updatedUserAnswers))
           .build()
@@ -302,14 +302,14 @@ class RedirectServiceSpec extends SpecBase with BeforeAndAfterEach {
 
           val result = service.getRedirect(waypoints, List(validationError)).headOption
 
-          result `mustBe` Some(correctionRoutes.VatAmountCorrectionCountryController.onPageLoad(waypoints, Index(0), Index(0)))
+          result `mustBe` Some(correctionRoutes.VatAmountCorrectionCountryController.onPageLoad(waypoints, iossNumber, Index(0), Index(0)))
         }
       }
 
       "must return None when any other data is missing" in {
 
         val updatedUserAnswers: UserAnswers = completeUserAnswers
-          .remove(SoldGoodsPage).success.value
+          .remove(SoldGoodsPage(iossNumber)).success.value
 
         val application = applicationBuilder(userAnswers = Some(updatedUserAnswers))
           .build()
@@ -320,7 +320,7 @@ class RedirectServiceSpec extends SpecBase with BeforeAndAfterEach {
 
           val service = new RedirectService(cc, mockCorrectionService, mockVatReturnService)
 
-          val validationError = DataMissingError(SoldGoodsPage)
+          val validationError = DataMissingError(SoldGoodsPage(iossNumber))
 
           val result = service.getRedirect(waypoints, List(validationError)).headOption
 

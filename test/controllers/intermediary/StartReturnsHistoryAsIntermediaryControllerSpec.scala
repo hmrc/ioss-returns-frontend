@@ -54,8 +54,8 @@ class StartReturnsHistoryAsIntermediaryControllerSpec extends SpecBase with Mock
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result) mustBe Some(controllers.previousReturns.routes.SubmittedReturnsHistoryController.onPageLoad(waypoints).url)
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result) mustBe Some(controllers.previousReturns.routes.SubmittedReturnsHistoryController.onPageLoad(waypoints, iossNumber).url)
       }
     }
   }

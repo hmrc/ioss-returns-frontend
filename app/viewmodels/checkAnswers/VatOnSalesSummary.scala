@@ -23,14 +23,14 @@ import queries.VatRateFromCountryQuery
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
 import viewmodels.govuk.all.currencyFormat
-import viewmodels.govuk.summarylist._
-import viewmodels.implicits._
+import viewmodels.govuk.summarylist.*
+import viewmodels.implicits.*
 
 object VatOnSalesSummary {
 
   def row(answers: UserAnswers, waypoints: Waypoints, countryIndex: Index, vatRateIndex: Index, sourcePage: AddItemPage)
          (implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(VatOnSalesPage(countryIndex, vatRateIndex)).flatMap { answer =>
+    answers.get(VatOnSalesPage(answers.iossNumber, countryIndex, vatRateIndex)).flatMap { answer =>
       answers.get(VatRateFromCountryQuery(countryIndex, vatRateIndex)).map { vatRate =>
 
         val value = ValueViewModel(
@@ -43,7 +43,7 @@ object VatOnSalesSummary {
           key = "vatOnSales.checkYourAnswersLabel",
           value = value,
           actions = Seq(
-            ActionItemViewModel("site.change", VatOnSalesPage(countryIndex, vatRateIndex).changeLink(waypoints, sourcePage).url)
+            ActionItemViewModel("site.change", VatOnSalesPage(answers.iossNumber, countryIndex, vatRateIndex).changeLink(waypoints, sourcePage).url)
               .withVisuallyHiddenText(messages("vatOnSales.change.hidden", vatRate.rateForDisplay))
           )
         )

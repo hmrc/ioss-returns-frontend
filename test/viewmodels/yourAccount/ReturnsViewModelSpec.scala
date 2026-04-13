@@ -18,21 +18,28 @@ package viewmodels.yourAccount
 
 import base.SpecBase
 import models.StandardPeriod
-import models.SubmissionStatus._
+import models.SubmissionStatus.*
+import models.requests.RegistrationRequest
 import play.api.Application
+import play.api.mvc.AnyContent
+import play.api.test.FakeRequest
 
 import java.time.Month
 
 class ReturnsViewModelSpec extends SpecBase {
 
-  val app: Application = applicationBuilder().build()
-  val year2023 = 2023
-  val year2024 = 2024
+  private val app: Application = applicationBuilder().build()
 
-  val olderThan3YearsPeriod: StandardPeriod = StandardPeriod(arbitraryDate.getYear - 4, Month.JULY)
-  val earliestPeriod: StandardPeriod = StandardPeriod(2023, Month.JULY)
-  val middlePeriod: StandardPeriod = StandardPeriod(2023, Month.OCTOBER)
-  val latestPeriod: StandardPeriod = StandardPeriod(2024, Month.JANUARY)
+  private val olderThan3YearsPeriod: StandardPeriod = StandardPeriod(arbitraryDate.getYear - 4, Month.JULY)
+  private val earliestPeriod: StandardPeriod = StandardPeriod(2023, Month.JULY)
+  private val middlePeriod: StandardPeriod = StandardPeriod(2023, Month.OCTOBER)
+  private val latestPeriod: StandardPeriod = StandardPeriod(2024, Month.JANUARY)
+  
+  private val request: RegistrationRequest[AnyContent] =
+    RegistrationRequest[AnyContent](FakeRequest(), testCredentials, Some(vrn), "Company name", iossNumber, registrationWrapper, None, enrolments)
+    
+  implicit private val registrationRequest: RegistrationRequest[AnyContent] =
+    RegistrationRequest[AnyContent](request, testCredentials, Some(vrn), "Company name", iossNumber, registrationWrapper, None, enrolments)
 
   "must return correct view model when" - {
 
@@ -45,9 +52,9 @@ class ReturnsViewModelSpec extends SpecBase {
       val resultModel = ReturnsViewModel(returns, excludedReturns, stubClockAtArbitraryDate)(messages(app))
 
       assert(resultModel.contents.exists(p => p.content == "You have 2 overdue returns."))
-      resultModel.linkToStart mustBe defined
-      resultModel.linkToStart.get.linkText mustBe "Start your July 2023 return"
-      resultModel.linkToStart.get.url mustBe controllers.routes.StartReturnController.onPageLoad(waypoints, earliestPeriod).url
+      resultModel.linkToStart `mustBe` defined
+      resultModel.linkToStart.get.linkText `mustBe` "Start your July 2023 return"
+      resultModel.linkToStart.get.url `mustBe` controllers.routes.StartReturnController.onPageLoad(waypoints, iossNumber, earliestPeriod).url
     }
 
     "there is no returns due, multiple returns overdue and none in progress2" in {
@@ -61,9 +68,9 @@ class ReturnsViewModelSpec extends SpecBase {
       val resultModel = ReturnsViewModel(returns, excludedReturns, stubClockAtArbitraryDate)(messages(app))
 
       assert(resultModel.contents.exists(p => p.content == "You have 2 overdue returns."))
-      resultModel.linkToStart mustBe defined
-      resultModel.linkToStart.get.linkText mustBe "Start your December 2023 return"
-      resultModel.linkToStart.get.url mustBe controllers.routes.StartReturnController.onPageLoad(waypoints, StandardPeriod(2023, Month.DECEMBER)).url
+      resultModel.linkToStart `mustBe` defined
+      resultModel.linkToStart.get.linkText `mustBe` "Start your December 2023 return"
+      resultModel.linkToStart.get.url `mustBe` controllers.routes.StartReturnController.onPageLoad(waypoints, iossNumber, StandardPeriod(2023, Month.DECEMBER)).url
     }
 
     "there is no returns due, multiple returns overdue and one in progress" in {
@@ -74,9 +81,9 @@ class ReturnsViewModelSpec extends SpecBase {
       )
       val resultModel = ReturnsViewModel(returns, excludedReturns, stubClockAtArbitraryDate)(messages(app))
       assert(resultModel.contents.map(p => p.content).contains("You have 2 overdue returns."))
-      resultModel.linkToStart mustBe defined
-      resultModel.linkToStart.get.linkText mustBe "Continue your July 2023 return"
-      resultModel.linkToStart.get.url mustBe controllers.routes.ContinueReturnController.onPageLoad(earliestPeriod).url
+      resultModel.linkToStart `mustBe` defined
+      resultModel.linkToStart.get.linkText `mustBe` "Continue your July 2023 return"
+      resultModel.linkToStart.get.url `mustBe` controllers.routes.ContinueReturnController.onPageLoad(iossNumber, earliestPeriod).url
     }
 
     "there is no returns due, one return overdue and none in progress" in {
@@ -87,9 +94,9 @@ class ReturnsViewModelSpec extends SpecBase {
       val resultModel = ReturnsViewModel(returns, excludedReturns, stubClockAtArbitraryDate)(messages(app))
 
       assert(resultModel.contents.map(p => p.content).contains("Your July 2023 return is due by 31 August 2023."))
-      resultModel.linkToStart mustBe defined
-      resultModel.linkToStart.get.linkText mustBe "Start your return"
-      resultModel.linkToStart.get.url mustBe controllers.routes.StartReturnController.onPageLoad(waypoints, earliestPeriod).url
+      resultModel.linkToStart `mustBe` defined
+      resultModel.linkToStart.get.linkText `mustBe` "Start your return"
+      resultModel.linkToStart.get.url `mustBe` controllers.routes.StartReturnController.onPageLoad(waypoints, iossNumber, earliestPeriod).url
     }
 
     "there is overdue, this is prioritised over due" in {
@@ -101,9 +108,9 @@ class ReturnsViewModelSpec extends SpecBase {
       )
       val resultModel = ReturnsViewModel(returns, excludedReturns, stubClockAtArbitraryDate)(messages(app))
       assert(resultModel.contents.map(p => p.content).contains("You have 2 overdue returns."), "Your January 2024 is due by 28 February 2024.")
-      resultModel.linkToStart mustBe defined
-      resultModel.linkToStart.get.linkText mustBe "Start your July 2023 return"
-      resultModel.linkToStart.get.url mustBe controllers.routes.StartReturnController.onPageLoad(waypoints, earliestPeriod).url
+      resultModel.linkToStart `mustBe` defined
+      resultModel.linkToStart.get.linkText `mustBe` "Start your July 2023 return"
+      resultModel.linkToStart.get.url `mustBe` controllers.routes.StartReturnController.onPageLoad(waypoints, iossNumber, earliestPeriod).url
     }
 
     "there is overdue, this is prioritised over due, even if date wise it is later than the due" in {
@@ -115,9 +122,9 @@ class ReturnsViewModelSpec extends SpecBase {
       )
       val resultModel = ReturnsViewModel(returns, excludedReturns, stubClockAtArbitraryDate)(messages(app))
       assert(resultModel.contents.map(p => p.content).contains("You have 2 overdue returns."), "Your January 2024 is due by 28 February 2024.")
-      resultModel.linkToStart mustBe defined
-      resultModel.linkToStart.get.linkText mustBe "Start your October 2023 return"
-      resultModel.linkToStart.get.url mustBe controllers.routes.StartReturnController.onPageLoad(waypoints, middlePeriod).url
+      resultModel.linkToStart `mustBe` defined
+      resultModel.linkToStart.get.linkText `mustBe` "Start your October 2023 return"
+      resultModel.linkToStart.get.url `mustBe` controllers.routes.StartReturnController.onPageLoad(waypoints, iossNumber, middlePeriod).url
     }
 
     "there is no returns due, one return overdue and one in progress" in {
@@ -127,9 +134,9 @@ class ReturnsViewModelSpec extends SpecBase {
       )
       val resultModel = ReturnsViewModel(returns, excludedReturns, stubClockAtArbitraryDate)(messages(app))
       assert(resultModel.contents.map(p => p.content).contains("You have an overdue return in progress."))
-      resultModel.linkToStart mustBe defined
-      resultModel.linkToStart.get.linkText mustBe "Continue your July 2023 return"
-      resultModel.linkToStart.get.url mustBe controllers.routes.ContinueReturnController.onPageLoad(earliestPeriod).url
+      resultModel.linkToStart `mustBe` defined
+      resultModel.linkToStart.get.linkText `mustBe` "Continue your July 2023 return"
+      resultModel.linkToStart.get.url `mustBe` controllers.routes.ContinueReturnController.onPageLoad(iossNumber, earliestPeriod).url
     }
 
     "there is one return due, multiple returns overdue and none in progress" in {
@@ -141,9 +148,9 @@ class ReturnsViewModelSpec extends SpecBase {
       )
       val resultModel = ReturnsViewModel(returns, excludedReturns, stubClockAtArbitraryDate)(messages(app))
       assert(resultModel.contents.map(p => p.content).contains("You have 2 overdue returns."), "Your January 2024 is due by 28 February 2024.")
-      resultModel.linkToStart mustBe defined
-      resultModel.linkToStart.get.linkText mustBe "Start your July 2023 return"
-      resultModel.linkToStart.get.url mustBe controllers.routes.StartReturnController.onPageLoad(waypoints, earliestPeriod).url
+      resultModel.linkToStart `mustBe` defined
+      resultModel.linkToStart.get.linkText `mustBe` "Start your July 2023 return"
+      resultModel.linkToStart.get.url `mustBe` controllers.routes.StartReturnController.onPageLoad(waypoints, iossNumber, earliestPeriod).url
     }
 
     "there is one returns due, multiple returns overdue and one in progress" in {
@@ -156,9 +163,9 @@ class ReturnsViewModelSpec extends SpecBase {
       val resultModel = ReturnsViewModel(returns, excludedReturns, stubClockAtArbitraryDate)(messages(app))
       assert(resultModel.contents.map(p => p.content).contains("Your January 2024 return is due by 29 February 2024."))
       assert(resultModel.contents.map(p => p.content).contains("You have 2 overdue returns."))
-      resultModel.linkToStart mustBe defined
-      resultModel.linkToStart.get.linkText mustBe "Continue your July 2023 return"
-      resultModel.linkToStart.get.url mustBe controllers.routes.ContinueReturnController.onPageLoad(earliestPeriod).url
+      resultModel.linkToStart `mustBe` defined
+      resultModel.linkToStart.get.linkText `mustBe` "Continue your July 2023 return"
+      resultModel.linkToStart.get.url `mustBe` controllers.routes.ContinueReturnController.onPageLoad(iossNumber, earliestPeriod).url
     }
 
     "there is one returns due, one return overdue and one in progress" in {
@@ -170,9 +177,9 @@ class ReturnsViewModelSpec extends SpecBase {
       val resultModel = ReturnsViewModel(returns, excludedReturns, stubClockAtArbitraryDate)(messages(app))
       assert(resultModel.contents.map(p => p.content).contains("Your October 2023 return is due by 30 November 2023."))
       assert(resultModel.contents.map(p => p.content).contains("You also have an overdue return in progress."))
-      resultModel.linkToStart mustBe defined
-      resultModel.linkToStart.get.linkText mustBe "Continue your July 2023 return"
-      resultModel.linkToStart.get.url mustBe controllers.routes.ContinueReturnController.onPageLoad(earliestPeriod).url
+      resultModel.linkToStart `mustBe` defined
+      resultModel.linkToStart.get.linkText `mustBe` "Continue your July 2023 return"
+      resultModel.linkToStart.get.url `mustBe` controllers.routes.ContinueReturnController.onPageLoad(iossNumber, earliestPeriod).url
     }
 
     "there is one returns due, one return overdue and none in progress" in {
@@ -183,9 +190,9 @@ class ReturnsViewModelSpec extends SpecBase {
       )
       val resultModel = ReturnsViewModel(returns, excludedReturns, stubClockAtArbitraryDate)(messages(app))
       assert(resultModel.contents.map(p => p.content).contains("You have an overdue return."), "Your October 2023 return is due by 30 November 2023.")
-      resultModel.linkToStart mustBe defined
-      resultModel.linkToStart.get.linkText mustBe "Start your return"
-      resultModel.linkToStart.get.url mustBe controllers.routes.StartReturnController.onPageLoad(waypoints, earliestPeriod).url
+      resultModel.linkToStart `mustBe` defined
+      resultModel.linkToStart.get.linkText `mustBe` "Start your return"
+      resultModel.linkToStart.get.url `mustBe` controllers.routes.StartReturnController.onPageLoad(waypoints, iossNumber, earliestPeriod).url
     }
 
     "there is one returns due, no return overdue and one in progress" in {
@@ -199,9 +206,9 @@ class ReturnsViewModelSpec extends SpecBase {
           """Your return for July 2023 is in progress.
             |<br>This is due by 31 August 2023.
             |<br>""".stripMargin))
-      resultModel.linkToStart mustBe defined
-      resultModel.linkToStart.get.linkText mustBe "Continue your return"
-      resultModel.linkToStart.get.url mustBe controllers.routes.ContinueReturnController.onPageLoad(earliestPeriod).url
+      resultModel.linkToStart `mustBe` defined
+      resultModel.linkToStart.get.linkText `mustBe` "Continue your return"
+      resultModel.linkToStart.get.url `mustBe` controllers.routes.ContinueReturnController.onPageLoad(iossNumber, earliestPeriod).url
     }
 
     "there is one returns due, no return overdue and none in progress" in {
@@ -212,9 +219,9 @@ class ReturnsViewModelSpec extends SpecBase {
       val resultModel = ReturnsViewModel(returns, excludedReturns, stubClockAtArbitraryDate)(messages(app))
       assert(resultModel.contents.map(p => p.content)
         .contains("Your July 2023 return is due by 31 August 2023."))
-      resultModel.linkToStart mustBe defined
-      resultModel.linkToStart.get.linkText mustBe "Start your return"
-      resultModel.linkToStart.get.url mustBe controllers.routes.StartReturnController.onPageLoad(waypoints, earliestPeriod).url
+      resultModel.linkToStart `mustBe` defined
+      resultModel.linkToStart.get.linkText `mustBe` "Start your return"
+      resultModel.linkToStart.get.url `mustBe` controllers.routes.StartReturnController.onPageLoad(waypoints, iossNumber, earliestPeriod).url
     }
 
     "there is no returns due, no return overdue" in {
@@ -234,10 +241,10 @@ class ReturnsViewModelSpec extends SpecBase {
         Return.fromPeriod(middlePeriod, Overdue, inProgress = false, isOldest = false)
       )
       val resultModel = ReturnsViewModel(returns, excludedReturns, stubClockAtArbitraryDate)(messages(app))
-      resultModel.contents.map(p => p.content) mustBe Seq("Your October 2023 return is due by 30 November 2023.")
-      resultModel.linkToStart mustBe defined
-      resultModel.linkToStart.get.linkText mustBe "Start your return"
-      resultModel.linkToStart.get.url mustBe controllers.routes.StartReturnController.onPageLoad(waypoints, middlePeriod).url
+      resultModel.contents.map(p => p.content) `mustBe` Seq("Your October 2023 return is due by 30 November 2023.")
+      resultModel.linkToStart `mustBe` defined
+      resultModel.linkToStart.get.linkText `mustBe` "Start your return"
+      resultModel.linkToStart.get.url `mustBe` controllers.routes.StartReturnController.onPageLoad(waypoints, iossNumber, middlePeriod).url
     }
 
     "there is one excluded return older than three years and one return overdue" in {
@@ -246,14 +253,13 @@ class ReturnsViewModelSpec extends SpecBase {
         Return.fromPeriod(middlePeriod, Overdue, inProgress = false, isOldest = false)
       )
       val resultModel = ReturnsViewModel(returns, excludedReturns, stubClockAtArbitraryDate)(messages(app))
-      resultModel.contents.map(p => p.content) mustBe Seq(
+      resultModel.contents.map(p => p.content) `mustBe` Seq(
         s"You must complete your ${olderThan3YearsPeriod.displayShortText} return with the countries where you made your sales.",
         "Your October 2023 return is due by 30 November 2023."
       )
-      resultModel.linkToStart mustBe defined
-      resultModel.linkToStart.get.linkText mustBe "Start your return"
-      resultModel.linkToStart.get.url mustBe controllers.routes.StartReturnController.onPageLoad(waypoints, middlePeriod).url
+      resultModel.linkToStart `mustBe` defined
+      resultModel.linkToStart.get.linkText `mustBe` "Start your return"
+      resultModel.linkToStart.get.url `mustBe` controllers.routes.StartReturnController.onPageLoad(waypoints, iossNumber, middlePeriod).url
     }
   }
-
 }

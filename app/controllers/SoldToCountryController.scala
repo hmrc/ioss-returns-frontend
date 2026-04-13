@@ -39,7 +39,7 @@ class SoldToCountryController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndRequireData() {
+  def onPageLoad(waypoints: Waypoints, iossNumber: String, index: Index): Action[AnyContent] = cc.authAndRequireData(iossNumber) {
     implicit request =>
 
       val period = request.userAnswers.period
@@ -52,15 +52,15 @@ class SoldToCountryController @Inject()(
         request.isIntermediary
       )
 
-      val preparedForm = request.userAnswers.get(SoldToCountryPage(index)) match {
+      val preparedForm = request.userAnswers.get(SoldToCountryPage(request.iossNumber, index)) match {
         case None => form
         case Some(value) => form.fill(value)
       }
 
-      Ok(view(preparedForm, waypoints, period, index, request.isIntermediary, request.companyName))
+      Ok(view(preparedForm, waypoints, request.iossNumber, period, index, request.isIntermediary, request.companyName))
   }
 
-  def onSubmit(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndRequireData().async {
+  def onSubmit(waypoints: Waypoints, iossNumber: String, index: Index): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
     implicit request =>
 
       val period = request.userAnswers.period
@@ -75,14 +75,14 @@ class SoldToCountryController @Inject()(
 
       form.bindFromRequest().fold(
         formWithErrors =>
-          BadRequest(view(formWithErrors, waypoints, period, index, request.isIntermediary, request.companyName)).toFuture,
+          BadRequest(view(formWithErrors, waypoints, request.iossNumber, period, index, request.isIntermediary, request.companyName)).toFuture,
 
         value =>
           for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(SoldToCountryPage(index), value))
+            updatedAnswers <- Future.fromTry(request.userAnswers.set(SoldToCountryPage(request.iossNumber, index), value))
             cleanup <- Future.fromTry(updatedAnswers.remove(AllSalesWithOptionalVatQuery(index)))
             _ <- cc.sessionRepository.set(cleanup)
-          } yield Redirect(SoldToCountryPage(index).navigate(waypoints, request.userAnswers, cleanup).route)
+          } yield Redirect(SoldToCountryPage(request.iossNumber, index).navigate(waypoints, request.userAnswers, cleanup).route)
       )
   }
 }

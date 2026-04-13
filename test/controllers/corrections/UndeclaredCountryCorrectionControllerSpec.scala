@@ -21,9 +21,10 @@ import forms.corrections.UndeclaredCountryCorrectionFormProvider
 import models.Country
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.mockito.MockitoSugar
+import pages.JourneyRecoveryPage
 import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, UndeclaredCountryCorrectionPage}
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import views.html.corrections.UndeclaredCountryCorrectionView
 
 class UndeclaredCountryCorrectionControllerSpec extends SpecBase with MockitoSugar {
@@ -31,9 +32,9 @@ class UndeclaredCountryCorrectionControllerSpec extends SpecBase with MockitoSug
   private val formProvider = new UndeclaredCountryCorrectionFormProvider()
   private val form = formProvider()
   private val userAnswersWithCountryAndPeriod = emptyUserAnswers
-    .set(CorrectionCountryPage(index, index), selectedCountry).success.value
-    .set(CorrectionReturnPeriodPage(index), period).success.value
-  private lazy val undeclaredCountryCorrectionRoute = UndeclaredCountryCorrectionPage(index, index).route(waypoints).url
+    .set(CorrectionCountryPage(iossNumber, index, index), selectedCountry).success.value
+    .set(CorrectionReturnPeriodPage(iossNumber, index), period).success.value
+  private lazy val undeclaredCountryCorrectionRoute = UndeclaredCountryCorrectionPage(iossNumber, index, index).route(waypoints).url
 
   "UndeclaredCountryCorrection Controller" - {
 
@@ -49,14 +50,15 @@ class UndeclaredCountryCorrectionControllerSpec extends SpecBase with MockitoSug
 
         val view = application.injector.instanceOf[UndeclaredCountryCorrectionView]
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, waypoints, period, selectedCountry, period, index, index, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(form, waypoints, iossNumber, period, selectedCountry, period, index, index, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = userAnswersWithCountryAndPeriod.set(UndeclaredCountryCorrectionPage(index, index), true).success.value
+      val userAnswers = userAnswersWithCountryAndPeriod
+        .set(UndeclaredCountryCorrectionPage(iossNumber, index, index), true).success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers))
         .build()
@@ -68,9 +70,9 @@ class UndeclaredCountryCorrectionControllerSpec extends SpecBase with MockitoSug
 
         val result = route(application, request).value
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(
-          form.fill(true), waypoints, period, selectedCountry, period, index, index, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(
+          form.fill(true), waypoints, iossNumber, period, selectedCountry, period, index, index, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -85,10 +87,10 @@ class UndeclaredCountryCorrectionControllerSpec extends SpecBase with MockitoSug
             .withFormUrlEncodedBody(("value", "true"))
 
         val result = route(application, request).value
-        val expectedAnswers = userAnswersWithCountryAndPeriod.set(UndeclaredCountryCorrectionPage(index, index), true).success.value
+        val expectedAnswers = userAnswersWithCountryAndPeriod.set(UndeclaredCountryCorrectionPage(iossNumber, index, index), true).success.value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual UndeclaredCountryCorrectionPage(index, index)
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` UndeclaredCountryCorrectionPage(iossNumber, index, index)
           .navigate(waypoints, userAnswersWithCountryAndPeriod, expectedAnswers).url
       }
     }
@@ -109,8 +111,8 @@ class UndeclaredCountryCorrectionControllerSpec extends SpecBase with MockitoSug
 
         val result = route(application, request).value
 
-        status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, waypoints, period, selectedCountry, period, index, index, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
+        status(result) `mustBe` BAD_REQUEST
+        contentAsString(result) `mustBe` view(boundForm, waypoints, iossNumber, period, selectedCountry, period, index, index, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -123,8 +125,8 @@ class UndeclaredCountryCorrectionControllerSpec extends SpecBase with MockitoSug
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
 
@@ -139,8 +141,8 @@ class UndeclaredCountryCorrectionControllerSpec extends SpecBase with MockitoSug
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
   }

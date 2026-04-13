@@ -27,19 +27,16 @@ import org.mockito.Mockito
 import org.mockito.Mockito.when
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar.mock
-import pages.JourneyRecoveryPage
 import play.api.inject.bind
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
-import services.{PaymentsService, PreviousRegistrationService}
+import play.api.test.Helpers.*
+import services.PaymentsService
 import testUtils.EtmpVatReturnData.etmpVatReturn
-import testUtils.PreviousRegistrationData.previousRegistrations
 import utils.FutureSyntax.FutureOps
 
 class PaymentControllerSpec extends SpecBase with BeforeAndAfterEach {
 
   private val mockPaymentService: PaymentsService = mock[PaymentsService]
-  private val mockPreviousRegistrationService: PreviousRegistrationService = mock[PreviousRegistrationService]
   private val mockFinancialDataConnector: FinancialDataConnector = mock[FinancialDataConnector]
   private val mockVatReturnConnector: VatReturnConnector = mock[VatReturnConnector]
 
@@ -51,11 +48,11 @@ class PaymentControllerSpec extends SpecBase with BeforeAndAfterEach {
     outstandingAmount = amount,
     clearedAmount = BigDecimal(0)
   )))
+
   private val errorChargeResponse: ChargeResponse = Left(UnexpectedResponseStatus(status = 500, body = "error"))
 
   override def beforeEach(): Unit = {
     Mockito.reset(mockPaymentService)
-    Mockito.reset(mockPreviousRegistrationService)
     Mockito.reset(mockFinancialDataConnector)
     Mockito.reset(mockVatReturnConnector)
   }
@@ -63,6 +60,7 @@ class PaymentControllerSpec extends SpecBase with BeforeAndAfterEach {
   "Payment Controller" - {
 
     "makePayment" - {
+      
       "should make request to pay-api successfully" in {
 
         when(mockFinancialDataConnector.getChargeForIossNumber(any(), any())(any())) thenReturn chargeResponse.toFuture
@@ -74,11 +72,11 @@ class PaymentControllerSpec extends SpecBase with BeforeAndAfterEach {
           .build()
 
         running(application) {
-          val request = FakeRequest(GET, routes.PaymentController.makePayment(waypoints, period).url)
+          val request = FakeRequest(GET, routes.PaymentController.makePayment(waypoints, iossNumber, period).url)
 
           val result = route(application, request).value
 
-          status(result) mustBe SEE_OTHER
+          status(result) `mustBe` SEE_OTHER
           redirectLocation(result).value must endWith(paymentResponse.nextUrl)
         }
       }
@@ -96,11 +94,11 @@ class PaymentControllerSpec extends SpecBase with BeforeAndAfterEach {
           .build()
 
         running(application) {
-          val request = FakeRequest(GET, routes.PaymentController.makePayment(waypoints, period).url)
+          val request = FakeRequest(GET, routes.PaymentController.makePayment(waypoints, iossNumber, period).url)
 
           val result = route(application, request).value
 
-          status(result) mustBe SEE_OTHER
+          status(result) `mustBe` SEE_OTHER
           redirectLocation(result).value must endWith(paymentResponse.nextUrl)
         }
       }
@@ -116,25 +114,24 @@ class PaymentControllerSpec extends SpecBase with BeforeAndAfterEach {
           .build()
 
         running(application) {
-          val request = FakeRequest(GET, routes.PaymentController.makePayment(waypoints, period).url)
+          val request = FakeRequest(GET, routes.PaymentController.makePayment(waypoints, iossNumber, period).url)
 
           val result = route(application, request).value
 
-          status(result) mustBe SEE_OTHER
+          status(result) `mustBe` SEE_OTHER
           redirectLocation(result).value must endWith("/pay/service-unavailable")
         }
       }
     }
 
     "makePaymentForIossNumber" - {
+      
       "should make request to pay-api successfully" in {
 
         when(mockFinancialDataConnector.getChargeForIossNumber(any(), any())(any())) thenReturn chargeResponse.toFuture
         when(mockPaymentService.makePayment(any(), any(), any())(any())) thenReturn Right(paymentResponse).toFuture
-        when(mockPreviousRegistrationService.getPreviousRegistrations(any())(any())) thenReturn previousRegistrations.toFuture
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-          .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
           .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
           .overrides(bind[PaymentsService].toInstance(mockPaymentService))
           .build()
@@ -144,7 +141,7 @@ class PaymentControllerSpec extends SpecBase with BeforeAndAfterEach {
 
           val result = route(application, request).value
 
-          status(result) mustBe SEE_OTHER
+          status(result) `mustBe` SEE_OTHER
           redirectLocation(result).value must endWith(paymentResponse.nextUrl)
         }
       }
@@ -154,10 +151,8 @@ class PaymentControllerSpec extends SpecBase with BeforeAndAfterEach {
         when(mockFinancialDataConnector.getChargeForIossNumber(any(), any())(any())) thenReturn errorChargeResponse.toFuture
         when(mockPaymentService.makePayment(any(), any(), any())(any())) thenReturn Right(paymentResponse).toFuture
         when(mockVatReturnConnector.getForIossNumber(any(), any())(any())) thenReturn Right(etmpVatReturn).toFuture
-        when(mockPreviousRegistrationService.getPreviousRegistrations(any())(any())) thenReturn previousRegistrations.toFuture
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-          .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
           .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
           .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
           .overrides(bind[PaymentsService].toInstance(mockPaymentService))
@@ -168,7 +163,7 @@ class PaymentControllerSpec extends SpecBase with BeforeAndAfterEach {
 
           val result = route(application, request).value
 
-          status(result) mustBe SEE_OTHER
+          status(result) `mustBe` SEE_OTHER
           redirectLocation(result).value must endWith(paymentResponse.nextUrl)
         }
       }
@@ -177,10 +172,8 @@ class PaymentControllerSpec extends SpecBase with BeforeAndAfterEach {
 
         when(mockFinancialDataConnector.getChargeForIossNumber(any(), any())(any())) thenReturn chargeResponse.toFuture
         when(mockPaymentService.makePayment(any(), any(), any())(any())) thenReturn Left(InvalidJson).toFuture
-        when(mockPreviousRegistrationService.getPreviousRegistrations(any())(any())) thenReturn previousRegistrations.toFuture
 
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-          .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
           .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
           .overrides(bind[PaymentsService].toInstance(mockPaymentService))
           .build()
@@ -190,27 +183,8 @@ class PaymentControllerSpec extends SpecBase with BeforeAndAfterEach {
 
           val result = route(application, request).value
 
-          status(result) mustBe SEE_OTHER
+          status(result) `mustBe` SEE_OTHER
           redirectLocation(result).value must endWith("/pay/service-unavailable")
-        }
-      }
-
-      "should redirect to Journey recovery when IOSS number is not part of previous registrations or request.iossNumber" in {
-
-        when(mockPreviousRegistrationService.getPreviousRegistrations(any())(any())) thenReturn previousRegistrations.toFuture
-
-        val application = applicationBuilder()
-          .overrides(bind[PreviousRegistrationService].toInstance(mockPreviousRegistrationService))
-          .overrides(bind[FinancialDataConnector].toInstance(mockFinancialDataConnector))
-          .build()
-
-        running(application) {
-          val request = FakeRequest(GET, routes.PaymentController.makePaymentForIossNumber(waypoints, period, "IM9001111111").url)
-
-          val result = route(application, request).value
-
-          status(result) mustBe SEE_OTHER
-          redirectLocation(result).value mustBe JourneyRecoveryPage.route(waypoints).url
         }
       }
     }

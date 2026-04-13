@@ -28,6 +28,7 @@
 @(
     form: Form[_],
     waypoints: Waypoints,
+    iossNumber: String,
     period: Period,
     isIntermediary: Boolean,
     companyName: String,
@@ -42,13 +43,13 @@
     }
 }
 
-@layout(pageTitle = title(form, messages("fileUploaded.title"))) {
+@layout(pageTitle = title(form, messages("fileUploaded.title")), maybeIossNumber = Some(iossNumber)) {
 
     @if(!maybeOutcome.exists(o => o.status == "UPLOADED" || o.status == "FAILED")) {
         <meta http-equiv="refresh" content="1">
     }
 
-    @formHelper(action = controllers.fileUpload.routes.FileUploadedController.onSubmit(waypoints), Symbol("autoComplete") -> "off") {
+    @formHelper(action = controllers.fileUpload.routes.FileUploadedController.onSubmit(waypoints, iossNumber), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))

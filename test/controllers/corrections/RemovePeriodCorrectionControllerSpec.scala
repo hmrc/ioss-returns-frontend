@@ -19,13 +19,14 @@ package controllers.corrections
 import base.SpecBase
 import forms.corrections.RemovePeriodCorrectionFormProvider
 import models.{Country, Period, UserAnswers}
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.{never, times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
+import pages.JourneyRecoveryPage
 import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, RemovePeriodCorrectionPage, VatAmountCorrectionCountryPage}
 import play.api.inject.bind
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import queries.{AllCorrectionPeriodsQuery, CorrectionPeriodQuery}
 import repositories.SessionRepository
 import utils.FutureSyntax.FutureOps
@@ -38,12 +39,12 @@ class RemovePeriodCorrectionControllerSpec extends SpecBase with MockitoSugar {
   private val formProvider = new RemovePeriodCorrectionFormProvider()
   private val form = formProvider(correctionPeriod)
 
-  private lazy val removePeriodCorrectionRoute = controllers.corrections.routes.RemovePeriodCorrectionController.onPageLoad(waypoints, index).url
+  private lazy val removePeriodCorrectionRoute = controllers.corrections.routes.RemovePeriodCorrectionController.onPageLoad(waypoints, iossNumber, index).url
 
   private val answers: UserAnswers = completeUserAnswers
-    .set(CorrectionReturnPeriodPage(index), correctionPeriod).success.value
-    .set(CorrectionCountryPage(index, index), correctionCountry).success.value
-    .set(VatAmountCorrectionCountryPage(index, index), arbitraryBigDecimal.arbitrary.sample.value).success.value
+    .set(CorrectionReturnPeriodPage(iossNumber, index), correctionPeriod).success.value
+    .set(CorrectionCountryPage(iossNumber, index, index), correctionCountry).success.value
+    .set(VatAmountCorrectionCountryPage(iossNumber, index, index), arbitraryBigDecimal.arbitrary.sample.value).success.value
 
 
   "RemovePeriodCorrection Controller" - {
@@ -59,8 +60,8 @@ class RemovePeriodCorrectionControllerSpec extends SpecBase with MockitoSugar {
 
         val view = application.injector.instanceOf[RemovePeriodCorrectionView]
 
-        status(result) mustBe OK
-        contentAsString(result) mustBe view(form, waypoints, period, index, correctionPeriod, false, "Company Name")(request, messages(application)).toString
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(form, waypoints, iossNumber, period, index, correctionPeriod, false, "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -83,8 +84,8 @@ class RemovePeriodCorrectionControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
         val expectedAnswers = answers.remove(AllCorrectionPeriodsQuery).success.value
 
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe RemovePeriodCorrectionPage(index).navigate(waypoints, answers, expectedAnswers).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` RemovePeriodCorrectionPage(iossNumber, index).navigate(waypoints, answers, expectedAnswers).url
         verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
       }
     }
@@ -94,9 +95,9 @@ class RemovePeriodCorrectionControllerSpec extends SpecBase with MockitoSugar {
       val nextCorrectionPeriod: Period = correctionPeriod.getNext
 
       val multipleAnswers: UserAnswers = answers
-        .set(CorrectionReturnPeriodPage(index + 1), nextCorrectionPeriod).success.value
-        .set(CorrectionCountryPage(index, index + 1), correctionCountry).success.value
-        .set(VatAmountCorrectionCountryPage(index, index + 1), arbitraryBigDecimal.arbitrary.sample.value).success.value
+        .set(CorrectionReturnPeriodPage(iossNumber, index + 1), nextCorrectionPeriod).success.value
+        .set(CorrectionCountryPage(iossNumber, index, index + 1), correctionCountry).success.value
+        .set(VatAmountCorrectionCountryPage(iossNumber, index, index + 1), arbitraryBigDecimal.arbitrary.sample.value).success.value
 
       val mockSessionRepository = mock[SessionRepository]
 
@@ -115,8 +116,8 @@ class RemovePeriodCorrectionControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
         val expectedAnswers = multipleAnswers.remove(CorrectionPeriodQuery(index)).success.value
 
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe RemovePeriodCorrectionPage(index).navigate(waypoints, multipleAnswers, expectedAnswers).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` RemovePeriodCorrectionPage(iossNumber, index).navigate(waypoints, multipleAnswers, expectedAnswers).url
         verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
       }
     }
@@ -126,9 +127,9 @@ class RemovePeriodCorrectionControllerSpec extends SpecBase with MockitoSugar {
       val mockSessionRepository = mock[SessionRepository]
 
       when(mockSessionRepository.set(any())) thenReturn true.toFuture
-      val answers = emptyUserAnswers.set(CorrectionReturnPeriodPage(index), period).success.value
-        .set(CorrectionCountryPage(index, index), Country("DE", "Germany")).success.value
-        .set(VatAmountCorrectionCountryPage(index, index), BigDecimal(10)).success.value
+      val answers = emptyUserAnswers.set(CorrectionReturnPeriodPage(iossNumber, index), period).success.value
+        .set(CorrectionCountryPage(iossNumber, index, index), Country("DE", "Germany")).success.value
+        .set(VatAmountCorrectionCountryPage(iossNumber, index, index), BigDecimal(10)).success.value
 
       val application =
         applicationBuilder(userAnswers = Some(answers))
@@ -143,8 +144,8 @@ class RemovePeriodCorrectionControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
         val expectedAnswers = answers
 
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe RemovePeriodCorrectionPage(index).navigate(waypoints, expectedAnswers, expectedAnswers).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` RemovePeriodCorrectionPage(iossNumber, index).navigate(waypoints, expectedAnswers, expectedAnswers).url
         verify(mockSessionRepository, never()).set(any())
       }
     }
@@ -164,8 +165,8 @@ class RemovePeriodCorrectionControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustBe BAD_REQUEST
-        contentAsString(result) mustBe view(boundForm, waypoints, period, index, correctionPeriod, false, "Company Name")(request, messages(application)).toString
+        status(result) `mustBe` BAD_REQUEST
+        contentAsString(result) `mustBe` view(boundForm, waypoints, iossNumber, period, index, correctionPeriod, false, "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -178,8 +179,8 @@ class RemovePeriodCorrectionControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe controllers.routes.JourneyRecoveryController.onPageLoad().url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
 
@@ -194,8 +195,8 @@ class RemovePeriodCorrectionControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustBe SEE_OTHER
-        redirectLocation(result).value mustBe controllers.routes.JourneyRecoveryController.onPageLoad().url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
   }

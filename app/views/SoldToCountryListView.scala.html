@@ -18,7 +18,6 @@
 @import viewmodels.LegendSize
 @import components.ButtonGroup
 
-
 @this(
         layout: templates.Layout,
         formHelper: FormWithCSRF,
@@ -33,6 +32,7 @@
 @(
     form: Form[_],
     waypoints: Waypoints,
+    iossNumber: String,
     period: Period,
     salesList: Seq[ListItem],
     canAddSales: Boolean,
@@ -55,7 +55,7 @@
     }
 }
 
-@layout(pageTitle = title(form, titleText)) {
+@layout(pageTitle = title(form, titleText), maybeIossNumber = Some(iossNumber)) {
 
     @if(isIntermediary){<p class="govuk-caption-l hmrc-caption-l">@{companyName + period.displayText}</p>}
     @if(form.errors.nonEmpty) {
@@ -73,7 +73,7 @@
 
     @addToList(salesList, itemSize = Long, "soldToCountryList.change.hidden", "soldToCountryList.remove.hidden")
     @if(incompleteCountries.isEmpty) {
-        @formHelper(action = routes.SoldToCountryListController.onSubmit(waypoints, false), Symbol("autoComplete") -> "off") {
+        @formHelper(action = routes.SoldToCountryListController.onSubmit(waypoints, iossNumber, false), Symbol("autoComplete") -> "off") {
 
             @if(canAddSales) {
                 @govukRadios(
@@ -94,11 +94,11 @@
             }
 
             @button(
-                "site.continue", routes.SoldToCountryListController.onPageLoad(waypoints).url, period, waypoints
+                "site.continue", routes.SoldToCountryListController.onPageLoad(waypoints, iossNumber).url, iossNumber, period, waypoints
             )
         }
     } else {
-        @formHelper(action = routes.SoldToCountryListController.onSubmit(waypoints, true)) {
+        @formHelper(action = routes.SoldToCountryListController.onSubmit(waypoints, iossNumber, true)) {
 
             <h2 class="govuk-heading-m push--top">@messages("error.missing_answers_header")</h2>
             <p class="govuk-body">@messages("error.missing_answers_prompt", incompleteCountries.head.name)</p>

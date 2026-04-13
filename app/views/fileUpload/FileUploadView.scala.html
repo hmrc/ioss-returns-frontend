@@ -27,6 +27,7 @@
 @(
     form: Form[_],
     waypoints: Waypoints,
+    iossNumber: String,
     period: Period,
     isIntermediary: Boolean,
     companyName: String,
@@ -43,7 +44,7 @@
     }
 }
 
-@layout(pageTitle = title(form, messages("fileUpload.title", period.displayText))) {
+@layout(pageTitle = title(form, messages("fileUpload.title", period.displayText)), maybeIossNumber = Some(iossNumber)) {
 
     @defining(errorMessage.map(msg => form.withError("file", msg)).getOrElse(form)) { formWithUpscanError =>
         @if(formWithUpscanError.errors.nonEmpty) {
@@ -58,7 +59,7 @@
         <p class="govuk-body">@messages("fileUpload.paragraph")</p>
 
         <ol class="govuk-list govuk-list--number">
-            <li>@Html(messages("fileUpload.bullet1", controllers.fileUpload.routes.FileUploadController.downloadTemplate()))</li>
+            <li>@Html(messages("fileUpload.bullet1", controllers.fileUpload.routes.FileUploadController.downloadTemplate(iossNumber)))</li>
             <li>@messages("fileUpload.bullet2")</li>
             <li>@messages("fileUpload.bullet3")</li>
 

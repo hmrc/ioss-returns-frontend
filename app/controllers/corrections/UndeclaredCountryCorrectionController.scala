@@ -40,7 +40,7 @@ class UndeclaredCountryCorrectionController @Inject()(
   private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(waypoints: Waypoints, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible().async {
+  def onPageLoad(waypoints: Waypoints, iossNumber: String, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(iossNumber).async {
     implicit request =>
 
       getCorrectionReturnPeriod(waypoints, periodIndex) { correctionReturnPeriod =>
@@ -48,17 +48,17 @@ class UndeclaredCountryCorrectionController @Inject()(
 
           val period = request.userAnswers.period
 
-          val preparedForm = request.userAnswers.get(UndeclaredCountryCorrectionPage(periodIndex, countryIndex)) match {
+          val preparedForm = request.userAnswers.get(UndeclaredCountryCorrectionPage(request.iossNumber, periodIndex, countryIndex)) match {
             case None => form
             case Some(value) => form.fill(value)
           }
-          Ok(view(preparedForm, waypoints, period, country, correctionReturnPeriod, periodIndex, countryIndex, request.isIntermediary, request.companyName)).toFuture
+          Ok(view(preparedForm, waypoints, request.iossNumber, period, country, correctionReturnPeriod, periodIndex, countryIndex, request.isIntermediary, request.companyName)).toFuture
         }
       }
   }
 
 
-  def onSubmit(waypoints: Waypoints, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible().async {
+  def onSubmit(waypoints: Waypoints, iossNumber: String, periodIndex: Index, countryIndex: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(iossNumber).async {
     implicit request =>
 
       getCorrectionReturnPeriod(waypoints, periodIndex) { correctionReturnPeriod =>
@@ -68,14 +68,14 @@ class UndeclaredCountryCorrectionController @Inject()(
 
           form.bindFromRequest().fold(
             formWithErrors =>
-              BadRequest(view(formWithErrors, waypoints, period, country, correctionReturnPeriod, periodIndex, countryIndex, request.isIntermediary, request.companyName)).toFuture,
+              BadRequest(view(formWithErrors, waypoints, request.iossNumber, period, country, correctionReturnPeriod, periodIndex, countryIndex, request.isIntermediary, request.companyName)).toFuture,
             value =>
 
               for {
                 updatedAnswers <- Future.fromTry(
-                  request.userAnswers.set(UndeclaredCountryCorrectionPage(periodIndex, countryIndex), value))
+                  request.userAnswers.set(UndeclaredCountryCorrectionPage(request.iossNumber, periodIndex, countryIndex), value))
                 _ <- cc.sessionRepository.set(updatedAnswers)
-              } yield Redirect(UndeclaredCountryCorrectionPage(periodIndex, countryIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route)
+              } yield Redirect(UndeclaredCountryCorrectionPage(request.iossNumber, periodIndex, countryIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route)
           )
         }
       }

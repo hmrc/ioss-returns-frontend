@@ -34,6 +34,7 @@ object VatPeriodCorrectionsListPage {
 }
 
 final case class VatPeriodCorrectionsListPage(
+                                               iossNumber: String,
                                                period: Period,
                                                addAnother: Boolean,
                                                override val index: Option[Index] = None
@@ -53,7 +54,7 @@ final case class VatPeriodCorrectionsListPage(
   override def toString: String = "VatPeriodCorrectionsList"
 
   override def route(waypoints: Waypoints): Call = {
-    controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onPageLoad(waypoints, period)
+    controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onPageLoad(waypoints, iossNumber, period)
   }
 
   override protected def nextPageCheckMode(waypoints: NonEmptyWaypoints, answers: UserAnswers): Page =
@@ -62,11 +63,11 @@ final case class VatPeriodCorrectionsListPage(
   override def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page = {
     if (addAnother) {
       answers.get(DeriveNumberOfCorrectionPeriods) match {
-        case Some(size) => CorrectionReturnYearPage(Index(size))
-        case None => CorrectionReturnYearPage(Index(0))
+        case Some(size) => CorrectionReturnYearPage(answers.iossNumber, Index(size))
+        case None => CorrectionReturnYearPage(answers.iossNumber, Index(0))
       }
     } else {
-      CheckYourAnswersPage
+      CheckYourAnswersPage(answers.iossNumber)
     }
   }
 

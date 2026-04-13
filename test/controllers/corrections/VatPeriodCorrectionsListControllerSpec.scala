@@ -26,13 +26,14 @@ import org.mockito.Mockito
 import org.mockito.Mockito.when
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
-import pages.EmptyWaypoints
 import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, VatAmountCorrectionCountryPage}
+import pages.{EmptyWaypoints, JourneyRecoveryPage}
 import play.api.inject.bind
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.ListItem
+import utils.FutureSyntax.FutureOps
 import views.html.corrections.VatPeriodCorrectionsListView
 
 import java.time.{LocalDate, Month}
@@ -45,33 +46,33 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
   override def commencementDate: LocalDate = periodJuly2021.lastDay.minusDays(1)
 
   private lazy val vatPeriodCorrectionsListRoute = controllers
-    .corrections.routes.VatPeriodCorrectionsListController.onPageLoad(EmptyWaypoints, periodJuly2021).url
+    .corrections.routes.VatPeriodCorrectionsListController.onPageLoad(EmptyWaypoints, iossNumber, periodJuly2021).url
 
   private lazy val vatPeriodCorrectionsListRoutePost = controllers
-    .corrections.routes.VatPeriodCorrectionsListController.onSubmit(EmptyWaypoints, periodJuly2021, incompletePromptShown = false).url
+    .corrections.routes.VatPeriodCorrectionsListController.onSubmit(EmptyWaypoints, iossNumber, periodJuly2021, incompletePromptShown = false).url
 
   private def addCorrectionPeriods(userAnswers: UserAnswers, periods: Seq[Period]): Option[UserAnswers] = //Some(userAnswers)
     periods.zipWithIndex
       .foldLeft(Option(userAnswers)) { case (ua, (period, index)) =>
-        ua.flatMap(_.set(CorrectionReturnPeriodPage(Index(index)), period).toOption)
-          .flatMap(_.set(CorrectionCountryPage(Index(index), Index(0)), Country.euCountries.head).toOption)
-          .flatMap(_.set(VatAmountCorrectionCountryPage(Index(index), Index(0)), BigDecimal(200.0)).toOption)
+        ua.flatMap(_.set(CorrectionReturnPeriodPage(iossNumber, Index(index)), period).toOption)
+          .flatMap(_.set(CorrectionCountryPage(iossNumber, Index(index), Index(0)), Country.euCountries.head).toOption)
+          .flatMap(_.set(VatAmountCorrectionCountryPage(iossNumber, Index(index), Index(0)), BigDecimal(200.0)).toOption)
       }
 
   private def getStatusResponse(periods: Seq[StandardPeriod]): Future[EtmpObligations] = {
-    Future.successful {
+    {
 
       val details = periods.map(period => EtmpObligationDetails(EtmpObligationsFulfilmentStatus.Fulfilled, period.toEtmpPeriodString))
 
       EtmpObligations(obligations = Seq(EtmpObligation(details)))
-    }
+    }.toFuture
   }
 
   private val mockVatReturnConnector = mock[VatReturnConnector]
 
-  private def vatCorrectionsListUrl(index: Int) = s"/pay-vat-on-goods-sold-to-eu/import-one-stop-shop-returns-payments/correction-list-countries/$index"
+  private def vatCorrectionsListUrl(index: Int) = s"/pay-vat-on-goods-sold-to-eu/import-one-stop-shop-returns-payments/$iossNumber/correction-list-countries/$index"
 
-  private def removePeriodCorrectionUrl(index: Int) = s"/pay-vat-on-goods-sold-to-eu/import-one-stop-shop-returns-payments/remove-month-correction/$index"
+  private def removePeriodCorrectionUrl(index: Int) = s"/pay-vat-on-goods-sold-to-eu/import-one-stop-shop-returns-payments/$iossNumber/remove-month-correction/$index"
 
   override def completeUserAnswers: UserAnswers = emptyUserAnswers.copy(period = periodJuly2021)
 
@@ -108,7 +109,7 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
     "when there are no previous return periods must redirect to JourneyRecovery" in {
 
       when(mockVatReturnConnector.getObligations(any())(any()))
-        .thenReturn(Future.successful(EtmpObligations(obligations = Seq(EtmpObligation(Nil)))))
+        .thenReturn(EtmpObligations(obligations = Seq(EtmpObligation(Nil))).toFuture)
 
       val application = applicationBuilder(userAnswers = Some(completeUserAnswers))
         .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
@@ -120,8 +121,8 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
 
@@ -142,11 +143,11 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
         running(application) {
           val request = FakeRequest(GET, vatPeriodCorrectionsListRoute)
           val result = route(application, request).value
-          status(result) mustEqual SEE_OTHER
+          status(result) `mustBe` SEE_OTHER
 
-          redirectLocation(result).value mustEqual
+          redirectLocation(result).value `mustBe`
             controllers.corrections.routes.VatPeriodCorrectionsListWithFormController
-              .onPageLoad(EmptyWaypoints, periodJuly2021).url
+              .onPageLoad(EmptyWaypoints, iossNumber, periodJuly2021).url
         }
       }
 
@@ -168,17 +169,17 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
 
           val result = route(application, request).value
 
-          status(result) mustEqual OK
+          status(result) `mustBe` OK
           val responseString = contentAsString(result)
 
           val doc = Jsoup.parse(responseString)
-          doc.getElementsByClass("govuk-heading-l").get(0).text() mustEqual expectedTitle
-          doc.getElementsByClass("hmrc-add-to-a-list__contents").size() mustEqual expectedTableRows
+          doc.getElementsByClass("govuk-heading-l").get(0).text() `mustBe` expectedTitle
+          doc.getElementsByClass("hmrc-add-to-a-list__contents").size() `mustBe` expectedTableRows
 
           val view = application.injector.instanceOf[VatPeriodCorrectionsListView]
 
-          responseString.filterNot(_.isWhitespace) mustEqual
-            view(EmptyWaypoints, periodJuly2021, allPeriodsModel, List.empty, isIntermediary = false, companyName = "Company Name")(request, messages(application))
+          responseString.filterNot(_.isWhitespace) `mustBe`
+            view(EmptyWaypoints, iossNumber, periodJuly2021, allPeriodsModel, List.empty, isIntermediary = false, companyName = "Company Name")(request, messages(application))
               .toString.filterNot(_.isWhitespace)
         }
       }
@@ -191,7 +192,7 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
         val expectedTitle = "You have corrected the VAT amount for 3 return months"
         val expectedTableRows = 3
         val answers = addCorrectionPeriods(completeUserAnswers, allPeriods).value
-          .remove(VatAmountCorrectionCountryPage(Index(allPeriods.size - 1), Index(0))).success.value
+          .remove(VatAmountCorrectionCountryPage(iossNumber, Index(allPeriods.size - 1), Index(0))).success.value
 
         val application = applicationBuilder(userAnswers = Some(answers))
           .configure("bootstrap.filters.csrf.enabled" -> false)
@@ -203,16 +204,16 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
 
           val result = route(application, request).value
 
-          status(result) mustEqual OK
+          status(result) `mustBe` OK
           val responseString = contentAsString(result)
 
           val doc = Jsoup.parse(responseString)
-          doc.getElementsByClass("govuk-heading-l").get(0).text() mustEqual expectedTitle
-          doc.getElementsByClass("hmrc-add-to-a-list__contents").size() mustEqual expectedTableRows
+          doc.getElementsByClass("govuk-heading-l").get(0).text() `mustBe` expectedTitle
+          doc.getElementsByClass("hmrc-add-to-a-list__contents").size() `mustBe` expectedTableRows
 
           val view = application.injector.instanceOf[VatPeriodCorrectionsListView]
-          responseString mustEqual
-            view(waypoints, periodJuly2021, allPeriodsModel, List(allPeriods.head), isIntermediary = false, companyName = "Company Name")(request, messages(application))
+          responseString `mustBe`
+            view(waypoints, iossNumber, periodJuly2021, allPeriodsModel, List(allPeriods.head), isIntermediary = false, companyName = "Company Name")(request, messages(application))
               .toString
         }
       }
@@ -224,8 +225,8 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
           .thenReturn(getStatusResponse(allPeriods))
 
         val answers = addCorrectionPeriods(completeUserAnswers, allPeriods.tail).value
-          .set(CorrectionReturnPeriodPage(Index(allPeriods.tail.size)), allPeriods.head).success.value
-          .set(CorrectionCountryPage(Index(allPeriods.tail.size), index), Country.euCountries.head).success.value
+          .set(CorrectionReturnPeriodPage(iossNumber, Index(allPeriods.tail.size)), allPeriods.head).success.value
+          .set(CorrectionCountryPage(iossNumber, Index(allPeriods.tail.size), index), Country.euCountries.head).success.value
 
         val application = applicationBuilder(userAnswers = Some(answers))
           .configure("bootstrap.filters.csrf.enabled" -> false)
@@ -234,15 +235,15 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
 
         running(application) {
           val request = FakeRequest(
-            POST, controllers.corrections.routes.VatPeriodCorrectionsListController.onSubmit(waypoints, period, incompletePromptShown = true).url)
+            POST, controllers.corrections.routes.VatPeriodCorrectionsListController.onSubmit(waypoints, iossNumber, period, incompletePromptShown = true).url)
 
           val result = route(application, request).value
 
-          status(result) mustEqual SEE_OTHER
+          status(result) `mustBe` SEE_OTHER
 
-          redirectLocation(result).value mustEqual
+          redirectLocation(result).value `mustBe`
             controllers.corrections.routes.CorrectionListCountriesController
-              .onPageLoad(waypoints, Index(allPeriods.size - 1)).url
+              .onPageLoad(waypoints, iossNumber, Index(allPeriods.size - 1)).url
         }
       }
 
@@ -251,8 +252,8 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
           .thenReturn(getStatusResponse(allPeriods))
 
         val answers = addCorrectionPeriods(completeUserAnswers, allPeriods.tail).value
-          .set(CorrectionReturnPeriodPage(Index(allPeriods.tail.size)), allPeriods.head).success.value
-          .set(CorrectionCountryPage(Index(allPeriods.tail.size), index), Country.euCountries.head).success.value
+          .set(CorrectionReturnPeriodPage(iossNumber, Index(allPeriods.tail.size)), allPeriods.head).success.value
+          .set(CorrectionCountryPage(iossNumber, Index(allPeriods.tail.size), index), Country.euCountries.head).success.value
 
         val application = applicationBuilder(userAnswers = Some(answers))
           .configure("bootstrap.filters.csrf.enabled" -> false)
@@ -261,12 +262,12 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
 
         running(application) {
           val request = FakeRequest(
-            POST, controllers.corrections.routes.VatPeriodCorrectionsListController.onSubmit(waypoints, period, incompletePromptShown = false).url)
+            POST, controllers.corrections.routes.VatPeriodCorrectionsListController.onSubmit(waypoints, iossNumber, period, incompletePromptShown = false).url)
 
           val result = route(application, request).value
 
-          status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual routes.VatPeriodCorrectionsListController.onPageLoad(waypoints, period).url
+          status(result) `mustBe` SEE_OTHER
+          redirectLocation(result).value `mustBe` routes.VatPeriodCorrectionsListController.onPageLoad(waypoints, iossNumber, period).url
         }
       }
 
@@ -286,8 +287,8 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
 
           val result = route(application, request).value
 
-          status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual controllers.routes.CheckYourAnswersController.onPageLoad().url
+          status(result) `mustBe` SEE_OTHER
+          redirectLocation(result).value `mustBe` controllers.routes.CheckYourAnswersController.onPageLoad(waypoints, iossNumber).url
         }
       }
     }

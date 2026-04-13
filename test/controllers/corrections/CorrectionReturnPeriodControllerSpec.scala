@@ -17,26 +17,25 @@
 package controllers.corrections
 
 import base.SpecBase
-import controllers.routes
 import forms.corrections.CorrectionReturnPeriodFormProvider
 import models.etmp.{EtmpObligationDetails, EtmpObligationsFulfilmentStatus}
 import models.{Index, Period, StandardPeriod, UserAnswers}
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
+import pages.JourneyRecoveryPage
 import pages.corrections.{CorrectionReturnPeriodPage, CorrectionReturnYearPage}
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import repositories.SessionRepository
 import services.ObligationsService
 import utils.ConvertPeriodKey
 import utils.FutureSyntax.FutureOps
 import views.html.corrections.CorrectionReturnPeriodView
 
-import java.time._
-import scala.concurrent.Future
+import java.time.*
 
 class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
 
@@ -47,7 +46,7 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
 
   private val periodKeys = Seq("23AD", "23AK", "23AL")
 
-  val selectedYear: UserAnswers = emptyUserAnswers.set(CorrectionReturnYearPage(Index(0)), year).success.value
+  val selectedYear: UserAnswers = emptyUserAnswers.set(CorrectionReturnYearPage(iossNumber, Index(0)), year).success.value
 
   private val monthNames: Seq[Period] = periodKeys.map(ConvertPeriodKey.periodkeyToPeriod)
 
@@ -89,7 +88,7 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
   private val formProvider = new CorrectionReturnPeriodFormProvider()
   private val form: Form[Period] = formProvider(index, testPeriodsList, Seq.empty)
 
-  private lazy val correctionReturnPeriodRoute: String = controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(waypoints, index).url
+  private lazy val correctionReturnPeriodRoute: String = controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(waypoints, iossNumber, index).url
 
   "CorrectionReturnPeriod Controller" - {
 
@@ -110,9 +109,9 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
 
         val view = application.injector.instanceOf[CorrectionReturnPeriodView]
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(
-          form, waypoints, period, monthNames, index, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(
+          form, waypoints, iossNumber, period, monthNames, index, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
   }
@@ -132,9 +131,9 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(
-          form, waypoints, period, monthNames, index, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(
+          form, waypoints, iossNumber, period, monthNames, index, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
 
     }
@@ -145,7 +144,7 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
 
       when(obligationService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
 
-      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      when(mockSessionRepository.set(any())) thenReturn true.toFuture
 
       val application =
         applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(stubbedClock))
@@ -160,10 +159,10 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        val expectedAnswers = emptyUserAnswers.set(CorrectionReturnPeriodPage(index), StandardPeriod(year, Month.DECEMBER)).success.value
+        val expectedAnswers = emptyUserAnswers.set(CorrectionReturnPeriodPage(iossNumber, index), StandardPeriod(year, Month.DECEMBER)).success.value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual CorrectionReturnPeriodPage(index).navigate(waypoints, expectedAnswers, expectedAnswers).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` CorrectionReturnPeriodPage(iossNumber, index).navigate(waypoints, expectedAnswers, expectedAnswers).url
         verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
       }
     }
@@ -187,9 +186,9 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(
-          boundForm, waypoints, period, monthNames, index, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
+        status(result) `mustBe` BAD_REQUEST
+        contentAsString(result) `mustBe` view(
+          boundForm, waypoints, iossNumber, period, monthNames, index, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -202,8 +201,8 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
 
@@ -218,8 +217,8 @@ class CorrectionReturnPeriodControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
   }

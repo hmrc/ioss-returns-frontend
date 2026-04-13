@@ -17,7 +17,6 @@
 package controllers.submissionResults
 
 import base.SpecBase
-import config.FrontendAppConfig
 import connectors.VatReturnConnector
 import models.external.ExternalEntryUrl
 import models.responses.NotFound
@@ -61,24 +60,24 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
         when(mockSessionRepository.clear(any(), any())) thenReturn true.toFuture
 
         running(application) {
-          val request = FakeRequest(GET, routes.SuccessfullySubmittedController.onPageLoad().url)
-          val config = application.injector.instanceOf[FrontendAppConfig]
+          val request = FakeRequest(GET, routes.SuccessfullySubmittedController.onPageLoad(iossNumber).url)
           val result = route(application, request).value
           val view = application.injector.instanceOf[SuccessfullySubmittedView]
 
-          status(result) mustEqual OK
+          status(result) `mustBe` OK
           val totalOwed = BigDecimal(200.52)
 
-          contentAsString(result) mustEqual view(
+          contentAsString(result) `mustBe` view(
             returnReference = returnReference,
             nilReturn = nilReturn,
+            iossNumber = iossNumber,
             period = period,
             owedAmount = totalOwed,
             externalUrl = None,
             "https://test-url.com",
             isIntermediary = false,
             clientName = "Mr Tufftys Tuffs",
-            appropriateDashboardUrl = controllers.routes.YourAccountController.onPageLoad().url
+            appropriateDashboardUrl = controllers.routes.YourAccountController.onPageLoad(waypoints).url
           )(request, messages(application)).toString
           verify(mockSessionRepository, times(1)).clear(any(), any())
         }
@@ -88,8 +87,8 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
     def createApplication(soldGoodsPage: Boolean, correctPreviousReturnPage: Boolean) = {
       val completedAnswers = completeUserAnswers
         .set(TotalAmountVatDueGBPQuery, totalOwed).success.value
-        .set(SoldGoodsPage, soldGoodsPage).success.value
-        .set(CorrectPreviousReturnPage(0), correctPreviousReturnPage)
+        .set(SoldGoodsPage(iossNumber), soldGoodsPage).success.value
+        .set(CorrectPreviousReturnPage(iossNumber, 0), correctPreviousReturnPage)
         .success.value
 
       applicationBuilder(userAnswers = Some(completedAnswers))
@@ -120,24 +119,24 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
           when(mockSessionRepository.clear(any(), any())) thenReturn true.toFuture
 
           running(application) {
-            val request = FakeRequest(GET, routes.SuccessfullySubmittedController.onPageLoad().url)
-            val config = application.injector.instanceOf[FrontendAppConfig]
+            val request = FakeRequest(GET, routes.SuccessfullySubmittedController.onPageLoad(iossNumber).url)
             val result = route(application, request).value
             val view = application.injector.instanceOf[SuccessfullySubmittedView]
 
-            status(result) mustEqual OK
+            status(result) `mustBe` OK
             val totalOwed = BigDecimal(200.52)
 
-            contentAsString(result) mustEqual view(
+            contentAsString(result) `mustBe` view(
               returnReference = returnReference,
               nilReturn = nilReturn,
+              iossNumber = iossNumber,
               period = period,
               owedAmount = totalOwed,
               externalUrl = maybeExternalUrl,
               "https://test-url.com",
               isIntermediary = false,
               clientName = "Mr Tufftys Tuffs",
-              appropriateDashboardUrl = controllers.routes.YourAccountController.onPageLoad().url
+              appropriateDashboardUrl = controllers.routes.YourAccountController.onPageLoad(waypoints).url
             )(request, messages(application)).toString
             verify(mockSessionRepository, times(1)).clear(any(), any())
           }
@@ -155,24 +154,24 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
       when(mockSessionRepository.clear(any(), any())) thenReturn true.toFuture
 
       running(application) {
-        val request = FakeRequest(GET, routes.SuccessfullySubmittedController.onPageLoad().url)
-        val config = application.injector.instanceOf[FrontendAppConfig]
+        val request = FakeRequest(GET, routes.SuccessfullySubmittedController.onPageLoad(iossNumber).url)
         val result = route(application, request).value
         val view = application.injector.instanceOf[SuccessfullySubmittedView]
 
-        status(result) mustEqual OK
+        status(result) `mustBe` OK
         val totalOwed = BigDecimal(200.52)
 
-        contentAsString(result) mustEqual view(
+        contentAsString(result) `mustBe` view(
           returnReference = returnReference,
           nilReturn = true,
+          iossNumber = iossNumber,
           period = period,
           owedAmount = totalOwed,
           externalUrl = None,
           "https://test-url.com",
           isIntermediary = false,
           clientName = "Mr Tufftys Tuffs",
-          appropriateDashboardUrl = controllers.routes.YourAccountController.onPageLoad().url
+          appropriateDashboardUrl = controllers.routes.YourAccountController.onPageLoad(waypoints).url
         )(request, messages(application)).toString
         verify(mockSessionRepository, times(1)).clear(any(), any())
       }
@@ -181,8 +180,8 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
     "must throw RuntimeException when TotalAmountVatDueGBPQuery is missing in userAnswers" in {
 
       val incompleteAnswers = completeUserAnswers
-        .set(SoldGoodsPage, false).success.value
-        .set(CorrectPreviousReturnPage(0), false).success.value
+        .set(SoldGoodsPage(iossNumber), false).success.value
+        .set(CorrectPreviousReturnPage(iossNumber, 0), false).success.value
 
       reset(mockSessionRepository)
 
@@ -192,14 +191,14 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
         .build()
 
       running(application) {
-        val request = FakeRequest(GET, routes.SuccessfullySubmittedController.onPageLoad().url)
+        val request = FakeRequest(GET, routes.SuccessfullySubmittedController.onPageLoad(iossNumber).url)
 
         val exception = intercept[RuntimeException] {
           val result = route(application, request).value
           contentAsString(result) // Force evaluation
         }
 
-        exception.getMessage mustEqual "TotalAmountVatDueGBPQuery has not been set in answers"
+        exception.getMessage `mustBe` "TotalAmountVatDueGBPQuery has not been set in answers"
         verifyNoInteractions(mockSessionRepository)
       }
     }

@@ -17,7 +17,7 @@
 package connectors
 
 import base.SpecBase
-import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.client.WireMock.*
 import generators.Generators
 import models.RegistrationWrapper
 import models.enrolments.EACDEnrolments
@@ -43,6 +43,35 @@ class RegistrationConnectorSpec
   }
 
   ".get" - {
+
+    val url: String = s"/ioss-registration/registration"
+
+    "must return a registration when the server provides one" in {
+
+      val app = application
+
+      running(app) {
+        val connector = app.injector.instanceOf[RegistrationConnector]
+        val registration = arbitrary[RegistrationWrapper].sample.value
+
+        val responseBody = Json.toJson(registration).toString
+
+        server
+          .stubFor(get(urlEqualTo(url))
+            .willReturn(ok()
+              .withBody(responseBody)
+            )
+          )
+
+        val result = connector.get().futureValue
+
+        result `mustBe` registration
+      }
+    }
+  }
+
+  ".get(iossNumber)" - {
+
     def url(iossNumber: String) = s"/ioss-registration/registration/$iossNumber"
 
     "must return a registration when the server provides one" in {

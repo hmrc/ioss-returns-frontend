@@ -20,9 +20,8 @@ import models.Index
 import pages.{Page, Waypoints}
 import play.api.mvc.Call
 
-case class CheckVatPayableAmountPage(periodIndex: Index, countryIndex: Index) extends Page {
+case class CheckVatPayableAmountPage(iossNumber: String, periodIndex: Index, countryIndex: Index) extends Page {
 
   override def route(waypoints: Waypoints): Call =
-    controllers.corrections.routes.CheckVatPayableAmountController.onPageLoad(waypoints, periodIndex, countryIndex)
-
+    controllers.corrections.routes.CheckVatPayableAmountController.onPageLoad(waypoints, iossNumber, periodIndex, countryIndex)
 }

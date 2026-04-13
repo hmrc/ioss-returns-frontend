@@ -16,7 +16,7 @@
 
 package controllers.corrections
 
-import controllers.actions._
+import controllers.actions.*
 import forms.corrections.VatPeriodCorrectionsListFormProvider
 import models.Period
 import models.corrections.PeriodWithCorrections
@@ -30,11 +30,12 @@ import queries.AllCorrectionPeriodsQuery
 import services.VatPeriodCorrectionsService
 import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.ListItem
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.FutureSyntax.FutureOps
 import viewmodels.checkAnswers.corrections.VatPeriodCorrectionsListSummary
 import views.html.corrections.VatPeriodAvailableCorrectionsListView
 
 import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class VatPeriodCorrectionsListWithFormController @Inject()(
                                                             cc: AuthenticatedControllerComponents,
@@ -46,12 +47,12 @@ class VatPeriodCorrectionsListWithFormController @Inject()(
   private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(waypoints: Waypoints, period: Period): Action[AnyContent] = cc.authAndRequireData().async {
+  def onPageLoad(waypoints: Waypoints, iossNumber: String, period: Period): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
     implicit request =>
-      VatPeriodCorrectionsListPage(period, addAnother = false).cleanup(request.userAnswers, cc).flatMap { result =>
+      VatPeriodCorrectionsListPage(request.iossNumber, period, addAnother = false).cleanup(request.userAnswers, cc).flatMap { result =>
         result.fold(
           _ => {
-            Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+            Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()).toFuture
           },
           _ =>
             findCorrectionsWithCountriesInAnswersWhereNoSubmissionMade(vatPeriodCorrectionsService) {
@@ -62,16 +63,16 @@ class VatPeriodCorrectionsListWithFormController @Inject()(
               val correctionPeriodsWithNoVatCorrection = vatPeriodCorrectionsService
                 .getCorrectionPeriodsWhereCountryVatCorrectionMissesAtLeastOnce(periodWithCorrections)
 
-              Ok(view(form, waypoints, period, completedCorrectionPeriodsModel, correctionPeriodsWithNoVatCorrection, isIntermediary = request.isIntermediary, companyName = request.companyName))
+              Ok(view(form, waypoints, request.iossNumber, period, completedCorrectionPeriodsModel, correctionPeriodsWithNoVatCorrection, isIntermediary = request.isIntermediary, companyName = request.companyName))
             } orWhenEmpty {
-              Redirect(controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(waypoints, period))
+              Redirect(controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(waypoints, request.iossNumber, period))
 
             }
         )
       }
   }
 
-  def onSubmit(waypoints: Waypoints, period: Period, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndRequireData().async {
+  def onSubmit(waypoints: Waypoints, iossNumber: String, period: Period, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
     implicit request: DataRequest[AnyContent] =>
       val periodWithCorrections: Option[List[PeriodWithCorrections]] = request.userAnswers
         .get(AllCorrectionPeriodsQuery)
@@ -89,15 +90,15 @@ class VatPeriodCorrectionsListWithFormController @Inject()(
 
           form.bindFromRequest().fold(
             formWithErrors => {
-              BadRequest(view(formWithErrors, waypoints, period, completedCorrectionPeriodsModel, correctionPeriodsWithNoVatCorrection, isIntermediary = request.isIntermediary, companyName = request.companyName))
+              BadRequest(view(formWithErrors, waypoints, request.iossNumber, period, completedCorrectionPeriodsModel, correctionPeriodsWithNoVatCorrection, isIntermediary = request.isIntermediary, companyName = request.companyName))
             },
             value => {
-              Redirect(VatPeriodCorrectionsListPage(period, value).navigate(waypoints, request.userAnswers, request.userAnswers).url)
+              Redirect(VatPeriodCorrectionsListPage(request.iossNumber, period, value).navigate(waypoints, request.userAnswers, request.userAnswers).url)
             }
           )
         }
       } orWhenEmpty {
-        Redirect(controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(waypoints, period))
+        Redirect(controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(waypoints, request.iossNumber, period))
       }
   }
 }

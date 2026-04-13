@@ -50,7 +50,7 @@ class SavedProgressController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(period: Period, continueUrl: RedirectUrl): Action[AnyContent] = cc.authAndRequireData().async {
+  def onPageLoad(iossNumber: String, period: Period, continueUrl: RedirectUrl): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
     implicit request =>
       val dateTimeFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy")
       val answersExpiry = request.userAnswers.lastUpdated.plus(appConfig.saveForLaterTtl, ChronoUnit.DAYS)
@@ -61,43 +61,43 @@ class SavedProgressController @Inject()(
       val intermediaryEnrolmentsExist: Boolean = findIntermediaryFromEnrolments(request.enrolments).nonEmpty
 
       Future.fromTry(request.userAnswers.set(SavedProgressPage, safeContinueUrl)).flatMap { updatedAnswers =>
-          val s4LRequest = SaveForLaterRequest(updatedAnswers, request.iossNumber, period)
-          (for{
-            maybeSavedExternalUrl <- vatReturnConnector.getSavedExternalEntry()
-            s4laterResult <- connector.submit(s4LRequest)
-          } yield {
-            val externalUrl = maybeSavedExternalUrl.fold(_ => None, _.url)
-            (s4laterResult, externalUrl)
-          }).flatMap {
-            case (Right(Some(_: SavedUserAnswers)), externalUrl) =>
-              for {
-                _ <- cc.sessionRepository.set(updatedAnswers)
-              } yield {
+        val s4LRequest = SaveForLaterRequest(updatedAnswers, request.iossNumber, period)
+        (for {
+          maybeSavedExternalUrl <- vatReturnConnector.getSavedExternalEntry()
+          s4laterResult <- connector.submit(s4LRequest)
+        } yield {
+          val externalUrl = maybeSavedExternalUrl.fold(_ => None, _.url)
+          (s4laterResult, externalUrl)
+        }).flatMap {
+          case (Right(Some(_: SavedUserAnswers)), externalUrl) =>
+            for {
+              _ <- cc.sessionRepository.set(updatedAnswers)
+            } yield {
 
-                val determinedRedirect = (request.isIntermediary, intermediaryEnrolmentsExist, iossEnrolmentsExist) match {
-                  case (true, true, true) => Some(controllers.intermediary.routes.IossOrIntermediaryController.onPageLoad().url)
-                  case (true, true, false) => Some(appConfig.intermediaryDashboardUrl)
-                  case _ => externalUrl
-                }
-
-                Ok(view(period, answersExpiry, safeContinueUrl, determinedRedirect))
+              val determinedRedirect = (request.isIntermediary, intermediaryEnrolmentsExist, iossEnrolmentsExist) match {
+                case (true, true, true) => Some(controllers.intermediary.routes.IossOrIntermediaryController.onPageLoad().url)
+                case (true, true, false) => Some(appConfig.intermediaryDashboardUrl)
+                case _ => externalUrl
               }
 
-            case (Left(ConflictFound), externalUrl)
-              if request.isIntermediary && intermediaryEnrolmentsExist && !iossEnrolmentsExist =>
-                Redirect(appConfig.intermediaryDashboardUrl).toFuture
+              Ok(view(request.iossNumber, period, answersExpiry, safeContinueUrl, determinedRedirect))
+            }
 
-            case (Left(ConflictFound), externalUrl) =>
-              Redirect(externalUrl.getOrElse(routes.YourAccountController.onPageLoad().url)).toFuture
+          case (Left(ConflictFound), externalUrl)
+            if request.isIntermediary && intermediaryEnrolmentsExist && !iossEnrolmentsExist =>
+            Redirect(appConfig.intermediaryDashboardUrl).toFuture
 
-            case (Left(e), _) =>
-              logger.error(s"Unexpected result on submit: ${e.toString}")
-              Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
+          case (Left(ConflictFound), externalUrl) =>
+            Redirect(externalUrl.getOrElse(routes.YourAccountController.onPageLoad().url)).toFuture
 
-            case (Right(None), _) =>
-              logger.error(s"Unexpected result on submit")
-              Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
-          }
+          case (Left(e), _) =>
+            logger.error(s"Unexpected result on submit: ${e.toString}")
+            Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
+
+          case (Right(None), _) =>
+            logger.error(s"Unexpected result on submit")
+            Redirect(routes.JourneyRecoveryController.onPageLoad()).toFuture
+        }
       }
   }
 }

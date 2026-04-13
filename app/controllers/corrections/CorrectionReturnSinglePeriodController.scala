@@ -47,7 +47,7 @@ class CorrectionReturnSinglePeriodController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible().async {
+  def onPageLoad(waypoints: Waypoints, iossNumber: String, index: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(iossNumber).async {
     implicit request =>
 
       val isIntermediary = request.isIntermediary
@@ -69,16 +69,16 @@ class CorrectionReturnSinglePeriodController @Inject()(
         val uncompletedCorrectionPeriods = correctionMonths.diff(completedCorrectionPeriods).distinct
 
         uncompletedCorrectionPeriods.size match {
-          case 0 => Redirect(controllers.routes.CheckYourAnswersController.onPageLoad(waypoints)).toFuture
-          case 1 => Ok(view(form, waypoints, period, uncompletedCorrectionPeriods.head, index, isIntermediary)).toFuture
+          case 0 => Redirect(controllers.routes.CheckYourAnswersController.onPageLoad(waypoints, request.iossNumber)).toFuture
+          case 1 => Ok(view(form, waypoints, request.iossNumber, period, uncompletedCorrectionPeriods.head, index, isIntermediary)).toFuture
           case _ => Redirect(
-            controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(waypoints, index)
+            controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(waypoints, request.iossNumber, index)
           ).toFuture
         }
       }
   }
 
-  def onSubmit(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible().async {
+  def onSubmit(waypoints: Waypoints, iossNumber: String, index: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(iossNumber).async {
     implicit request =>
       val isIntermediary = request.isIntermediary
       val form: Form[Boolean] = formProvider(isIntermediary)
@@ -100,20 +100,20 @@ class CorrectionReturnSinglePeriodController @Inject()(
         val uncompletedCorrectionPeriods = correctionMonths.diff(completedCorrectionPeriods).distinct
 
         uncompletedCorrectionPeriods.size match {
-          case 0 => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+          case 0 => Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()).toFuture
           case 1 => form.bindFromRequest().fold(
             formWithErrors => {
-              Future.successful(BadRequest(view(formWithErrors, waypoints, period, uncompletedCorrectionPeriods.head, index, isIntermediary)))
+              BadRequest(view(formWithErrors, waypoints, request.iossNumber, period, uncompletedCorrectionPeriods.head, index, isIntermediary)).toFuture
             },
             value =>
               for {
-                updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionReturnSinglePeriodPage(index), value))
-                updatedWithPeriodAnswers <- Future.fromTry(updatedAnswers.set(CorrectionReturnPeriodPage(index), uncompletedCorrectionPeriods.head))
+                updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionReturnSinglePeriodPage(request.iossNumber, index), value))
+                updatedWithPeriodAnswers <- Future.fromTry(updatedAnswers.set(CorrectionReturnPeriodPage(request.iossNumber, index), uncompletedCorrectionPeriods.head))
                 _ <- cc.sessionRepository.set(updatedWithPeriodAnswers)
-              } yield Redirect(CorrectionReturnSinglePeriodPage(index).navigate(waypoints, request.userAnswers, updatedWithPeriodAnswers).route)
+              } yield Redirect(CorrectionReturnSinglePeriodPage(request.iossNumber, index).navigate(waypoints, request.userAnswers, updatedWithPeriodAnswers).route)
 
           )
-          case _ => Future.successful(Redirect(controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(waypoints, index)))
+          case _ => Redirect(controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(waypoints, request.iossNumber, index)).toFuture
         }
       }
   }

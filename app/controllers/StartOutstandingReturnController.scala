@@ -28,19 +28,19 @@ import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
 class StartOutstandingReturnController @Inject()(
-                                       cc: AuthenticatedControllerComponents,
-                                       vatReturnService: VatReturnService
-                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
+                                                  cc: AuthenticatedControllerComponents,
+                                                  vatReturnService: VatReturnService
+                                                )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad: Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced.async {
+  def onPageLoad(iossNumber: String): Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced(iossNumber).async {
     implicit request =>
       vatReturnService.getOldestDueReturn(request.iossNumber).map {
         case Some(oldestReturn) =>
-          Redirect(routes.StartReturnController.onPageLoad(EmptyWaypoints, oldestReturn.period))
+          Redirect(routes.StartReturnController.onPageLoad(EmptyWaypoints, request.iossNumber, oldestReturn.period))
         case _ =>
-          Redirect(routes.NoReturnsDueController.onPageLoad())
+          Redirect(routes.NoReturnsDueController.onPageLoad(request.iossNumber))
       }
   }
 }

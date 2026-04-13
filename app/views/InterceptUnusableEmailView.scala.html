@@ -19,9 +19,9 @@
         govukButton: GovukButton
 )
 
-@(emailAddress: String, amendRegistrationUrl: String)(implicit request: Request[_], messages: Messages)
+@(iossNumber: String, emailAddress: String, amendRegistrationUrl: String)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = titleNoForm(messages("interceptUnusableEmail.title"))) {
+@layout(pageTitle = titleNoForm(messages("interceptUnusableEmail.title")), maybeIossNumber = Some(iossNumber)) {
 
     <h1 class="govuk-heading-l">@messages("interceptUnusableEmail.heading")</h1>
 

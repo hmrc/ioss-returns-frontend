@@ -40,7 +40,7 @@ class DashboardNavigationServiceSpec extends SpecBase with MockitoSugar {
           iossEnrolmentsExist = true
         )
 
-        result mustEqual controllers.intermediary.routes.IossOrIntermediaryController.onPageLoad().url
+        result `mustBe` controllers.intermediary.routes.IossOrIntermediaryController.onPageLoad().url
       }
     }
 
@@ -56,7 +56,7 @@ class DashboardNavigationServiceSpec extends SpecBase with MockitoSugar {
           iossEnrolmentsExist = false
         )
 
-        result mustEqual mockFrontendAppConfig.intermediaryDashboardUrl
+        result `mustBe` mockFrontendAppConfig.intermediaryDashboardUrl
       }
     }
 
@@ -72,7 +72,7 @@ class DashboardNavigationServiceSpec extends SpecBase with MockitoSugar {
           iossEnrolmentsExist = true
         )
 
-        result mustEqual controllers.routes.YourAccountController.onPageLoad().url
+        result `mustBe` controllers.routes.YourAccountController.onPageLoad(waypoints).url
       }
     }
   }

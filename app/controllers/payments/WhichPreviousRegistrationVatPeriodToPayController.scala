@@ -49,7 +49,7 @@ class WhichPreviousRegistrationVatPeriodToPayController @Inject()(
   protected val controllerComponents: MessagesControllerComponents = cc
   val form: Form[Period] = formProvider()
 
-  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced.async {
+  def onPageLoad(waypoints: Waypoints, iossNumber: String): Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced(iossNumber).async {
     implicit request =>
 
       selectedIossNumberRepository.get(request.userId).flatMap { maybeSelectedIossNumber =>
@@ -64,14 +64,14 @@ class WhichPreviousRegistrationVatPeriodToPayController @Inject()(
 
           payments match {
             case payment :: Nil => makePayment(iossNumber, payment)
-            case Nil => Future.successful(Ok(viewNoPayment(YourAccountPage.route(waypoints).url)))
-            case _ => Future.successful(Ok(view(form, waypoints, payments, paymentError = paymentError)))
+            case Nil => Ok(viewNoPayment(request.iossNumber, YourAccountPage.route(waypoints).url)).toFuture
+            case _ => Ok(view(form, waypoints, request.iossNumber, payments, paymentError = paymentError)).toFuture
           }
         }
       }
   }
 
-  def onSubmit(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced.async {
+  def onSubmit(waypoints: Waypoints, iossNumber: String): Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced(iossNumber).async {
     implicit request =>
 
       selectedIossNumberRepository.get(request.userId).flatMap { maybeSelectedIossNumber =>
@@ -88,7 +88,7 @@ class WhichPreviousRegistrationVatPeriodToPayController @Inject()(
             makePayment(iossNumber, payments.head)
           } else {
             form.bindFromRequest().fold(
-              formWithErrors => BadRequest(view(formWithErrors, waypoints, payments, paymentError)).toFuture,
+              formWithErrors => BadRequest(view(formWithErrors, waypoints, request.iossNumber, payments, paymentError)).toFuture,
               value =>
                 getChosenPayment(payments, value)
                   .map(p => makePayment(iossNumber, p)).getOrElse(

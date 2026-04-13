@@ -20,11 +20,11 @@
         govukButton: GovukButton
 )
 
-@(waypoints: Waypoints)(implicit request: Request[_], messages: Messages)
+@(waypoints: Waypoints, iossNumber: String)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = titleNoForm(messages("noOtherCorrectionPeriodsAvailable.title"))) {
+@layout(pageTitle = titleNoForm(messages("noOtherCorrectionPeriodsAvailable.title")), maybeIossNumber = Some(iossNumber)) {
 
-    @formHelper(action = controllers.corrections.routes.NoOtherCorrectionPeriodsAvailableController.onSubmit(), Symbol("autoComplete") -> "off") {
+    @formHelper(action = controllers.corrections.routes.NoOtherCorrectionPeriodsAvailableController.onSubmit(waypoints, iossNumber), Symbol("autoComplete") -> "off") {
 
         <h1 class="govuk-heading-l">@messages("noOtherCorrectionPeriodsAvailable.heading")</h1>
 

@@ -17,14 +17,12 @@
 package pages.corrections
 
 import models.{Country, Index, NormalMode, UserAnswers}
-import pages.{AddItemPage, JourneyRecoveryPage, NonEmptyWaypoints, Page, QuestionPage, Waypoint, Waypoints}
-import pages.RecoveryOps
+import pages.{AddItemPage, JourneyRecoveryPage, NonEmptyWaypoints, Page, QuestionPage, RecoveryOps, Waypoint, Waypoints}
 import play.api.libs.json.{JsObject, JsPath}
 import play.api.mvc.Call
 import queries.{Derivable, DeriveNumberOfCorrections}
 
-
-final case class CorrectionListCountriesPage(periodIndex: Index, countryIndex: Option[Index] = None)
+final case class CorrectionListCountriesPage(iossNumber: String, periodIndex: Index, countryIndex: Option[Index] = None)
   extends AddItemPage(countryIndex) with QuestionPage[Boolean] {
 
   override def isTheSamePage(other: Page): Boolean = other match {
@@ -32,15 +30,15 @@ final case class CorrectionListCountriesPage(periodIndex: Index, countryIndex: O
     case _ => false
   }
 
-  override val normalModeUrlFragment: String = CorrectionListCountriesPage.normalModeUrlFragment(periodIndex)
-  override val checkModeUrlFragment: String = CorrectionListCountriesPage.checkModeUrlFragment(periodIndex)
+  override val normalModeUrlFragment: String = CorrectionListCountriesPage.normalModeUrlFragment(iossNumber, periodIndex)
+  override val checkModeUrlFragment: String = CorrectionListCountriesPage.checkModeUrlFragment(iossNumber, periodIndex)
 
   override def path: JsPath = JsPath \ toString
 
   override def toString: String = "correctionListCountries"
 
   override def route(waypoints: Waypoints): Call =
-    controllers.corrections.routes.CorrectionListCountriesController.onPageLoad(waypoints, periodIndex)
+    controllers.corrections.routes.CorrectionListCountriesController.onPageLoad(waypoints, iossNumber, periodIndex)
 
   override protected def nextPageCheckMode(waypoints: NonEmptyWaypoints, answers: UserAnswers): Page =
     nextPageNormalMode(waypoints, answers)
@@ -49,39 +47,40 @@ final case class CorrectionListCountriesPage(periodIndex: Index, countryIndex: O
     answers.get(this).map {
       case true =>
         index.map { i =>
-          if (i.position +1 < Country.euCountriesWithNI.size) {
-            CorrectionCountryPage(periodIndex, Index(i.position + 1))
-          } else {
-            JourneyRecoveryPage
+            if (i.position + 1 < Country.euCountriesWithNI.size) {
+              CorrectionCountryPage(answers.iossNumber, periodIndex, Index(i.position + 1))
+            } else {
+              JourneyRecoveryPage
+            }
           }
-        }
           .getOrElse {
             answers
               .get(deriveNumberOfItems)
-              .map(n => CorrectionCountryPage(periodIndex, Index(n)))
+              .map(n => CorrectionCountryPage(answers.iossNumber, periodIndex, Index(n)))
               .orRecover
           }
       case false =>
-        VatPeriodCorrectionsListPage(answers.period, addAnother = true)
+        VatPeriodCorrectionsListPage(answers.iossNumber, answers.period, addAnother = true)
     }.orRecover
 
   override def deriveNumberOfItems: Derivable[Seq[JsObject], Int] = DeriveNumberOfCorrections(periodIndex)
 }
 
 object CorrectionListCountriesPage {
-  def normalModeUrlFragment(periodIndex: Index): String = s"add-correction-list-countries-${periodIndex.display}"
-  def checkModeUrlFragment(periodIndex: Index): String = s"change-add-correction-list-countries-${periodIndex.display}"
+  def normalModeUrlFragment(iossNumber: String, periodIndex: Index): String = s"$iossNumber-add-correction-list-countries-${periodIndex.display}"
+
+  def checkModeUrlFragment(iossNumber: String, periodIndex: Index): String = s"$iossNumber-change-add-correction-list-countries-${periodIndex.display}"
 
   def waypointFromString(s: String): Option[Waypoint] = {
 
-    val normalModePattern = """add-correction-list-countries-(\d{1,3})""".r.anchored
-    val checkModePattern = """change-add-correction-list-countries-(\d{1,3})""".r.anchored
+    val normalModePattern = """((?i)IM\d{10})-add-correction-list-countries-(\d{1,3})""".r.anchored
+    val checkModePattern = """((?i)IM\d{10})-change-add-correction-list-countries-(\d{1,3})""".r.anchored
 
     s match {
-      case normalModePattern(indexDisplay) =>
-        Some(CorrectionListCountriesPage(Index(indexDisplay.toInt - 1), None).waypoint(NormalMode))
-      case checkModePattern(indexDisplay) =>
-        Some(CorrectionListCountriesPage(Index(indexDisplay.toInt - 1), None).waypoint(NormalMode))
+      case normalModePattern(iossNumber, indexDisplay) =>
+        Some(CorrectionListCountriesPage(iossNumber, Index(indexDisplay.toInt - 1), None).waypoint(NormalMode))
+      case checkModePattern(iossNumber, indexDisplay) =>
+        Some(CorrectionListCountriesPage(iossNumber, Index(indexDisplay.toInt - 1), None).waypoint(NormalMode))
 
       case _ =>
         None

@@ -17,20 +17,20 @@
 package controllers.corrections
 
 import base.SpecBase
-import controllers.routes
 import forms.corrections.CorrectionReturnYearFormProvider
 import models.Index
 import models.etmp.{EtmpObligationDetails, EtmpObligationsFulfilmentStatus}
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
+import pages.JourneyRecoveryPage
 import pages.corrections.CorrectionReturnYearPage
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import repositories.SessionRepository
 import services.ObligationsService
 import utils.FutureSyntax.FutureOps
@@ -81,7 +81,7 @@ class CorrectionReturnYearControllerSpec extends SpecBase with MockitoSugar with
   private val formProvider = new CorrectionReturnYearFormProvider()
   private val form: Form[Int] = formProvider(index, Seq.empty)
 
-  lazy val correctionReturnYearRoute: String = controllers.corrections.routes.CorrectionReturnYearController.onPageLoad(waypoints, index).url
+  lazy val correctionReturnYearRoute: String = controllers.corrections.routes.CorrectionReturnYearController.onPageLoad(waypoints, iossNumber, index).url
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -105,10 +105,10 @@ class CorrectionReturnYearControllerSpec extends SpecBase with MockitoSugar with
 
         val view = application.injector.instanceOf[CorrectionReturnYearView]
 
-        status(result) mustEqual OK
+        status(result) `mustBe` OK
 
-        contentAsString(result) mustEqual view(
-            form, waypoints, period, utils.ItemsHelper.radioButtonItems(distinctPeriodYears), index, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
+        contentAsString(result) `mustBe` view(
+            form, waypoints, iossNumber, period, utils.ItemsHelper.radioButtonItems(distinctPeriodYears), index, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -116,7 +116,7 @@ class CorrectionReturnYearControllerSpec extends SpecBase with MockitoSugar with
 
       when(obligationService.getFulfilledObligations(any())(any())).thenReturn(Future.successful(etmpObligationDetails))
 
-      val userAnswers = emptyUserAnswers.set(CorrectionReturnYearPage(Index(0)), 2024).success.value
+      val userAnswers = emptyUserAnswers.set(CorrectionReturnYearPage(iossNumber, Index(0)), 2024).success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers), clock = Some(stubbedClock))
         .overrides(bind[ObligationsService].toInstance(obligationService))
@@ -129,9 +129,9 @@ class CorrectionReturnYearControllerSpec extends SpecBase with MockitoSugar with
 
         val result = route(application, request).value
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(
-          form, waypoints, period, utils.ItemsHelper.radioButtonItems(distinctPeriodYears), index, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(
+          form, waypoints, iossNumber, period, utils.ItemsHelper.radioButtonItems(distinctPeriodYears), index, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -139,9 +139,9 @@ class CorrectionReturnYearControllerSpec extends SpecBase with MockitoSugar with
 
       val mockSessionRepository = mock[SessionRepository]
 
-      val updatedAnswers = emptyUserAnswers.set(CorrectionReturnYearPage(index), 2023).success.value
+      val updatedAnswers = emptyUserAnswers.set(CorrectionReturnYearPage(iossNumber, index), 2023).success.value
 
-      when(mockSessionRepository.set(updatedAnswers)) thenReturn Future.successful(true)
+      when(mockSessionRepository.set(updatedAnswers)) thenReturn true.toFuture
       when(obligationService.getFulfilledObligations(any())(any()))
         .thenReturn(Future.successful(Seq(
           EtmpObligationDetails(
@@ -163,8 +163,8 @@ class CorrectionReturnYearControllerSpec extends SpecBase with MockitoSugar with
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(waypoints, index).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` controllers.corrections.routes.CorrectionReturnPeriodController.onPageLoad(waypoints, iossNumber, index).url
         verify(mockSessionRepository, times(1)).set(eqTo(updatedAnswers))
       }
     }
@@ -188,9 +188,9 @@ class CorrectionReturnYearControllerSpec extends SpecBase with MockitoSugar with
 
         val result = route(application, request).value
 
-        status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(
-          boundForm, waypoints, period, utils.ItemsHelper.radioButtonItems(distinctPeriodYears), index, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
+        status(result) `mustBe` BAD_REQUEST
+        contentAsString(result) `mustBe` view(
+          boundForm, waypoints, iossNumber, period, utils.ItemsHelper.radioButtonItems(distinctPeriodYears), index, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
       }
     }
 
@@ -203,8 +203,8 @@ class CorrectionReturnYearControllerSpec extends SpecBase with MockitoSugar with
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
 
@@ -219,8 +219,8 @@ class CorrectionReturnYearControllerSpec extends SpecBase with MockitoSugar with
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
   }

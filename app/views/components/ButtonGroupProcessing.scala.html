@@ -16,13 +16,13 @@
 
 @import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl
 @this(govukButton: GovukButton)
-@(continueMessage: String, continueUrl: String, period: Period, waypoints: Waypoints)(implicit messages: Messages)
+@(continueMessage: String, continueUrl: String, iossNumber: String, period: Period, waypoints: Waypoints)(implicit messages: Messages)
 <div class="govuk-button-group" id="processing-button-group">
     @govukButton(
         ButtonViewModel(messages(continueMessage)).withAttribute(("id", "submit"))
     )
 
-    <a id="saveProgress" role="button" href="@routes.SavedProgressController.onPageLoad(period, RedirectUrl(continueUrl))" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+    <a id="saveProgress" role="button" href="@routes.SavedProgressController.onPageLoad(iossNumber, period, RedirectUrl(continueUrl))" class="govuk-button govuk-button--secondary" data-module="govuk-button">
       @messages("saveProgress.button")
     </a>
 </div>

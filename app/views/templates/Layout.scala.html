@@ -44,7 +44,8 @@
         showBackLink: Boolean = true,
         timeout: Boolean = true,
         showSignOut: Boolean = true,
-        fullWidth: Boolean = false
+        fullWidth: Boolean = false,
+        maybeIossNumber: Option[String] = None
 )(contentBlock: Html)(implicit request: RequestHeader, messages: Messages)
 
 @head = {
@@ -54,7 +55,14 @@
             hmrcTimeoutDialog(TimeoutDialog(
                 timeout             = Some(appConfig.timeout),
                 countdown           = Some(appConfig.countdown),
-                keepAliveUrl        = Some(routes.KeepAliveController.keepAlive.url),
+                keepAliveUrl        = maybeIossNumber match {
+                    case Some(iossNumber) =>
+                            <p>HELLO</p>
+                        Some(routes.KeepAliveController.keepAlive(iossNumber).url)
+                    case _ =>
+                            <p>GOODBYE</p>
+                            None
+                    },
                 keepAliveButtonText = Some(messages("timeout.keepAlive")),
                 signOutUrl          = Some(controllers.auth.routes.AuthController.signOutNoSurvey().url),
                 signOutButtonText   = Some(messages("timeout.signOut")),

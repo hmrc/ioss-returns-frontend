@@ -17,7 +17,6 @@
 package controllers.corrections
 
 import base.SpecBase
-import controllers.routes
 import forms.corrections.CorrectionListCountriesFormProvider
 import models.Country
 import models.etmp.{EtmpObligationDetails, EtmpObligationsFulfilmentStatus}
@@ -25,12 +24,13 @@ import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.mockito.MockitoSugar
-import pages.corrections._
+import pages.JourneyRecoveryPage
+import pages.corrections.*
 import play.api.data.Form
 import play.api.i18n.Messages
 import play.api.inject.bind
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import repositories.SessionRepository
 import services.ObligationsService
 import utils.FutureSyntax.FutureOps
@@ -38,16 +38,14 @@ import viewmodels.checkAnswers.corrections.CorrectionListCountriesSummary
 import viewmodels.govuk.SummaryListFluency
 import views.html.corrections.CorrectionListCountriesView
 
-import scala.concurrent.Future
-
 class CorrectionListCountriesControllerSpec extends SpecBase with SummaryListFluency with MockitoSugar {
 
   val formProvider = new CorrectionListCountriesFormProvider()
   val form: Form[Boolean] = formProvider()
 
-  lazy val correctionListCountriesRoute: String = controllers.corrections.routes.CorrectionListCountriesController.onPageLoad(waypoints, index).url
+  lazy val correctionListCountriesRoute: String = controllers.corrections.routes.CorrectionListCountriesController.onPageLoad(waypoints, iossNumber, index).url
   lazy val correctionListCountriesRoutePost: String =
-    controllers.corrections.routes.CorrectionListCountriesController.onSubmit(waypoints, index, incompletePromptShown = false).url
+    controllers.corrections.routes.CorrectionListCountriesController.onSubmit(waypoints, iossNumber, index, incompletePromptShown = false).url
 
   private val country = arbitrary[Country].sample.value
   private val obligationService: ObligationsService = mock[ObligationsService]
@@ -59,16 +57,16 @@ class CorrectionListCountriesControllerSpec extends SpecBase with SummaryListFlu
   )
 
   private val baseAnswers = emptyUserAnswers
-    .set(CorrectionCountryPage(index, index), country).success.value
-    .set(CorrectionReturnYearPage(index), 2023).success.value
-    .set(CorrectionReturnPeriodPage(index), period).success.value
-    .set(VatAmountCorrectionCountryPage(index, index), BigDecimal(100.0)).success.value
+    .set(CorrectionCountryPage(iossNumber, index, index), country).success.value
+    .set(CorrectionReturnYearPage(iossNumber, index), 2023).success.value
+    .set(CorrectionReturnPeriodPage(iossNumber, index), period).success.value
+    .set(VatAmountCorrectionCountryPage(iossNumber, index, index), BigDecimal(100.0)).success.value
 
   private val answersWithNoCorrectionValue =
     emptyUserAnswers
-      .set(CorrectionCountryPage(index, index), country).success.value
-      .set(CorrectionReturnYearPage(index), 2023).success.value
-      .set(CorrectionReturnPeriodPage(index), period).success.value
+      .set(CorrectionCountryPage(iossNumber, index, index), country).success.value
+      .set(CorrectionReturnYearPage(iossNumber, index), 2023).success.value
+      .set(CorrectionReturnPeriodPage(iossNumber, index), period).success.value
 
   "CorrectionListCountries Controller" - {
 
@@ -87,13 +85,14 @@ class CorrectionListCountriesControllerSpec extends SpecBase with SummaryListFlu
         val result = route(application, request).value
 
         val view = application.injector.instanceOf[CorrectionListCountriesView]
-        val list = CorrectionListCountriesSummary.addToListRows(baseAnswers, waypoints, index, CorrectionListCountriesPage(index))
+        val list = CorrectionListCountriesSummary.addToListRows(baseAnswers, waypoints, index, CorrectionListCountriesPage(iossNumber, index))
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(
           form,
           waypoints,
           list,
+          iossNumber,
           period,
           period,
           index,
@@ -119,13 +118,14 @@ class CorrectionListCountriesControllerSpec extends SpecBase with SummaryListFlu
         val view = application.injector.instanceOf[CorrectionListCountriesView]
 
         val result = route(application, request).value
-        val list = CorrectionListCountriesSummary.addToListRows(baseAnswers, waypoints, index, CorrectionListCountriesPage(index))
+        val list = CorrectionListCountriesSummary.addToListRows(baseAnswers, waypoints, index, CorrectionListCountriesPage(iossNumber, index))
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(
           form,
           waypoints,
           list,
+          iossNumber,
           period,
           period,
           index,
@@ -151,13 +151,14 @@ class CorrectionListCountriesControllerSpec extends SpecBase with SummaryListFlu
         val result = route(application, request).value
 
         val view = application.injector.instanceOf[CorrectionListCountriesView]
-        val list = CorrectionListCountriesSummary.addToListRows(answersWithNoCorrectionValue, waypoints, index, CorrectionListCountriesPage(index))
+        val list = CorrectionListCountriesSummary.addToListRows(answersWithNoCorrectionValue, waypoints, index, CorrectionListCountriesPage(iossNumber, index))
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(
+        status(result) `mustBe` OK
+        contentAsString(result) `mustBe` view(
           form,
           waypoints,
           list,
+          iossNumber,
           period,
           period,
           index,
@@ -174,7 +175,7 @@ class CorrectionListCountriesControllerSpec extends SpecBase with SummaryListFlu
 
       when(obligationService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
 
-      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      when(mockSessionRepository.set(any())) thenReturn true.toFuture
 
       val application =
         applicationBuilder(userAnswers = Some(baseAnswers))
@@ -186,10 +187,10 @@ class CorrectionListCountriesControllerSpec extends SpecBase with SummaryListFlu
         val request = FakeRequest(POST, correctionListCountriesRoutePost).withFormUrlEncodedBody(("value", "true"))
 
         val result = route(application, request).value
-        val expectedAnswers = emptyUserAnswers.set(CorrectionListCountriesPage(index), true).success.value
+        val expectedAnswers = emptyUserAnswers.set(CorrectionListCountriesPage(iossNumber, index), true).success.value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual CorrectionListCountriesPage(index, Some(index)).navigate(waypoints, expectedAnswers, expectedAnswers).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` CorrectionListCountriesPage(iossNumber, index, Some(index)).navigate(waypoints, expectedAnswers, expectedAnswers).url
       }
     }
 
@@ -212,13 +213,14 @@ class CorrectionListCountriesControllerSpec extends SpecBase with SummaryListFlu
         val view = application.injector.instanceOf[CorrectionListCountriesView]
 
         val result = route(application, request).value
-        val list = CorrectionListCountriesSummary.addToListRows(baseAnswers, waypoints, index, CorrectionListCountriesPage(index))
+        val list = CorrectionListCountriesSummary.addToListRows(baseAnswers, waypoints, index, CorrectionListCountriesPage(iossNumber, index))
 
-        status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(
+        status(result) `mustBe` BAD_REQUEST
+        contentAsString(result) `mustBe` view(
           boundForm,
           waypoints,
           list,
+          iossNumber,
           period,
           period,
           index,
@@ -240,8 +242,8 @@ class CorrectionListCountriesControllerSpec extends SpecBase with SummaryListFlu
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
 
@@ -256,8 +258,8 @@ class CorrectionListCountriesControllerSpec extends SpecBase with SummaryListFlu
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
       }
     }
 
@@ -272,8 +274,8 @@ class CorrectionListCountriesControllerSpec extends SpecBase with SummaryListFlu
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.corrections.routes.CorrectionListCountriesController.onPageLoad(waypoints, index).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` controllers.corrections.routes.CorrectionListCountriesController.onPageLoad(waypoints, iossNumber, index).url
       }
     }
 
@@ -282,18 +284,16 @@ class CorrectionListCountriesControllerSpec extends SpecBase with SummaryListFlu
       val application = applicationBuilder(userAnswers = Some(answersWithNoCorrectionValue)).build()
 
       running(application) {
-        val routePost = controllers.corrections.routes.CorrectionListCountriesController.onSubmit(waypoints, index, incompletePromptShown = true).url
+        val routePost = controllers.corrections.routes.CorrectionListCountriesController.onSubmit(waypoints, iossNumber, index, incompletePromptShown = true).url
         val request =
           FakeRequest(POST, routePost)
             .withFormUrlEncodedBody(("value", "true"))
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.corrections.routes.VatAmountCorrectionCountryController.onPageLoad(waypoints, index, index).url
+        status(result) `mustBe` SEE_OTHER
+        redirectLocation(result).value `mustBe` controllers.corrections.routes.VatAmountCorrectionCountryController.onPageLoad(waypoints, iossNumber, index, index).url
       }
     }
   }
-
-
 }

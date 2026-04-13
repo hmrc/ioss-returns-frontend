@@ -17,7 +17,7 @@
 package controllers.corrections
 
 import controllers.CheckCorrectionsTimeLimit.isOlderThanThreeYears
-import controllers.actions._
+import controllers.actions.*
 import forms.corrections.CorrectionReturnPeriodFormProvider
 import models.{Index, Period}
 import pages.Waypoints
@@ -30,6 +30,7 @@ import queries.corrections.DeriveCompletedCorrectionPeriods
 import services.ObligationsService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.ConvertPeriodKey
+import utils.FutureSyntax.FutureOps
 import views.html.corrections.CorrectionReturnPeriodView
 
 import java.time.Clock
@@ -47,7 +48,7 @@ class CorrectionReturnPeriodController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible().async {
+  def onPageLoad(waypoints: Waypoints, iossNumber: String, index: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(iossNumber).async {
     implicit request =>
 
       val period = request.userAnswers.period
@@ -58,7 +59,7 @@ class CorrectionReturnPeriodController @Inject()(
         obligations.filter(obligation => !isOlderThanThreeYears(Period.fromKey(obligation.periodKey).paymentDeadline, clock))
       }
 
-      val selectedYear = request.userAnswers.get(CorrectionReturnYearPage(index)).getOrElse(0)
+      val selectedYear = request.userAnswers.get(CorrectionReturnYearPage(request.iossNumber, index)).getOrElse(0)
 
       filteredFulfilledObligations.map { obligations =>
         val obligationYears = obligations.filter { obligation =>
@@ -77,17 +78,16 @@ class CorrectionReturnPeriodController @Inject()(
         val form: Form[Period] = formProvider(index, correctionPeriod, request.userAnswers
           .get(AllCorrectionPeriodsQuery).getOrElse(Seq.empty).map(_.correctionReturnPeriod))
 
-        val preparedForm = request.userAnswers.get(CorrectionReturnPeriodPage(index)) match {
+        val preparedForm = request.userAnswers.get(CorrectionReturnPeriodPage(request.iossNumber, index)) match {
           case None => form
           case Some(value) => form.fill(value)
         }
 
-        Ok(view(preparedForm, waypoints, period, uncompletedCorrectionPeriods, index, request.isIntermediary, request.companyName))
-
+        Ok(view(preparedForm, waypoints, request.iossNumber, period, uncompletedCorrectionPeriods, index, request.isIntermediary, request.companyName))
       }
   }
 
-  def onSubmit(waypoints: Waypoints, index: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible().async {
+  def onSubmit(waypoints: Waypoints, iossNumber: String, index: Index): Action[AnyContent] = cc.authAndGetDataAndCorrectionEligible(iossNumber).async {
     implicit request =>
 
       val period = request.userAnswers.period
@@ -98,7 +98,7 @@ class CorrectionReturnPeriodController @Inject()(
         obligations.filter(obligation => !isOlderThanThreeYears(Period.fromKey(obligation.periodKey).paymentDeadline, clock))
       }
 
-      val selectedYear = request.userAnswers.get(CorrectionReturnYearPage(index)).getOrElse(0)
+      val selectedYear = request.userAnswers.get(CorrectionReturnYearPage(request.iossNumber, index)).getOrElse(0)
 
       filteredFulfilledObligations.flatMap { obligations =>
 
@@ -120,16 +120,16 @@ class CorrectionReturnPeriodController @Inject()(
 
         form.bindFromRequest().fold(
           formWithErrors => {
-            Future.successful(BadRequest(
-              view(formWithErrors, waypoints, period, correctionPeriod, index, request.isIntermediary, request.companyName)
-            ))
+            BadRequest(
+              view(formWithErrors, waypoints, request.iossNumber, period, correctionPeriod, index, request.isIntermediary, request.companyName)
+            ).toFuture
           },
 
           value =>
             for {
-              updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionReturnPeriodPage(index), value))
+              updatedAnswers <- Future.fromTry(request.userAnswers.set(CorrectionReturnPeriodPage(request.iossNumber, index), value))
               _ <- cc.sessionRepository.set(updatedAnswers)
-            } yield Redirect(CorrectionReturnPeriodPage(index).navigate(waypoints, request.userAnswers, updatedAnswers).route)
+            } yield Redirect(CorrectionReturnPeriodPage(request.iossNumber, index).navigate(waypoints, request.userAnswers, updatedAnswers).route)
         )
       }
   }

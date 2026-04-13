@@ -36,7 +36,7 @@ class NoOtherPeriodsAvailableController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.authAndGetRegistration() {
+  def onPageLoad(waypoints: Waypoints, iossNumber: String): Action[AnyContent] = cc.authAndGetRegistration(iossNumber) {
     implicit request =>
 
       val companyName = request.registrationWrapper.getCompanyName()
@@ -48,6 +48,6 @@ class NoOtherPeriodsAvailableController @Inject()(
         request.isIntermediary, intermediaryEnrolmentsExist, iossEnrolmentsExist
       )
 
-      Ok(view(waypoints, request.isIntermediary, companyName, redirectUrl))
+      Ok(view(waypoints, request.iossNumber, request.isIntermediary, companyName, redirectUrl))
   }
 }

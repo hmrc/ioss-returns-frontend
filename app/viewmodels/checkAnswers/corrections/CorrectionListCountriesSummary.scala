@@ -21,9 +21,9 @@ import pages.corrections.VatAmountCorrectionCountryPage
 import pages.{AddItemPage, Waypoints}
 import play.api.i18n.Messages
 import queries.AllCorrectionCountriesQuery
+import uk.gov.hmrc.govukfrontend.views.Aliases.Card
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.*
-import uk.gov.hmrc.govukfrontend.views.Aliases.Card
 import viewmodels.govuk.all.currencyFormat
 import viewmodels.govuk.summarylist.*
 import viewmodels.implicits.*
@@ -51,7 +51,7 @@ object CorrectionListCountriesSummary {
           key = messages("correctionListCountries.checkYourAnswersLabel"),
           value = value,
           actions = List(ActionItemViewModel(
-            messages("site.change"), VatAmountCorrectionCountryPage(periodIndex, Index(countryIndex))
+            messages("site.change"), VatAmountCorrectionCountryPage(answers.iossNumber, periodIndex, Index(countryIndex))
               .changeLink(waypoints, sourcePage).url)
             .withVisuallyHiddenText(messages("correctionListCountries.change.hidden", countryName))
           )
@@ -67,7 +67,7 @@ object CorrectionListCountriesSummary {
                 actions = Some(Actions(
                   items = List(
                     ActionItemViewModel(messages("site.remove"), controllers.corrections.routes.RemoveCountryCorrectionController
-                      .onPageLoad(waypoints, periodIndex, Index(countryIndex)).url)
+                      .onPageLoad(waypoints, answers.iossNumber, periodIndex, Index(countryIndex)).url)
                       .withVisuallyHiddenText(messages("correctionListCountries.remove.hidden", countryName))
                   )
                 ))

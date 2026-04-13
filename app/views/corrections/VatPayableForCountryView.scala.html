@@ -18,7 +18,6 @@
 @import components.ButtonGroup
 @import pages.corrections.VatPayableForCountryPage
 
-
 @this(
     layout: templates.Layout,
     formHelper: FormWithCSRF,
@@ -27,11 +26,11 @@
     button: ButtonGroup,
 )
 
-@(form: Form[_], waypoints: Waypoints, period: Period, periodIndex:Index, countryIndex: Index, selectedCountry: Country, correctionPeriod: Period, newAmount: BigDecimal, isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, iossNumber: String, period: Period, periodIndex:Index, countryIndex: Index, selectedCountry: Country, correctionPeriod: Period, newAmount: BigDecimal, isIntermediary: Boolean, companyName: String)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = title(form, messages("vatPayableForCountry.title", selectedCountry.name, currencyFormat(newAmount)))) {
+@layout(pageTitle = title(form, messages("vatPayableForCountry.title", selectedCountry.name, currencyFormat(newAmount))), maybeIossNumber = Some(iossNumber)) {
 
-    @formHelper(action = controllers.corrections.routes.VatPayableForCountryController.onSubmit(waypoints, periodIndex, countryIndex), Symbol("autoComplete") -> "off") {
+    @formHelper(action = controllers.corrections.routes.VatPayableForCountryController.onSubmit(waypoints, iossNumber, periodIndex, countryIndex), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))
@@ -57,6 +56,6 @@
             }))))
         )
 
-        @button("site.continue", VatPayableForCountryPage(periodIndex, countryIndex).route(waypoints).url, period, waypoints)
+        @button("site.continue", VatPayableForCountryPage(iossNumber, periodIndex, countryIndex).route(waypoints).url, iossNumber, period, waypoints)
     }
 }

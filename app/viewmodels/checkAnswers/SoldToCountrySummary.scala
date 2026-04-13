@@ -28,14 +28,14 @@ import viewmodels.implicits._
 object SoldToCountrySummary  {
 
   def row(answers: UserAnswers, waypoints: Waypoints, index: Index)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(SoldToCountryPage(index)).map {
+    answers.get(SoldToCountryPage(answers.iossNumber, index)).map {
       answer =>
 
         SummaryListRowViewModel(
           key     = "soldToCountry.checkYourAnswersLabel",
           value   = ValueViewModel(HtmlFormat.escape(answer.name).toString),
           actions = Seq(
-            ActionItemViewModel("site.change", routes.SoldToCountryController.onPageLoad(waypoints, index).url)
+            ActionItemViewModel("site.change", routes.SoldToCountryController.onPageLoad(waypoints, answers.iossNumber, index).url)
               .withVisuallyHiddenText(messages("soldToCountry.change.hidden"))
           )
         )

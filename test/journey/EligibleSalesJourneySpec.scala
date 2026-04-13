@@ -21,7 +21,7 @@ import generators.Generators
 import models.{Country, Index, UserAnswers, VatRateFromCountry}
 import org.scalacheck.Gen
 import org.scalatest.freespec.AnyFreeSpec
-import pages._
+import pages.*
 import pages.corrections.CorrectPreviousReturnPage
 import queries.SalesByCountryQuery
 
@@ -41,23 +41,23 @@ class EligibleSalesJourneySpec extends AnyFreeSpec with JourneyHelpers with Spec
   private val initialAnswers = UserAnswers(userAnswersId, iossNumber, period)
 
   private val initialise = journeyOf(
-    submitAnswer(SoldGoodsPage, true),
-    submitAnswer(SoldToCountryPage(countryIndex1), country),
-    submitAnswer(VatRatesFromCountryPage(countryIndex1, vatRateIndex), List(vatRateFromCountry1, vatRateFromCountry2)),
-    submitAnswer(SalesToCountryPage(countryIndex1, vatRateIndex), salesValue),
-    submitAnswer(VatOnSalesPage(countryIndex1, vatRateIndex), arbitraryVatOnSales.arbitrary.sample.value),
-    submitAnswer(SalesToCountryPage(countryIndex1, vatRateIndex. +(1)), salesValue),
-    submitAnswer(VatOnSalesPage(countryIndex1, vatRateIndex. +(1)), arbitraryVatOnSales.arbitrary.sample.value),
-    pageMustBe(CheckSalesPage(countryIndex1)),
-    submitAnswer(CheckSalesPage(countryIndex1),false),
-    pageMustBe(SoldToCountryListPage())
+    submitAnswer(SoldGoodsPage(iossNumber), true),
+    submitAnswer(SoldToCountryPage(iossNumber, countryIndex1), country),
+    submitAnswer(VatRatesFromCountryPage(iossNumber, countryIndex1, vatRateIndex), List(vatRateFromCountry1, vatRateFromCountry2)),
+    submitAnswer(SalesToCountryPage(iossNumber, countryIndex1, vatRateIndex), salesValue),
+    submitAnswer(VatOnSalesPage(iossNumber, countryIndex1, vatRateIndex), arbitraryVatOnSales.arbitrary.sample.value),
+    submitAnswer(SalesToCountryPage(iossNumber, countryIndex1, vatRateIndex. +(1)), salesValue),
+    submitAnswer(VatOnSalesPage(iossNumber, countryIndex1, vatRateIndex. +(1)), arbitraryVatOnSales.arbitrary.sample.value),
+    pageMustBe(CheckSalesPage(iossNumber, countryIndex1)),
+    submitAnswer(CheckSalesPage(iossNumber, countryIndex1),false),
+    pageMustBe(SoldToCountryListPage(iossNumber))
   )
 
   "must go directly to Check your answers if no eligible sales were made" in {
-    startingFrom(SoldGoodsPage, answers = initialAnswers)
+    startingFrom(SoldGoodsPage(iossNumber), answers = initialAnswers)
       .run(
-        submitAnswer(SoldGoodsPage, false),
-        pageMustBe(CorrectPreviousReturnPage(0))
+        submitAnswer(SoldGoodsPage(iossNumber), false),
+        pageMustBe(CorrectPreviousReturnPage(iossNumber, 0))
       )
   }
 
@@ -67,81 +67,81 @@ class EligibleSalesJourneySpec extends AnyFreeSpec with JourneyHelpers with Spec
       (0 until  maxCountries).foldLeft(Seq.empty[JourneyStep[Unit]]) {
         case (journeySteps: Seq[JourneyStep[Unit]], index: Int) =>
           journeySteps :+
-            submitAnswer(SoldToCountryPage(Index(index)), country) :+
-            submitAnswer(VatRatesFromCountryPage(Index(index), vatRateIndex), List(vatRateFromCountry1, vatRateFromCountry2)) :+
-            submitAnswer(SalesToCountryPage(Index(index), vatRateIndex), salesValue) :+
-            submitAnswer(VatOnSalesPage(Index(index), vatRateIndex), arbitraryVatOnSales.arbitrary.sample.value) :+
-            pageMustBe(SalesToCountryPage(Index(index), vatRateIndex. +(1))) :+
-            submitAnswer(SalesToCountryPage(Index(index), vatRateIndex. +(1)), salesValue) :+
-            submitAnswer(VatOnSalesPage(Index(index), vatRateIndex. +(1)), arbitraryVatOnSales.arbitrary.sample.value) :+
-            submitAnswer(CheckSalesPage(Index(index)), false) :+
-            submitAnswer(SoldToCountryListPage(), index != maxCountries -1)
+            submitAnswer(SoldToCountryPage(iossNumber, Index(index)), country) :+
+            submitAnswer(VatRatesFromCountryPage(iossNumber, Index(index), vatRateIndex), List(vatRateFromCountry1, vatRateFromCountry2)) :+
+            submitAnswer(SalesToCountryPage(iossNumber, Index(index), vatRateIndex), salesValue) :+
+            submitAnswer(VatOnSalesPage(iossNumber, Index(index), vatRateIndex), arbitraryVatOnSales.arbitrary.sample.value) :+
+            pageMustBe(SalesToCountryPage(iossNumber, Index(index), vatRateIndex. +(1))) :+
+            submitAnswer(SalesToCountryPage(iossNumber, Index(index), vatRateIndex. +(1)), salesValue) :+
+            submitAnswer(VatOnSalesPage(iossNumber, Index(index), vatRateIndex. +(1)), arbitraryVatOnSales.arbitrary.sample.value) :+
+            submitAnswer(CheckSalesPage(iossNumber, Index(index)), false) :+
+            submitAnswer(SoldToCountryListPage(iossNumber), index != maxCountries -1)
       }
     }
 
-    startingFrom(SoldGoodsPage, answers = initialAnswers)
+    startingFrom(SoldGoodsPage(iossNumber), answers = initialAnswers)
       .run(
-        submitAnswer(SoldGoodsPage, true) +:
+        submitAnswer(SoldGoodsPage(iossNumber), true) +:
           generateSales :+
-          pageMustBe(CorrectPreviousReturnPage(0)): _*
+          pageMustBe(CorrectPreviousReturnPage(iossNumber, 0)): _*
       )
   }
 
   "must allow the user to add a sale" in {
-    startingFrom(SoldGoodsPage, answers = initialAnswers)
+    startingFrom(SoldGoodsPage(iossNumber), answers = initialAnswers)
       .run(
         initialise
       )
   }
 
   "must allow the user to add more than one sale" in {
-    startingFrom(SoldGoodsPage, answers = initialAnswers)
+    startingFrom(SoldGoodsPage(iossNumber), answers = initialAnswers)
       .run(
         initialise,
-        submitAnswer(SoldToCountryListPage(), true),
-        submitAnswer(SoldToCountryPage(countryIndex2), country),
-        submitAnswer(VatRatesFromCountryPage(countryIndex2, vatRateIndex), List(vatRateFromCountry1, vatRateFromCountry2, vatRateFromCountry3)),
-        submitAnswer(SalesToCountryPage(countryIndex2, vatRateIndex), salesValue),
-        submitAnswer(VatOnSalesPage(countryIndex2, vatRateIndex), arbitraryVatOnSales.arbitrary.sample.value),
-        submitAnswer(SalesToCountryPage(countryIndex2, vatRateIndex. +(1)), salesValue),
-        submitAnswer(VatOnSalesPage(countryIndex2, vatRateIndex. +(1)), arbitraryVatOnSales.arbitrary.sample.value),
-        submitAnswer(SalesToCountryPage(countryIndex2, vatRateIndex. +(2)), salesValue),
-        submitAnswer(VatOnSalesPage(countryIndex2, vatRateIndex. +(2)), arbitraryVatOnSales.arbitrary.sample.value),
-        pageMustBe(CheckSalesPage(countryIndex2)),
-        submitAnswer(CheckSalesPage(countryIndex2), false),
-        pageMustBe(SoldToCountryListPage())
+        submitAnswer(SoldToCountryListPage(iossNumber), true),
+        submitAnswer(SoldToCountryPage(iossNumber, countryIndex2), country),
+        submitAnswer(VatRatesFromCountryPage(iossNumber, countryIndex2, vatRateIndex), List(vatRateFromCountry1, vatRateFromCountry2, vatRateFromCountry3)),
+        submitAnswer(SalesToCountryPage(iossNumber, countryIndex2, vatRateIndex), salesValue),
+        submitAnswer(VatOnSalesPage(iossNumber, countryIndex2, vatRateIndex), arbitraryVatOnSales.arbitrary.sample.value),
+        submitAnswer(SalesToCountryPage(iossNumber, countryIndex2, vatRateIndex. +(1)), salesValue),
+        submitAnswer(VatOnSalesPage(iossNumber, countryIndex2, vatRateIndex. +(1)), arbitraryVatOnSales.arbitrary.sample.value),
+        submitAnswer(SalesToCountryPage(iossNumber, countryIndex2, vatRateIndex. +(2)), salesValue),
+        submitAnswer(VatOnSalesPage(iossNumber, countryIndex2, vatRateIndex. +(2)), arbitraryVatOnSales.arbitrary.sample.value),
+        pageMustBe(CheckSalesPage(iossNumber, countryIndex2)),
+        submitAnswer(CheckSalesPage(iossNumber, countryIndex2), false),
+        pageMustBe(SoldToCountryListPage(iossNumber))
       )
   }
 
   "must be able to remove them" - {
 
     "when there is only one" in {
-      startingFrom(SoldGoodsPage, answers = initialAnswers)
+      startingFrom(SoldGoodsPage(iossNumber), answers = initialAnswers)
         .run(
           initialise,
-          goTo(DeleteSoldToCountryPage(countryIndex1)),
+          goTo(DeleteSoldToCountryPage(iossNumber, countryIndex1)),
           removeAddToListItem(SalesByCountryQuery(countryIndex1)),
-          pageMustBe(SoldGoodsPage),
+          pageMustBe(SoldGoodsPage(iossNumber)),
           answersMustNotContain(SalesByCountryQuery(countryIndex1))
         )
     }
 
     "when there are multiple" in {
-      startingFrom(SoldGoodsPage, answers = initialAnswers)
+      startingFrom(SoldGoodsPage(iossNumber), answers = initialAnswers)
         .run(
           initialise,
-          submitAnswer(SoldToCountryListPage(), true),
-          submitAnswer(SoldToCountryPage(countryIndex2), country),
-          submitAnswer(VatRatesFromCountryPage(countryIndex2, vatRateIndex), List(vatRateFromCountry1, vatRateFromCountry2)),
-          submitAnswer(SalesToCountryPage(countryIndex2, vatRateIndex), salesValue),
-          submitAnswer(VatOnSalesPage(countryIndex2, vatRateIndex), arbitraryVatOnSales.arbitrary.sample.value),
-          submitAnswer(SalesToCountryPage(countryIndex2, vatRateIndex. +(1)), salesValue),
-          submitAnswer(VatOnSalesPage(countryIndex2, vatRateIndex. +(1)), arbitraryVatOnSales.arbitrary.sample.value),
-          submitAnswer(CheckSalesPage(countryIndex2), false),
-          pageMustBe(SoldToCountryListPage()),
-          goTo(DeleteSoldToCountryPage(countryIndex2)),
+          submitAnswer(SoldToCountryListPage(iossNumber), true),
+          submitAnswer(SoldToCountryPage(iossNumber, countryIndex2), country),
+          submitAnswer(VatRatesFromCountryPage(iossNumber, countryIndex2, vatRateIndex), List(vatRateFromCountry1, vatRateFromCountry2)),
+          submitAnswer(SalesToCountryPage(iossNumber, countryIndex2, vatRateIndex), salesValue),
+          submitAnswer(VatOnSalesPage(iossNumber, countryIndex2, vatRateIndex), arbitraryVatOnSales.arbitrary.sample.value),
+          submitAnswer(SalesToCountryPage(iossNumber, countryIndex2, vatRateIndex. +(1)), salesValue),
+          submitAnswer(VatOnSalesPage(iossNumber, countryIndex2, vatRateIndex. +(1)), arbitraryVatOnSales.arbitrary.sample.value),
+          submitAnswer(CheckSalesPage(iossNumber, countryIndex2), false),
+          pageMustBe(SoldToCountryListPage(iossNumber)),
+          goTo(DeleteSoldToCountryPage(iossNumber, countryIndex2)),
           removeAddToListItem(SalesByCountryQuery(countryIndex2)),
-          pageMustBe(SoldToCountryListPage()),
+          pageMustBe(SoldToCountryListPage(iossNumber)),
           answersMustNotContain(SalesByCountryQuery(countryIndex2))
         )
     }
@@ -153,19 +153,19 @@ class EligibleSalesJourneySpec extends AnyFreeSpec with JourneyHelpers with Spec
 
       val changedSalesValue: BigDecimal = Gen.chooseNum(minSalesValue, maxSalesValue).sample.value.toDouble
 
-      startingFrom(SoldGoodsPage, answers = initialAnswers)
+      startingFrom(SoldGoodsPage(iossNumber), answers = initialAnswers)
         .run(
           initialise,
-          pageMustBe(SoldToCountryListPage()),
-          goTo(CheckSalesPage(countryIndex1)),
-          pageMustBe(CheckSalesPage(countryIndex1)),
-          goToChangeAnswer(SalesToCountryPage(countryIndex1, vatRateIndex)),
-          pageMustBe(SalesToCountryPage(countryIndex1, vatRateIndex)),
-          submitAnswer(SalesToCountryPage(countryIndex1, vatRateIndex), changedSalesValue),
-          pageMustBe(VatOnSalesPage(countryIndex1, vatRateIndex)),
-          submitAnswer(VatOnSalesPage(countryIndex1, vatRateIndex), arbitraryVatOnSales.arbitrary.sample.value),
-          pageMustBe(CheckSalesPage(countryIndex1)),
-          answerMustEqual(SalesToCountryPage(countryIndex1, vatRateIndex), changedSalesValue)
+          pageMustBe(SoldToCountryListPage(iossNumber)),
+          goTo(CheckSalesPage(iossNumber, countryIndex1)),
+          pageMustBe(CheckSalesPage(iossNumber, countryIndex1)),
+          goToChangeAnswer(SalesToCountryPage(iossNumber, countryIndex1, vatRateIndex)),
+          pageMustBe(SalesToCountryPage(iossNumber, countryIndex1, vatRateIndex)),
+          submitAnswer(SalesToCountryPage(iossNumber, countryIndex1, vatRateIndex), changedSalesValue),
+          pageMustBe(VatOnSalesPage(iossNumber, countryIndex1, vatRateIndex)),
+          submitAnswer(VatOnSalesPage(iossNumber, countryIndex1, vatRateIndex), arbitraryVatOnSales.arbitrary.sample.value),
+          pageMustBe(CheckSalesPage(iossNumber, countryIndex1)),
+          answerMustEqual(SalesToCountryPage(iossNumber, countryIndex1, vatRateIndex), changedSalesValue)
         )
     }
 
@@ -173,36 +173,36 @@ class EligibleSalesJourneySpec extends AnyFreeSpec with JourneyHelpers with Spec
 
       val changedSalesValue: BigDecimal = Gen.chooseNum(minSalesValue, maxSalesValue).sample.value.toDouble
 
-      startingFrom(SoldGoodsPage, answers = initialAnswers)
+      startingFrom(SoldGoodsPage(iossNumber), answers = initialAnswers)
         .run(
           initialise,
-          submitAnswer(SoldToCountryListPage(), true),
-          submitAnswer(SoldToCountryPage(countryIndex2), country),
-          submitAnswer(VatRatesFromCountryPage(countryIndex2, vatRateIndex), List(vatRateFromCountry1, vatRateFromCountry2, vatRateFromCountry3)),
-          submitAnswer(SalesToCountryPage(countryIndex2, vatRateIndex), salesValue),
-          submitAnswer(VatOnSalesPage(countryIndex2, vatRateIndex), arbitraryVatOnSales.arbitrary.sample.value),
-          pageMustBe(SalesToCountryPage(countryIndex2, vatRateIndex. +(1))),
-          submitAnswer(SalesToCountryPage(countryIndex2, vatRateIndex. +(1)), salesValue),
-          submitAnswer(VatOnSalesPage(countryIndex2, vatRateIndex. +(1)), arbitraryVatOnSales.arbitrary.sample.value),
-          submitAnswer(SalesToCountryPage(countryIndex2, vatRateIndex. +(2)), salesValue),
-          submitAnswer(VatOnSalesPage(countryIndex2, vatRateIndex. +(2)), arbitraryVatOnSales.arbitrary.sample.value),
-          pageMustBe(CheckSalesPage(countryIndex2)),
-          goToChangeAnswer(SalesToCountryPage(countryIndex2, vatRateIndex. +(1))),
-          pageMustBe(SalesToCountryPage(countryIndex2, vatRateIndex. +(1))),
-          submitAnswer(SalesToCountryPage(countryIndex2, vatRateIndex. +(1)), changedSalesValue),
-          pageMustBe(VatOnSalesPage(countryIndex2, vatRateIndex. +(1))),
-          submitAnswer(VatOnSalesPage(countryIndex2, vatRateIndex. +(1)), arbitraryVatOnSales.arbitrary.sample.value),
-          pageMustBe(CheckSalesPage(countryIndex2)),
-          answerMustEqual(SalesToCountryPage(countryIndex2, vatRateIndex. +(1)), changedSalesValue),
-          goToChangeAnswer(SalesToCountryPage(countryIndex1, vatRateIndex)),
-          pageMustBe(SalesToCountryPage(countryIndex1, vatRateIndex)),
-          submitAnswer(SalesToCountryPage(countryIndex1, vatRateIndex), changedSalesValue),
-          pageMustBe(VatOnSalesPage(countryIndex1, vatRateIndex)),
-          submitAnswer(VatOnSalesPage(countryIndex1, vatRateIndex), arbitraryVatOnSales.arbitrary.sample.value),
-          pageMustBe(CheckSalesPage(countryIndex1)),
-          answerMustEqual(SalesToCountryPage(countryIndex1, vatRateIndex), changedSalesValue),
-          submitAnswer(CheckSalesPage(countryIndex1), false),
-          pageMustBe(SoldToCountryListPage())
+          submitAnswer(SoldToCountryListPage(iossNumber), true),
+          submitAnswer(SoldToCountryPage(iossNumber, countryIndex2), country),
+          submitAnswer(VatRatesFromCountryPage(iossNumber, countryIndex2, vatRateIndex), List(vatRateFromCountry1, vatRateFromCountry2, vatRateFromCountry3)),
+          submitAnswer(SalesToCountryPage(iossNumber, countryIndex2, vatRateIndex), salesValue),
+          submitAnswer(VatOnSalesPage(iossNumber, countryIndex2, vatRateIndex), arbitraryVatOnSales.arbitrary.sample.value),
+          pageMustBe(SalesToCountryPage(iossNumber, countryIndex2, vatRateIndex. +(1))),
+          submitAnswer(SalesToCountryPage(iossNumber, countryIndex2, vatRateIndex. +(1)), salesValue),
+          submitAnswer(VatOnSalesPage(iossNumber, countryIndex2, vatRateIndex. +(1)), arbitraryVatOnSales.arbitrary.sample.value),
+          submitAnswer(SalesToCountryPage(iossNumber, countryIndex2, vatRateIndex. +(2)), salesValue),
+          submitAnswer(VatOnSalesPage(iossNumber, countryIndex2, vatRateIndex. +(2)), arbitraryVatOnSales.arbitrary.sample.value),
+          pageMustBe(CheckSalesPage(iossNumber, countryIndex2)),
+          goToChangeAnswer(SalesToCountryPage(iossNumber, countryIndex2, vatRateIndex. +(1))),
+          pageMustBe(SalesToCountryPage(iossNumber, countryIndex2, vatRateIndex. +(1))),
+          submitAnswer(SalesToCountryPage(iossNumber, countryIndex2, vatRateIndex. +(1)), changedSalesValue),
+          pageMustBe(VatOnSalesPage(iossNumber, countryIndex2, vatRateIndex. +(1))),
+          submitAnswer(VatOnSalesPage(iossNumber, countryIndex2, vatRateIndex. +(1)), arbitraryVatOnSales.arbitrary.sample.value),
+          pageMustBe(CheckSalesPage(iossNumber, countryIndex2)),
+          answerMustEqual(SalesToCountryPage(iossNumber, countryIndex2, vatRateIndex. +(1)), changedSalesValue),
+          goToChangeAnswer(SalesToCountryPage(iossNumber, countryIndex1, vatRateIndex)),
+          pageMustBe(SalesToCountryPage(iossNumber, countryIndex1, vatRateIndex)),
+          submitAnswer(SalesToCountryPage(iossNumber, countryIndex1, vatRateIndex), changedSalesValue),
+          pageMustBe(VatOnSalesPage(iossNumber, countryIndex1, vatRateIndex)),
+          submitAnswer(VatOnSalesPage(iossNumber, countryIndex1, vatRateIndex), arbitraryVatOnSales.arbitrary.sample.value),
+          pageMustBe(CheckSalesPage(iossNumber, countryIndex1)),
+          answerMustEqual(SalesToCountryPage(iossNumber, countryIndex1, vatRateIndex), changedSalesValue),
+          submitAnswer(CheckSalesPage(iossNumber, countryIndex1), false),
+          pageMustBe(SoldToCountryListPage(iossNumber))
         )
     }
   }

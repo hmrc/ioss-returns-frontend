@@ -62,30 +62,33 @@ class RedirectService @Inject()(
     }
   }
 
-  def getRedirect(waypoints: Waypoints, errors: List[ValidationError]): List[Call] = {
+  def getRedirect(
+                   waypoints: Waypoints,
+                   errors: List[ValidationError]
+                 )(implicit request: DataRequest[AnyContent]): List[Call] = {
     errors.flatMap {
       case DataMissingError(AllSalesQuery) =>
         logger.error(s"Data missing - no data provided for sales")
-        Some(routes.SoldToCountryController.onPageLoad(waypoints, Index(0)))
-      case DataMissingError(VatRatesFromCountryPage(countryIndex, vatRateIndex)) =>
+        Some(routes.SoldToCountryController.onPageLoad(waypoints, request.iossNumber, Index(0)))
+      case DataMissingError(VatRatesFromCountryPage(iossNumber, countryIndex, vatRateIndex)) =>
         logger.error(s"Data missing - vat rates with index ${vatRateIndex.position}")
-        Some(routes.VatRatesFromCountryController.onPageLoad(waypoints, countryIndex))
+        Some(routes.VatRatesFromCountryController.onPageLoad(waypoints, iossNumber, countryIndex))
       case DataMissingError(SalesAtVatRateQuery(countryIndex, vatRateIndex)) =>
         logger.error(s"Data missing - vat rates with index ${vatRateIndex.position} for country ${countryIndex.position}")
-        Some(routes.SalesToCountryController.onPageLoad(waypoints, countryIndex, vatRateIndex))
+        Some(routes.SalesToCountryController.onPageLoad(waypoints, request.iossNumber, countryIndex, vatRateIndex))
       case DataMissingError(VatOnSalesFromQuery(countryIndex, vatRateIndex)) =>
         logger.error(s"Data missing - vat charged on sales at vat rate ${vatRateIndex.position} for country ${countryIndex.position}")
-        Some(routes.VatOnSalesController.onPageLoad(waypoints, countryIndex, vatRateIndex))
+        Some(routes.VatOnSalesController.onPageLoad(waypoints, request.iossNumber, countryIndex, vatRateIndex))
 
       case DataMissingError(AllCorrectionPeriodsQuery) =>
         logger.error(s"Data missing - no data provided for corrections")
-        Some(correctionsRoutes.CorrectionReturnYearController.onPageLoad(waypoints, Index(0)))
+        Some(correctionsRoutes.CorrectionReturnYearController.onPageLoad(waypoints, request.iossNumber, Index(0)))
       case DataMissingError(AllCorrectionCountriesQuery(periodIndex)) =>
         logger.error(s"Data missing - no countries found for corrections to period ${periodIndex.position}")
-        Some(correctionsRoutes.CorrectionCountryController.onPageLoad(waypoints, periodIndex, Index(0)))
+        Some(correctionsRoutes.CorrectionCountryController.onPageLoad(waypoints, request.iossNumber, periodIndex, Index(0)))
       case DataMissingError(CorrectionToCountryQuery(periodIndex, countryIndex)) =>
         logger.error(s"Data missing - correction to country ${countryIndex.position} in period ${periodIndex.position}")
-        Some(correctionsRoutes.VatAmountCorrectionCountryController.onPageLoad(waypoints, periodIndex, Index(0)))
+        Some(correctionsRoutes.VatAmountCorrectionCountryController.onPageLoad(waypoints, request.iossNumber, periodIndex, Index(0)))
 
       case DataMissingError(_) =>
         logger.error(s"Unhandled DataMissingError")
