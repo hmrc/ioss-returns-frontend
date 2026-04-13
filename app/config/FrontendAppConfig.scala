@@ -102,8 +102,6 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
   }
 
   def errorEndPointTarget(iossNumber: String): String = {
-    configuration.get[String]("upscan.success-endpoint").format(iossNumber)
+    configuration.get[String]("upscan.error-endpoint").format(iossNumber)
   }
-
-  val downloadTemplateUrl: String = configuration.get[String]("urls.downloadTemplateUrl")
 }

@@ -175,7 +175,7 @@ GET         /start-intermediary-save-for-later-return/:iossNumber/:period       
 GET         /:iossNumber/want-to-upload-file                                                      controllers.fileUpload.WantToUploadFileController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, iossNumber: String)
 POST        /:iossNumber/want-to-upload-file                                                      controllers.fileUpload.WantToUploadFileController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, iossNumber: String)
 
-GET         /download-template                                                                    controllers.fileUpload.FileUploadController.downloadTemplate()
+GET         /:iossNumber/download-template                                                        controllers.fileUpload.FileUploadController.downloadTemplate(iossNumber: String)
 GET         /:iossNumber/file-upload                                                              controllers.fileUpload.FileUploadController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, iossNumber: String)
 
 GET         /:iossNumber/file-uploaded                                                            controllers.fileUpload.FileUploadedController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, iossNumber: String)

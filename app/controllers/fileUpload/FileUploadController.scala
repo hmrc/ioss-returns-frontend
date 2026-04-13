@@ -93,7 +93,7 @@ class FileUploadController @Inject()(
       }
   }
 
-  def downloadTemplate(): Action[AnyContent] = cc.authAndIntermediaryEnabled().async { _ =>
+  def downloadTemplate(iossNumber: String): Action[AnyContent] = cc.authAndIntermediaryEnabled(iossNumber).async { _ =>
     Future.successful(
       Ok.sendFile(
         content = environment.getFile("conf/template/IOSS return template.ods"),
