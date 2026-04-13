@@ -20,7 +20,7 @@ import models.etmp.intermediary.EtmpIdType.VRN
 import models.etmp.intermediary.EtmpCustomerIdentificationNew
 import models.{UserAnswers, UserAnswersForAudit}
 import models.requests.DataRequest
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.{JsNull, Json, JsValue}
 
 case class ReturnsAuditModel(
                               userId: String,
@@ -40,7 +40,8 @@ case class ReturnsAuditModel(
     "requestersVrn" -> vrn,
     "userAnswersDetails" -> Json.toJson(userAnswers),
     "submissionResult" -> Json.toJson(submissionResult)
-  ) ++ intermediaryNumber.map(n => Json.obj("requestersIntermediaryNumber" -> n)).getOrElse(Json.obj())
+  ) ++ intermediaryNumber.map(n => Json.obj("requestersIntermediaryNumber" -> n))
+    .getOrElse(Json.obj("requestersIntermediaryNumber" -> JsNull))
 }
 
 object ReturnsAuditModel {
