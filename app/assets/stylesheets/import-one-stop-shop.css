@@ -15,12 +15,13 @@
     flex-basis: 100%;
     margin-bottom: 2em;
     border: 1px solid #dee0e2;
-    background: #f3f2f1;
+    background: #ffffff;
 }
 
 @media screen and (min-width: 600px) and (max-width: 900px) {
     .tile {
         flex-basis: 46.99%;
+        margin-bottom: 2%;
     }
     .tile:nth-child(2n-2) {
         margin-left: 2%;
@@ -33,6 +34,7 @@
 @media screen and (min-width: 900px) {
     .tile {
         flex-basis: 31%;
+        margin-bottom: 2%;
     }
     .tile:nth-child(3n-1) {
         margin-left: 3%;
@@ -51,6 +53,11 @@ html[data-useragent*='MSIE 10.0'] .flex-container .tile {
 
 .tile .tile-body {
     border-bottom: 0px;
+    padding: 0px;
+}
+
+.tile .tile-body h2 {
+    background-color: #f3f3f3;
     padding: 12px;
 }
 
@@ -123,3 +130,7 @@ html[data-useragent*='MSIE 10.0'] .flex-container .tile {
 }
 
 /* End of dynamic spinner */
+
+.govuk-summary-card__content {
+    padding: 15px 12px;
+}
