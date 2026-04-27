@@ -56,33 +56,34 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
   def checkIsCurrentReturnPeriodFilter: CheckIsCurrentReturnPeriodFilter
 
   def intermediaryRequired: IntermediaryRequiredFilter
-  
+
   def intermediaryEnabled: IntermediaryEnabledFilter
-  
+
   def getRegistrationWithoutUrlIoss: GetRegistrationWithoutUrlIossAction
-  
+
   def auth: ActionBuilder[IdentifierRequest, AnyContent] =
     actionBuilder andThen identify
 
   def authAndGetRegistrationWithoutUrlIoss: ActionBuilder[RegistrationRequest, AnyContent] = {
     auth andThen
-      getRegistrationWithoutUrlIoss
+      getRegistrationWithoutUrlIoss andThen
+        checkBouncedEmail()
   }
-  
+
   def authAndGetRegistration(iossNumber: String): ActionBuilder[RegistrationRequest, AnyContent] = {
     auth andThen
       getRegistration(iossNumber)
   }
-  
+
   def authAndGetRegistrationAndCheckBounced(iossNumber: String): ActionBuilder[RegistrationRequest, AnyContent] = {
     authAndGetRegistration(iossNumber) andThen
       checkBouncedEmail()
   }
-  
+
   def authAndGetOptionalData(iossNumber: String): ActionBuilder[OptionalDataRequest, AnyContent] = {
     authAndGetRegistrationAndCheckBounced(iossNumber) andThen getData(iossNumber)
   }
-  
+
   def authAndRequireData(iossNumber: String): ActionBuilder[DataRequest, AnyContent] = {
     authAndGetOptionalData(iossNumber) andThen requireData andThen checkExcludedTrader() andThen checkCommencementDate()
   }
@@ -96,7 +97,7 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
     authAndGetRegistration(iossNumber) andThen
       intermediaryRequired()
   }
-  
+
   def authAndIntermediaryEnabled(iossNumber: String): ActionBuilder[DataRequest, AnyContent] = {
     authAndRequireData(iossNumber) andThen
       intermediaryEnabled()
