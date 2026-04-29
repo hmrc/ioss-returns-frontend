@@ -17,9 +17,10 @@
 package repositories
 
 import config.FrontendAppConfig
-import models.UserAnswers
+import crypto.UserAnswersEncryptor
+import models.{EncryptedUserAnswers, UserAnswers}
 import org.mongodb.scala.bson.conversions.Bson
-import org.mongodb.scala.model._
+import org.mongodb.scala.model.*
 import play.api.libs.json.Format
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
@@ -34,12 +35,13 @@ import scala.concurrent.{ExecutionContext, Future}
 class SessionRepository @Inject()(
                                    mongoComponent: MongoComponent,
                                    appConfig: FrontendAppConfig,
+                                   encryptor: UserAnswersEncryptor,
                                    clock: Clock
                                  )(implicit ec: ExecutionContext)
-  extends PlayMongoRepository[UserAnswers](
+  extends PlayMongoRepository[EncryptedUserAnswers](
     collectionName = "user-answers",
     mongoComponent = mongoComponent,
-    domainFormat   = UserAnswers.format,
+    domainFormat   = EncryptedUserAnswers.format,
     indexes        = Seq(
       IndexModel(
         Indexes.ascending("userId", "iossNumber"),
@@ -79,16 +81,20 @@ class SessionRepository @Inject()(
         collection
           .find(byId(id, iossNumber))
           .headOption()
+          .map(_.map(encryptedUserAnswers =>
+            encryptor.decryptUserAnswers(encryptedUserAnswers)
+          ))
     }
 
   def set(answers: UserAnswers): Future[Boolean] = {
 
     val updatedAnswers = answers copy (lastUpdated = Instant.now(clock))
+    val encryptedUpdatedAnswers = encryptor.encryptUserAnswers(updatedAnswers)
 
     collection
       .replaceOne(
-        filter      = byId(updatedAnswers.userId, updatedAnswers.iossNumber),
-        replacement = updatedAnswers,
+        filter      = byId(encryptedUpdatedAnswers.userId, encryptedUpdatedAnswers.iossNumber),
+        replacement = encryptedUpdatedAnswers,
         options     = ReplaceOptions().upsert(true)
       )
       .toFuture()
