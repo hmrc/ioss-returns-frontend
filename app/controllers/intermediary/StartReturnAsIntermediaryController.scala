@@ -73,7 +73,7 @@ class StartReturnAsIntermediaryController @Inject()(
               _ <- cc.sessionRepository.set(maybeUserAnswers.getOrElse(defaultUserAnswers))
             } yield {
               if(oldestReturn.inProgress) {
-                Redirect(routes.ContinueReturnController.onPageLoad(request.iossNumber, oldestReturn.period))
+                Redirect(routes.ContinueReturnController.onPageLoad(request.iossNumber))
               } else {
                 Redirect(routes.StartReturnController.onPageLoad(EmptyWaypoints, request.iossNumber, oldestReturn.period))
               }

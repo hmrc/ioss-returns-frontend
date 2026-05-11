@@ -52,7 +52,7 @@ class ExternalTargetPageSpec extends SpecBase {
       val period = StandardPeriod(2023, Month.JANUARY)
       val url = ContinueReturn.url(iossNumber, period)
 
-      url `mustBe` controllers.routes.ContinueReturnController.onPageLoad(iossNumber, period).url
+      url `mustBe` controllers.routes.ContinueReturnController.onPageLoad(iossNumber).url
     }
 
     "return the correct URL for Payment" in {

@@ -83,7 +83,7 @@ class ReturnsViewModelSpec extends SpecBase {
       assert(resultModel.contents.map(p => p.content).contains("You have 2 overdue returns."))
       resultModel.linkToStart `mustBe` defined
       resultModel.linkToStart.get.linkText `mustBe` "Continue your July 2023 return"
-      resultModel.linkToStart.get.url `mustBe` controllers.routes.ContinueReturnController.onPageLoad(iossNumber, earliestPeriod).url
+      resultModel.linkToStart.get.url `mustBe` controllers.routes.ContinueReturnController.onPageLoad(iossNumber).url
     }
 
     "there is no returns due, one return overdue and none in progress" in {
@@ -136,7 +136,7 @@ class ReturnsViewModelSpec extends SpecBase {
       assert(resultModel.contents.map(p => p.content).contains("You have an overdue return in progress."))
       resultModel.linkToStart `mustBe` defined
       resultModel.linkToStart.get.linkText `mustBe` "Continue your July 2023 return"
-      resultModel.linkToStart.get.url `mustBe` controllers.routes.ContinueReturnController.onPageLoad(iossNumber, earliestPeriod).url
+      resultModel.linkToStart.get.url `mustBe` controllers.routes.ContinueReturnController.onPageLoad(iossNumber).url
     }
 
     "there is one return due, multiple returns overdue and none in progress" in {
@@ -165,7 +165,7 @@ class ReturnsViewModelSpec extends SpecBase {
       assert(resultModel.contents.map(p => p.content).contains("You have 2 overdue returns."))
       resultModel.linkToStart `mustBe` defined
       resultModel.linkToStart.get.linkText `mustBe` "Continue your July 2023 return"
-      resultModel.linkToStart.get.url `mustBe` controllers.routes.ContinueReturnController.onPageLoad(iossNumber, earliestPeriod).url
+      resultModel.linkToStart.get.url `mustBe` controllers.routes.ContinueReturnController.onPageLoad(iossNumber).url
     }
 
     "there is one returns due, one return overdue and one in progress" in {
@@ -179,7 +179,7 @@ class ReturnsViewModelSpec extends SpecBase {
       assert(resultModel.contents.map(p => p.content).contains("You also have an overdue return in progress."))
       resultModel.linkToStart `mustBe` defined
       resultModel.linkToStart.get.linkText `mustBe` "Continue your July 2023 return"
-      resultModel.linkToStart.get.url `mustBe` controllers.routes.ContinueReturnController.onPageLoad(iossNumber, earliestPeriod).url
+      resultModel.linkToStart.get.url `mustBe` controllers.routes.ContinueReturnController.onPageLoad(iossNumber).url
     }
 
     "there is one returns due, one return overdue and none in progress" in {
@@ -208,7 +208,7 @@ class ReturnsViewModelSpec extends SpecBase {
             |<br>""".stripMargin))
       resultModel.linkToStart `mustBe` defined
       resultModel.linkToStart.get.linkText `mustBe` "Continue your return"
-      resultModel.linkToStart.get.url `mustBe` controllers.routes.ContinueReturnController.onPageLoad(iossNumber, earliestPeriod).url
+      resultModel.linkToStart.get.url `mustBe` controllers.routes.ContinueReturnController.onPageLoad(iossNumber).url
     }
 
     "there is one returns due, no return overdue and none in progress" in {

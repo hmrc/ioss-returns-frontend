@@ -56,7 +56,7 @@ case object StartReturn extends ExternalTargetPage with UrlWithPeriod {
 
 case object ContinueReturn extends ExternalTargetPage with UrlWithPeriod {
   override val name: String = "continue-your-return"
-  override def url(iossNumber: String, period: Period): String = controllers.routes.ContinueReturnController.onPageLoad(iossNumber, period).url
+  override def url(iossNumber: String, period: Period): String = controllers.routes.ContinueReturnController.onPageLoad(iossNumber).url
 }
 
 case object Payment extends ExternalTargetPage with UrlWithOutPeriod {

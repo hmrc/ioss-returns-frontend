@@ -18,7 +18,6 @@ package controllers
 
 import controllers.actions.*
 import forms.ContinueReturnFormProvider
-import models.Period
 import pages.{ContinueReturnPage, SavedProgressPage}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -36,8 +35,9 @@ class ContinueReturnController @Inject()(
   private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(iossNumber: String, period: Period): Action[AnyContent] = cc.authAndRequireData(iossNumber) {
+  def onPageLoad(iossNumber: String): Action[AnyContent] = cc.authAndRequireData(iossNumber) {
     implicit request =>
+      val period = request.userAnswers.period
       request.userAnswers.get(SavedProgressPage).map(
         _ => Ok(view(form, request.iossNumber, request.userAnswers.period, request.isIntermediary, request.companyName))
       ).getOrElse(
@@ -46,7 +46,7 @@ class ContinueReturnController @Inject()(
 
   }
 
-  def onSubmit(iossNumber: String, period: Period): Action[AnyContent] = cc.authAndRequireData(iossNumber) {
+  def onSubmit(iossNumber: String): Action[AnyContent] = cc.authAndRequireData(iossNumber) {
     implicit request =>
       form.bindFromRequest().fold(
         formWithErrors =>

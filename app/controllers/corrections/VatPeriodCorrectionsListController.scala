@@ -17,7 +17,6 @@
 package controllers.corrections
 
 import controllers.actions.*
-import models.Period
 import models.corrections.PeriodWithCorrections
 import pages.Waypoints
 import pages.corrections.VatPeriodCorrectionsListPage
@@ -44,14 +43,18 @@ class VatPeriodCorrectionsListController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(waypoints: Waypoints, iossNumber: String, period: Period): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
+  def onPageLoad(waypoints: Waypoints, iossNumber: String): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
     implicit request =>
+
+      val period = request.userAnswers.period
+      println(s"period: $period")
+
       VatPeriodCorrectionsListPage(request.iossNumber, period, addAnother = false).cleanup(request.userAnswers, cc).flatMap { result =>
         result.fold(
           _ => Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()).toFuture,
           _ =>
             findCorrectionsWithCountriesInAnswersWhereNoSubmissionMade(vatPeriodCorrectionsService) {
-              Redirect(controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onPageLoad(waypoints, request.iossNumber, period))
+              Redirect(controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onPageLoad(waypoints, request.iossNumber))
             } orWhenEmpty {
               val periodWithCorrections: Option[List[PeriodWithCorrections]] = request.userAnswers
                 .get(AllCorrectionPeriodsQuery)
@@ -65,8 +68,9 @@ class VatPeriodCorrectionsListController @Inject()(
       }
   }
 
-  def onSubmit(waypoints: Waypoints, iossNumber: String, period: Period, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndRequireData(iossNumber) {
+  def onSubmit(waypoints: Waypoints, iossNumber: String, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndRequireData(iossNumber) {
     implicit request =>
+      val period = request.userAnswers.period
       val periodWithCorrections: Option[List[PeriodWithCorrections]] = request.userAnswers
         .get(AllCorrectionPeriodsQuery)
       val correctionPeriodsWithNoVatCorrection =
