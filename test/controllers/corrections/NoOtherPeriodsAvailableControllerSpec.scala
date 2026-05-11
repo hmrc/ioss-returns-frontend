@@ -22,31 +22,45 @@ import controllers.actions.FakeGetRegistrationActionProvider
 import controllers.routes
 import models.RegistrationWrapper
 import models.etmp.VatCustomerInfo
-import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.when
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
+import org.mockito.Mockito
+import org.mockito.Mockito.{times, verify, verifyNoInteractions, when}
+import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar.mock
 import pages.YourAccountPage
 import play.api.inject.*
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import repositories.SessionRepository
+import services.intermediary.DashboardNavigationService
 import uk.gov.hmrc.auth.core.{Enrolment, EnrolmentIdentifier, Enrolments}
 import utils.FutureSyntax.FutureOps
 import views.html.NoOtherPeriodsAvailableView
 
 import scala.concurrent.Future
 
-class NoOtherPeriodsAvailableControllerSpec extends SpecBase {
+class NoOtherPeriodsAvailableControllerSpec extends SpecBase with BeforeAndAfterEach {
 
-  private lazy val NoOtherCorrectionPeriodsAvailableRoute = controllers.corrections.routes.NoOtherCorrectionPeriodsAvailableController.onPageLoad(waypoints, iossNumber).url
+  private lazy val NoOtherCorrectionPeriodsAvailableRoute =
+    controllers.corrections.routes.NoOtherCorrectionPeriodsAvailableController.onPageLoad(waypoints, iossNumber).url
 
-  val mockSessionRepository: SessionRepository = mock[SessionRepository]
+  private val mockSessionRepository: SessionRepository = mock[SessionRepository]
+  private val mockDashboardNavigationService: DashboardNavigationService = mock[DashboardNavigationService]
+
+  override def beforeEach(): Unit = {
+    Mockito.reset(mockDashboardNavigationService)
+  }
 
   "CannotStartReturns Controller" - {
 
     "must return OK and the correct view for a GET" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val redirectUrl: String = YourAccountPage.route(waypoints).url
+      when(mockDashboardNavigationService.getAppropriateDashboardUrl(any(), any(), any())(any())) thenReturn redirectUrl.toFuture
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(bind[DashboardNavigationService].toInstance(mockDashboardNavigationService))
+        .build()
 
       running(application) {
         val request = FakeRequest(GET, routes.NoOtherPeriodsAvailableController.onPageLoad(waypoints, iossNumber).url)
@@ -55,10 +69,9 @@ class NoOtherPeriodsAvailableControllerSpec extends SpecBase {
 
         val view = application.injector.instanceOf[NoOtherPeriodsAvailableView]
 
-        val redirectUrl: String = YourAccountPage.route(waypoints).url
-
         status(result) `mustBe` OK
         contentAsString(result) `mustBe` view(waypoints, iossNumber, isIntermediary = false, companyName = "CompanyName",  redirectUrl)(request, messages(application)).toString
+        verify(mockDashboardNavigationService, times(1)).getAppropriateDashboardUrl(any(), any(), any())(any())
       }
     }
 
@@ -106,6 +119,7 @@ class NoOtherPeriodsAvailableControllerSpec extends SpecBase {
 
         status(result) `mustBe` OK
         contentAsString(result) `mustBe` view(waypoints, iossNumber, isIntermediary = true, companyName, redirectUrl)(request, messages(application)).toString
+        verifyNoInteractions(mockDashboardNavigationService)
       }
     }
 

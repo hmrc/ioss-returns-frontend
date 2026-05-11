@@ -54,8 +54,11 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
         val returnReference = s"XI/${iossNumber}/M0${period.month.getValue}.${period.year}"
         val application = createApplication(soldGoodsPage, correctPreviousReturnPage)
 
+        val redirectUrl: String = controllers.routes.YourAccountController.onPageLoad(waypoints).url
+
         reset(mockVDashboardNavigationService, mockSessionRepository)
         when(mockSessionRepository.clear(any(), any())) thenReturn true.toFuture
+        when(mockVDashboardNavigationService.getAppropriateDashboardUrl(any(), any(), any())(any())) thenReturn redirectUrl.toFuture
 
         running(application) {
           val request = FakeRequest(GET, routes.SuccessfullySubmittedController.onPageLoad(iossNumber).url)
@@ -74,7 +77,7 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
             "https://test-url.com",
             isIntermediary = false,
             clientName = "Mr Tufftys Tuffs",
-            appropriateDashboardUrl = controllers.routes.YourAccountController.onPageLoad(waypoints).url
+            appropriateDashboardUrl = redirectUrl
           )(request, messages(application)).toString
           verify(mockSessionRepository, times(1)).clear(any(), any())
         }
@@ -91,7 +94,8 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
       applicationBuilder(userAnswers = Some(completedAnswers))
         .configure("urls.userResearch2" -> "https://test-url.com")
         .overrides(
-          bind[SessionRepository].toInstance(mockSessionRepository)
+          bind[SessionRepository].toInstance(mockSessionRepository),
+          bind[DashboardNavigationService].toInstance(mockVDashboardNavigationService)
         )
         .build()
     }
@@ -110,8 +114,11 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
           val returnReference = s"XI/${iossNumber}/M0${period.month.getValue}.${period.year}"
           val application = createApplication(soldGoodsPage, correctPreviousReturnPage)
 
+          val redirectUrl: String = controllers.routes.YourAccountController.onPageLoad(waypoints).url
+
           reset(mockVDashboardNavigationService, mockSessionRepository)
           when(mockSessionRepository.clear(any(), any())) thenReturn true.toFuture
+          when(mockVDashboardNavigationService.getAppropriateDashboardUrl(any(), any(), any())(any())) thenReturn redirectUrl.toFuture
 
           running(application) {
             val request = FakeRequest(GET, routes.SuccessfullySubmittedController.onPageLoad(iossNumber).url)
@@ -130,7 +137,7 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
               "https://test-url.com",
               isIntermediary = false,
               clientName = "Mr Tufftys Tuffs",
-              appropriateDashboardUrl = controllers.routes.YourAccountController.onPageLoad(waypoints).url
+              appropriateDashboardUrl = redirectUrl
             )(request, messages(application)).toString
             verify(mockSessionRepository, times(1)).clear(any(), any())
           }
@@ -143,8 +150,11 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
       val returnReference = s"XI/${iossNumber}/M0${period.month.getValue}.${period.year}"
       val application = createApplication(soldGoodsPage = false, correctPreviousReturnPage = false)
 
+      val redirectUrl: String = controllers.routes.YourAccountController.onPageLoad(waypoints).url
+
       reset(mockVDashboardNavigationService, mockSessionRepository)
       when(mockSessionRepository.clear(any(), any())) thenReturn true.toFuture
+      when(mockVDashboardNavigationService.getAppropriateDashboardUrl(any(), any(), any())(any())) thenReturn redirectUrl.toFuture
 
       running(application) {
         val request = FakeRequest(GET, routes.SuccessfullySubmittedController.onPageLoad(iossNumber).url)
@@ -163,7 +173,7 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
           "https://test-url.com",
           isIntermediary = false,
           clientName = "Mr Tufftys Tuffs",
-          appropriateDashboardUrl = controllers.routes.YourAccountController.onPageLoad(waypoints).url
+          appropriateDashboardUrl = redirectUrl
         )(request, messages(application)).toString
         verify(mockSessionRepository, times(1)).clear(any(), any())
       }
