@@ -17,10 +17,8 @@
 package controllers.submissionResults
 
 import base.SpecBase
-import connectors.VatReturnConnector
-import models.external.ExternalEntryUrl
-import models.responses.NotFound
 import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito
 import org.mockito.Mockito.*
 import org.scalatest.prop.TableDrivenPropertyChecks
 import org.scalatestplus.mockito.MockitoSugar.mock
@@ -31,6 +29,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import queries.TotalAmountVatDueGBPQuery
 import repositories.SessionRepository
+import services.intermediary.DashboardNavigationService
 import utils.FutureSyntax.FutureOps
 import views.html.submissionResults.SuccessfullySubmittedView
 
@@ -44,7 +43,7 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
   )
 
   private val totalOwed = BigDecimal("200.52")
-  private val mockVatReturnConnector: VatReturnConnector = mock[VatReturnConnector]
+  private val mockVDashboardNavigationService: DashboardNavigationService = mock[DashboardNavigationService]
   private val mockSessionRepository: SessionRepository = mock[SessionRepository]
 
   "SuccessfullySubmitted Controller" - {
@@ -55,8 +54,7 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
         val returnReference = s"XI/${iossNumber}/M0${period.month.getValue}.${period.year}"
         val application = createApplication(soldGoodsPage, correctPreviousReturnPage)
 
-        reset(mockVatReturnConnector, mockSessionRepository)
-        when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Left(NotFound).toFuture
+        reset(mockVDashboardNavigationService, mockSessionRepository)
         when(mockSessionRepository.clear(any(), any())) thenReturn true.toFuture
 
         running(application) {
@@ -73,7 +71,6 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
             iossNumber = iossNumber,
             period = period,
             owedAmount = totalOwed,
-            externalUrl = None,
             "https://test-url.com",
             isIntermediary = false,
             clientName = "Mr Tufftys Tuffs",
@@ -94,7 +91,6 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
       applicationBuilder(userAnswers = Some(completedAnswers))
         .configure("urls.userResearch2" -> "https://test-url.com")
         .overrides(
-          bind[VatReturnConnector].toInstance(mockVatReturnConnector),
           bind[SessionRepository].toInstance(mockSessionRepository)
         )
         .build()
@@ -114,8 +110,7 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
           val returnReference = s"XI/${iossNumber}/M0${period.month.getValue}.${period.year}"
           val application = createApplication(soldGoodsPage, correctPreviousReturnPage)
 
-          reset(mockVatReturnConnector, mockSessionRepository)
-          when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Right(ExternalEntryUrl(maybeExternalUrl)).toFuture
+          reset(mockVDashboardNavigationService, mockSessionRepository)
           when(mockSessionRepository.clear(any(), any())) thenReturn true.toFuture
 
           running(application) {
@@ -132,7 +127,6 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
               iossNumber = iossNumber,
               period = period,
               owedAmount = totalOwed,
-              externalUrl = maybeExternalUrl,
               "https://test-url.com",
               isIntermediary = false,
               clientName = "Mr Tufftys Tuffs",
@@ -149,8 +143,7 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
       val returnReference = s"XI/${iossNumber}/M0${period.month.getValue}.${period.year}"
       val application = createApplication(soldGoodsPage = false, correctPreviousReturnPage = false)
 
-      reset(mockVatReturnConnector, mockSessionRepository)
-      when(mockVatReturnConnector.getSavedExternalEntry()(any())) thenReturn Left(NotFound).toFuture
+      reset(mockVDashboardNavigationService, mockSessionRepository)
       when(mockSessionRepository.clear(any(), any())) thenReturn true.toFuture
 
       running(application) {
@@ -167,7 +160,6 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
           iossNumber = iossNumber,
           period = period,
           owedAmount = totalOwed,
-          externalUrl = None,
           "https://test-url.com",
           isIntermediary = false,
           clientName = "Mr Tufftys Tuffs",
@@ -186,7 +178,6 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
       reset(mockSessionRepository)
 
       val application = applicationBuilder(userAnswers = Some(incompleteAnswers))
-        .overrides(bind[VatReturnConnector].toInstance(mockVatReturnConnector))
         .overrides(bind[SessionRepository].toInstance(mockSessionRepository))
         .build()
 

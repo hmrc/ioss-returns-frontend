@@ -17,7 +17,7 @@
 package controllers.submissionResults
 
 import config.FrontendAppConfig
-import connectors.{IntermediaryRegistrationConnector, VatReturnConnector}
+import connectors.IntermediaryRegistrationConnector
 import controllers.actions.*
 import pages.SoldGoodsPage
 import pages.corrections.CorrectPreviousReturnPage
@@ -37,7 +37,6 @@ import scala.concurrent.{ExecutionContext, Future}
 class SuccessfullySubmittedController @Inject()(
                                                  override val messagesApi: MessagesApi,
                                                  cc: AuthenticatedControllerComponents,
-                                                 vatReturnConnector: VatReturnConnector,
                                                  frontendAppConfig: FrontendAppConfig,
                                                  intermediaryRegistrationConnector: IntermediaryRegistrationConnector,
                                                  view: SuccessfullySubmittedView,
@@ -80,23 +79,16 @@ class SuccessfullySubmittedController @Inject()(
       val totalOwed = request.userAnswers.get(TotalAmountVatDueGBPQuery)
         .getOrElse(throw new RuntimeException("TotalAmountVatDueGBPQuery has not been set in answers"))
 
+      val iossEnrolmentsExist: Boolean = findIossFromEnrolments(request.enrolments).nonEmpty
+      val intermediaryEnrolmentsExist: Boolean = findIntermediaryFromEnrolments(request.enrolments).nonEmpty
+
       for {
         clientName <- intermediaryClientName
-        errorOrExternalUrl <- vatReturnConnector.getSavedExternalEntry()
+        appropriateDashboardUrl <- dashboardNavigationService.getAppropriateDashboardUrl(
+          isIntermediary, intermediaryEnrolmentsExist, iossEnrolmentsExist
+        )
         _ <- cc.sessionRepository.clear(request.userId, request.iossNumber)
       } yield {
-        val maybeExternalUrl = errorOrExternalUrl.fold(
-          _ => None,
-          _.url
-        )
-
-        val iossEnrolmentsExist: Boolean = findIossFromEnrolments(request.enrolments).nonEmpty
-        val intermediaryEnrolmentsExist: Boolean = findIntermediaryFromEnrolments(request.enrolments).nonEmpty
-
-        val appropriateDashboardUrl: String =
-          dashboardNavigationService.getAppropriateDashboardUrl(
-            isIntermediary, intermediaryEnrolmentsExist, iossEnrolmentsExist
-          )
 
         Ok(view(
           returnReference,
@@ -104,7 +96,6 @@ class SuccessfullySubmittedController @Inject()(
           iossNumber = request.iossNumber,
           period = request.userAnswers.period,
           owedAmount = totalOwed,
-          externalUrl = maybeExternalUrl,
           userResearchUrl,
           isIntermediary = isIntermediary,
           clientName = clientName,

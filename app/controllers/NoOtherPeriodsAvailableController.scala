@@ -26,17 +26,18 @@ import utils.EnrolmentIdentifiers.{findIntermediaryFromEnrolments, findIossFromE
 import views.html.NoOtherPeriodsAvailableView
 
 import javax.inject.Inject
+import scala.concurrent.ExecutionContext
 
 class NoOtherPeriodsAvailableController @Inject()(
                                                    override val messagesApi: MessagesApi,
                                                    cc: AuthenticatedControllerComponents,
                                                    view: NoOtherPeriodsAvailableView,
                                                    dashboardNavigationService: DashboardNavigationService
-                                                 ) extends FrontendBaseController with I18nSupport {
+                                                 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(waypoints: Waypoints, iossNumber: String): Action[AnyContent] = cc.authAndGetRegistration(iossNumber) {
+  def onPageLoad(waypoints: Waypoints, iossNumber: String): Action[AnyContent] = cc.authAndGetRegistration(iossNumber).async {
     implicit request =>
 
       val companyName = request.registrationWrapper.getCompanyName()
@@ -44,10 +45,12 @@ class NoOtherPeriodsAvailableController @Inject()(
       val iossEnrolmentsExist: Boolean = findIossFromEnrolments(request.enrolments).nonEmpty
       val intermediaryEnrolmentsExist: Boolean = findIntermediaryFromEnrolments(request.enrolments).nonEmpty
 
-      val redirectUrl: String = dashboardNavigationService.getAppropriateDashboardUrl(
-        request.isIntermediary, intermediaryEnrolmentsExist, iossEnrolmentsExist
-      )
-
-      Ok(view(waypoints, request.iossNumber, request.isIntermediary, companyName, redirectUrl))
+      for {
+        redirectUrl <- dashboardNavigationService.getAppropriateDashboardUrl(
+          request.isIntermediary, intermediaryEnrolmentsExist, iossEnrolmentsExist
+        )
+      } yield {
+        Ok(view(waypoints, request.iossNumber, request.isIntermediary, companyName, redirectUrl))
+      }
   }
 }
