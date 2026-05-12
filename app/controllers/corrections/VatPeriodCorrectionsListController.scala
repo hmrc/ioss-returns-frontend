@@ -47,7 +47,6 @@ class VatPeriodCorrectionsListController @Inject()(
     implicit request =>
 
       val period = request.userAnswers.period
-      println(s"period: $period")
 
       VatPeriodCorrectionsListPage(request.iossNumber, period, addAnother = false).cleanup(request.userAnswers, cc).flatMap { result =>
         result.fold(
