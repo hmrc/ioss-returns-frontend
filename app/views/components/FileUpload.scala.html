@@ -19,7 +19,6 @@
 @this(govukFileUpload : GovukFileUpload)
 
 @(
-    form: Form[_],
     errorMessage: Option[String],
     id: String,
     name: String,
@@ -33,8 +32,8 @@
 )(implicit messages: Messages)
 
 @govukFileUpload(uk.gov.hmrc.govukfrontend.views.html.components.FileUpload(
-    id,
-    name,
+    name = name,
+    id = id,
     classes = classes.fold("")(x => x),
     label = Label(
         content = Text(messages(label, headingMessageArgs:_*)),
@@ -44,7 +43,6 @@
     hint = hint.map(hintHtml => Hint(
         content = HtmlContent(hintHtml)
     )),
-    value = form(name).value,
     errorMessage = errorMessage.map(error => ErrorMessage(content = Text(error))),
     attributes = attributes,
     javascript = Some(true)
