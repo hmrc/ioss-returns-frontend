@@ -43,7 +43,7 @@ class ContinueReturnPageSpec extends PageBehaviours {
 
       "to Delete Return when the answer is Delete" in {
         ContinueReturnPage(iossNumber).navigate(emptyUserAnswers, ContinueReturn.Delete)
-          .mustEqual(controllers.routes.DeleteReturnController.onPageLoad(iossNumber))
+          .mustEqual(controllers.routes.DeleteReturnController.onPageLoad(iossNumber, emptyUserAnswers.period))
       }
     }
   }

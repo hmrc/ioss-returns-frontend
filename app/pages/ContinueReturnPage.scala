@@ -32,11 +32,11 @@ case class ContinueReturnPage(iossNumber: String) extends QuestionPage[ContinueR
   def navigate(answers: UserAnswers, questionAnswer: ContinueReturn): Call =
     (questionAnswer, answers.get(SavedProgressPage)) match {
       case (Continue, Some(url)) => Call(GET, url)
-      case (Delete, _) =>  controllers.routes.DeleteReturnController.onPageLoad(answers.iossNumber)
+      case (Delete, _) =>  controllers.routes.DeleteReturnController.onPageLoad(answers.iossNumber, answers.period)
       case _ => routes.JourneyRecoveryController.onPageLoad()
     }
 
   override def route(waypoints: Waypoints): Call = {
-    routes.ContinueReturnController.onPageLoad(iossNumber)
+    routes.ContinueReturnController.onPageLoad(iossNumber, ???)
   }
 }

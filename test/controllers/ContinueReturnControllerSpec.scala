@@ -27,7 +27,7 @@ import views.html.ContinueReturnView
 
 class ContinueReturnControllerSpec extends SpecBase with MockitoSugar {
 
-  private lazy val continueReturnRoute = routes.ContinueReturnController.onPageLoad(iossNumber).url
+  private lazy val continueReturnRoute = routes.ContinueReturnController.onPageLoad(iossNumber, period).url
 
   private val formProvider = new ContinueReturnFormProvider()
   private val form = formProvider()

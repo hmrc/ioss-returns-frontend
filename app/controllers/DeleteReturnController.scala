@@ -18,6 +18,7 @@ package controllers
 
 import controllers.actions.*
 import forms.DeleteReturnFormProvider
+import models.Period
 import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -40,22 +41,17 @@ class DeleteReturnController @Inject()(
 
   private val form: Form[Boolean] = formProvider()
 
-  def onPageLoad(iossNumber: String): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
+  def onPageLoad(iossNumber: String, period: Period): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
     implicit request =>
 
-      val period = request.userAnswers.period
-
-      Ok(view(form, request.iossNumber, period, request.isIntermediary, request.companyName)).toFuture
+      Ok(view(form, request.iossNumber, request.userAnswers.period, request.isIntermediary, request.companyName)).toFuture
   }
 
-  def onSubmit(iossNumber: String): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
+  def onSubmit(iossNumber: String, period: Period): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
     implicit request =>
-
-      val period = request.userAnswers.period
-
       form.bindFromRequest().fold(
         formWithErrors =>
-          BadRequest(view(formWithErrors, request.iossNumber, period, request.isIntermediary, request.companyName)).toFuture,
+          BadRequest(view(formWithErrors, request.iossNumber, request.userAnswers.period, request.isIntermediary, request.companyName)).toFuture,
         value =>
           if (value) {
             for {
@@ -63,7 +59,7 @@ class DeleteReturnController @Inject()(
               _ <- saveForLaterService.deleteSavedUserAnswers(request.iossNumber, period)
             } yield Redirect(controllers.routes.IndexController.onPageLoad)
           } else {
-            Redirect(controllers.routes.ContinueReturnController.onPageLoad(request.iossNumber)).toFuture
+            Redirect(controllers.routes.ContinueReturnController.onPageLoad(request.iossNumber, request.userAnswers.period)).toFuture
           }
       )
   }

@@ -37,7 +37,7 @@ class DeleteReturnControllerSpec extends SpecBase with MockitoSugar {
   private val formProvider = new DeleteReturnFormProvider()
   private val form = formProvider()
 
-  private lazy val deleteReturnRoute = routes.DeleteReturnController.onPageLoad(iossNumber).url
+  private lazy val deleteReturnRoute = routes.DeleteReturnController.onPageLoad(iossNumber, period).url
 
   "DeleteReturn Controller" - {
 
@@ -71,7 +71,7 @@ class DeleteReturnControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) `mustBe` SEE_OTHER
-        redirectLocation(result).value `mustBe` controllers.routes.ContinueReturnController.onPageLoad(iossNumber).url
+        redirectLocation(result).value `mustBe` controllers.routes.ContinueReturnController.onPageLoad(iossNumber, period).url
       }
     }
 

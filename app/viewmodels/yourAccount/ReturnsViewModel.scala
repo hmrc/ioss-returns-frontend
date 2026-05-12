@@ -70,18 +70,18 @@ object ReturnsViewModel {
       url = controllers.routes.StartReturnController.onPageLoad(waypoints, iossNumber, period).url
     )
 
-  private def continueDueReturnLink(iossNumber: String)(implicit messages: Messages) =
+  private def continueDueReturnLink(iossNumber: String,  period: StandardPeriod)(implicit messages: Messages) =
     LinkModel(
       linkText = messages("yourAccount.yourReturns.dueReturn.continueReturn"),
       id = "continue-your-return",
-      url = controllers.routes.ContinueReturnController.onPageLoad(iossNumber).url
+      url = controllers.routes.ContinueReturnController.onPageLoad(iossNumber, period).url
     )
 
   private def continueOverdueReturnLink(iossNumber: String, period: StandardPeriod)(implicit messages: Messages) =
     LinkModel(
       linkText = messages("yourAccount.yourReturns.continueReturn", period.displayShortText),
       id = "continue-your-return",
-      url = controllers.routes.ContinueReturnController.onPageLoad(iossNumber).url
+      url = controllers.routes.ContinueReturnController.onPageLoad(iossNumber, period).url
     )
 
   private def returnDueParagraph(period: StandardPeriod)(implicit messages: Messages) =
@@ -143,7 +143,7 @@ object ReturnsViewModel {
       case (0, Some(_), Some(dueReturn)) =>
         ReturnsViewModel(
           contents = Seq(returnDueInProgressParagraph(dueReturn.period)),
-          linkToStart = Some(continueDueReturnLink(request.iossNumber))
+          linkToStart = Some(continueDueReturnLink(request.iossNumber, dueReturn.period))
         )
 
       case (1, None, _) =>
