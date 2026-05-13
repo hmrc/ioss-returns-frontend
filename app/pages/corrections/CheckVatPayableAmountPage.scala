@@ -17,7 +17,7 @@
 package pages.corrections
 
 import models.{Index, UserAnswers}
-import pages.{Page, Waypoints}
+import pages.{NonEmptyWaypoints, Page, Waypoints}
 import play.api.mvc.Call
 
 case class CheckVatPayableAmountPage(iossNumber: String, periodIndex: Index, countryIndex: Index) extends Page {
@@ -27,6 +27,10 @@ case class CheckVatPayableAmountPage(iossNumber: String, periodIndex: Index, cou
   }
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page = {
+    CorrectionListCountriesPage(iossNumber, periodIndex, None)
+  }
+
+  override protected def nextPageCheckMode(waypoints: NonEmptyWaypoints, answers: UserAnswers): Page = {
     CorrectionListCountriesPage(iossNumber, periodIndex, None)
   }
 }
