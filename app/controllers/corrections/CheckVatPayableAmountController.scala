@@ -20,7 +20,7 @@ import controllers.actions.*
 import models.Index
 import models.corrections.CorrectionToCountry
 import pages.Waypoints
-import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage}
+import pages.corrections.{CheckVatPayableAmountPage, CorrectionCountryPage, CorrectionReturnPeriodPage}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -90,7 +90,7 @@ class CheckVatPayableAmountController @Inject()(
       implicit request =>
         val incomplete = getIncompleteCorrectionsToCountry(periodIndex, countryIndex)
         if (incomplete.isEmpty) {
-          Redirect(controllers.corrections.routes.CorrectionListCountriesController.onPageLoad(waypoints, request.iossNumber, periodIndex))
+          Redirect(CheckVatPayableAmountPage(iossNumber, periodIndex, countryIndex).navigate(waypoints, request.userAnswers, request.userAnswers).route)
         } else {
           if (incompletePromptShown) {
             Redirect(routes.CorrectionCountryController.onPageLoad(waypoints, request.iossNumber, periodIndex, countryIndex))

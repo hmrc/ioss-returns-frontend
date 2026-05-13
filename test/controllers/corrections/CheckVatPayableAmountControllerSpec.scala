@@ -20,7 +20,7 @@ import base.SpecBase
 import config.Constants.periodYear
 import models.Country
 import org.scalacheck.Arbitrary.arbitrary
-import pages.corrections.{CorrectionCountryPage, CorrectionReturnPeriodPage, CorrectionReturnYearPage, VatAmountCorrectionCountryPage}
+import pages.corrections.*
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import queries.corrections.{PreviouslyDeclaredCorrectionAmount, PreviouslyDeclaredCorrectionAmountQuery}
@@ -112,7 +112,7 @@ class CheckVatPayableAmountControllerSpec extends SpecBase {
         val result = route(application, request).value
 
         status(result) `mustBe` SEE_OTHER
-        redirectLocation(result).value `mustBe` controllers.corrections.routes.CorrectionListCountriesController.onPageLoad(waypoints, iossNumber, index).url
+        redirectLocation(result).value `mustBe` CheckVatPayableAmountPage(iossNumber, index, index).navigate(waypoints, baseAnswers, baseAnswers).url
       }
     }
   }
