@@ -20,21 +20,34 @@ import base.SpecBase
 import config.FrontendAppConfig
 import controllers.actions.FakeGetRegistrationActionProvider
 import controllers.routes as baseRoutes
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.when
+import org.scalatestplus.mockito.MockitoSugar.mock
+import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
+import services.intermediary.DashboardNavigationService
 import uk.gov.hmrc.auth.core.{Enrolment, EnrolmentIdentifier, Enrolments}
+import utils.FutureSyntax.FutureOps
 import views.html.submissionResults.ReturnSubmissionFailureView
 
 class ReturnSubmissionFailureControllerSpec extends SpecBase {
+
+  private val mockVDashboardNavigationService: DashboardNavigationService = mock[DashboardNavigationService]
 
   "ReturnSubmissionFailure Controller" - {
 
     "must return OK and the correct view for a GET" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val redirectUrl: String = baseRoutes.YourAccountController.onPageLoad(waypoints).url
+
+      when(mockVDashboardNavigationService.getAppropriateDashboardUrl(any(), any(), any())(any())) thenReturn redirectUrl.toFuture
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(bind[DashboardNavigationService].toInstance(mockVDashboardNavigationService))
+        .build()
 
       running(application) {
-        val redirectUrl: String = baseRoutes.YourAccountController.onPageLoad(waypoints).url
 
         val request = FakeRequest(GET, routes.ReturnSubmissionFailureController.onPageLoad(iossNumber).url)
 

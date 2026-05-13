@@ -17,21 +17,45 @@
 package services.intermediary
 
 import config.FrontendAppConfig
+import connectors.VatReturnConnector
 import controllers.intermediary.routes
+import uk.gov.hmrc.http.HeaderCarrier
+import utils.FutureSyntax.FutureOps
 
 import javax.inject.Inject
+import scala.concurrent.{ExecutionContext, Future}
 
-class DashboardNavigationService @Inject()(frontendAppConfig: FrontendAppConfig) {
+class DashboardNavigationService @Inject()(
+                                            frontendAppConfig: FrontendAppConfig,
+                                            vatReturnConnector: VatReturnConnector
+                                          )(implicit ec: ExecutionContext) {
 
   def getAppropriateDashboardUrl(
                                   isIntermediary: Boolean,
                                   intermediaryEnrolmentsExist: Boolean,
                                   iossEnrolmentsExist: Boolean
-                                ): String =
+                                )(implicit hc: HeaderCarrier): Future[String] = {
 
     (isIntermediary, intermediaryEnrolmentsExist, iossEnrolmentsExist) match {
-      case (true, true, true) => routes.IossOrIntermediaryController.onPageLoad().url
-      case (true, true, false) => frontendAppConfig.intermediaryDashboardUrl
-      case _ => controllers.routes.YourAccountController.onPageLoad().url
+      case (true, true, true) => routes.IossOrIntermediaryController.onPageLoad().url.toFuture
+      case (true, true, false) => frontendAppConfig.intermediaryDashboardUrl.toFuture
+      case _ =>
+        for {
+          maybeExternalEntryUrl <- getExternalEntry()
+        } yield {
+          maybeExternalEntryUrl.getOrElse(controllers.routes.YourAccountController.onPageLoad().url)
+        }
     }
+  }
+
+  private def getExternalEntry()(implicit hc: HeaderCarrier): Future[Option[String]] = {
+    for {
+      externalEntryResponse <- vatReturnConnector.getSavedExternalEntry()
+    } yield {
+      externalEntryResponse.fold(
+        _ => None,
+        _.url
+      )
+    }
+  }
 }

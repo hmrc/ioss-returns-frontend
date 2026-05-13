@@ -23,30 +23,31 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.intermediary.DashboardNavigationService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.EnrolmentIdentifiers.{findIntermediaryFromEnrolments, findIossFromEnrolments}
-import utils.FutureSyntax.FutureOps
 import views.html.CannotStartExcludedReturnView
 
 import javax.inject.Inject
+import scala.concurrent.ExecutionContext
 
 class CannotStartExcludedReturnController @Inject()(
                                                      cc: AuthenticatedControllerComponents,
                                                      view: CannotStartExcludedReturnView,
                                                      dashboardNavigationService: DashboardNavigationService
-                                                   ) extends FrontendBaseController with I18nSupport with Logging {
+                                                   )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
-  
+
   def onPageLoad(iossNumber: String): Action[AnyContent] = cc.authAndGetOptionalData(iossNumber).async {
     implicit request =>
 
       val iossEnrolmentsExist: Boolean = findIossFromEnrolments(request.enrolments).nonEmpty
       val intermediaryEnrolmentsExist: Boolean = findIntermediaryFromEnrolments(request.enrolments).nonEmpty
 
-      val appropriateDashboardUrl: String =
-        dashboardNavigationService.getAppropriateDashboardUrl(
+      for {
+        appropriateDashboardUrl <- dashboardNavigationService.getAppropriateDashboardUrl(
           request.isIntermediary, intermediaryEnrolmentsExist, iossEnrolmentsExist
         )
-
-      Ok(view(request.iossNumber, appropriateDashboardUrl)).toFuture
+      } yield {
+        Ok(view(request.iossNumber, appropriateDashboardUrl))
+      }
   }
 }

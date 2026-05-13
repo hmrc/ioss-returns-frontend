@@ -25,27 +25,29 @@ import utils.EnrolmentIdentifiers.{findIntermediaryFromEnrolments, findIossFromE
 import views.html.submissionResults.ReturnSubmissionFailureView
 
 import javax.inject.Inject
+import scala.concurrent.ExecutionContext
 
 class ReturnSubmissionFailureController @Inject()(
                                                    override val messagesApi: MessagesApi,
                                                    cc: AuthenticatedControllerComponents,
                                                    view: ReturnSubmissionFailureView,
                                                    dashboardNavigationService: DashboardNavigationService
-                                                 ) extends FrontendBaseController with I18nSupport {
+                                                 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(iossNumber: String): Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced(iossNumber) {
+  def onPageLoad(iossNumber: String): Action[AnyContent] = cc.authAndGetRegistrationAndCheckBounced(iossNumber).async {
     implicit request =>
 
       val iossEnrolmentsExist: Boolean = findIossFromEnrolments(request.enrolments).nonEmpty
       val intermediaryEnrolmentsExist: Boolean = findIntermediaryFromEnrolments(request.enrolments).nonEmpty
 
-      val determineRedirect: String =
-        dashboardNavigationService.getAppropriateDashboardUrl(
+      for {
+        determineRedirect <- dashboardNavigationService.getAppropriateDashboardUrl(
           request.isIntermediary, intermediaryEnrolmentsExist, iossEnrolmentsExist
         )
-
-      Ok(view(iossNumber, determineRedirect))
+      } yield {
+        Ok(view(iossNumber, determineRedirect))
+      }
   }
 }
