@@ -16,7 +16,7 @@
 
 package pages.corrections
 
-import models.{Country, Index, NormalMode, UserAnswers}
+import models.{CheckMode, Country, Index, NormalMode, UserAnswers}
 import pages.{AddItemPage, JourneyRecoveryPage, NonEmptyWaypoints, Page, QuestionPage, RecoveryOps, Waypoint, Waypoints}
 import play.api.libs.json.{JsObject, JsPath}
 import play.api.mvc.Call
@@ -80,7 +80,7 @@ object CorrectionListCountriesPage {
       case normalModePattern(iossNumber, indexDisplay) =>
         Some(CorrectionListCountriesPage(iossNumber, Index(indexDisplay.toInt - 1), None).waypoint(NormalMode))
       case checkModePattern(iossNumber, indexDisplay) =>
-        Some(CorrectionListCountriesPage(iossNumber, Index(indexDisplay.toInt - 1), None).waypoint(NormalMode))
+        Some(CorrectionListCountriesPage(iossNumber, Index(indexDisplay.toInt - 1), None).waypoint(CheckMode))
 
       case _ =>
         None
