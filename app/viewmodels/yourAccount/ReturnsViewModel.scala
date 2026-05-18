@@ -70,7 +70,7 @@ object ReturnsViewModel {
       url = controllers.routes.StartReturnController.onPageLoad(waypoints, iossNumber, period).url
     )
 
-  private def continueDueReturnLink(iossNumber: String, period: StandardPeriod)(implicit messages: Messages) =
+  private def continueDueReturnLink(iossNumber: String,  period: StandardPeriod)(implicit messages: Messages) =
     LinkModel(
       linkText = messages("yourAccount.yourReturns.dueReturn.continueReturn"),
       id = "continue-your-return",

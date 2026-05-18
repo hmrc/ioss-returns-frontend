@@ -43,7 +43,7 @@ import scala.concurrent.Future
 class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
 
   private lazy val vatPeriodCorrectionsListRoute = controllers.corrections.routes.VatPeriodCorrectionsListWithFormController
-    .onPageLoad(waypoints, iossNumber, periodJuly2021).url
+    .onPageLoad(waypoints, iossNumber).url
 
   private def addCorrectionPeriods(userAnswers: UserAnswers, periods: Seq[Period]): Option[UserAnswers] = //Some(userAnswers)
     periods.zipWithIndex
@@ -219,7 +219,7 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
             val result = route(application, request).value
             status(result) `mustBe` SEE_OTHER
             redirectLocation(result).value `mustBe`
-              controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(waypoints, iossNumber, periodJuly2021).url
+              controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(waypoints, iossNumber).url
           }
         }
       }
@@ -237,11 +237,11 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
       running(application) {
         val request = FakeRequest(POST,
           controllers.corrections.routes.VatPeriodCorrectionsListWithFormController
-            .onSubmit(waypoints, iossNumber, periodJuly2021, incompletePromptShown = false).url)
+            .onSubmit(waypoints, iossNumber, incompletePromptShown = false).url)
 
         val result = route(application, request).value
         status(result) `mustBe` SEE_OTHER
-        redirectLocation(result).value `mustBe` controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(waypoints, iossNumber, periodJuly2021).url
+        redirectLocation(result).value `mustBe` controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(waypoints, iossNumber).url
       }
     }
 
@@ -257,7 +257,7 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
       running(application) {
         implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(POST,
           controllers.corrections.routes.VatPeriodCorrectionsListWithFormController
-            .onSubmit(waypoints, iossNumber, periodJuly2021, incompletePromptShown = false).url)
+            .onSubmit(waypoints, iossNumber, incompletePromptShown = false).url)
         val result = route(application, request).value
         status(result) `mustBe` SEE_OTHER
         redirectLocation(result).value `mustBe` JourneyRecoveryPage.route(waypoints).url
@@ -274,7 +274,7 @@ class VatPeriodCorrectionsListWithFormControllerSpec extends SpecBase with Mocki
 
       running(application) {
         val request = FakeRequest(
-          POST, controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onSubmit(waypoints, iossNumber, period, incompletePromptShown = false).url)
+          POST, controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onSubmit(waypoints, iossNumber, incompletePromptShown = false).url)
 
         val result = route(application, request).value
 

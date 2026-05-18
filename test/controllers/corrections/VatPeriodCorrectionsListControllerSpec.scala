@@ -46,10 +46,10 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
   override def commencementDate: LocalDate = periodJuly2021.lastDay.minusDays(1)
 
   private lazy val vatPeriodCorrectionsListRoute = controllers
-    .corrections.routes.VatPeriodCorrectionsListController.onPageLoad(EmptyWaypoints, iossNumber, periodJuly2021).url
+    .corrections.routes.VatPeriodCorrectionsListController.onPageLoad(EmptyWaypoints, iossNumber).url
 
   private lazy val vatPeriodCorrectionsListRoutePost = controllers
-    .corrections.routes.VatPeriodCorrectionsListController.onSubmit(EmptyWaypoints, iossNumber, periodJuly2021, incompletePromptShown = false).url
+    .corrections.routes.VatPeriodCorrectionsListController.onSubmit(EmptyWaypoints, iossNumber, incompletePromptShown = false).url
 
   private def addCorrectionPeriods(userAnswers: UserAnswers, periods: Seq[Period]): Option[UserAnswers] = //Some(userAnswers)
     periods.zipWithIndex
@@ -147,7 +147,7 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
 
           redirectLocation(result).value `mustBe`
             controllers.corrections.routes.VatPeriodCorrectionsListWithFormController
-              .onPageLoad(EmptyWaypoints, iossNumber, periodJuly2021).url
+              .onPageLoad(EmptyWaypoints, iossNumber).url
         }
       }
 
@@ -235,7 +235,7 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
 
         running(application) {
           val request = FakeRequest(
-            POST, controllers.corrections.routes.VatPeriodCorrectionsListController.onSubmit(waypoints, iossNumber, period, incompletePromptShown = true).url)
+            POST, controllers.corrections.routes.VatPeriodCorrectionsListController.onSubmit(waypoints, iossNumber, incompletePromptShown = true).url)
 
           val result = route(application, request).value
 
@@ -262,12 +262,12 @@ class VatPeriodCorrectionsListControllerSpec extends SpecBase with MockitoSugar 
 
         running(application) {
           val request = FakeRequest(
-            POST, controllers.corrections.routes.VatPeriodCorrectionsListController.onSubmit(waypoints, iossNumber, period, incompletePromptShown = false).url)
+            POST, controllers.corrections.routes.VatPeriodCorrectionsListController.onSubmit(waypoints, iossNumber, incompletePromptShown = false).url)
 
           val result = route(application, request).value
 
           status(result) `mustBe` SEE_OTHER
-          redirectLocation(result).value `mustBe` routes.VatPeriodCorrectionsListController.onPageLoad(waypoints, iossNumber, period).url
+          redirectLocation(result).value `mustBe` routes.VatPeriodCorrectionsListController.onPageLoad(waypoints, iossNumber).url
         }
       }
 

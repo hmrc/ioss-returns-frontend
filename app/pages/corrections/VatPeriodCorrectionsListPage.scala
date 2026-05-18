@@ -54,7 +54,7 @@ final case class VatPeriodCorrectionsListPage(
   override def toString: String = "VatPeriodCorrectionsList"
 
   override def route(waypoints: Waypoints): Call = {
-    controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onPageLoad(waypoints, iossNumber, period)
+    controllers.corrections.routes.VatPeriodCorrectionsListWithFormController.onPageLoad(waypoints, iossNumber)
   }
 
   override protected def nextPageCheckMode(waypoints: NonEmptyWaypoints, answers: UserAnswers): Page =

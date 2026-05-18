@@ -18,7 +18,6 @@ package controllers.corrections
 
 import controllers.actions.*
 import forms.corrections.VatPeriodCorrectionsListFormProvider
-import models.Period
 import models.corrections.PeriodWithCorrections
 import models.requests.DataRequest
 import pages.Waypoints
@@ -47,8 +46,9 @@ class VatPeriodCorrectionsListWithFormController @Inject()(
   private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(waypoints: Waypoints, iossNumber: String, period: Period): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
+  def onPageLoad(waypoints: Waypoints, iossNumber: String): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
     implicit request =>
+      val period = request.userAnswers.period
       VatPeriodCorrectionsListPage(request.iossNumber, period, addAnother = false).cleanup(request.userAnswers, cc).flatMap { result =>
         result.fold(
           _ => {
@@ -65,15 +65,16 @@ class VatPeriodCorrectionsListWithFormController @Inject()(
 
               Ok(view(form, waypoints, request.iossNumber, period, completedCorrectionPeriodsModel, correctionPeriodsWithNoVatCorrection, isIntermediary = request.isIntermediary, companyName = request.companyName))
             } orWhenEmpty {
-              Redirect(controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(waypoints, request.iossNumber, period))
+              Redirect(controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(waypoints, request.iossNumber))
 
             }
         )
       }
   }
 
-  def onSubmit(waypoints: Waypoints, iossNumber: String, period: Period, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
+  def onSubmit(waypoints: Waypoints, iossNumber: String, incompletePromptShown: Boolean): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
     implicit request: DataRequest[AnyContent] =>
+      val period = request.userAnswers.period
       val periodWithCorrections: Option[List[PeriodWithCorrections]] = request.userAnswers
         .get(AllCorrectionPeriodsQuery)
       val correctionPeriodsWithNoVatCorrection = vatPeriodCorrectionsService.getCorrectionPeriodsWhereCountryVatCorrectionMissesAtLeastOnce(periodWithCorrections)
@@ -98,7 +99,7 @@ class VatPeriodCorrectionsListWithFormController @Inject()(
           )
         }
       } orWhenEmpty {
-        Redirect(controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(waypoints, request.iossNumber, period))
+        Redirect(controllers.corrections.routes.VatPeriodCorrectionsListController.onPageLoad(waypoints, request.iossNumber))
       }
   }
 }

@@ -99,11 +99,11 @@ POST        /:iossNumber/vat-payable-confirm/:periodIndex/:countryIndex         
 GET         /:iossNumber/correction-list-countries/:periodIndex                                   controllers.corrections.CorrectionListCountriesController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, iossNumber: String, periodIndex: Index)
 POST        /:iossNumber/correction-list-countries/:periodIndex                                   controllers.corrections.CorrectionListCountriesController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, iossNumber: String, periodIndex: Index, incompletePromptShown: Boolean)
 
-GET         /:iossNumber/:period/vat-correction-months                                            controllers.corrections.VatPeriodCorrectionsListController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, iossNumber: String, period: Period)
-POST        /:iossNumber/:period/vat-correction-months                                            controllers.corrections.VatPeriodCorrectionsListController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, iossNumber: String, period: Period, incompletePromptShown: Boolean)
+GET         /:iossNumber/vat-correction-months                                                    controllers.corrections.VatPeriodCorrectionsListController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, iossNumber: String)
+POST        /:iossNumber/vat-correction-months                                                    controllers.corrections.VatPeriodCorrectionsListController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, iossNumber: String, incompletePromptShown: Boolean)
 
-GET         /:iossNumber/:period/vat-correction-months-add                                        controllers.corrections.VatPeriodCorrectionsListWithFormController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, iossNumber: String, period: Period)
-POST        /:iossNumber/:period/vat-correction-months-add                                        controllers.corrections.VatPeriodCorrectionsListWithFormController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, iossNumber: String, period: Period, incompletePromptShown: Boolean)
+GET         /:iossNumber/vat-correction-months-add                                                controllers.corrections.VatPeriodCorrectionsListWithFormController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, iossNumber: String)
+POST        /:iossNumber/vat-correction-months-add                                                controllers.corrections.VatPeriodCorrectionsListWithFormController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, iossNumber: String, incompletePromptShown: Boolean)
 
 GET         /:iossNumber/remove-month-correction/:periodIndex                                     controllers.corrections.RemovePeriodCorrectionController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, iossNumber: String, periodIndex: Index)
 POST        /:iossNumber/remove-month-correction/:periodIndex                                     controllers.corrections.RemovePeriodCorrectionController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, iossNumber: String, periodIndex: Index)

@@ -117,7 +117,7 @@ object VatPeriodCorrectionsOpSyntax {
         )
           .getOrElse(Redirect(baseRoutes.JourneyRecoveryController.onPageLoad()))
       } else {
-        Redirect(routes.VatPeriodCorrectionsListController.onPageLoad(waypoints, request.iossNumber, period))
+        Redirect(routes.VatPeriodCorrectionsListController.onPageLoad(waypoints, request.iossNumber))
       }
     }
 
