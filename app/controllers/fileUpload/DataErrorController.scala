@@ -104,6 +104,7 @@ class DataErrorController @Inject()(
             case _: CsvError.InvalidCharacter => "invalidCharacter"
             case _: CsvError.InvalidNumberFormat => "invalidNumber"
             case _: CsvError.NegativeNumber => "negativeNumber"
+            case _: CsvError.TooManyDecimals => "tooManyDecimals"
             case _: CsvError.BlankCell => "blankCell"
             case _: CsvError.VatRateNotAllowed => "incorrectVatRate"
             case _: CsvError.DuplicateVatRate => "duplicateVatRate"
@@ -177,6 +178,12 @@ class DataErrorController @Inject()(
             Seq(messages("dataError.errorMessage.negativeNumber.p1.plural", count))
           } else {
             Seq(messages("dataError.errorMessage.negativeNumber.p1", cells))
+          }
+        case Some(_: CsvError.TooManyDecimals) =>
+          if (count > 1) {
+            Seq(messages("dataError.errorMessage.tooManyDecimals.p1.plural", count))
+          } else {
+            Seq(messages("dataError.errorMessage.tooManyDecimals.p1", cells))
           }
         case Some(_: CsvError.BlankCell) =>
           if (count > 1) {

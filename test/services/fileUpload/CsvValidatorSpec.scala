@@ -80,6 +80,26 @@ class CsvValidatorSpec extends SpecBase with MockitoSugar with Matchers with Bef
       |""".stripMargin
   }
 
+  private val negativeNumberCSV: String = {
+    """"HM Revenue and Customs logo","","",""
+      |"Import One Stop Shop VAT return","","",""
+      |"Country","VAT % rate","Total eligible sales","Total VAT due"
+      |"Germany","19%","-£1200","£140"
+      |"France","13","33,333","£4423"
+      |"France","10%","150.01","£15"
+      |""".stripMargin
+  }
+
+  private val tooManyDecimalsCSV: String = {
+    """"HM Revenue and Customs logo","","",""
+      |"Import One Stop Shop VAT return","","",""
+      |"Country","VAT % rate","Total eligible sales","Total VAT due"
+      |"Germany","19%","£1200","£140"
+      |"France","13","33,333","£4423"
+      |"France","10%","150.014","£15"
+      |""".stripMargin
+  }
+
   private val invalidEmptyCellCSV: String = {
     """"HM Revenue and Customs logo","","",""
       |"Import One Stop Shop VAT return","","",""
@@ -201,6 +221,32 @@ class CsvValidatorSpec extends SpecBase with MockitoSugar with Matchers with Bef
           val errors = ex.asInstanceOf[CsvValidationException].errors
 
           errors.collect { case e: CsvError.InvalidNumberFormat => e.cellRef } must contain("C6")
+        }
+
+      }
+
+      "fail with NegativeNumber for an negative number cell" in {
+
+        val validatorError = validator.validateOrThrow(rows(negativeNumberCSV), period)
+
+        whenReady(validatorError.failed) { ex =>
+          ex mustBe a[CsvValidationException]
+          val errors = ex.asInstanceOf[CsvValidationException].errors
+
+          errors.collect { case e: CsvError.NegativeNumber => e.cellRef } must contain("C4")
+        }
+
+      }
+
+      "fail with TooManyDecimals for a number with too many decimals cell" in {
+
+        val validatorError = validator.validateOrThrow(rows(tooManyDecimalsCSV), period)
+
+        whenReady(validatorError.failed) { ex =>
+          ex mustBe a[CsvValidationException]
+          val errors = ex.asInstanceOf[CsvValidationException].errors
+
+          errors.collect { case e: CsvError.TooManyDecimals => e.cellRef } must contain("C6")
         }
 
       }

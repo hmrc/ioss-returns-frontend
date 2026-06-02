@@ -34,6 +34,7 @@ object CsvError {
   final case class InvalidCharacter(row: Int, column: CsvColumn, value: String) extends CsvError
   final case class InvalidNumberFormat(row: Int, column: CsvColumn, value: String) extends CsvError
   final case class NegativeNumber(row: Int, column: CsvColumn, value: BigDecimal) extends CsvError
+  final case class TooManyDecimals(row: Int, column: CsvColumn, value: BigDecimal) extends CsvError
   final case class BlankCell(row: Int, column: CsvColumn) extends CsvError
   final case class VatRateNotAllowed(row: Int, column: CsvColumn, country: String, value: String) extends CsvError
   final case class DuplicateVatRate(row: Int, column: CsvColumn, country: String, value: String) extends CsvError
@@ -59,6 +60,7 @@ implicit val csvErrorFormat: Format[CsvError] = {
   val invalidCharacter = Json.format[CsvError.InvalidCharacter]
   val invalidNumber = Json.format[CsvError.InvalidNumberFormat]
   val negative = Json.format[CsvError.NegativeNumber]
+  val tooManyDecimals = Json.format[CsvError.TooManyDecimals]
   val blank = Json.format[CsvError.BlankCell]
   val vat = Json.format[CsvError.VatRateNotAllowed]
   val duplicateVatRate = Json.format[CsvError.DuplicateVatRate]
@@ -71,6 +73,7 @@ implicit val csvErrorFormat: Format[CsvError] = {
       case e: CsvError.InvalidCharacter    => invalidCharacter.writes(e) + ("type" -> JsString("InvalidCharacter"))
       case e: CsvError.InvalidNumberFormat => invalidNumber.writes(e) + ("type" -> JsString("InvalidNumberFormat"))
       case e: CsvError.NegativeNumber      => negative.writes(e) + ("type" -> JsString("NegativeNumber"))
+      case e: CsvError.TooManyDecimals     => tooManyDecimals.writes(e) + ("type" -> JsString("TooManyDecimals"))
       case e: CsvError.BlankCell           => blank.writes(e) + ("type" -> JsString("BlankCell"))
       case e: CsvError.VatRateNotAllowed   => vat.writes(e) + ("type" -> JsString("VatRateNotAllowed"))
       case e: CsvError.DuplicateVatRate    => duplicateVatRate.writes(e) + ("type" -> JsString("DuplicateVatRate"))
@@ -83,6 +86,7 @@ implicit val csvErrorFormat: Format[CsvError] = {
         case "InvalidCharacter"    => invalidCharacter.reads(json)
         case "InvalidNumberFormat" => invalidNumber.reads(json)
         case "NegativeNumber"      => negative.reads(json)
+        case "TooManyDecimals"     => tooManyDecimals.reads(json)
         case "BlankCell"           => blank.reads(json)
         case "VatRateNotAllowed"   => vat.reads(json)
         case "DuplicateVatRate"    => duplicateVatRate.reads(json)
