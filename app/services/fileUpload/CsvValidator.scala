@@ -128,7 +128,15 @@ class CsvValidator @Inject()(vatRateService: VatRateService)(implicit ec: Execut
       Try(BigDecimal(cleaned)).toEither match {
         case Left(_) => Seq(CsvError.InvalidNumberFormat(row, col, raw))
         case Right(n) =>
-          if (n < 0) Seq(CsvError.NegativeNumber(row, col, n)) else Nil
+          if (n < 0) {
+            Seq(CsvError.NegativeNumber(row, col, n))
+          } else {
+            if(n.scale > 2) {
+              Seq(CsvError.TooManyDecimals(row, col, n))
+            } else {
+              Nil
+            }
+          }
       }
     }
   }
