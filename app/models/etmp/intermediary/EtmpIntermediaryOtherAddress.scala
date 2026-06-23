@@ -25,7 +25,7 @@ case class EtmpIntermediaryOtherAddress(
                              addressLine2: Option[String],
                              townOrCity: String,
                              regionOrState: Option[String],
-                             postcode: String
+                             postcode: Option[String]
                            )
 
 
