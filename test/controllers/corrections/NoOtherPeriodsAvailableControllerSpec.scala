@@ -22,7 +22,7 @@ import controllers.actions.FakeGetRegistrationActionProvider
 import controllers.routes
 import models.RegistrationWrapper
 import models.etmp.VatCustomerInfo
-import org.mockito.ArgumentMatchers.{any, eq as eqTo}
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.mockito.Mockito.{times, verify, verifyNoInteractions, when}
 import org.scalatest.BeforeAndAfterEach
