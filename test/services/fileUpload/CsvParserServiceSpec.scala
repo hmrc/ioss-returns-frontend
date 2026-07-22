@@ -22,13 +22,14 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.mockito.MockitoSugar
 import pages.*
+import scala.util.{Success, Try}
 
 class CsvParserServiceSpec extends SpecBase with MockitoSugar with Matchers with BeforeAndAfterEach {
 
   "CSV Parser must" - {
 
     "parse where the string is empty" in {
-      CsvParserService.split("") `mustBe` Seq()
+      CsvParserService.split("") `mustBe` Success(Seq())
     }
 
     "parse for a simple string of elements without quotes with multiple rows in the CSV with no quotes" in {
@@ -41,7 +42,7 @@ class CsvParserServiceSpec extends SpecBase with MockitoSugar with Matchers with
           |"France","10%","150.01","£15"
           |""".stripMargin
 
-      val actual: Seq[Seq[String]] = CsvParserService.split(validCSVContent).map(_.toSeq)
+      val actual: Try[Seq[Seq[String]]] = CsvParserService.split(validCSVContent).map(_.map(_.toSeq))
       val expected: Seq[Seq[String]] = Seq(
         Seq("HM Revenue and Customs logo", "", "", ""),
         Seq("Import One Stop Shop VAT return", "", "", ""),
@@ -51,7 +52,7 @@ class CsvParserServiceSpec extends SpecBase with MockitoSugar with Matchers with
         Seq("France", "10%", "150.01", "£15")
       )
 
-      actual `mustBe` expected
+      actual `mustBe` Success(expected)
     }
 
     "populate user answers from CSV" in {
@@ -66,8 +67,10 @@ class CsvParserServiceSpec extends SpecBase with MockitoSugar with Matchers with
           |""".stripMargin
 
       val service = new CsvParserService()
-      val result = service.populateUserAnswersFromCsv(emptyUserAnswers, csv)
-
+      val result = CsvParserService.split(csv).flatMap { csvRows =>
+        service.populateUserAnswersFromCsv(emptyUserAnswers, csvRows)
+      }
+      
       result.isSuccess `mustBe` true
       val updated = result.get
 

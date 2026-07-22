@@ -109,6 +109,7 @@ class DataErrorController @Inject()(
             case _: CsvError.VatRateNotAllowed => "incorrectVatRate"
             case _: CsvError.DuplicateVatRate => "duplicateVatRate"
             case _: CsvError.TooManyColumns => "tooManyColumns"
+            case _: CsvError.GenericTooManyColumns => "genericTooManyColumns"
           }
           .toSeq
           .sortBy(_._1)
@@ -216,6 +217,9 @@ class DataErrorController @Inject()(
             Seq(messages("dataError.errorMessage.tooManyColumns.p1", cells))
           }
 
+        case Some(_: CsvError.GenericTooManyColumns) =>
+          Seq(messages("dataError.errorMessage.genericTooManyColumns.p1.plural"))
+          
         case _ =>
           Seq(messages("dataError.errorMessage.genericError.p1"))
       }

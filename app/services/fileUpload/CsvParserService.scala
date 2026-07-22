@@ -29,20 +29,22 @@ import scala.util.Try
 
 object CsvParserService {
 
-  def split(content: String): Seq[Array[String]] = {
-    val settings = new CsvParserSettings()
-    settings.setNullValue("")
-    settings.setEmptyValue("")
-    settings.setSkipEmptyLines(true)
-    settings.setIgnoreLeadingWhitespaces(true)
-    settings.setIgnoreTrailingWhitespaces(true)
+  def split(content: String): Try[Seq[Array[String]]] = {
+    Try {
+      val settings = new CsvParserSettings()
+      settings.setNullValue("")
+      settings.setEmptyValue("")
+      settings.setSkipEmptyLines(true)
+      settings.setIgnoreLeadingWhitespaces(true)
+      settings.setIgnoreTrailingWhitespaces(true)
 
-    val parser = new CsvParser(settings)
+      val parser = new CsvParser(settings)
 
-    val rows: Seq[Array[String]] =
-      parser.parseAll(new StringReader(content)).asScala.toSeq
+      val rows: Seq[Array[String]] =
+        parser.parseAll(new StringReader(content)).asScala.toSeq
 
-    removeNonPrintableChars(rows)
+      removeNonPrintableChars(rows)
+    }
   }
 
   private def removeNonPrintableChars(csvContent: Seq[Array[String]]): Seq[Array[String]] = {
@@ -61,8 +63,8 @@ class CsvParserService @Inject()() {
                                    vatOnSales: BigDecimal
                                  )
 
-  def populateUserAnswersFromCsv(userAnswers: UserAnswers, csvContent: String): Try[UserAnswers] = {
-    val rawRows: Seq[Array[String]] = CsvParserService.split(csvContent)
+  def populateUserAnswersFromCsv(userAnswers: UserAnswers, rawRows: Seq[Array[String]]): Try[UserAnswers] = {
+   
     val parsedRows: Seq[VatRow] = extractVatRows(rawRows)
     val soldGoodsAnswer: Try[UserAnswers] = userAnswers.set(SoldGoodsPage(userAnswers.iossNumber), true)
     val groupedByCountry: Seq[(String, Seq[VatRow])] = parsedRows.groupBy(_.country).toSeq.sortBy(_._1)
