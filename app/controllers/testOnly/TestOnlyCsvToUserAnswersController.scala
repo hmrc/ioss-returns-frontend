@@ -23,6 +23,7 @@ import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.fileUpload.CsvParserService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import scala.util.{Failure, Success}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -45,18 +46,21 @@ class TestOnlyCsvToUserAnswersController @Inject()(
   
   def populateUserAnswersFromCsv(waypoints: Waypoints, iossNumber: String): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
     implicit request =>
-      
-      Future
-        .fromTry(csvParser.populateUserAnswersFromCsv(request.userAnswers, inlineCsv))
-        .flatMap { updatedAnswers =>
-          cc.sessionRepository.set(updatedAnswers).map { _ =>
-            Redirect(controllers.routes.CheckYourAnswersController.onPageLoad(waypoints, request.iossNumber))
-          }
-        }
-        .recover { case _ =>
-          logger.error("Failed to populate user answers from CSV")
-          InternalServerError
+
+      CsvParserService.split(inlineCsv) match {
+        case Success(csvRows) =>
+          Future.fromTry(csvParser.populateUserAnswersFromCsv(request.userAnswers, csvRows))
+            .flatMap { updatedAnswers =>
+              cc.sessionRepository.set(updatedAnswers).map { _ =>
+                Redirect(controllers.routes.CheckYourAnswersController.onPageLoad(waypoints, request.iossNumber))
+              }
+            }
+            .recover { case _ =>
+              logger.error("Failed to populate user answers from CSV")
+              InternalServerError
+            }
+        case Failure(exception) =>
+          throw exception
       }
   }
-    
 }

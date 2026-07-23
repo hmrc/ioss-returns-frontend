@@ -29,6 +29,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.util.Try
 
 class CsvValidatorSpec extends SpecBase with MockitoSugar with Matchers with BeforeAndAfterEach {
 
@@ -37,7 +38,11 @@ class CsvValidatorSpec extends SpecBase with MockitoSugar with Matchers with Bef
   private val mockVatRateService = mock[VatRateService]
   private val validator = new CsvValidator(mockVatRateService)
 
-  private def rows(csv: String): Seq[Array[String]] = CsvParserService.split(csv)
+  private def rows(csv: String): Try[Seq[Array[String]]] = CsvParserService.split(csv)
+  private def rowsAndValidateAndThrow(csv: String) = for {
+    x <- Future.fromTry(rows(csv))
+    y <- validator.validateOrThrow(x, period)
+  } yield y
 
 
   private val validCSVContent: String = {
@@ -194,14 +199,14 @@ class CsvValidatorSpec extends SpecBase with MockitoSugar with Matchers with Bef
 
       "succeed for a valid CSV" in {
 
-        whenReady(validator.validateOrThrow(rows(validCSVContent), period)) { _ =>
+        whenReady(rowsAndValidateAndThrow(validCSVContent)) { _ =>
           succeed
         }
       }
 
       "fail with InvalidCountry for an unknown country (A cell)" in {
 
-        val validatorError = validator.validateOrThrow(rows(invalidCSVCountry), period)
+        val validatorError = rowsAndValidateAndThrow(invalidCSVCountry)
 
         whenReady(validatorError.failed) { ex =>
           ex mustBe a[CsvValidationException]
@@ -214,7 +219,7 @@ class CsvValidatorSpec extends SpecBase with MockitoSugar with Matchers with Bef
 
       "fail with InvalidNumberFormat for an invalid money cell" in {
 
-        val validatorError = validator.validateOrThrow(rows(invalidNumberCSV), period)
+        val validatorError = rowsAndValidateAndThrow(invalidNumberCSV)
 
         whenReady(validatorError.failed) { ex =>
           ex mustBe a[CsvValidationException]
@@ -227,7 +232,7 @@ class CsvValidatorSpec extends SpecBase with MockitoSugar with Matchers with Bef
 
       "fail with NegativeNumber for an negative number cell" in {
 
-        val validatorError = validator.validateOrThrow(rows(negativeNumberCSV), period)
+        val validatorError = rowsAndValidateAndThrow(negativeNumberCSV)
 
         whenReady(validatorError.failed) { ex =>
           ex mustBe a[CsvValidationException]
@@ -240,7 +245,7 @@ class CsvValidatorSpec extends SpecBase with MockitoSugar with Matchers with Bef
 
       "fail with TooManyDecimals for a number with too many decimals cell" in {
 
-        val validatorError = validator.validateOrThrow(rows(tooManyDecimalsCSV), period)
+        val validatorError = rowsAndValidateAndThrow(tooManyDecimalsCSV)
 
         whenReady(validatorError.failed) { ex =>
           ex mustBe a[CsvValidationException]
@@ -253,7 +258,7 @@ class CsvValidatorSpec extends SpecBase with MockitoSugar with Matchers with Bef
 
       "fail with BlankCell when a money cell is empty" in {
 
-        val validatorError = validator.validateOrThrow(rows(invalidEmptyCellCSV), period)
+        val validatorError = rowsAndValidateAndThrow(invalidEmptyCellCSV)
 
         whenReady(validatorError.failed) { ex =>
           ex mustBe a[CsvValidationException]
@@ -266,7 +271,7 @@ class CsvValidatorSpec extends SpecBase with MockitoSugar with Matchers with Bef
 
       "fail with InvalidNumberFormat when inappropriate symbols appear in money cell" in {
 
-        val validatorError = validator.validateOrThrow(rows(invalidCharacterCsv), period)
+        val validatorError = rowsAndValidateAndThrow(invalidCharacterCsv)
 
         whenReady(validatorError.failed) { ex =>
           ex mustBe a[CsvValidationException]
@@ -278,7 +283,7 @@ class CsvValidatorSpec extends SpecBase with MockitoSugar with Matchers with Bef
 
       "fail with VatRateNotAllowed when VAT rate is not allowed for that country/period" in {
 
-        val validatorError = validator.validateOrThrow(rows(invalidVatRateCSV), period)
+        val validatorError = rowsAndValidateAndThrow(invalidVatRateCSV)
 
         whenReady(validatorError.failed) { ex =>
           ex mustBe a[CsvValidationException]
@@ -291,7 +296,7 @@ class CsvValidatorSpec extends SpecBase with MockitoSugar with Matchers with Bef
 
       "fail with DuplicateVatRate when VAT rate is duplicated for same country" in {
 
-        val validatorError = validator.validateOrThrow(rows(invalidDuplicateVatRate), period)
+        val validatorError = rowsAndValidateAndThrow(invalidDuplicateVatRate)
 
         whenReady(validatorError.failed) { ex =>
           ex mustBe a[CsvValidationException]
@@ -304,7 +309,7 @@ class CsvValidatorSpec extends SpecBase with MockitoSugar with Matchers with Bef
 
       "fail with multiple errors when data in wrong position" in {
 
-        val validatorError = validator.validateOrThrow(rows(invalidContentWrongPlace), period)
+        val validatorError = rowsAndValidateAndThrow(invalidContentWrongPlace)
 
         whenReady(validatorError.failed) { ex =>
           ex mustBe a[CsvValidationException]
@@ -316,7 +321,7 @@ class CsvValidatorSpec extends SpecBase with MockitoSugar with Matchers with Bef
 
       "fail with TooManyColumns when there is more than 4 columns" in {
 
-        val validatorError = validator.validateOrThrow(rows(invalidColumnSize), period)
+        val validatorError = rowsAndValidateAndThrow(invalidColumnSize)
 
         whenReady(validatorError.failed) { ex =>
           ex mustBe a[CsvValidationException]
@@ -329,7 +334,7 @@ class CsvValidatorSpec extends SpecBase with MockitoSugar with Matchers with Bef
 
       "fail with InvalidNumberFormat for VAT rate with more than two decimal places" in {
 
-        val validatorError = validator.validateOrThrow(rows(invalidVatRateTwoDecimalPlaces), period)
+        val validatorError = rowsAndValidateAndThrow(invalidVatRateTwoDecimalPlaces)
 
         whenReady(validatorError.failed) { ex =>
           ex mustBe a[CsvValidationException]
@@ -342,7 +347,7 @@ class CsvValidatorSpec extends SpecBase with MockitoSugar with Matchers with Bef
 
       "fail with multiple errors when multiple things are wrong" in {
 
-        val validatorError = validator.validateOrThrow(rows(invalidMultipleCSV), period)
+        val validatorError = rowsAndValidateAndThrow(invalidMultipleCSV)
 
         whenReady(validatorError.failed) { ex =>
           ex mustBe a[CsvValidationException]
