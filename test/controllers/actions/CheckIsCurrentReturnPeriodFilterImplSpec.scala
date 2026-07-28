@@ -187,5 +187,26 @@ class CheckIsCurrentReturnPeriodFilterImplSpec extends SpecBase with BeforeAndAf
       val result = controller.callFilter(request).futureValue
       result `mustBe` Some(Redirect(controllers.routes.CannotStartReturnController.onPageLoad()))
     }
+
+    "redirect to ContinueReturn when current return is in progress" in {
+      val returns = Seq(
+        Return.fromPeriod(period = earliestPeriod, submissionStatus = Due, inProgress = true, isOldest = true)
+      )
+
+      val currentReturns = CurrentReturns(
+        returns = returns,
+        finalReturnsCompleted = false,
+        completeOrExcludedReturns = Seq.empty
+      )
+
+      when(mockReturnStatusConnector.getCurrentReturns(ArgumentMatchers.eq(iossNumber))(any()))
+        .thenReturn(Future.successful(Right(currentReturns)))
+
+      val request = OptionalDataRequest(FakeRequest(), enrolments, testCredentials, Some(vrn), iossNumber, companyName, registrationWrapper, None, Some(completeUserAnswers))
+      val controller = new Harness(earliestPeriod)
+
+      val result = controller.callFilter(request).futureValue
+      result `mustBe` Some(Redirect(controllers.routes.ContinueReturnController.onPageLoad(iossNumber, earliestPeriod)))
+    }
   }
 }

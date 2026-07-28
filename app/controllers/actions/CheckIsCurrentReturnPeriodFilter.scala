@@ -26,7 +26,7 @@ import play.api.mvc.Results.Redirect
 import play.api.mvc.{ActionFilter, Result}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
-import viewmodels.yourAccount.{CurrentReturns, NextReturn, NextReturnCalculation, OtherReturn}
+import viewmodels.yourAccount.{CurrentReturns, NextReturn, NextReturnCalculation, OtherReturn, ReturnIsInProgressException}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -54,6 +54,8 @@ class CheckIsCurrentReturnPeriodFilterImpl(startReturnPeriod: Period,
     val exceptionOrReturn = NextReturnCalculation.calculateNonNextReturn(currentReturns.returns)
 
     exceptionOrReturn match {
+      case Left(returnInProgress: ReturnIsInProgressException) =>
+        Some(Redirect(controllers.routes.ContinueReturnController.onPageLoad(iossNumber, startReturnPeriod)))
       case Left(exception) => throw exception
       case Right(actionableReturn) =>
         actionableReturn match {
