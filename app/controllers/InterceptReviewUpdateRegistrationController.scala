@@ -66,7 +66,7 @@ class InterceptReviewUpdateRegistrationController @Inject()(
       for {
         clientName <- intermediaryClientName
       } yield {
-        Ok(view(waypoints, changeRegistrationUrl, continueUrl, isIntermediary, clientName))
+        Ok(view(waypoints, changeRegistrationUrl, continueUrl, isIntermediary, clientName.getOrElse("")))
       }
   }
 

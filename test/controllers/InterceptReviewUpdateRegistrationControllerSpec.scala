@@ -34,6 +34,8 @@ import views.html.InterceptReviewUpdateRegistrationView
 import scala.concurrent.Future
 
 class InterceptReviewUpdateRegistrationControllerSpec extends SpecBase {
+  
+  val clientName = "Mr Tufty Tuff"
 
   "InterceptReviewUpdateRegistration Controller" - {
 
@@ -52,7 +54,7 @@ class InterceptReviewUpdateRegistrationControllerSpec extends SpecBase {
         val continueUrl = StartReturnPage(iossNumber, period, appConfig).navigate(waypoints, emptyUserAnswers, emptyUserAnswers).route.url
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(waypoints, changeRegistrationUrl, continueUrl, isIntermediary = false, clientName = None)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(waypoints, changeRegistrationUrl, continueUrl, isIntermediary = false, clientName = clientName)(request, messages(application)).toString
       }
     }
 
@@ -60,7 +62,6 @@ class InterceptReviewUpdateRegistrationControllerSpec extends SpecBase {
 
       val mockIntermediaryRegistrationConnector = mock[IntermediaryRegistrationConnector]
       val intermediaryNumber = "IN9001234567"
-      val clientName = "NETP Client Name"
 
       val generatedRegistration = intermediaryRegistrationWithClients(Seq(iossNumber))
 
@@ -109,7 +110,7 @@ class InterceptReviewUpdateRegistrationControllerSpec extends SpecBase {
           changeRegistrationUrl,
           continueUrl,
           isIntermediary = true,
-          clientName = Some(clientName)
+          clientName = clientName
         )(request, messages(application)).toString
       }
     }

@@ -19,7 +19,7 @@
         govukButton: GovukButton
 )
 
-@(waypoints: Waypoints, changeRegistrationUrl: String, continueUrl: String, isIntermediary: Boolean, clientName: Option[String])(implicit request: Request[_], messages: Messages)
+@(waypoints: Waypoints, changeRegistrationUrl: String, continueUrl: String, isIntermediary: Boolean, clientName: String)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(messages("interceptReviewUpdateRegistration.title"))) {
 
