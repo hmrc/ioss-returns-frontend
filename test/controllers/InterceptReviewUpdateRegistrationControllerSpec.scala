@@ -18,10 +18,20 @@ package controllers
 
 import base.SpecBase
 import config.FrontendAppConfig
+import connectors.IntermediaryRegistrationConnector
+import models.etmp.intermediary.{EtmpClientDetails, EtmpCustomerIdentificationLegacy, IntermediaryRegistrationWrapper}
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
+import org.mockito.Mockito.when
+import org.scalatestplus.mockito.MockitoSugar.mock
 import pages.StartReturnPage
+import play.api.inject
+import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
+import uk.gov.hmrc.http.HeaderCarrier
 import views.html.InterceptReviewUpdateRegistrationView
+
+import scala.concurrent.Future
 
 class InterceptReviewUpdateRegistrationControllerSpec extends SpecBase {
 
@@ -42,18 +52,42 @@ class InterceptReviewUpdateRegistrationControllerSpec extends SpecBase {
         val continueUrl = StartReturnPage(iossNumber, period, appConfig).navigate(waypoints, emptyUserAnswers, emptyUserAnswers).route.url
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(waypoints, changeRegistrationUrl, continueUrl)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(waypoints, changeRegistrationUrl, continueUrl, isIntermediary = false, clientName = None)(request, messages(application)).toString
       }
     }
 
     "must use the NETP registration URL for an intermediary" in {
 
+      val mockIntermediaryRegistrationConnector = mock[IntermediaryRegistrationConnector]
       val intermediaryNumber = "IN9001234567"
+      val clientName = "NETP Client Name"
+
+      val generatedRegistration = intermediaryRegistrationWithClients(Seq(iossNumber))
+
+      val registration =
+        generatedRegistration.copy(
+          etmpDisplayRegistration =
+            generatedRegistration.etmpDisplayRegistration.copy(
+              clientDetails =
+                generatedRegistration.etmpDisplayRegistration.clientDetails.map {
+                  client =>
+                    if (client.clientIossID == iossNumber) {
+                      client.copy(clientName = clientName)
+                    } else {
+                      client
+                    }
+                }
+            )
+        )
+
+      when(mockIntermediaryRegistrationConnector.get(eqTo(intermediaryNumber))(any[HeaderCarrier])).thenReturn(Future.successful(registration))
 
       val application = applicationBuilder(
         userAnswers = Some(emptyUserAnswers),
         maybeIntermediaryNumber = Some(intermediaryNumber)
-      ).build()
+      )
+        .overrides(bind[IntermediaryRegistrationConnector].toInstance(mockIntermediaryRegistrationConnector))
+        .build()
 
       running(application) {
         val request = FakeRequest(GET, routes.InterceptReviewUpdateRegistrationController.onPageLoad(waypoints, iossNumber).url)
@@ -70,7 +104,13 @@ class InterceptReviewUpdateRegistrationControllerSpec extends SpecBase {
 
         status(result) mustEqual OK
 
-        contentAsString(result) mustEqual view(waypoints, changeRegistrationUrl, continueUrl)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(
+          waypoints,
+          changeRegistrationUrl,
+          continueUrl,
+          isIntermediary = true,
+          clientName = Some(clientName)
+        )(request, messages(application)).toString
       }
     }
 
@@ -88,5 +128,16 @@ class InterceptReviewUpdateRegistrationControllerSpec extends SpecBase {
         redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
       }
     }
+  }
+
+  def intermediaryRegistrationWithClients(iossNumber: Seq[String]): IntermediaryRegistrationWrapper = {
+    arbitraryIntermediaryRegistrationWrapper.arbitrary.sample.value.copy(
+      etmpDisplayRegistration = arbitraryEtmpIntermediaryDisplayRegistration.arbitrary.sample.value.copy(
+        customerIdentification = EtmpCustomerIdentificationLegacy(vrn),
+        clientDetails = iossNumber.map { ioss =>
+          arbitraryEtmpClientDetails.arbitrary.sample.value.copy(clientIossID = ioss)
+        }
+      )
+    )
   }
 }

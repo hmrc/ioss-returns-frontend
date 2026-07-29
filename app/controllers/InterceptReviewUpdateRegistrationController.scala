@@ -17,6 +17,7 @@
 package controllers
 
 import config.FrontendAppConfig
+import connectors.IntermediaryRegistrationConnector
 import controllers.actions.*
 import pages.{StartReturnPage, Waypoints}
 
@@ -26,25 +27,47 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.InterceptReviewUpdateRegistrationView
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class InterceptReviewUpdateRegistrationController @Inject()(
                                        override val messagesApi: MessagesApi,
                                        cc: AuthenticatedControllerComponents,
                                        frontendAppConfig: FrontendAppConfig,
+                                       intermediaryRegistrationConnector: IntermediaryRegistrationConnector,
                                        view: InterceptReviewUpdateRegistrationView
                                      )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
   
-  def onPageLoad(waypoints: Waypoints, iossNumber: String): Action[AnyContent] = cc.authAndRequireData(iossNumber) {
+  def onPageLoad(waypoints: Waypoints, iossNumber: String): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
     implicit request =>
 
       val period = request.userAnswers.period
       val changeRegistrationUrl = getChangeRegistrationUrl(request.isIntermediary, iossNumber)
       val continueUrl = StartReturnPage(iossNumber, period, frontendAppConfig).navigate(waypoints, request.userAnswers, request.userAnswers).route.url
+      val isIntermediary = request.isIntermediary
 
-      Ok(view(waypoints, changeRegistrationUrl, continueUrl))
+      val intermediaryClientName: Future[Option[String]] = {
+        if (isIntermediary) {
+          request.intermediaryNumber match {
+            case Some(num) =>
+              intermediaryRegistrationConnector.get(num).map { registration =>
+                registration.etmpDisplayRegistration.clientDetails
+                  .find(_.clientIossID == request.iossNumber)
+                  .map(_.clientName)
+              }
+            case None =>
+              Future.failed(new RuntimeException("No intermediary number in request"))
+          }
+        } else {
+          Future.successful(None)
+        }
+      }
+      for {
+        clientName <- intermediaryClientName
+      } yield {
+        Ok(view(waypoints, changeRegistrationUrl, continueUrl, isIntermediary, clientName))
+      }
   }
 
   private def getChangeRegistrationUrl(isIntermediary: Boolean, iossNumber: String): String = {

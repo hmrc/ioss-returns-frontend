@@ -19,13 +19,20 @@
         govukButton: GovukButton
 )
 
-@(waypoints: Waypoints, changeRegistrationUrl: String, continueUrl: String)(implicit request: Request[_], messages: Messages)
+@(waypoints: Waypoints, changeRegistrationUrl: String, continueUrl: String, isIntermediary: Boolean, clientName: Option[String])(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(messages("interceptReviewUpdateRegistration.title"))) {
 
-    <h1 class="govuk-heading-l">@messages("interceptReviewUpdateRegistration.heading")</h1>
+    @if(isIntermediary) {
+        <h1 class="govuk-heading-l">@messages("interceptReviewUpdateRegistration.isIntermediary.heading", clientName)</h1>
 
-    <p class="govuk-body">@messages("interceptReviewUpdateRegistration.p1")</p>
+        <p class="govuk-body">@messages("interceptReviewUpdateRegistration.isIntermediary.p1")</p>
+    } else {
+        <h1 class="govuk-heading-l">@messages("interceptReviewUpdateRegistration.heading")</h1>
+
+        <p class="govuk-body">@messages("interceptReviewUpdateRegistration.p1")</p>
+    }
+
 
     <p class="govuk-body">@Html(messages("interceptReviewUpdateRegistration.reviewAndUpdateLink", changeRegistrationUrl))</p>
 
