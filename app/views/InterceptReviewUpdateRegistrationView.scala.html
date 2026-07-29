@@ -27,14 +27,15 @@
         <h1 class="govuk-heading-l">@messages("interceptReviewUpdateRegistration.isIntermediary.heading", clientName)</h1>
 
         <p class="govuk-body">@messages("interceptReviewUpdateRegistration.isIntermediary.p1")</p>
+
+        <p class="govuk-body">@Html(messages("interceptReviewUpdateRegistration.isIntermediary.reviewAndUpdateLink", changeRegistrationUrl))</p>
     } else {
         <h1 class="govuk-heading-l">@messages("interceptReviewUpdateRegistration.heading")</h1>
 
         <p class="govuk-body">@messages("interceptReviewUpdateRegistration.p1")</p>
+
+        <p class="govuk-body">@Html(messages("interceptReviewUpdateRegistration.reviewAndUpdateLink", changeRegistrationUrl))</p>
     }
-
-
-    <p class="govuk-body">@Html(messages("interceptReviewUpdateRegistration.reviewAndUpdateLink", changeRegistrationUrl))</p>
 
     <p class="govuk-body">@Html(messages("interceptReviewUpdateRegistration.skip", continueUrl))</p>
 }
