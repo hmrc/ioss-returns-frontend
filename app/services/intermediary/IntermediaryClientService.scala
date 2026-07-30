@@ -28,7 +28,7 @@ class IntermediaryClientService @Inject()(intermediaryRegistrationConnector: Int
                      isIntermediary: Boolean,
                      intermediaryNumber: Option[String],
                      iossNumber: String
-                   )(implicit hc: HeaderCarrier): Future[String] = {
+                   )(implicit hc: HeaderCarrier): Future[Option[String]] = {
 
     if (isIntermediary) {
       intermediaryNumber match {
@@ -39,7 +39,6 @@ class IntermediaryClientService @Inject()(intermediaryRegistrationConnector: Int
               registration.etmpDisplayRegistration.clientDetails
                 .find(_.clientIossID == iossNumber)
                 .map(_.clientName)
-                .getOrElse("")
             }
 
         case None =>
@@ -48,7 +47,7 @@ class IntermediaryClientService @Inject()(intermediaryRegistrationConnector: Int
           )
       }
     } else {
-      Future.successful("")
+      Future.successful(None)
     }
   }
 }

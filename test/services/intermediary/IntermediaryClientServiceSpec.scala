@@ -70,7 +70,7 @@ class IntermediaryClientServiceSpec extends SpecBase with MockitoSugar with Befo
         iossNumber = iossNumber
       )
 
-      result.futureValue mustBe clientName
+      result.futureValue mustBe Some(clientName)
 
       verify(mockIntermediaryRegistrationConnector)
         .get(intermediaryNumber)(hc)
@@ -84,7 +84,7 @@ class IntermediaryClientServiceSpec extends SpecBase with MockitoSugar with Befo
         iossNumber = "IM9001234567"
       )
 
-      result.futureValue mustBe ""
+      result.futureValue mustBe None
 
       verifyNoInteractions(mockIntermediaryRegistrationConnector)
     }
@@ -108,7 +108,7 @@ class IntermediaryClientServiceSpec extends SpecBase with MockitoSugar with Befo
         iossNumber = iossNumber
       )
 
-      result.futureValue mustBe ""
+      result.futureValue mustBe None
     }
 
     "must fail when the user is an intermediary but has no intermediary number" in {

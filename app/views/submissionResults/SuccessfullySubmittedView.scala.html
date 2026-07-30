@@ -33,15 +33,19 @@
         owedAmount: BigDecimal,
         userResearchUrl: String,
         isIntermediary: Boolean,
-        clientName: String,
+        clientName: Option[String],
         appropriateDashboardUrl: String
 )(implicit request: Request[_], messages: Messages)
 
     @titleText = @{
-        if (isIntermediary)
-            messages("successfullySubmitted.intermediary.title", clientName)
-        else
-            messages("successfullySubmitted.title")
+        clientName match {
+            case Some(clientName) if isIntermediary => {
+                messages("successfullySubmitted.intermediary.title", clientName)
+            }
+            case _ => {
+                messages("successfullySubmitted.title")
+            }
+        }
     }
 
     @layout(pageTitle = titleNoForm(titleText), maybeIossNumber = Some(iossNumber), showBackLink =false) {

@@ -43,7 +43,7 @@ class InterceptReviewUpdateRegistrationControllerSpec extends SpecBase {
 
       val mockIntermediaryClientService = mock[IntermediaryClientService]
 
-      when(mockIntermediaryClientService.getClientName(eqTo(false), eqTo(None), eqTo(iossNumber))(any[HeaderCarrier])).thenReturn(Future.successful(""))
+      when(mockIntermediaryClientService.getClientName(eqTo(false), eqTo(None), eqTo(iossNumber))(any[HeaderCarrier])).thenReturn(Future.successful(None))
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(bind[IntermediaryClientService].toInstance(mockIntermediaryClientService))
@@ -60,7 +60,7 @@ class InterceptReviewUpdateRegistrationControllerSpec extends SpecBase {
         val continueUrl = StartReturnPage(iossNumber, period, appConfig).navigate(waypoints, emptyUserAnswers, emptyUserAnswers).route.url
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(waypoints, changeRegistrationUrl, continueUrl, isIntermediary = false, clientName = clientName)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(waypoints, changeRegistrationUrl, continueUrl, isIntermediary = false, clientName = None)(request, messages(application)).toString
         verify(mockIntermediaryClientService).getClientName(eqTo(false), eqTo(None), eqTo(iossNumber))(any[HeaderCarrier])
       }
     }
@@ -70,7 +70,7 @@ class InterceptReviewUpdateRegistrationControllerSpec extends SpecBase {
       val mockIntermediaryClientService = mock[IntermediaryClientService]
       val intermediaryNumber = "IN9001234567"
 
-      when(mockIntermediaryClientService.getClientName(eqTo(true), eqTo(Some(intermediaryNumber)), eqTo(iossNumber))(any[HeaderCarrier])).thenReturn(Future.successful(clientName))
+      when(mockIntermediaryClientService.getClientName(eqTo(true), eqTo(Some(intermediaryNumber)), eqTo(iossNumber))(any[HeaderCarrier])).thenReturn(Future.successful(Some(clientName)))
 
       val application = applicationBuilder(
         userAnswers = Some(emptyUserAnswers),
@@ -99,7 +99,7 @@ class InterceptReviewUpdateRegistrationControllerSpec extends SpecBase {
           changeRegistrationUrl,
           continueUrl,
           isIntermediary = true,
-          clientName = clientName
+          clientName = Some(clientName)
         )(request, messages(application)).toString
 
         verify(mockIntermediaryClientService).getClientName(eqTo(true), eqTo(Some(intermediaryNumber)), eqTo(iossNumber))(any[HeaderCarrier])
