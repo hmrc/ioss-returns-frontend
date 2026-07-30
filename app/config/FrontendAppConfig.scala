@@ -49,6 +49,7 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
   val rejoinThisServiceUrl: String = configuration.get[String]("urls.rejoinThisServiceUrl")
   val paymentsBaseUrl: Service = configuration.get[Service]("microservice.services.pay-api")
   val intermediaryDashboardUrl: String = configuration.get[String]("urls.intermediaryDashboardUrl")
+  val changeNetpRegistrationUrl: String = configuration.get[String]("urls.changeNetpRegistrationUrl")
 
   private val exitSurveyBaseUrl: String = configuration.get[String]("microservice.services.feedback-frontend.host") +
     configuration.get[String]("microservice.services.feedback-frontend.basePath")
@@ -88,6 +89,7 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
   val intermediaryEnabled: Boolean = configuration.get[Boolean]("features.intermediary.enabled")
   val intermediaryEnrolment: String = configuration.get[String]("features.intermediary.enrolment")
   val intermediaryIdentifierName: String = configuration.get[String]("features.intermediary.identifier-name")
+  val registrationReviewEnabled: Boolean = configuration.get[Boolean]("features.registration-review-enabled")
 
   val authLoginStubSignInUrl: String = configuration.get[String]("urls.authStubSignIn")
 

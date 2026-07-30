@@ -42,7 +42,7 @@ import utils.FutureSyntax.FutureOps
 import viewmodels.yourAccount.{CurrentReturns, Return}
 import views.html.StartReturnView
 
-import java.time.{LocalDate, Month}
+import java.time.{Clock, Instant, LocalDate, LocalDateTime, Month, ZoneOffset}
 import scala.concurrent.Future
 
 class StartReturnControllerSpec
@@ -572,6 +572,19 @@ class StartReturnControllerSpec
     }
 
     "POST" - {
+
+      val recentChangeDate =
+        LocalDateTime.now(stubClockAtArbitraryDate).minusYears(1)
+
+      val registrationWithRecentChangeDate =
+        registrationWrapper.copy(
+          registration = registrationWrapper.registration.copy(
+            adminUse = registrationWrapper.registration.adminUse.copy(
+              changeDate = Some(recentChangeDate)
+            )
+          )
+        )
+
       "must redirect to the next page when a YES is submitted for a current due or overdue period and Intermediary not enabled" in {
         val options = Table(
           "status",
@@ -589,7 +602,7 @@ class StartReturnControllerSpec
 
           when(mockPartialReturnPeriodService.getPartialReturnPeriod(any(), any(), any())(any())) thenReturn None.toFuture
 
-          val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+          val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWithRecentChangeDate)
             .configure(
               "features.intermediary.enabled" -> false
             )
@@ -627,7 +640,7 @@ class StartReturnControllerSpec
 
           when(mockPartialReturnPeriodService.getPartialReturnPeriod(any(), any(), any())(any())) thenReturn None.toFuture
 
-          val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+          val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), registration = registrationWithRecentChangeDate)
             .configure(
               "features.intermediary.enabled" -> true
             )
@@ -825,6 +838,41 @@ class StartReturnControllerSpec
             status(result) `mustBe` SEE_OTHER
             redirectLocation(result).value `mustBe` routes.ExcludedNotPermittedController.onPageLoad().url
           }
+        }
+      }
+
+      "must redirect to the registration review intercept when YES is submitted and the change date is over two years old" in {
+
+        val fixedClock = Clock.fixed(Instant.parse("2026-07-28T12:00:00Z"), ZoneOffset.UTC)
+
+        val oldChangeDate = LocalDateTime.of(2024, 7, 27, 12, 0)
+
+        val registrationWithOldChangeDate = registrationWrapper.copy(
+          registration = registrationWrapper.registration.copy(
+            adminUse = registrationWrapper.registration.adminUse.copy(
+              changeDate = Some(oldChangeDate)
+            )
+          )
+        )
+
+        when(mockReturnStatusConnector.getCurrentReturns(ArgumentMatchers.eq(iossNumber))(any())) thenReturn
+          Future.successful(Right(emptyCurrentReturns.copy(returns = List(createReturn(Due, period)))))
+
+        when(mockPartialReturnPeriodService.getPartialReturnPeriod(any(), any(), any())(any())) thenReturn None.toFuture
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers), clock = Some(fixedClock), registration = registrationWithOldChangeDate)
+          .overrides(bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector))
+          .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
+          .build()
+
+        running(application) {
+          val request = FakeRequest(POST, startReturnRoute).withFormUrlEncodedBody("value" -> "true")
+
+          val result = route(application, request).value
+
+          status(result) `mustBe` SEE_OTHER
+
+          redirectLocation(result).value `mustBe` routes.InterceptReviewUpdateRegistrationController.onPageLoad(waypoints, iossNumber).url
         }
       }
     }

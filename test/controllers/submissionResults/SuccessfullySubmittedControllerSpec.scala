@@ -76,7 +76,7 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
             owedAmount = totalOwed,
             "https://test-url.com",
             isIntermediary = false,
-            clientName = "Mr Tufftys Tuffs",
+            clientName = Some("Mr Tufftys Tuffs"),
             appropriateDashboardUrl = redirectUrl
           )(request, messages(application)).toString
           verify(mockSessionRepository, times(1)).clear(any(), any())
@@ -136,7 +136,7 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
               owedAmount = totalOwed,
               "https://test-url.com",
               isIntermediary = false,
-              clientName = "Mr Tufftys Tuffs",
+              clientName = Some("Mr Tufftys Tuffs"),
               appropriateDashboardUrl = redirectUrl
             )(request, messages(application)).toString
             verify(mockSessionRepository, times(1)).clear(any(), any())
@@ -172,7 +172,7 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
           owedAmount = totalOwed,
           "https://test-url.com",
           isIntermediary = false,
-          clientName = "Mr Tufftys Tuffs",
+          clientName = Some("Mr Tufftys Tuffs"),
           appropriateDashboardUrl = redirectUrl
         )(request, messages(application)).toString
         verify(mockSessionRepository, times(1)).clear(any(), any())

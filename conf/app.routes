@@ -187,3 +187,4 @@ POST        /select-account                                                     
 GET         /:iossNumber/csv-data-error                                                           controllers.fileUpload.DataErrorController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, iossNumber: String)
 POST        /:iossNumber/csv-data-error                                                           controllers.fileUpload.DataErrorController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, iossNumber: String)
 
+GET        /:iossNumber/review-registration                                                       controllers.InterceptReviewUpdateRegistrationController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, iossNumber: String)

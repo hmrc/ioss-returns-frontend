@@ -34,7 +34,7 @@ import utils.FutureSyntax.FutureOps
 import viewmodels.yourAccount.{CurrentReturns, Return}
 import views.html.StartReturnView
 
-import java.time.{Clock, Instant}
+import java.time.{Clock, Instant, LocalDateTime}
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -154,9 +154,24 @@ class StartReturnController @Inject()(
               }
               updatedAnswers <- Future.fromTry(answers.set(StartReturnPage(request.iossNumber, period, frontendAppConfig), value))
               _ <- cc.sessionRepository.set(updatedAnswers)
-            } yield Redirect(StartReturnPage(request.iossNumber, period, frontendAppConfig).navigate(waypoints, answers, updatedAnswers).route)
+            } yield {
+              val changeDate = request.registrationWrapper.registration.adminUse.changeDate
+              val showRegistrationReviewIntercept = frontendAppConfig.registrationReviewEnabled && value && registrationReviewIsOverdue(changeDate)
+
+              if (showRegistrationReviewIntercept) {
+                Redirect(routes.InterceptReviewUpdateRegistrationController.onPageLoad(waypoints, iossNumber))
+              } else {
+                Redirect(StartReturnPage(request.iossNumber, period, frontendAppConfig).navigate(waypoints, answers, updatedAnswers).route)
+              }
+            }
           }
         )
       }
+  }
+
+  private def registrationReviewIsOverdue(changeDate: Option[LocalDateTime]): Boolean = {
+    val twoYearsAgo = LocalDateTime.now(clock).minusYears(2)
+
+    changeDate.exists(_.isBefore(twoYearsAgo))
   }
 }

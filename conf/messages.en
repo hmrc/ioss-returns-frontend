@@ -732,3 +732,12 @@ iossOrIntermediary.heading = You are registered on {0} IOSS services, which do y
 iossOrIntermediary.error.required = Select an IOSS service
 iossOrIntermediary.option.ioss = Standard IOSS service ({0})
 iossOrIntermediary.option.intermediary = Intermediaries IOSS service ({0})
+
+interceptReviewUpdateRegistration.title = Check your registration is up to date
+interceptReviewUpdateRegistration.heading = Check your registration is up to date
+interceptReviewUpdateRegistration.isIntermediary.heading = Check the registration for {0} is up to date
+interceptReviewUpdateRegistration.p1 = You have not reviewed your IOSS registration details for over 2 years. It is important that you keep them up to date.
+interceptReviewUpdateRegistration.isIntermediary.p1 = You have not reviewed your client''s IOSS registration details for over 2 years. It is important that you keep them up to date.
+interceptReviewUpdateRegistration.reviewAndUpdateLink = <a class="govuk-link" id="back-to-your-account" href={0}>Review your registration details</a>
+interceptReviewUpdateRegistration.isIntermediary.reviewAndUpdateLink = <a class="govuk-link" id="back-to-your-account" href={0}>Review their registration details</a>
+interceptReviewUpdateRegistration.skip = <a class="govuk-button govuk-button--secondary" id="skip" href={0}>Skip for now</a>
