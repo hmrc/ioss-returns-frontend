@@ -18,30 +18,36 @@ package controllers
 
 import base.SpecBase
 import config.FrontendAppConfig
-import connectors.IntermediaryRegistrationConnector
 import models.etmp.intermediary.{EtmpClientDetails, EtmpCustomerIdentificationLegacy, IntermediaryRegistrationWrapper}
 import org.mockito.ArgumentMatchers.{any, eq as eqTo}
-import org.mockito.Mockito.when
+import org.mockito.Mockito.{verify, when}
 import org.scalatestplus.mockito.MockitoSugar.mock
 import pages.StartReturnPage
 import play.api.inject
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
+import services.intermediary.IntermediaryClientService
 import uk.gov.hmrc.http.HeaderCarrier
 import views.html.InterceptReviewUpdateRegistrationView
 
 import scala.concurrent.Future
 
 class InterceptReviewUpdateRegistrationControllerSpec extends SpecBase {
-  
+
   val clientName = "Mr Tufty Tuff"
 
   "InterceptReviewUpdateRegistration Controller" - {
 
     "must return OK and the correct view for a GET" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val mockIntermediaryClientService = mock[IntermediaryClientService]
+
+      when(mockIntermediaryClientService.getClientName(eqTo(false), eqTo(None), eqTo(iossNumber))(any[HeaderCarrier])).thenReturn(Future.successful(""))
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(bind[IntermediaryClientService].toInstance(mockIntermediaryClientService))
+        .build()
 
       running(application) {
         val request = FakeRequest(GET, routes.InterceptReviewUpdateRegistrationController.onPageLoad(waypoints, iossNumber).url)
@@ -55,39 +61,22 @@ class InterceptReviewUpdateRegistrationControllerSpec extends SpecBase {
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(waypoints, changeRegistrationUrl, continueUrl, isIntermediary = false, clientName = clientName)(request, messages(application)).toString
+        verify(mockIntermediaryClientService).getClientName(eqTo(false), eqTo(None), eqTo(iossNumber))(any[HeaderCarrier])
       }
     }
 
     "must use the NETP registration URL for an intermediary" in {
 
-      val mockIntermediaryRegistrationConnector = mock[IntermediaryRegistrationConnector]
+      val mockIntermediaryClientService = mock[IntermediaryClientService]
       val intermediaryNumber = "IN9001234567"
 
-      val generatedRegistration = intermediaryRegistrationWithClients(Seq(iossNumber))
-
-      val registration =
-        generatedRegistration.copy(
-          etmpDisplayRegistration =
-            generatedRegistration.etmpDisplayRegistration.copy(
-              clientDetails =
-                generatedRegistration.etmpDisplayRegistration.clientDetails.map {
-                  client =>
-                    if (client.clientIossID == iossNumber) {
-                      client.copy(clientName = clientName)
-                    } else {
-                      client
-                    }
-                }
-            )
-        )
-
-      when(mockIntermediaryRegistrationConnector.get(eqTo(intermediaryNumber))(any[HeaderCarrier])).thenReturn(Future.successful(registration))
+      when(mockIntermediaryClientService.getClientName(eqTo(true), eqTo(Some(intermediaryNumber)), eqTo(iossNumber))(any[HeaderCarrier])).thenReturn(Future.successful(clientName))
 
       val application = applicationBuilder(
         userAnswers = Some(emptyUserAnswers),
         maybeIntermediaryNumber = Some(intermediaryNumber)
       )
-        .overrides(bind[IntermediaryRegistrationConnector].toInstance(mockIntermediaryRegistrationConnector))
+        .overrides(bind[IntermediaryClientService].toInstance(mockIntermediaryClientService))
         .build()
 
       running(application) {
@@ -112,6 +101,8 @@ class InterceptReviewUpdateRegistrationControllerSpec extends SpecBase {
           isIntermediary = true,
           clientName = clientName
         )(request, messages(application)).toString
+
+        verify(mockIntermediaryClientService).getClientName(eqTo(true), eqTo(Some(intermediaryNumber)), eqTo(iossNumber))(any[HeaderCarrier])
       }
     }
 

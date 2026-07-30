@@ -17,28 +17,26 @@
 package controllers.submissionResults
 
 import config.FrontendAppConfig
-import connectors.IntermediaryRegistrationConnector
 import controllers.actions.*
 import pages.SoldGoodsPage
 import pages.corrections.CorrectPreviousReturnPage
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import queries.TotalAmountVatDueGBPQuery
-import services.intermediary.DashboardNavigationService
+import services.intermediary.{DashboardNavigationService, IntermediaryClientService}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.EnrolmentIdentifiers.{findIntermediaryFromEnrolments, findIossFromEnrolments}
 import utils.Formatters.generateVatReturnReference
-import utils.FutureSyntax.FutureOps
 import views.html.submissionResults.SuccessfullySubmittedView
 
 import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class SuccessfullySubmittedController @Inject()(
                                                  override val messagesApi: MessagesApi,
                                                  cc: AuthenticatedControllerComponents,
                                                  frontendAppConfig: FrontendAppConfig,
-                                                 intermediaryRegistrationConnector: IntermediaryRegistrationConnector,
+                                                 intermediaryClientService: IntermediaryClientService,
                                                  view: SuccessfullySubmittedView,
                                                  dashboardNavigationService: DashboardNavigationService
                                                )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
@@ -49,22 +47,7 @@ class SuccessfullySubmittedController @Inject()(
     implicit request =>
       val userResearchUrl = frontendAppConfig.userResearchUrl2
       val isIntermediary = request.isIntermediary
-      val intermediaryClientName =
-        if (isIntermediary) {
-          request.intermediaryNumber match {
-            case Some(num) =>
-              intermediaryRegistrationConnector.get(num).map { registration =>
-                registration.etmpDisplayRegistration.clientDetails
-                  .find(_.clientIossID == request.iossNumber)
-                  .map(_.clientName)
-                  .getOrElse("")
-              }
-            case None =>
-              Future.failed(new RuntimeException("No intermediary number in request"))
-          }
-        } else {
-          "".toFuture
-        }
+      val intermediaryClientName = intermediaryClientService.getClientName(isIntermediary, request.intermediaryNumber, request.iossNumber)
 
       val returnReference = generateVatReturnReference(request.iossNumber, request.userAnswers.period)
       val hasSoldGoodsPage = request.userAnswers.get(SoldGoodsPage(request.iossNumber))

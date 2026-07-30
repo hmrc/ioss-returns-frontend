@@ -17,23 +17,23 @@
 package controllers
 
 import config.FrontendAppConfig
-import connectors.IntermediaryRegistrationConnector
 import controllers.actions.*
 import pages.{StartReturnPage, Waypoints}
 
 import javax.inject.Inject
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import services.intermediary.IntermediaryClientService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.InterceptReviewUpdateRegistrationView
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class InterceptReviewUpdateRegistrationController @Inject()(
                                        override val messagesApi: MessagesApi,
                                        cc: AuthenticatedControllerComponents,
                                        frontendAppConfig: FrontendAppConfig,
-                                       intermediaryRegistrationConnector: IntermediaryRegistrationConnector,
+                                       intermediaryClientService: IntermediaryClientService,
                                        view: InterceptReviewUpdateRegistrationView
                                      )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
@@ -47,26 +47,12 @@ class InterceptReviewUpdateRegistrationController @Inject()(
       val continueUrl = StartReturnPage(iossNumber, period, frontendAppConfig).navigate(waypoints, request.userAnswers, request.userAnswers).route.url
       val isIntermediary = request.isIntermediary
 
-      val intermediaryClientName: Future[Option[String]] = {
-        if (isIntermediary) {
-          request.intermediaryNumber match {
-            case Some(num) =>
-              intermediaryRegistrationConnector.get(num).map { registration =>
-                registration.etmpDisplayRegistration.clientDetails
-                  .find(_.clientIossID == request.iossNumber)
-                  .map(_.clientName)
-              }
-            case None =>
-              Future.failed(new RuntimeException("No intermediary number in request"))
-          }
-        } else {
-          Future.successful(None)
-        }
-      }
+      val intermediaryClientName = intermediaryClientService.getClientName(isIntermediary, request.intermediaryNumber, request.iossNumber)
+
       for {
         clientName <- intermediaryClientName
       } yield {
-        Ok(view(waypoints, changeRegistrationUrl, continueUrl, isIntermediary, clientName.getOrElse("")))
+        Ok(view(waypoints, changeRegistrationUrl, continueUrl, isIntermediary, clientName))
       }
   }
 
