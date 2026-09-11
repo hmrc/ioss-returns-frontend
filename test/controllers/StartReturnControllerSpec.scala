@@ -17,12 +17,13 @@
 package controllers
 
 import base.SpecBase
+import config.FrontendAppConfig
 import connectors.ReturnStatusConnector
 import forms.StartReturnFormProvider
 import models.SubmissionStatus.{Complete, Due, Excluded, Next, Overdue}
-import models.etmp.EtmpExclusion
+import models.etmp.{EtmpDisplayEuRegistrationDetails, EtmpExclusion}
 import models.etmp.EtmpExclusionReason.{NoLongerSupplies, Reversal}
-import models.{PartialReturnPeriod, StandardPeriod, SubmissionStatus}
+import models.{PartialReturnPeriod, RegistrationWrapper, StandardPeriod, SubmissionStatus}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.mockito.{ArgumentMatchers, Mockito}
@@ -73,6 +74,28 @@ class StartReturnControllerSpec
     resetMocks()
   }
 
+  private def registrationWithFixedEstablishment(): RegistrationWrapper = {
+
+    val fixedEstablishment = EtmpDisplayEuRegistrationDetails(
+      issuedBy = "ES",
+      vatNumber = Some("ES123456789"),
+      taxIdentificationNumber = None,
+      fixedEstablishmentTradingName = "Paella Ltd",
+      fixedEstablishmentAddressLine1 = "1 Test Street",
+      fixedEstablishmentAddressLine2 = None,
+      townOrCity = "Madrid",
+      regionOrState = None,
+      postcode = Some("28001")
+    )
+
+    registrationWrapper.copy(
+      vatInfo = Some(vatCustomerInfo.copy(partOfVatGroup = true)),
+      registration = registrationWrapper.registration.copy(
+        schemeDetails = registrationWrapper.registration.schemeDetails.copy(euRegistrationDetails = Seq(fixedEstablishment))
+      )
+    )
+  }
+  
   private def resetMocks(): Unit = {
     Mockito.reset(mockReturnStatusConnector)
     Mockito.reset(mockPartialReturnPeriodService)
@@ -81,6 +104,41 @@ class StartReturnControllerSpec
   "StartReturn Controller" - {
 
     "GET" - {
+      "must redirect to deleteAllFixedEstablishmentUrl if is part of vat group and has fixed establishment" in {
+        val options = Table(
+          "status",
+          Due,
+          Overdue,
+        )
+
+        forAll(options) { submissionStatus =>
+          resetMocks()
+
+          when(mockReturnStatusConnector.getCurrentReturns(ArgumentMatchers.eq(iossNumber))(any()))
+            .thenReturn(Future.successful(Right(emptyCurrentReturns.copy(returns = List(createReturn(submissionStatus, period))))))
+
+          val registration = registrationWithFixedEstablishment()
+
+          val application = applicationBuilder(
+            userAnswers = Some(emptyUserAnswers),
+            registration = registration,
+            maybeIntermediaryNumber = Some(intermediaryNumber)
+          )
+            .overrides(bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector))
+            .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
+            .build()
+
+          running(application) {
+            val request = FakeRequest(GET, startReturnRoute)
+            val result = route(application, request).value
+            val appConfig = application.injector.instanceOf[FrontendAppConfig]
+
+            status(result) `mustBe` SEE_OTHER
+            redirectLocation(result).value mustEqual s"${appConfig.deleteAllFixedEstablishmentUrl}/$iossNumber"
+          }
+        }
+      }
+
       "must redirect when there are no returns" in {
         when(mockReturnStatusConnector.getCurrentReturns(ArgumentMatchers.eq(iossNumber))(any()))
           .thenReturn(Future.successful(Right(emptyCurrentReturns)))
