@@ -76,7 +76,7 @@ trait SpecBase
     val arbirtyRegistration = Arbitrary.arbitrary[RegistrationWrapper].sample.value
     val arbitrayVatInfo = arbitraryVatInfo.arbitrary.sample.value
     val ukBasedDesAddress = arbitrayVatInfo.desAddress.copy(countryCode = ukCountryCodeAreaPrefix)
-    val ukBasedVatInfo = arbitrayVatInfo.copy(desAddress = ukBasedDesAddress)
+    val ukBasedVatInfo = arbitrayVatInfo.copy(desAddress = ukBasedDesAddress, partOfVatGroup = false)
 
     arbirtyRegistration.copy( vatInfo = Some(ukBasedVatInfo),
       registration = arbirtyRegistration.registration.copy(

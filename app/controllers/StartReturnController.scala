@@ -23,6 +23,7 @@ import forms.StartReturnFormProvider
 import models.etmp.EtmpExclusion
 import models.etmp.EtmpExclusionReason.Reversal
 import models.SubmissionStatus.Overdue
+import models.requests.OptionalDataRequest
 import models.{Period, UserAnswers}
 import pages.{StartReturnPage, Waypoints}
 import play.api.data.Form
@@ -71,22 +72,26 @@ class StartReturnController @Inject()(
         exclusion.exclusionReason != Reversal && nextPeriod.isAfter(exclusion.effectiveDate)
       }
 
-      for {
-        maybePartialReturnPeriod <- partialReturnPeriodService.getPartialReturnPeriod(request.iossNumber, request.registrationWrapper, period)
-        currentReturnsResponse <- if (isIntermediary) {
-          returnStatusConnector.getCurrentReturns(request.iossNumber)
-        } else {
-          Future.successful(Right(CurrentReturns(returns = Seq.empty, finalReturnsCompleted = false)))
+      if (isVatGroupWithFixedEstablishment()) {
+        Redirect(s"${frontendAppConfig.deleteAllFixedEstablishmentUrl}/$iossNumber").toFuture
+      } else {
+        for {
+          maybePartialReturnPeriod <- partialReturnPeriodService.getPartialReturnPeriod(request.iossNumber, request.registrationWrapper, period)
+          currentReturnsResponse <- if (isIntermediary) {
+            returnStatusConnector.getCurrentReturns(request.iossNumber)
+          } else {
+            Future.successful(Right(CurrentReturns(returns = Seq.empty, finalReturnsCompleted = false)))
+          }
+        } yield {
+          val overdueReturns: Seq[Return] = currentReturnsResponse match {
+            case Right(currentReturns) =>
+              currentReturns.returns
+                .filter(r => r.submissionStatus == Overdue)
+                .sortBy(r => (r.period.year, r.period.month.getValue))
+            case Left(_) => Seq.empty
+          }
+          Ok(view(form, waypoints, request.iossNumber, period, maybeExclusion, isFinalReturn, maybePartialReturnPeriod, isIntermediary, companyName, overdueReturns))
         }
-      } yield {
-        val overdueReturns: Seq[Return] = currentReturnsResponse match {
-          case Right(currentReturns) =>
-            currentReturns.returns
-              .filter(r => r.submissionStatus == Overdue)
-              .sortBy(r => (r.period.year, r.period.month.getValue))
-          case Left(_) => Seq.empty
-        }
-        Ok(view(form, waypoints, request.iossNumber, period, maybeExclusion, isFinalReturn, maybePartialReturnPeriod, isIntermediary, companyName, overdueReturns))
       }
 
   }
@@ -173,5 +178,11 @@ class StartReturnController @Inject()(
     val twoYearsAgo = LocalDateTime.now(clock).minusYears(2)
 
     changeDate.exists(_.isBefore(twoYearsAgo))
+  }
+
+  private def isVatGroupWithFixedEstablishment()(implicit request: OptionalDataRequest[AnyContent]): Boolean = {
+    request.isIntermediary &&
+      request.registrationWrapper.vatInfo.exists(_.partOfVatGroup) &&
+      request.registrationWrapper.registration.schemeDetails.euRegistrationDetails.nonEmpty
   }
 }
