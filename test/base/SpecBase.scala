@@ -161,6 +161,7 @@ trait SpecBase
         bind[CheckSubmittedReturnsFilterProvider].toInstance(new FakeCheckSubmittedReturnsFilterProvider()),
         bind[IntermediaryRequiredFilter].toInstance(new FakeIntermediaryRequiredFilter()),
         bind[IntermediaryEnabledFilter].toInstance(new FakeIntermediaryEnabledFilter()),
+        bind[CheckPartOfVatGroupWithFixedEstablishmentsFilter].toInstance(new FakeCheckPartOfVatGroupWithFixedEstablishmentsFilter()),
         getRegistrationWithoutUrlIossActionBind
       )
   }

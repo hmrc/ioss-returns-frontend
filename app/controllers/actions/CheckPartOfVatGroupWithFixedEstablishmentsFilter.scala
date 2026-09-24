@@ -17,38 +17,68 @@
 package controllers.actions
 
 import config.FrontendAppConfig
+import connectors.IntermediaryRegistrationConnector
 import models.requests.RegistrationRequest
 import play.api.mvc.Results.Redirect
 import play.api.mvc.{ActionFilter, Result}
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import utils.FutureSyntax.FutureOps
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class CheckPartOfVatGroupWithFixedEstablishmentsFilterImpl(
+                                                            intermediaryRegistrationConnector: IntermediaryRegistrationConnector,
                                                             frontendAppConfig: FrontendAppConfig
                                                           )(implicit protected val executionContext: ExecutionContext)
   extends ActionFilter[RegistrationRequest] {
 
   override protected def filter[A](request: RegistrationRequest[A]): Future[Option[Result]] = {
 
-    val partOfVatGroup: Boolean = request.registrationWrapper.vatInfo.exists(_.partOfVatGroup)
-    val hasFixedEstablishments: Boolean = request.registrationWrapper.registration.schemeDetails.euRegistrationDetails.nonEmpty
+    implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request.request, request.request.session)
 
-    if (hasFixedEstablishments && partOfVatGroup) {
-      // TODO -> Create new kickout page in reg FE?
-      // TODO -> Change URL in application.conf
-      Some(Redirect(frontendAppConfig.registeredAsVatGroupUrl)).toFuture
-    } else {
-      None.toFuture
+    request.intermediaryNumber match {
+      case Some(intermediaryNumber) =>
+        checkIsClientOfIntermediary(intermediaryNumber, request.iossNumber).flatMap {
+          case true =>
+            None.toFuture
+
+          case _ if checkPartOfVatGroupWithFE(request) =>
+            Some(Redirect(frontendAppConfig.amendRegistrationUrl)).toFuture
+
+          case _ =>
+            None.toFuture
+        }
+
+      case _ if checkPartOfVatGroupWithFE(request) =>
+        Some(Redirect(frontendAppConfig.amendRegistrationUrl)).toFuture
+
+      case _ =>
+        None.toFuture
     }
+  }
+
+  private def checkIsClientOfIntermediary(intermediaryNumber: String, iossNumber: String)(implicit hc: HeaderCarrier): Future[Boolean] = {
+    intermediaryRegistrationConnector.get(intermediaryNumber).map { registrationWrapper =>
+      registrationWrapper
+        .etmpDisplayRegistration.clientDetails.exists(_.clientIossID == iossNumber)
+    }
+  }
+
+  private def checkPartOfVatGroupWithFE(registrationRequest: RegistrationRequest[_]): Boolean = {
+    val partOfVatGroup: Boolean = registrationRequest.registrationWrapper.vatInfo.exists(_.partOfVatGroup)
+    val hasFixedEstablishments: Boolean = registrationRequest.registrationWrapper.registration.schemeDetails.euRegistrationDetails.nonEmpty
+
+    hasFixedEstablishments && partOfVatGroup
   }
 }
 
 class CheckPartOfVatGroupWithFixedEstablishmentsFilter @Inject()(
+                                                                  intermediaryRegistrationConnector: IntermediaryRegistrationConnector,
                                                                   frontendAppConfig: FrontendAppConfig
                                                                 )(implicit executionContext: ExecutionContext) {
   def apply(): CheckPartOfVatGroupWithFixedEstablishmentsFilterImpl = {
-    new CheckPartOfVatGroupWithFixedEstablishmentsFilterImpl(frontendAppConfig)
+    new CheckPartOfVatGroupWithFixedEstablishmentsFilterImpl(intermediaryRegistrationConnector, frontendAppConfig)
   }
 }
