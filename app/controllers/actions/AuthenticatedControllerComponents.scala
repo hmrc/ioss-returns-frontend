@@ -61,18 +61,22 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
 
   def getRegistrationWithoutUrlIoss: GetRegistrationWithoutUrlIossAction
 
+  def checkPartOfVatGroupWithFixedEstablishments: CheckPartOfVatGroupWithFixedEstablishmentsFilter
+
   def auth: ActionBuilder[IdentifierRequest, AnyContent] =
     actionBuilder andThen identify
 
   def authAndGetRegistrationWithoutUrlIoss: ActionBuilder[RegistrationRequest, AnyContent] = {
     auth andThen
       getRegistrationWithoutUrlIoss andThen
-        checkBouncedEmail()
+        checkBouncedEmail() andThen
+          checkPartOfVatGroupWithFixedEstablishments()
   }
 
   def authAndGetRegistration(iossNumber: String): ActionBuilder[RegistrationRequest, AnyContent] = {
     auth andThen
-      getRegistration(iossNumber)
+      getRegistration(iossNumber) andThen
+        checkPartOfVatGroupWithFixedEstablishments()
   }
 
   def authAndGetRegistrationAndCheckBounced(iossNumber: String): ActionBuilder[RegistrationRequest, AnyContent] = {
@@ -128,5 +132,6 @@ case class DefaultAuthenticatedControllerComponents @Inject()(
                                                                checkIsCurrentReturnPeriodFilter: CheckIsCurrentReturnPeriodFilter,
                                                                intermediaryRequired: IntermediaryRequiredFilter,
                                                                intermediaryEnabled: IntermediaryEnabledFilter,
-                                                               getRegistrationWithoutUrlIoss: GetRegistrationWithoutUrlIossAction
+                                                               getRegistrationWithoutUrlIoss: GetRegistrationWithoutUrlIossAction,
+                                                               checkPartOfVatGroupWithFixedEstablishments: CheckPartOfVatGroupWithFixedEstablishmentsFilter
                                                              ) extends AuthenticatedControllerComponents
