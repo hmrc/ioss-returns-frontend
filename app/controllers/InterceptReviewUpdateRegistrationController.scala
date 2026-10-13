@@ -23,7 +23,6 @@ import pages.{StartReturnPage, Waypoints}
 import javax.inject.Inject
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import services.intermediary.IntermediaryClientService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.InterceptReviewUpdateRegistrationView
 
@@ -33,27 +32,20 @@ class InterceptReviewUpdateRegistrationController @Inject()(
                                        override val messagesApi: MessagesApi,
                                        cc: AuthenticatedControllerComponents,
                                        frontendAppConfig: FrontendAppConfig,
-                                       intermediaryClientService: IntermediaryClientService,
                                        view: InterceptReviewUpdateRegistrationView
                                      )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
   
-  def onPageLoad(waypoints: Waypoints, iossNumber: String): Action[AnyContent] = cc.authAndRequireData(iossNumber).async {
+  def onPageLoad(waypoints: Waypoints, iossNumber: String): Action[AnyContent] = cc.authAndRequireData(iossNumber) {
     implicit request =>
 
       val period = request.userAnswers.period
       val changeRegistrationUrl = getChangeRegistrationUrl(request.isIntermediary, iossNumber)
       val continueUrl = StartReturnPage(iossNumber, period, frontendAppConfig).navigate(waypoints, request.userAnswers, request.userAnswers).route.url
-      val isIntermediary = request.isIntermediary
 
-      val intermediaryClientName = intermediaryClientService.getClientName(isIntermediary, request.intermediaryNumber, request.iossNumber)
+      Ok(view(waypoints, changeRegistrationUrl, continueUrl))
 
-      for {
-        clientName <- intermediaryClientName
-      } yield {
-        Ok(view(waypoints, changeRegistrationUrl, continueUrl, isIntermediary, clientName))
-      }
   }
 
   private def getChangeRegistrationUrl(isIntermediary: Boolean, iossNumber: String): String = {

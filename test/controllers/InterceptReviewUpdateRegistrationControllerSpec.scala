@@ -41,12 +41,7 @@ class InterceptReviewUpdateRegistrationControllerSpec extends SpecBase {
 
     "must return OK and the correct view for a GET" in {
 
-      val mockIntermediaryClientService = mock[IntermediaryClientService]
-
-      when(mockIntermediaryClientService.getClientName(eqTo(false), eqTo(None), eqTo(iossNumber))(any[HeaderCarrier])).thenReturn(Future.successful(None))
-
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-        .overrides(bind[IntermediaryClientService].toInstance(mockIntermediaryClientService))
         .build()
 
       running(application) {
@@ -60,49 +55,7 @@ class InterceptReviewUpdateRegistrationControllerSpec extends SpecBase {
         val continueUrl = StartReturnPage(iossNumber, period, appConfig).navigate(waypoints, emptyUserAnswers, emptyUserAnswers).route.url
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(waypoints, changeRegistrationUrl, continueUrl, isIntermediary = false, clientName = None)(request, messages(application)).toString
-        verify(mockIntermediaryClientService).getClientName(eqTo(false), eqTo(None), eqTo(iossNumber))(any[HeaderCarrier])
-      }
-    }
-
-    "must use the NETP registration URL for an intermediary" in {
-
-      val mockIntermediaryClientService = mock[IntermediaryClientService]
-      val intermediaryNumber = "IN9001234567"
-
-      when(mockIntermediaryClientService.getClientName(eqTo(true), eqTo(Some(intermediaryNumber)), eqTo(iossNumber))(any[HeaderCarrier])).thenReturn(Future.successful(Some(clientName)))
-
-      val application = applicationBuilder(
-        userAnswers = Some(emptyUserAnswers),
-        maybeIntermediaryNumber = Some(intermediaryNumber)
-      )
-        .overrides(bind[IntermediaryClientService].toInstance(mockIntermediaryClientService))
-        .build()
-
-      running(application) {
-        val request = FakeRequest(GET, routes.InterceptReviewUpdateRegistrationController.onPageLoad(waypoints, iossNumber).url)
-
-        val result = route(application, request).value
-
-        val view = application.injector.instanceOf[InterceptReviewUpdateRegistrationView]
-
-        val appConfig = application.injector.instanceOf[FrontendAppConfig]
-
-        val changeRegistrationUrl = s"${appConfig.changeNetpRegistrationUrl}/$iossNumber"
-
-        val continueUrl = StartReturnPage(iossNumber, period, appConfig).navigate(waypoints, emptyUserAnswers, emptyUserAnswers).route.url
-
-        status(result) mustEqual OK
-
-        contentAsString(result) mustEqual view(
-          waypoints,
-          changeRegistrationUrl,
-          continueUrl,
-          isIntermediary = true,
-          clientName = Some(clientName)
-        )(request, messages(application)).toString
-
-        verify(mockIntermediaryClientService).getClientName(eqTo(true), eqTo(Some(intermediaryNumber)), eqTo(iossNumber))(any[HeaderCarrier])
+        contentAsString(result) mustEqual view(waypoints, changeRegistrationUrl, continueUrl)(request, messages(application)).toString
       }
     }
 
