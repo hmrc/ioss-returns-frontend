@@ -632,7 +632,7 @@ class StartReturnControllerSpec
     "POST" - {
 
       val recentChangeDate =
-        LocalDateTime.now(stubClockAtArbitraryDate).minusYears(1)
+        LocalDateTime.now(stubClockAtArbitraryDate).minusMonths(1)
 
       val registrationWithRecentChangeDate =
         registrationWrapper.copy(

@@ -175,9 +175,9 @@ class StartReturnController @Inject()(
   }
 
   private def registrationReviewIsOverdue(changeDate: Option[LocalDateTime]): Boolean = {
-    val twoYearsAgo = LocalDateTime.now(clock).minusYears(2)
+    val sixMonthsAgo = LocalDateTime.now(clock).minusMonths(6)
 
-    changeDate.exists(_.isBefore(twoYearsAgo))
+    changeDate.exists(_.isBefore(sixMonthsAgo))
   }
 
   private def isVatGroupWithFixedEstablishment()(implicit request: OptionalDataRequest[AnyContent]): Boolean = {
