@@ -41,19 +41,10 @@ class InterceptReviewUpdateRegistrationController @Inject()(
     implicit request =>
 
       val period = request.userAnswers.period
-      val changeRegistrationUrl = getChangeRegistrationUrl(request.isIntermediary, iossNumber)
+      val changeRegistrationUrl = frontendAppConfig.amendRegistrationUrl
       val continueUrl = StartReturnPage(iossNumber, period, frontendAppConfig).navigate(waypoints, request.userAnswers, request.userAnswers).route.url
 
       Ok(view(waypoints, changeRegistrationUrl, continueUrl))
 
-  }
-
-  private def getChangeRegistrationUrl(isIntermediary: Boolean, iossNumber: String): String = {
-
-    if (isIntermediary) {
-      s"${frontendAppConfig.changeNetpRegistrationUrl}/$iossNumber"
-    } else {
-      frontendAppConfig.amendRegistrationUrl
-    }
   }
 }
