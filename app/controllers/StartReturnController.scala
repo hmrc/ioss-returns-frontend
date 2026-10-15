@@ -17,7 +17,7 @@
 package controllers
 
 import config.FrontendAppConfig
-import connectors.ReturnStatusConnector
+import connectors.{IntermediaryRegistrationConnector, ReturnStatusConnector}
 import controllers.actions.*
 import forms.StartReturnFormProvider
 import models.etmp.EtmpExclusion
@@ -30,6 +30,7 @@ import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.PartialReturnPeriodService
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax.FutureOps
 import viewmodels.yourAccount.{CurrentReturns, Return}
@@ -44,6 +45,7 @@ class StartReturnController @Inject()(
                                        cc: AuthenticatedControllerComponents,
                                        formProvider: StartReturnFormProvider,
                                        partialReturnPeriodService: PartialReturnPeriodService,
+                                       intermediaryRegistrationConnector: IntermediaryRegistrationConnector,
                                        returnStatusConnector: ReturnStatusConnector,
                                        view: StartReturnView,
                                        clock: Clock,
@@ -159,9 +161,12 @@ class StartReturnController @Inject()(
               }
               updatedAnswers <- Future.fromTry(answers.set(StartReturnPage(request.iossNumber, period, frontendAppConfig), value))
               _ <- cc.sessionRepository.set(updatedAnswers)
+              isClientOfIntermediary <- request.intermediaryNumber.fold(Future.successful(false)) { intermediaryNumber =>
+                checkIsClientOfIntermediary(intermediaryNumber, request.iossNumber)
+              }
             } yield {
               val changeDate = request.registrationWrapper.registration.adminUse.changeDate
-              val showRegistrationReviewIntercept = frontendAppConfig.registrationReviewEnabled && value && registrationReviewIsOverdue(changeDate)
+              val showRegistrationReviewIntercept = frontendAppConfig.registrationReviewEnabled && value && registrationReviewIsOverdue(changeDate) && !isClientOfIntermediary
 
               if (showRegistrationReviewIntercept) {
                 Redirect(routes.InterceptReviewUpdateRegistrationController.onPageLoad(waypoints, iossNumber))
@@ -184,5 +189,12 @@ class StartReturnController @Inject()(
     request.isIntermediary &&
       request.registrationWrapper.vatInfo.exists(_.partOfVatGroup) &&
       request.registrationWrapper.registration.schemeDetails.euRegistrationDetails.nonEmpty
+  }
+
+  private def checkIsClientOfIntermediary(intermediaryNumber: String, iossNumber: String)(implicit hc: HeaderCarrier): Future[Boolean] = {
+    intermediaryRegistrationConnector.get(intermediaryNumber).map { registrationWrapper =>
+      registrationWrapper
+        .etmpDisplayRegistration.clientDetails.exists(_.clientIossID == iossNumber)
+    }
   }
 }

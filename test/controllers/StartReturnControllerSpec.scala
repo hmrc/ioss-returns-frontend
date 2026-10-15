@@ -18,14 +18,15 @@ package controllers
 
 import base.SpecBase
 import config.FrontendAppConfig
-import connectors.ReturnStatusConnector
+import connectors.{IntermediaryRegistrationConnector, ReturnStatusConnector}
 import forms.StartReturnFormProvider
 import models.SubmissionStatus.{Complete, Due, Excluded, Next, Overdue}
 import models.etmp.{EtmpDisplayEuRegistrationDetails, EtmpExclusion}
 import models.etmp.EtmpExclusionReason.{NoLongerSupplies, Reversal}
+import models.etmp.intermediary.{EtmpCustomerIdentificationLegacy, IntermediaryRegistrationWrapper}
 import models.{PartialReturnPeriod, RegistrationWrapper, StandardPeriod, SubmissionStatus}
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.when
+import org.mockito.Mockito.{verify, when}
 import org.mockito.{ArgumentMatchers, Mockito}
 import org.scalacheck.Gen
 import org.scalatest.BeforeAndAfterEach
@@ -59,6 +60,7 @@ class StartReturnControllerSpec
 
   private val mockReturnStatusConnector: ReturnStatusConnector = mock[ReturnStatusConnector]
   private val mockPartialReturnPeriodService = mock[PartialReturnPeriodService]
+  private val mockIntermediaryRegistrationConnector = mock[IntermediaryRegistrationConnector]
 
   private val maybePartialReturn = Some(PartialReturnPeriod(period.firstDay, period.lastDay, period.year, Month.DECEMBER))
 
@@ -92,6 +94,17 @@ class StartReturnControllerSpec
       vatInfo = Some(vatCustomerInfo.copy(partOfVatGroup = true)),
       registration = registrationWrapper.registration.copy(
         schemeDetails = registrationWrapper.registration.schemeDetails.copy(euRegistrationDetails = Seq(fixedEstablishment))
+      )
+    )
+  }
+
+  private def intermediaryRegistrationWithClients(iossNumber: Seq[String]): IntermediaryRegistrationWrapper = {
+    arbitraryIntermediaryRegistrationWrapper.arbitrary.sample.value.copy(
+      etmpDisplayRegistration = arbitraryEtmpIntermediaryDisplayRegistration.arbitrary.sample.value.copy(
+        customerIdentification = EtmpCustomerIdentificationLegacy(vrn),
+        clientDetails = iossNumber.map { ioss =>
+          arbitraryEtmpClientDetails.arbitrary.sample.value.copy(clientIossID = ioss)
+        }
       )
     )
   }
@@ -931,6 +944,51 @@ class StartReturnControllerSpec
           status(result) `mustBe` SEE_OTHER
 
           redirectLocation(result).value `mustBe` routes.InterceptReviewUpdateRegistrationController.onPageLoad(waypoints, iossNumber).url
+        }
+      }
+
+      "must not redirect to the registration review intercept when YES is submitted and the client is a NETP" in {
+
+        val fixedClock = Clock.fixed(Instant.parse("2026-07-28T12:00:00Z"), ZoneOffset.UTC)
+
+        val oldChangeDate = LocalDateTime.of(2024, 7, 27, 12, 0)
+
+        val registrationWithOldChangeDate = registrationWrapper.copy(
+          registration = registrationWrapper.registration.copy(
+            adminUse = registrationWrapper.registration.adminUse.copy(
+              changeDate = Some(oldChangeDate)
+            )
+          )
+        )
+
+        when(mockReturnStatusConnector.getCurrentReturns(ArgumentMatchers.eq(iossNumber))(any())) thenReturn
+          Future.successful(Right(emptyCurrentReturns.copy(returns = List(createReturn(Due, period)))))
+
+        when(mockPartialReturnPeriodService.getPartialReturnPeriod(any(), any(), any())(any())) thenReturn None.toFuture
+
+        when(mockIntermediaryRegistrationConnector.get(ArgumentMatchers.eq(intermediaryNumber))(any()))
+          .thenReturn(Future.successful(intermediaryRegistrationWithClients(Seq(iossNumber))))
+
+        val application = applicationBuilder(
+          userAnswers = Some(emptyUserAnswers),
+          clock = Some(fixedClock),
+          registration = registrationWithOldChangeDate,
+          maybeIntermediaryNumber = Some(intermediaryNumber)
+        )
+          .overrides(bind[ReturnStatusConnector].toInstance(mockReturnStatusConnector))
+          .overrides(bind[PartialReturnPeriodService].toInstance(mockPartialReturnPeriodService))
+          .overrides(bind[IntermediaryRegistrationConnector].toInstance(mockIntermediaryRegistrationConnector))
+          .build()
+
+        running(application) {
+          val request = FakeRequest(POST, startReturnRoute).withFormUrlEncodedBody("value" -> "true")
+
+          val result = route(application, request).value
+
+          status(result) `mustBe` SEE_OTHER
+
+          redirectLocation(result).value `mustBe`  WantToUploadFilePage(iossNumber).route(waypoints).url
+          verify(mockIntermediaryRegistrationConnector).get(ArgumentMatchers.eq(intermediaryNumber))(any())
         }
       }
     }
