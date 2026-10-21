@@ -45,10 +45,6 @@
 
 @layout(pageTitle = title(form, messages("fileUploaded.title")), maybeIossNumber = Some(iossNumber)) {
 
-    @if(!maybeOutcome.exists(o => o.status == "UPLOADED" || o.status == "FAILED")) {
-        <meta http-equiv="refresh" content="1">
-    }
-
     @formHelper(action = controllers.fileUpload.routes.FileUploadedController.onSubmit(waypoints, iossNumber), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
@@ -59,6 +55,12 @@
             <p class="govuk-caption-l hmrc-caption-l">@caption</p>
             <h1 class="govuk-heading-l">@messages("fileUploaded.heading", period.displayText)</h1>
         </header>
+
+        @if(!maybeOutcome.exists(o => o.status == "UPLOADED" || o.status == "FAILED")) {
+            <div id="file-upload-refresh" data-refresh-interval="1000"></div>
+
+            <p id="manual-refresh-link" class="govuk-body">@Html(messages("fileUploaded.refreshStatus.link", controllers.fileUpload.routes.FileUploadedController.onPageLoad(waypoints, iossNumber).url))</p>
+        }
 
         <dl class="govuk-summary-list govuk-summary-list--long-key">
             @if(maybeOutcome.map(_.status).contains("UPLOADED")) {
@@ -146,7 +148,8 @@
                 .withAttribute(("id", "continue"))
             )
         } else {
-            <p class="govuk-body">@messages("fileUploaded.uploading")</p>
+            <p id="auto-refresh-message" class="govuk-body" style="display: none;">@messages("fileUploaded.uploading")</p>
+            <p id="manual-refresh-message" class="govuk-body">@messages("fileUploaded.refreshStatus.text")</p>
 
         }
     }
