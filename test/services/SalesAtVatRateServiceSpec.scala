@@ -47,7 +47,7 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar {
       "must show correct total vat from one country with multiple vat rates" in {
 
         val answers = emptyUserAnswers
-          .set(SoldGoodsPage(iossNumber), true).success.value
+          .set(SoldGoodsPage(iossNumber, mockAppConfig), true).success.value
           .set(SoldToCountryPage(iossNumber, index), croatia).success.value
           .set(VatRatesFromCountryPage(iossNumber, index0, index0), List(twentyPercentVatRate, fivePercentVatRate)).success.value
           .set(SalesToCountryPage(iossNumber, index0, index0), BigDecimal(100)).success.value
@@ -61,7 +61,7 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar {
       "must show correct total vat from multiple countries with multiple vat rates" in {
 
         val answers = emptyUserAnswers
-          .set(SoldGoodsPage(iossNumber), true).success.value
+          .set(SoldGoodsPage(iossNumber, mockAppConfig), true).success.value
           .set(SoldToCountryPage(iossNumber, index0), croatia).success.value
           .set(VatRatesFromCountryPage(iossNumber, index0, index0), List(twentyPercentVatRate, fivePercentVatRate)).success.value
           .set(SalesToCountryPage(iossNumber, index0, index0), BigDecimal(100)).success.value
@@ -89,7 +89,7 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar {
       "must show correct net total sales for one country from with multiple vat rates" in {
 
         val answers = emptyUserAnswers
-          .set(SoldGoodsPage(iossNumber), true).success.value
+          .set(SoldGoodsPage(iossNumber, mockAppConfig), true).success.value
           .set(SoldToCountryPage(iossNumber, index), croatia).success.value
           .set(VatRatesFromCountryPage(iossNumber, index0, index0), List(twentyPercentVatRate, fivePercentVatRate)).success.value
           .set(SalesToCountryPage(iossNumber, index0, index0), BigDecimal(100)).success.value
@@ -103,7 +103,7 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar {
       "must show correct net total sales for multiple country from with multiple vat rates" in {
 
         val answers = emptyUserAnswers
-          .set(SoldGoodsPage(iossNumber), true).success.value
+          .set(SoldGoodsPage(iossNumber, mockAppConfig), true).success.value
           .set(SoldToCountryPage(iossNumber, index0), croatia).success.value
           .set(VatRatesFromCountryPage(iossNumber, index0, index0), List(twentyPercentVatRate, fivePercentVatRate)).success.value
           .set(SalesToCountryPage(iossNumber, index0, index0), BigDecimal(100)).success.value
@@ -128,7 +128,7 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar {
         "must return correct total vat to eu countries for one country with one vat rate" in {
 
           val ua = emptyUserAnswers
-            .set(SoldGoodsPage(iossNumber), true).success.value
+            .set(SoldGoodsPage(iossNumber, mockAppConfig), true).success.value
             .set(SoldToCountryPage(iossNumber, index0), belgium).success.value
             .set(VatRatesFromCountryPage(iossNumber, index0, index0), List(twentyPercentVatRate)).success.value
             .set(SalesToCountryPage(iossNumber, index0, index0), BigDecimal(100)).success.value
@@ -142,7 +142,7 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar {
         "must return correct total vat to eu countries for one country with one vat rate and a correction for another country" in {
 
           val ua = emptyUserAnswers
-            .set(SoldGoodsPage(iossNumber), true).success.value
+            .set(SoldGoodsPage(iossNumber, mockAppConfig), true).success.value
             .set(SoldToCountryPage(iossNumber, index0), spain).success.value
             .set(VatRatesFromCountryPage(iossNumber, index0, index0), List(twentyPercentVatRate)).success.value
             .set(SalesToCountryPage(iossNumber, index0, index0), BigDecimal(100)).success.value
@@ -162,7 +162,7 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar {
         "must return correct total vat to eu countries for one country with multiple vat rates" in {
 
           val answers = emptyUserAnswers
-            .set(SoldGoodsPage(iossNumber), true).success.value
+            .set(SoldGoodsPage(iossNumber, mockAppConfig), true).success.value
             .set(SoldToCountryPage(iossNumber, index0), croatia).success.value
             .set(VatRatesFromCountryPage(iossNumber, index0, index0), List(twentyPercentVatRate, fivePercentVatRate)).success.value
             .set(SalesToCountryPage(iossNumber, index0, index0), BigDecimal(100)).success.value
@@ -178,7 +178,7 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar {
         "must return correct total vat to eu countries for multiple countries with multiple vat rates" in {
 
           val answers = emptyUserAnswers
-            .set(SoldGoodsPage(iossNumber), true).success.value
+            .set(SoldGoodsPage(iossNumber, mockAppConfig), true).success.value
             .set(SoldToCountryPage(iossNumber, index0), croatia).success.value
             .set(VatRatesFromCountryPage(iossNumber, index0, index0), List(twentyPercentVatRate, fivePercentVatRate)).success.value
             .set(SalesToCountryPage(iossNumber, index0, index0), BigDecimal(100)).success.value
@@ -201,7 +201,7 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar {
         "must return correct total vat to eu countries for multiple countries with multiple vat rates and multiple corrections" in {
 
           val answers = emptyUserAnswers
-            .set(SoldGoodsPage(iossNumber), true).success.value
+            .set(SoldGoodsPage(iossNumber, mockAppConfig), true).success.value
             .set(SoldToCountryPage(iossNumber, index0), croatia).success.value
             .set(VatRatesFromCountryPage(iossNumber, index0, index0), List(twentyPercentVatRate, fivePercentVatRate)).success.value
             .set(SalesToCountryPage(iossNumber, index0, index0), BigDecimal(100)).success.value
@@ -233,7 +233,7 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar {
         "must return correct total vat to eu countries for one country with one vat rate" in {
 
           val ua = emptyUserAnswers
-            .set(SoldGoodsPage(iossNumber), true).success.value
+            .set(SoldGoodsPage(iossNumber, mockAppConfig), true).success.value
             .set(SoldToCountryPage(iossNumber, index0), belgium).success.value
             .set(VatRatesFromCountryPage(iossNumber, index0, index0), List(twentyPercentVatRate)).success.value
             .set(SalesToCountryPage(iossNumber, index0, index0), BigDecimal(100)).success.value
@@ -247,7 +247,7 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar {
         "must return correct total vat to eu countries for one country with multiple vat rates" in {
 
           val answers = emptyUserAnswers
-            .set(SoldGoodsPage(iossNumber), true).success.value
+            .set(SoldGoodsPage(iossNumber, mockAppConfig), true).success.value
             .set(SoldToCountryPage(iossNumber, index0), belgium).success.value
             .set(VatRatesFromCountryPage(iossNumber, index0, index0), List(twentyPercentVatRate, fivePercentVatRate)).success.value
             .set(SalesToCountryPage(iossNumber, index0, index0), BigDecimal(100)).success.value
@@ -269,7 +269,7 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar {
         "must return correct total when there is a positive correction " in {
 
           val ua = emptyUserAnswers
-            .set(SoldGoodsPage(iossNumber), true).success.value
+            .set(SoldGoodsPage(iossNumber, mockAppConfig), true).success.value
             .set(SoldToCountryPage(iossNumber, index0), croatia).success.value
             .set(VatRatesFromCountryPage(iossNumber, index0, index0), List(twentyPercentVatRate)).success.value
             .set(SalesToCountryPage(iossNumber, index0, index0), BigDecimal(100)).success.value
@@ -285,7 +285,7 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar {
         "must return correct total when there is a negative correction" in {
 
           val ua = emptyUserAnswers
-            .set(SoldGoodsPage(iossNumber), true).success.value
+            .set(SoldGoodsPage(iossNumber, mockAppConfig), true).success.value
             .set(SoldToCountryPage(iossNumber, index0), croatia).success.value
             .set(VatRatesFromCountryPage(iossNumber, index0, index0), List(twentyPercentVatRate)).success.value
             .set(SalesToCountryPage(iossNumber, index0, index0), BigDecimal(1000)).success.value
@@ -300,7 +300,7 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar {
         "must return zero when the correction makes the total amount negative for a country" in {
 
           val ua = emptyUserAnswers
-            .set(SoldGoodsPage(iossNumber), true).success.value
+            .set(SoldGoodsPage(iossNumber, mockAppConfig), true).success.value
             .set(SoldToCountryPage(iossNumber, index0), croatia).success.value
             .set(VatRatesFromCountryPage(iossNumber, index0, index0), List(twentyPercentVatRate)).success.value
             .set(SalesToCountryPage(iossNumber, index0, index0), BigDecimal(1000)).success.value
@@ -315,7 +315,7 @@ class SalesAtVatRateServiceSpec extends SpecBase with MockitoSugar {
         "must not subtract the negative amount for one country from the positive total for other countries" in {
 
           val ua = emptyUserAnswers
-            .set(SoldGoodsPage(iossNumber), true).success.value
+            .set(SoldGoodsPage(iossNumber, mockAppConfig), true).success.value
             .set(SoldToCountryPage(iossNumber, index0), croatia).success.value
             .set(VatRatesFromCountryPage(iossNumber, index0, index0), List(twentyPercentVatRate)).success.value
             .set(SalesToCountryPage(iossNumber, index0, index0), BigDecimal(1000)).success.value

@@ -42,7 +42,7 @@ class StartReturnsJourneySpec extends AnyFreeSpec with JourneyHelpers with SpecB
         .run(
           goTo(StartReturnPage(iossNumber, period, mockAppConfig)),
           submitAnswer(StartReturnPage(iossNumber, period, mockAppConfig), true),
-          pageMustBe(SoldGoodsPage(iossNumber))
+          pageMustBe(SoldGoodsPage(iossNumber, mockAppConfig))
         )
     }
   }

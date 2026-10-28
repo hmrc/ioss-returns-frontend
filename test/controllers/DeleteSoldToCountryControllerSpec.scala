@@ -42,7 +42,7 @@ class DeleteSoldToCountryControllerSpec extends SpecBase with MockitoSugar {
   private val form: Form[Boolean] = formProvider(country)
 
   private val baseAnswers: UserAnswers = emptyUserAnswers
-    .set(SoldGoodsPage(iossNumber), true).success.value
+    .set(SoldGoodsPage(iossNumber, mockAppConfig), true).success.value
     .set(SoldToCountryPage(iossNumber, index), country).success.value
     .set(VatRatesFromCountryPage(iossNumber, index, index), List(vatRateFromCountry)).success.value
     .set(SalesToCountryPage(iossNumber, index, vatRateIndex), salesValue).success.value
@@ -90,7 +90,7 @@ class DeleteSoldToCountryControllerSpec extends SpecBase with MockitoSugar {
         val expectedAnswers = baseAnswers.remove(SalesByCountryQuery(index)).success.value
 
         status(result) `mustBe` SEE_OTHER
-        redirectLocation(result).value `mustBe` DeleteSoldToCountryPage(iossNumber, index).navigate(waypoints, baseAnswers, expectedAnswers).url
+        redirectLocation(result).value `mustBe` DeleteSoldToCountryPage(iossNumber, index, mockAppConfig).navigate(waypoints, baseAnswers, expectedAnswers).url
         verify(mockSessionRepository, times(1)).set(eqTo(expectedAnswers))
       }
     }
@@ -116,7 +116,7 @@ class DeleteSoldToCountryControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) `mustBe` SEE_OTHER
-        redirectLocation(result).value `mustBe` DeleteSoldToCountryPage(iossNumber, index).navigate(waypoints, baseAnswers, baseAnswers).url
+        redirectLocation(result).value `mustBe` DeleteSoldToCountryPage(iossNumber, index, mockAppConfig).navigate(waypoints, baseAnswers, baseAnswers).url
         verifyNoInteractions(mockSessionRepository)
       }
     }

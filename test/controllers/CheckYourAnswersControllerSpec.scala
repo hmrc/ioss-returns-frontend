@@ -210,7 +210,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
             etmpObligationDetails.toFuture
 
           val answers: UserAnswers = completeUserAnswers
-            .set(SoldGoodsPage(iossNumber), false).success.value
+            .set(SoldGoodsPage(iossNumber, mockAppConfig), false).success.value
             .set(CorrectPreviousReturnPage(iossNumber, 0), false).success.value
 
           val application = applicationBuilder(userAnswers = Some(answers), registration = updatedRegistrationWrapper)
@@ -239,7 +239,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
             val salesFromEuSummaryList: SummaryList = SummaryListViewModel(
               rows = Seq(
-                SoldGoodsSummary.row(answers, waypoints, CheckYourAnswersPage(iossNumber)),
+                SoldGoodsSummary.row(answers, waypoints, CheckYourAnswersPage(iossNumber), mockAppConfig),
                 TotalNetValueOfSalesSummary.row(answers, None, waypoints, CheckYourAnswersPage(iossNumber)),
                 TotalVatOnSalesSummary.row(answers, None, waypoints, CheckYourAnswersPage(iossNumber))
               ).flatten
@@ -336,7 +336,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           val previouslyDeclaredNegativeCorrectionAmount: BigDecimal = BigDecimal(-1000)
 
           val userAnswersWithCorrections: UserAnswers = emptyUserAnswers
-            .set(SoldGoodsPage(iossNumber), false).success.value
+            .set(SoldGoodsPage(iossNumber, mockAppConfig), false).success.value
             .set(CorrectPreviousReturnPage(iossNumber, 0), true).success.value
             .set(CorrectionReturnYearPage(iossNumber, index), period.year).success.value
             .set(CorrectionReturnPeriodPage(iossNumber, index), period).success.value
@@ -393,7 +393,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
 
             val salesFromEuSummaryList: SummaryList = SummaryListViewModel(
               rows = Seq(
-                SoldGoodsSummary.row(userAnswersWithCorrections, waypoints, CheckYourAnswersPage(iossNumber)),
+                SoldGoodsSummary.row(userAnswersWithCorrections, waypoints, CheckYourAnswersPage(iossNumber), mockAppConfig),
                 TotalNetValueOfSalesSummary.row(userAnswersWithCorrections, None, waypoints, CheckYourAnswersPage(iossNumber)),
                 TotalVatOnSalesSummary.row(userAnswersWithCorrections, None, waypoints, CheckYourAnswersPage(iossNumber))
               ).flatten
@@ -673,7 +673,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
 
         val answers = emptyUserAnswers
-          .set(SoldGoodsPage(iossNumber), true).success.value
+          .set(SoldGoodsPage(iossNumber, mockAppConfig), true).success.value
           .set(CorrectPreviousReturnPage(iossNumber, 0), false).success.value
 
         val app = applicationBuilder(Some(answers))
@@ -711,7 +711,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
 
         val answers = emptyUserAnswers
-          .set(SoldGoodsPage(iossNumber), true).success.value
+          .set(SoldGoodsPage(iossNumber, mockAppConfig), true).success.value
 
         val app = applicationBuilder(Some(answers))
           .overrides(bind[ObligationsService].toInstance(mockObligationsService)).build()
@@ -731,7 +731,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
 
         val answers = emptyUserAnswers
-          .set(SoldGoodsPage(iossNumber), true).success.value
+          .set(SoldGoodsPage(iossNumber, mockAppConfig), true).success.value
           .set(CorrectPreviousReturnPage(iossNumber, 0), false).success.value
 
         val app = applicationBuilder(Some(answers))
@@ -751,7 +751,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
 
         val answers = emptyUserAnswers
-          .set(SoldGoodsPage(iossNumber), true).success.value
+          .set(SoldGoodsPage(iossNumber, mockAppConfig), true).success.value
           .set(CorrectPreviousReturnPage(iossNumber, 0), false).success.value
           .set(SoldToCountryPage(iossNumber, index), Country.euCountries.head).success.value
 
@@ -772,7 +772,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
 
         val answers = emptyUserAnswers
-          .set(SoldGoodsPage(iossNumber), true).success.value
+          .set(SoldGoodsPage(iossNumber, mockAppConfig), true).success.value
           .set(CorrectPreviousReturnPage(iossNumber, 0), false).success.value
           .set(SoldToCountryPage(iossNumber, index), Country.euCountries.head).success.value
           .set(VatRatesFromCountryPage(iossNumber, index, index), List[VatRateFromCountry](vatRateFromCountry)).success.value
@@ -794,7 +794,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
 
         val answers = emptyUserAnswers
-          .set(SoldGoodsPage(iossNumber), true).success.value
+          .set(SoldGoodsPage(iossNumber, mockAppConfig), true).success.value
           .set(CorrectPreviousReturnPage(iossNumber, 0), false).success.value
           .set(SoldToCountryPage(iossNumber, index), Country.euCountries.head).success.value
           .set(VatRatesFromCountryPage(iossNumber, index, index), List[VatRateFromCountry](vatRateFromCountry)).success.value
@@ -817,7 +817,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
 
         val answers = emptyUserAnswers
-          .set(SoldGoodsPage(iossNumber), false).success.value
+          .set(SoldGoodsPage(iossNumber, mockAppConfig), false).success.value
           .set(CorrectPreviousReturnPage(iossNumber, 0), true).success.value
 
         val app = applicationBuilder(Some(answers))
@@ -837,7 +837,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
 
         val answers = emptyUserAnswers
-          .set(SoldGoodsPage(iossNumber), false).success.value
+          .set(SoldGoodsPage(iossNumber, mockAppConfig), false).success.value
           .set(CorrectPreviousReturnPage(iossNumber, 0), true).success.value
           .set(CorrectionReturnYearPage(iossNumber, index), period.year).success.value
           .set(CorrectionReturnPeriodPage(iossNumber, index), period).success.value
@@ -859,7 +859,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
 
         val answers = emptyUserAnswers
-          .set(SoldGoodsPage(iossNumber), false).success.value
+          .set(SoldGoodsPage(iossNumber, mockAppConfig), false).success.value
           .set(CorrectPreviousReturnPage(iossNumber, 0), true).success.value
           .set(CorrectionReturnPeriodPage(iossNumber, index), period).success.value
           .set(CorrectionCountryPage(iossNumber, index, index), Country.euCountries.head).success.value

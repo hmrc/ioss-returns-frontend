@@ -16,6 +16,7 @@
 
 package viewmodels.checkAnswers
 
+import config.FrontendAppConfig
 import models.{Index, UserAnswers}
 import pages.{AddItemPage, CheckSalesPage, DeleteSoldToCountryPage, Waypoints}
 import play.twirl.api.HtmlFormat
@@ -24,14 +25,14 @@ import uk.gov.hmrc.hmrcfrontend.views.viewmodels.addtoalist.ListItem
 
 object SoldToCountryListSummary {
 
-  def addToListRows(answers: UserAnswers, waypoints: Waypoints, sourcePage: AddItemPage): Seq[ListItem] = {
+  def addToListRows(answers: UserAnswers, waypoints: Waypoints, sourcePage: AddItemPage, frontendAppConfig: FrontendAppConfig): Seq[ListItem] = {
     answers.get(AllSalesQuery).getOrElse(List.empty).zipWithIndex.map {
       case (salesToCountryWithOptionalVat, countryIndex) =>
 
         ListItem(
           name = HtmlFormat.escape(salesToCountryWithOptionalVat.country.name).toString,
           changeUrl = CheckSalesPage(answers.iossNumber, Index(countryIndex)).changeLink(waypoints, sourcePage).url,
-          removeUrl = DeleteSoldToCountryPage(answers.iossNumber, Index(countryIndex)).route(waypoints).url
+          removeUrl = DeleteSoldToCountryPage(answers.iossNumber, Index(countryIndex), frontendAppConfig).route(waypoints).url
         )
     }
   }

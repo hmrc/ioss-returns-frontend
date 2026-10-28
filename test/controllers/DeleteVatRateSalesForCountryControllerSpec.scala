@@ -44,7 +44,7 @@ class DeleteVatRateSalesForCountryControllerSpec extends SpecBase with MockitoSu
   private val vatRate = vatRateFromCountry.rateForDisplay
 
   private val baseAnswers: UserAnswers = emptyUserAnswers
-    .set(SoldGoodsPage(iossNumber), true).success.value
+    .set(SoldGoodsPage(iossNumber, mockAppConfig), true).success.value
     .set(SoldToCountryPage(iossNumber, index), country).success.value
     .set(VatRatesFromCountryPage(iossNumber, index, index), List[VatRateFromCountry](vatRateFromCountry)).success.value
     .set(SalesToCountryPage(iossNumber, index, index), salesValue).success.value

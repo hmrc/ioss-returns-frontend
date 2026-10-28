@@ -50,7 +50,7 @@ class SuccessfullySubmittedController @Inject()(
       val intermediaryClientName = intermediaryClientService.getClientName(isIntermediary, request.intermediaryNumber, request.iossNumber)
 
       val returnReference = generateVatReturnReference(request.iossNumber, request.userAnswers.period)
-      val hasSoldGoodsPage = request.userAnswers.get(SoldGoodsPage(request.iossNumber))
+      val hasSoldGoodsPage = request.userAnswers.get(SoldGoodsPage(request.iossNumber, frontendAppConfig))
       val hasCorrectedPreviousReturn = request.userAnswers.get(CorrectPreviousReturnPage(request.iossNumber, 0))
 
       val nilReturn = (hasSoldGoodsPage, hasCorrectedPreviousReturn) match {

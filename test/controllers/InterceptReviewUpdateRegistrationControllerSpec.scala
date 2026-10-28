@@ -24,6 +24,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import views.html.InterceptReviewUpdateRegistrationView
 
+
 class InterceptReviewUpdateRegistrationControllerSpec extends SpecBase {
 
   val clientName = "Mr Tufty Tuff"

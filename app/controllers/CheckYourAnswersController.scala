@@ -145,7 +145,7 @@ class CheckYourAnswersController @Inject()(
   private def getSalesFromEuSummaryList(request: DataRequest[AnyContent], waypoints: Waypoints)(implicit messages: Messages) = {
     SummaryListViewModel(
       rows = Seq(
-        SoldGoodsSummary.row(request.userAnswers, waypoints, CheckYourAnswersPage(request.iossNumber)),
+        SoldGoodsSummary.row(request.userAnswers, waypoints, CheckYourAnswersPage(request.iossNumber), frontendAppConfig),
         TotalNetValueOfSalesSummary.row(request.userAnswers, salesAtVatRateService.getTotalNetSales(request.userAnswers), waypoints, CheckYourAnswersPage(request.iossNumber)),
         TotalVatOnSalesSummary.row(request.userAnswers, salesAtVatRateService.getTotalVatOnSales(request.userAnswers), waypoints, CheckYourAnswersPage(request.iossNumber))
       ).flatten
@@ -183,7 +183,7 @@ class CheckYourAnswersController @Inject()(
       obligationService.getFulfilledObligations(request.iossNumber).map(_.size).flatMap {
         fulfilledObligations =>
 
-          incompleteReturnsJourneyRedirect(waypoints, fulfilledObligations) match {
+          incompleteReturnsJourneyRedirect(waypoints, fulfilledObligations, frontendAppConfig) match {
             case Some(result) => result.toFuture
             case None =>
 

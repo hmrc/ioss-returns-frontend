@@ -408,14 +408,14 @@ class CompletionChecksSpec extends SpecBase with MockitoSugar {
       "must return true if the SoldGoods page has been answered" in {
 
         val userAnswers = emptyUserAnswers
-          .set(SoldGoodsPage(iossNumber), false).success.value
+          .set(SoldGoodsPage(iossNumber, mockAppConfig), false).success.value
 
         val application = applicationBuilder(Some(userAnswers)).build()
 
         running(application) {
           implicit val request: DataRequest[AnyContent] = dataRequest(userAnswers)
 
-          val result = TestCompletionChecks.soldGoodsAnswered
+          val result = TestCompletionChecks.soldGoodsAnswered(mockAppConfig)
 
           result `mustBe` true
         }
@@ -430,7 +430,7 @@ class CompletionChecksSpec extends SpecBase with MockitoSugar {
         running(application) {
           implicit val request: DataRequest[AnyContent] = dataRequest(userAnswers)
 
-          val result = TestCompletionChecks.soldGoodsAnswered
+          val result = TestCompletionChecks.soldGoodsAnswered(mockAppConfig)
 
           result `mustBe` false
         }
@@ -499,7 +499,7 @@ class CompletionChecksSpec extends SpecBase with MockitoSugar {
         running(application) {
           implicit val request: DataRequest[AnyContent] = dataRequest(userAnswers)
 
-          val result = TestCompletionChecks.incompleteReturnsJourneyRedirect(waypoints, numberOfFulfilledObligations = 2)
+          val result = TestCompletionChecks.incompleteReturnsJourneyRedirect(waypoints, numberOfFulfilledObligations = 2, mockAppConfig)
 
           result `mustBe` Some(Redirect(routes.SoldGoodsController.onPageLoad(waypoints, iossNumber)))
         }
@@ -508,14 +508,14 @@ class CompletionChecksSpec extends SpecBase with MockitoSugar {
       "must redirect to the CorrectPreviousReturn controller if it has not been answered" in {
 
         val userAnswers = emptyUserAnswers
-          .set(SoldGoodsPage(iossNumber), false).success.value
+          .set(SoldGoodsPage(iossNumber, mockAppConfig), false).success.value
 
         val application = applicationBuilder(Some(userAnswers)).build()
 
         running(application) {
           implicit val request: DataRequest[AnyContent] = dataRequest(userAnswers)
 
-          val result = TestCompletionChecks.incompleteReturnsJourneyRedirect(waypoints, numberOfFulfilledObligations = 2)
+          val result = TestCompletionChecks.incompleteReturnsJourneyRedirect(waypoints, numberOfFulfilledObligations = 2, mockAppConfig)
 
           result `mustBe` Some(Redirect(corrections.routes.CorrectPreviousReturnController.onPageLoad(waypoints, iossNumber)))
         }
@@ -524,7 +524,7 @@ class CompletionChecksSpec extends SpecBase with MockitoSugar {
       "must return none when SoldGoods and CorrectPreviousReturn have been answered" in {
 
         val userAnswers = emptyUserAnswers
-          .set(SoldGoodsPage(iossNumber), false).success.value
+          .set(SoldGoodsPage(iossNumber, mockAppConfig), false).success.value
           .set(CorrectPreviousReturnPage(iossNumber, 0), true).success.value
 
         val application = applicationBuilder(Some(userAnswers)).build()
@@ -532,7 +532,7 @@ class CompletionChecksSpec extends SpecBase with MockitoSugar {
         running(application) {
           implicit val request: DataRequest[AnyContent] = dataRequest(userAnswers)
 
-          val result = TestCompletionChecks.incompleteReturnsJourneyRedirect(waypoints, numberOfFulfilledObligations = 2)
+          val result = TestCompletionChecks.incompleteReturnsJourneyRedirect(waypoints, numberOfFulfilledObligations = 2, mockAppConfig)
 
           result `mustBe` empty
         }

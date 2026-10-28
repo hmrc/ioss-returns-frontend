@@ -71,7 +71,7 @@ class RemainingVatRateFromCountryControllerSpec extends SpecBase with MockitoSug
   )
 
   val completedUserAnswers: UserAnswers = emptyUserAnswers
-    .set(SoldGoodsPage(iossNumber), true).success.value
+    .set(SoldGoodsPage(iossNumber, mockAppConfig), true).success.value
     .set(SoldToCountryPage(iossNumber, index), country).success.value
     .set(VatRatesFromCountryPage(iossNumber, index, index), currentlyAnsweredVatRates).success.value
     .set(SalesToCountryPage(iossNumber, index, index), salesValue).success.value

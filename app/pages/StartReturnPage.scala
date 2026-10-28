@@ -19,7 +19,6 @@ package pages
 import config.FrontendAppConfig
 import controllers.routes
 import models.{Period, UserAnswers}
-import pages.fileUpload.WantToUploadFilePage
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
@@ -33,10 +32,8 @@ case class StartReturnPage(iossNumber: String, period: Period, frontendAppConfig
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
     answers.get(this).map {
-      case true if frontendAppConfig.intermediaryEnabled =>
-        WantToUploadFilePage(answers.iossNumber)
       case true =>
-        SoldGoodsPage(answers.iossNumber)
+        SoldGoodsPage(answers.iossNumber, frontendAppConfig)
       case false =>
         NoOtherPeriodsAvailablePage(answers.iossNumber)
     }.orRecover

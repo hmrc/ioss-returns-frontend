@@ -66,7 +66,7 @@ class CsvParserServiceSpec extends SpecBase with MockitoSugar with Matchers with
           |"France","10%","150.01","£15"
           |""".stripMargin
 
-      val service = new CsvParserService()
+      val service = new CsvParserService(mockAppConfig)
       val result = CsvParserService.split(csv).flatMap { csvRows =>
         service.populateUserAnswersFromCsv(emptyUserAnswers, csvRows)
       }

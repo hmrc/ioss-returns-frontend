@@ -45,7 +45,7 @@ class SoldToCountryListControllerSpec extends SpecBase with MockitoSugar {
   private val salesValue: BigDecimal = Gen.chooseNum(minCurrencyAmount, maxCurrencyAmount).sample.value
 
   private val baseAnswers: UserAnswers = emptyUserAnswers
-    .set(SoldGoodsPage(iossNumber), true).success.value
+    .set(SoldGoodsPage(iossNumber, mockAppConfig), true).success.value
     .set(SoldToCountryPage(iossNumber, index), country).success.value
     .set(VatRatesFromCountryPage(iossNumber, index, index), List[VatRateFromCountry](vatRateFromCountry)).success.value
     .set(SalesToCountryPage(iossNumber, index, vatRateIndex), salesValue).success.value
@@ -69,7 +69,7 @@ class SoldToCountryListControllerSpec extends SpecBase with MockitoSugar {
 
         val view = application.injector.instanceOf[SoldToCountryListView]
 
-        val list = SoldToCountryListSummary.addToListRows(baseAnswers, waypoints, SoldToCountryListPage(iossNumber))
+        val list = SoldToCountryListSummary.addToListRows(baseAnswers, waypoints, SoldToCountryListPage(iossNumber), mockAppConfig)
 
         status(result) `mustBe` OK
         contentAsString(result) `mustBe` view(form, waypoints, iossNumber, period, list, canAddSales = true, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
@@ -90,7 +90,7 @@ class SoldToCountryListControllerSpec extends SpecBase with MockitoSugar {
 
         val view = application.injector.instanceOf[SoldToCountryListView]
 
-        val list = SoldToCountryListSummary.addToListRows(baseAnswers, waypoints, SoldToCountryListPage(iossNumber))
+        val list = SoldToCountryListSummary.addToListRows(baseAnswers, waypoints, SoldToCountryListPage(iossNumber), mockAppConfig)
 
         status(result) `mustBe` OK
         contentAsString(result) must not be view(form.fill(true), waypoints, iossNumber, period, list, canAddSales = true, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
@@ -117,7 +117,7 @@ class SoldToCountryListControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        val list = SoldToCountryListSummary.addToListRows(userAnswers, waypoints, SoldToCountryListPage(iossNumber))
+        val list = SoldToCountryListSummary.addToListRows(userAnswers, waypoints, SoldToCountryListPage(iossNumber), mockAppConfig)
 
         status(result) `mustBe` OK
         contentAsString(result) `mustBe` view(form, waypoints, iossNumber, period, list, canAddSales = false, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
@@ -144,7 +144,7 @@ class SoldToCountryListControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        val list = SoldToCountryListSummary.addToListRows(userAnswers, waypoints, SoldToCountryListPage(iossNumber))
+        val list = SoldToCountryListSummary.addToListRows(userAnswers, waypoints, SoldToCountryListPage(iossNumber), mockAppConfig)
 
         status(result) `mustBe` OK
         contentAsString(result) `mustBe` view(form, waypoints, iossNumber, period, list, canAddSales = true, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
@@ -194,7 +194,7 @@ class SoldToCountryListControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        val list = SoldToCountryListSummary.addToListRows(baseAnswers, waypoints, SoldToCountryListPage(iossNumber))
+        val list = SoldToCountryListSummary.addToListRows(baseAnswers, waypoints, SoldToCountryListPage(iossNumber), mockAppConfig)
 
         status(result) `mustBe` BAD_REQUEST
         contentAsString(result) `mustBe` view(boundForm, waypoints, iossNumber, period, list, canAddSales = true, isIntermediary = false, companyName = "Company Name")(request, messages(application)).toString
@@ -261,7 +261,7 @@ class SoldToCountryListControllerSpec extends SpecBase with MockitoSugar {
 
         val view = application.injector.instanceOf[SoldToCountryListView]
 
-        val salesSummary = SoldToCountryListSummary.addToListRows(userAnswers, waypoints, SoldToCountryListPage(iossNumber))
+        val salesSummary = SoldToCountryListSummary.addToListRows(userAnswers, waypoints, SoldToCountryListPage(iossNumber), mockAppConfig)
         val incompleteCountries = Seq(country)
 
         status(result) `mustBe` OK
