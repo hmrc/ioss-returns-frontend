@@ -45,7 +45,7 @@ class SalesToCountryControllerSpec extends SpecBase with MockitoSugar {
   val validAnswer: BigDecimal = 1234.12
 
   private val baseAnswers: UserAnswers = emptyUserAnswers
-    .set(SoldGoodsPage(iossNumber), true).success.value
+    .set(SoldGoodsPage(iossNumber, mockAppConfig), true).success.value
     .set(SoldToCountryPage(iossNumber, index), country).success.value
     .set(VatRatesFromCountryPage(iossNumber, index, index), List[VatRateFromCountry](vatRateFromCountry)).success.value
 

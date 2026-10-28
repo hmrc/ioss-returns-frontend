@@ -33,7 +33,6 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatest.prop.TableDrivenPropertyChecks
 import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
-import pages.fileUpload.WantToUploadFilePage
 import pages.{EmptyWaypoints, NoOtherPeriodsAvailablePage, SoldGoodsPage}
 import play.api.data.Form
 import play.api.inject.bind
@@ -689,7 +688,7 @@ class StartReturnControllerSpec
             val result = route(application, request).value
 
             status(result) `mustBe` SEE_OTHER
-            redirectLocation(result).value `mustBe` SoldGoodsPage(iossNumber).route(waypoints).url
+            redirectLocation(result).value `mustBe` SoldGoodsPage(iossNumber, mockAppConfig).route(waypoints).url
           }
         }
       }
@@ -727,7 +726,7 @@ class StartReturnControllerSpec
             val result = route(application, request).value
 
             status(result) `mustBe` SEE_OTHER
-            redirectLocation(result).value `mustBe` WantToUploadFilePage(iossNumber).route(waypoints).url
+            redirectLocation(result).value `mustBe` SoldGoodsPage(iossNumber,mockAppConfig).route(waypoints).url
           }
         }
       }
@@ -987,7 +986,7 @@ class StartReturnControllerSpec
 
           status(result) `mustBe` SEE_OTHER
 
-          redirectLocation(result).value `mustBe`  WantToUploadFilePage(iossNumber).route(waypoints).url
+          redirectLocation(result).value `mustBe`  SoldGoodsPage(iossNumber, mockAppConfig).route(waypoints).url
           verify(mockIntermediaryRegistrationConnector).get(ArgumentMatchers.eq(intermediaryNumber))(any())
         }
       }

@@ -19,19 +19,11 @@ package controllers
 import base.SpecBase
 import config.FrontendAppConfig
 import models.etmp.intermediary.{EtmpClientDetails, EtmpCustomerIdentificationLegacy, IntermediaryRegistrationWrapper}
-import org.mockito.ArgumentMatchers.{any, eq as eqTo}
-import org.mockito.Mockito.{verify, when}
-import org.scalatestplus.mockito.MockitoSugar.mock
 import pages.StartReturnPage
-import play.api.inject
-import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
-import services.intermediary.IntermediaryClientService
-import uk.gov.hmrc.http.HeaderCarrier
 import views.html.InterceptReviewUpdateRegistrationView
 
-import scala.concurrent.Future
 
 class InterceptReviewUpdateRegistrationControllerSpec extends SpecBase {
 

@@ -17,6 +17,7 @@
 package base
 
 import config.Constants.ukCountryCodeAreaPrefix
+import config.FrontendAppConfig
 import controllers.actions.*
 import generators.{Generators, UserAnswersGenerator}
 import models.*
@@ -28,6 +29,7 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.{OptionValues, TryValues}
+import org.scalatestplus.mockito.MockitoSugar.mock
 import pages.corrections.{CorrectPreviousReturnPage, CorrectionCountryPage, CorrectionReturnPeriodPage, CorrectionReturnYearPage}
 import pages.{EmptyWaypoints, SalesToCountryPage, SoldGoodsPage, SoldToCountryPage, VatOnSalesPage, VatRatesFromCountryPage, Waypoints}
 import play.api.Application
@@ -88,11 +90,12 @@ trait SpecBase
   val arbitraryDate: LocalDate = datesBetween(LocalDate.of(2023, 3, 1), LocalDate.of(2025, 12, 31)).sample.value
   val arbitraryInstant: Instant = arbitraryDate.atStartOfDay(ZoneId.systemDefault).toInstant
   val stubClockAtArbitraryDate: Clock = Clock.fixed(arbitraryInstant, ZoneId.systemDefault)
+  val mockAppConfig: FrontendAppConfig = mock[FrontendAppConfig]
 
   def emptyUserAnswers: UserAnswers = UserAnswers(userAnswersId, iossNumber, period, lastUpdated = arbitraryInstant)
 
   def completeUserAnswers: UserAnswers = emptyUserAnswers
-    .set(SoldGoodsPage(iossNumber), true).success.value
+    .set(SoldGoodsPage(iossNumber, mockAppConfig), true).success.value
     .set(CorrectPreviousReturnPage(iossNumber, 0), false).success.value
     .set(SoldToCountryPage(iossNumber, index), Country("HR", "Croatia")).success.value
     .set(VatRatesFromCountryPage(iossNumber, index, index), vatRates).success.value

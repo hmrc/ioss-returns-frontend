@@ -87,7 +87,7 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
     def createApplication(soldGoodsPage: Boolean, correctPreviousReturnPage: Boolean) = {
       val completedAnswers = completeUserAnswers
         .set(TotalAmountVatDueGBPQuery, totalOwed).success.value
-        .set(SoldGoodsPage(iossNumber), soldGoodsPage).success.value
+        .set(SoldGoodsPage(iossNumber, mockAppConfig), soldGoodsPage).success.value
         .set(CorrectPreviousReturnPage(iossNumber, 0), correctPreviousReturnPage)
         .success.value
 
@@ -182,7 +182,7 @@ class SuccessfullySubmittedControllerSpec extends SpecBase with TableDrivenPrope
     "must throw RuntimeException when TotalAmountVatDueGBPQuery is missing in userAnswers" in {
 
       val incompleteAnswers = completeUserAnswers
-        .set(SoldGoodsPage(iossNumber), false).success.value
+        .set(SoldGoodsPage(iossNumber, mockAppConfig), false).success.value
         .set(CorrectPreviousReturnPage(iossNumber, 0), false).success.value
 
       reset(mockSessionRepository)

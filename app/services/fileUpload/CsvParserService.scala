@@ -17,6 +17,7 @@
 package services.fileUpload
 
 import com.univocity.parsers.csv.{CsvParser, CsvParserSettings}
+import config.FrontendAppConfig
 import models.VatRateType.Standard
 import models.{Country, Index, UserAnswers, VatOnSales, VatOnSalesChoice, VatRateFromCountry}
 import pages.{SalesToCountryPage, SoldGoodsPage, SoldToCountryPage, VatOnSalesPage, VatRatesFromCountryPage}
@@ -54,7 +55,7 @@ object CsvParserService {
 
 @Singleton
 
-class CsvParserService @Inject()() {
+class CsvParserService @Inject()(frontendAppConfig: FrontendAppConfig) {
 
   private final case class VatRow(
                                    country: String,
@@ -66,7 +67,7 @@ class CsvParserService @Inject()() {
   def populateUserAnswersFromCsv(userAnswers: UserAnswers, rawRows: Seq[Array[String]]): Try[UserAnswers] = {
    
     val parsedRows: Seq[VatRow] = extractVatRows(rawRows)
-    val soldGoodsAnswer: Try[UserAnswers] = userAnswers.set(SoldGoodsPage(userAnswers.iossNumber), true)
+    val soldGoodsAnswer: Try[UserAnswers] = userAnswers.set(SoldGoodsPage(userAnswers.iossNumber, frontendAppConfig), true)
     val groupedByCountry: Seq[(String, Seq[VatRow])] = parsedRows.groupBy(_.country).toSeq.sortBy(_._1)
 
     groupedByCountry.zipWithIndex.foldLeft(soldGoodsAnswer) {
