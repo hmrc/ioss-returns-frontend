@@ -726,7 +726,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
         }
       }
 
-      "country of consumption must redirect to SoldToCountryController" in {
+      "country of consumption must redirect to WantToUploadFileController" in {
 
         when(mockObligationsService.getFulfilledObligations(any())(any())) thenReturn etmpObligationDetails.toFuture
 
@@ -742,7 +742,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with MockitoSugar with Sum
           val result = route(app, request).value
 
           status(result) `mustBe` SEE_OTHER
-          redirectLocation(result).value `mustBe` routes.SoldToCountryController.onPageLoad(waypoints, iossNumber, index).url
+          redirectLocation(result).value `mustBe` controllers.fileUpload.routes.WantToUploadFileController.onPageLoad(waypoints, iossNumber).url
         }
       }
 

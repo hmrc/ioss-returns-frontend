@@ -39,4 +39,21 @@ case class SoldGoodsPage(iossNumber: String, frontendAppConfig: FrontendAppConfi
       case true => SoldToCountryPage(answers.iossNumber, Index(0))
       case false => CorrectPreviousReturnPage(answers.iossNumber, 0)
     }.orRecover
+
+  override protected def nextPageCheckMode(waypoints: NonEmptyWaypoints, originalAnswers: UserAnswers, updatedAnswers: UserAnswers): Page = {
+
+    val answersChanged = originalAnswers.get(this) != updatedAnswers.get(this)
+
+    if (answersChanged) {
+      updatedAnswers.get(this).map {
+        case true if frontendAppConfig.intermediaryEnabled =>
+          WantToUploadFilePage(updatedAnswers.iossNumber)
+        case true => SoldToCountryPage(updatedAnswers.iossNumber, Index(0))
+        case false => CheckYourAnswersPage(updatedAnswers.iossNumber)
+      }.orRecover
+
+    } else {
+      CheckYourAnswersPage(updatedAnswers.iossNumber)
+    }
+  }
 }
