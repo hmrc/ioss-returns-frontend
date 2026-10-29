@@ -1,0 +1,115 @@
+/*
+ * Copyright 2026 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package controllers.actions
+
+import base.SpecBase
+import config.FrontendAppConfig
+import connectors.SaveForLaterConnector
+import controllers.intermediary.routes
+import models.requests.OptionalDataRequest
+import models.saveForLater.SavedUserAnswers
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
+import org.mockito.Mockito
+import org.mockito.Mockito.{times, verify, verifyNoInteractions, when}
+import org.scalatest.BeforeAndAfterEach
+import org.scalatestplus.mockito.MockitoSugar
+import play.api.inject.bind
+import play.api.mvc.Result
+import play.api.mvc.Results.Redirect
+import play.api.test.FakeRequest
+import play.api.test.Helpers.running
+import utils.FutureSyntax.FutureOps
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+
+class CheckIntermediarySavedReturnsFilterSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
+
+  private val mockConfig: FrontendAppConfig = mock[FrontendAppConfig]
+  private val mockSaveForLaterConnector: SaveForLaterConnector = mock[SaveForLaterConnector]
+
+  private val savedUserAnswers: SavedUserAnswers = arbitrarySavedUserAnswers.arbitrary.sample.value
+
+  class Harness extends CheckIntermediarySavedReturnsFilterImpl(mockConfig, mockSaveForLaterConnector) {
+    def callFilter(request: OptionalDataRequest[_]): Future[Option[Result]] = filter(request)
+  }
+
+  override def beforeEach(): Unit = {
+    Mockito.reset(mockSaveForLaterConnector)
+  }
+
+  "CheckIntermediarySavedReturnsFilter" - {
+
+    "when isIntermediary" - {
+
+      when(mockConfig.intermediaryEnabled) thenReturn true
+
+      "must return None when a saved return is present" in {
+
+        when(mockSaveForLaterConnector.get(any())(any())) thenReturn Right(Some(savedUserAnswers)).toFuture
+
+        val application = applicationBuilder(None)
+          .overrides(bind[SaveForLaterConnector].toInstance(mockSaveForLaterConnector))
+          .build()
+
+        running(application) {
+          val request = OptionalDataRequest(FakeRequest(), enrolments, testCredentials, Some(vrn), iossNumber, companyName, registrationWrapper, Some(intermediaryNumber), None)
+          val controller = new Harness()
+
+          val result = controller.callFilter(request).futureValue
+
+          result must not be defined
+          verify(mockSaveForLaterConnector, times(1)).get(eqTo(iossNumber))(any())
+        }
+      }
+
+      "must redirect to No Saved Intermediary Returns when a saved return is not present" in {
+
+        when(mockSaveForLaterConnector.get(any())(any())) thenReturn Right(None).toFuture
+
+        val application = applicationBuilder(None)
+          .overrides(bind[SaveForLaterConnector].toInstance(mockSaveForLaterConnector))
+          .build()
+
+        running(application) {
+          val request = OptionalDataRequest(FakeRequest(), enrolments, testCredentials, Some(vrn), iossNumber, companyName, registrationWrapper, Some(intermediaryNumber), None)
+          val controller = new Harness()
+
+          val result = controller.callFilter(request).futureValue
+
+          result `mustBe` Some(Redirect(routes.NoSavedIntermediaryReturnsController.onPageLoad()))
+          verify(mockSaveForLaterConnector, times(1)).get(eqTo(iossNumber))(any())
+        }
+      }
+    }
+
+    "must return None when not an intermediary" in {
+
+      val application = applicationBuilder(None).build()
+
+      running(application) {
+        val request = OptionalDataRequest(FakeRequest(), enrolments, testCredentials, Some(vrn), iossNumber, companyName, registrationWrapper, None, None)
+        val controller = new Harness()
+
+        val result = controller.callFilter(request).futureValue
+
+        result must not be defined
+        verifyNoInteractions(mockSaveForLaterConnector)
+      }
+    }
+  }
+}

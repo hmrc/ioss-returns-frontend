@@ -62,6 +62,8 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
   def getRegistrationWithoutUrlIoss: GetRegistrationWithoutUrlIossAction
 
   def checkPartOfVatGroupWithFixedEstablishments: CheckPartOfVatGroupWithFixedEstablishmentsFilter
+  
+  def checkIntermediarySavedReturnsFilter: CheckIntermediarySavedReturnsFilter
 
   def auth: ActionBuilder[IdentifierRequest, AnyContent] =
     actionBuilder andThen identify
@@ -89,7 +91,19 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
   }
 
   def authAndRequireData(iossNumber: String): ActionBuilder[DataRequest, AnyContent] = {
-    authAndGetOptionalData(iossNumber) andThen requireData andThen checkExcludedTrader() andThen checkCommencementDate()
+    authAndGetOptionalData(iossNumber) andThen
+      checkIntermediarySavedReturnsFilter() andThen
+      requireData andThen
+      checkExcludedTrader() andThen
+      checkCommencementDate()
+  }
+
+  def authAndRequireDataAndCheckIntermediarySavedReturns(iossNumber: String): ActionBuilder[DataRequest, AnyContent] = {
+    authAndGetOptionalData(iossNumber) andThen
+      checkIntermediarySavedReturnsFilter() andThen
+      requireData andThen
+      checkExcludedTrader() andThen
+      checkCommencementDate()
   }
 
   def authAndGetDataAndCorrectionEligible(iossNumber: String): ActionBuilder[DataRequest, AnyContent] = {
@@ -133,5 +147,6 @@ case class DefaultAuthenticatedControllerComponents @Inject()(
                                                                intermediaryRequired: IntermediaryRequiredFilter,
                                                                intermediaryEnabled: IntermediaryEnabledFilter,
                                                                getRegistrationWithoutUrlIoss: GetRegistrationWithoutUrlIossAction,
-                                                               checkPartOfVatGroupWithFixedEstablishments: CheckPartOfVatGroupWithFixedEstablishmentsFilter
+                                                               checkPartOfVatGroupWithFixedEstablishments: CheckPartOfVatGroupWithFixedEstablishmentsFilter,
+                                                               checkIntermediarySavedReturnsFilter: CheckIntermediarySavedReturnsFilter
                                                              ) extends AuthenticatedControllerComponents

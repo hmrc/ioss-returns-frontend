@@ -25,14 +25,12 @@ import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito
 import org.mockito.Mockito.{times, verify, when}
 import org.scalacheck.Gen
-import org.scalatest.PrivateMethodTester.PrivateMethod
 import org.scalatest.{BeforeAndAfterEach, PrivateMethodTester}
 import org.scalatestplus.mockito.MockitoSugar.mock
 import uk.gov.hmrc.http.HeaderCarrier
 import utils.FutureSyntax.FutureOps
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 
 class SaveForLaterServiceSpec extends SpecBase with BeforeAndAfterEach with PrivateMethodTester {
 
@@ -47,76 +45,6 @@ class SaveForLaterServiceSpec extends SpecBase with BeforeAndAfterEach with Priv
   }
 
   "SaveForLaterService" - {
-
-    ".getAllClientSavedAnswers" - {
-
-      "must return SavedUserAnswers when the connector returns Right(SavedUserAnswers)" in {
-
-        when(mockSaveForLaterConnector.getForIntermediary()(any())) thenReturn Right(savedUserAnswers).toFuture
-
-        val service = new SaveForLaterService(mockSaveForLaterConnector)
-
-        val privateMethodCall = PrivateMethod[Future[Seq[SavedUserAnswers]]](Symbol("getAllClientSavedAnswers"))
-        val result = service invokePrivate privateMethodCall(hc)
-
-        result.futureValue `mustBe` savedUserAnswers
-        verify(mockSaveForLaterConnector, times(1)).getForIntermediary()(any())
-      }
-
-      "must throw an Exception when the connector returns an error" in {
-
-        val error: ErrorResponse = InternalServerError
-        val errorMessage: String = s"An error occurred retrieving saved user answers: ${error.body}"
-
-        when(mockSaveForLaterConnector.getForIntermediary()(any())) thenReturn Left(error).toFuture
-
-        val service = new SaveForLaterService(mockSaveForLaterConnector)
-
-        val privateMethodCall = PrivateMethod[Future[Seq[SavedUserAnswers]]](Symbol("getAllClientSavedAnswers"))
-        val result = service invokePrivate privateMethodCall(hc)
-
-        whenReady(result.failed) { exp =>
-          exp `mustBe` a[Exception]
-          exp.getMessage `mustBe` errorMessage
-        }
-        verify(mockSaveForLaterConnector, times(1)).getForIntermediary()(any())
-      }
-    }
-
-    ".getSavedReturnsForClient" - {
-
-      val iossNumber: String = savedUserAnswers.head.iossNumber
-
-      "must return SavedUserAnswers for the given IOSS number when the connector returns Right(SavedUserAnswers)" in {
-
-        when(mockSaveForLaterConnector.getForIntermediary()(any())) thenReturn Right(savedUserAnswers).toFuture
-
-        val service = new SaveForLaterService(mockSaveForLaterConnector)
-
-        val result = service.getSavedReturnsForClient(iossNumber).futureValue
-
-        result `mustBe` Seq(savedUserAnswers.head)
-        verify(mockSaveForLaterConnector, times(1)).getForIntermediary()(any())
-      }
-
-      "must throw an Exception when the connector returns an error" in {
-
-        val error: ErrorResponse = InternalServerError
-        val errorMessage: String = s"An error occurred retrieving saved user answers: ${error.body}"
-
-        when(mockSaveForLaterConnector.getForIntermediary()(any())) thenReturn Left(error).toFuture
-
-        val service = new SaveForLaterService(mockSaveForLaterConnector)
-
-        val result = service.getSavedReturnsForClient(iossNumber).failed
-
-        whenReady(result) { exp =>
-          exp `mustBe` a[Exception]
-          exp.getMessage `mustBe` errorMessage
-        }
-        verify(mockSaveForLaterConnector, times(1)).getForIntermediary()(any())
-      }
-    }
 
     ".deleteSavedUserAnswers" - {
 
