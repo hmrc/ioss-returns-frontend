@@ -152,7 +152,7 @@ class RedirectServiceSpec extends SpecBase with BeforeAndAfterEach {
 
     ".getRedirect" - {
 
-      "must redirect to Sold To Country Controller when there's no data for sales present" in {
+      "must redirect to Want to upload a file Controller when there's no data for sales present" in {
 
         val updatedUserAnswers: UserAnswers = completeUserAnswers
           .remove(SalesToCountryPage(iossNumber, Index(0), Index(0))).success.value
@@ -170,7 +170,7 @@ class RedirectServiceSpec extends SpecBase with BeforeAndAfterEach {
 
           val result = service.getRedirect(waypoints, List(validationError)).headOption
 
-          result `mustBe` Some(routes.SoldToCountryController.onPageLoad(waypoints, iossNumber, Index(0)))
+          result `mustBe` Some(controllers.fileUpload.routes.WantToUploadFileController.onPageLoad(waypoints, iossNumber))
         }
       }
 
