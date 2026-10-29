@@ -20,7 +20,7 @@ import base.SpecBase
 import config.Constants.{maxCurrencyAmount, minCurrencyAmount}
 import forms.CheckSalesFormProvider
 import models.{Country, UserAnswers, VatOnSales, VatRateFromCountry}
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.{reset, times, verify, when}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Gen
@@ -31,7 +31,7 @@ import play.api.data.Form
 import play.api.i18n.Messages
 import play.api.inject.bind
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import queries.RemainingVatRatesFromCountryQuery
 import repositories.SessionRepository
 import services.VatRateService
@@ -53,7 +53,7 @@ class CheckSalesControllerSpec extends SpecBase with MockitoSugar with SummaryLi
   private val vatOnSalesValue: VatOnSales = arbitraryVatOnSales.arbitrary.sample.value
 
   private val baseAnswers: UserAnswers = emptyUserAnswers
-    .set(SoldGoodsPage(iossNumber), true).success.value
+    .set(SoldGoodsPage(iossNumber, mockAppConfig), true).success.value
     .set(SoldToCountryPage(iossNumber, index), country).success.value
     .set(VatRatesFromCountryPage(iossNumber, index, index), vatRatesFromCountry).success.value
     .set(SalesToCountryPage(iossNumber, index, index), salesValue).success.value
@@ -63,7 +63,7 @@ class CheckSalesControllerSpec extends SpecBase with MockitoSugar with SummaryLi
   private val  remainingVatRateForCountry = List(arbitrary[VatRateFromCountry].sample.value)
 
   private val completeAnswers: UserAnswers = emptyUserAnswers
-    .set(SoldGoodsPage(iossNumber), true).success.value
+    .set(SoldGoodsPage(iossNumber, mockAppConfig), true).success.value
     .set(SoldToCountryPage(iossNumber, index), country).success.value
     .set(VatRatesFromCountryPage(iossNumber, index, index), vatRateFromCountry).success.value
     .set(SalesToCountryPage(iossNumber, index, index), salesValue).success.value
@@ -111,7 +111,7 @@ class CheckSalesControllerSpec extends SpecBase with MockitoSugar with SummaryLi
       val salesValue: BigDecimal = Gen.chooseNum(minCurrencyAmount, maxCurrencyAmount).sample.value
 
       val answers: UserAnswers = emptyUserAnswers
-        .set(SoldGoodsPage(iossNumber), true).success.value
+        .set(SoldGoodsPage(iossNumber, mockAppConfig), true).success.value
         .set(SoldToCountryPage(iossNumber, index), country).success.value
         .set(VatRatesFromCountryPage(iossNumber, index, index), vatRatesFromCountry).success.value
         .set(SalesToCountryPage(iossNumber, index, index), salesValue).success.value

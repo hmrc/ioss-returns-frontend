@@ -69,7 +69,7 @@ class RedirectService @Inject()(
     errors.flatMap {
       case DataMissingError(AllSalesQuery) =>
         logger.error(s"Data missing - no data provided for sales")
-        Some(routes.SoldToCountryController.onPageLoad(waypoints, request.iossNumber, Index(0)))
+        Some(controllers.fileUpload.routes.WantToUploadFileController.onPageLoad(waypoints, request.iossNumber))
       case DataMissingError(VatRatesFromCountryPage(iossNumber, countryIndex, vatRateIndex)) =>
         logger.error(s"Data missing - vat rates with index ${vatRateIndex.position}")
         Some(routes.VatRatesFromCountryController.onPageLoad(waypoints, iossNumber, countryIndex))

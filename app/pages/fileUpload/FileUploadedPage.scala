@@ -16,9 +16,9 @@
 
 package pages.fileUpload
 
-import models.UserAnswers
+import models.{Index, UserAnswers}
 import pages.corrections.CorrectPreviousReturnPage
-import pages.{CheckYourAnswersPage, Page, QuestionPage, SoldGoodsPage, Waypoints}
+import pages.{CheckYourAnswersPage, Page, QuestionPage, SoldToCountryPage, Waypoints}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
@@ -46,7 +46,7 @@ case class FileUploadedPage(iossNumber: String) extends QuestionPage[Boolean] {
         FileUploadPage(answers.iossNumber)
 
       case (Some("FAILED"), Some(false)) =>
-        SoldGoodsPage(answers.iossNumber)
+        SoldToCountryPage(answers.iossNumber, Index(0))
 
       case _ =>
         this

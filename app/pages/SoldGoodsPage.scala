@@ -16,13 +16,15 @@
 
 package pages
 
+import config.FrontendAppConfig
 import controllers.routes
 import models.{Index, UserAnswers}
 import pages.corrections.CorrectPreviousReturnPage
+import pages.fileUpload.WantToUploadFilePage
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
-case class SoldGoodsPage(iossNumber: String) extends QuestionPage[Boolean] {
+case class SoldGoodsPage(iossNumber: String, frontendAppConfig: FrontendAppConfig) extends QuestionPage[Boolean] {
 
   override def path: JsPath = JsPath \ toString
 
@@ -32,7 +34,26 @@ case class SoldGoodsPage(iossNumber: String) extends QuestionPage[Boolean] {
 
   override protected def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
     answers.get(this).map {
+      case true if frontendAppConfig.intermediaryEnabled =>
+        WantToUploadFilePage(answers.iossNumber)
       case true => SoldToCountryPage(answers.iossNumber, Index(0))
       case false => CorrectPreviousReturnPage(answers.iossNumber, 0)
     }.orRecover
+
+  override protected def nextPageCheckMode(waypoints: NonEmptyWaypoints, originalAnswers: UserAnswers, updatedAnswers: UserAnswers): Page = {
+
+    val answersChanged = originalAnswers.get(this) != updatedAnswers.get(this)
+
+    if (answersChanged) {
+      updatedAnswers.get(this).map {
+        case true if frontendAppConfig.intermediaryEnabled =>
+          WantToUploadFilePage(updatedAnswers.iossNumber)
+        case true => SoldToCountryPage(updatedAnswers.iossNumber, Index(0))
+        case false => CheckYourAnswersPage(updatedAnswers.iossNumber)
+      }.orRecover
+
+    } else {
+      CheckYourAnswersPage(updatedAnswers.iossNumber)
+    }
+  }
 }

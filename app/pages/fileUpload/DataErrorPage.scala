@@ -16,8 +16,8 @@
 
 package pages.fileUpload
 
-import models.UserAnswers
-import pages.{Page, QuestionPage, RecoveryOps, SoldGoodsPage, Waypoints}
+import models.{Index, UserAnswers}
+import pages.{Page, QuestionPage, RecoveryOps, SoldToCountryPage, Waypoints}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
@@ -34,7 +34,7 @@ case class DataErrorPage(iossNumber: String) extends QuestionPage[Boolean] {
       case true =>
         FileUploadPage(answers.iossNumber)
       case false =>
-        SoldGoodsPage(answers.iossNumber)
+        SoldToCountryPage(answers.iossNumber, Index(0))
     }.orRecover
   }
 }

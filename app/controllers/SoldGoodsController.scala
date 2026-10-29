@@ -16,7 +16,8 @@
 
 package controllers
 
-import controllers.actions._
+import config.FrontendAppConfig
+import controllers.actions.*
 import forms.SoldGoodsFormProvider
 import pages.{SoldGoodsPage, Waypoints}
 import play.api.data.Form
@@ -35,7 +36,8 @@ class SoldGoodsController @Inject()(
                                      override val messagesApi: MessagesApi,
                                      cc: AuthenticatedControllerComponents,
                                      formProvider: SoldGoodsFormProvider,
-                                     view: SoldGoodsView
+                                     view: SoldGoodsView,
+                                     frontendAppConfig: FrontendAppConfig
                                    )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
@@ -45,8 +47,7 @@ class SoldGoodsController @Inject()(
 
       val form: Form[Boolean] = formProvider(request.isIntermediary)
       val period = request.userAnswers.period
-
-      val preparedForm = request.userAnswers.get(SoldGoodsPage(request.iossNumber)) match {
+      val preparedForm = request.userAnswers.get(SoldGoodsPage(request.iossNumber, frontendAppConfig)) match {
         case None => form
         case Some(value) => form.fill(value)
       }
@@ -68,14 +69,14 @@ class SoldGoodsController @Inject()(
           for {
             updatedAnswers <- Future.fromTry {
                 for {
-                  updateSoldGoodsPageAnswer <- request.userAnswers.set(SoldGoodsPage(request.iossNumber), value)
+                  updateSoldGoodsPageAnswer <- request.userAnswers.set(SoldGoodsPage(request.iossNumber, frontendAppConfig), value)
                   maybeUpdateSalesAnswer <- {
                     if (value) Try(updateSoldGoodsPageAnswer) else updateSoldGoodsPageAnswer.remove(AllSalesQuery)
                   }
                 } yield maybeUpdateSalesAnswer
               }
             _ <- cc.sessionRepository.set(updatedAnswers)
-          } yield Redirect(SoldGoodsPage(request.iossNumber).navigate(waypoints, request.userAnswers, updatedAnswers).route)
+          } yield Redirect(SoldGoodsPage(request.iossNumber, frontendAppConfig).navigate(waypoints, request.userAnswers, updatedAnswers).route)
       )
   }
 }
