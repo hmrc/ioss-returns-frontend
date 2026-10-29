@@ -62,7 +62,7 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
   def getRegistrationWithoutUrlIoss: GetRegistrationWithoutUrlIossAction
 
   def checkPartOfVatGroupWithFixedEstablishments: CheckPartOfVatGroupWithFixedEstablishmentsFilter
-  
+
   def checkIntermediarySavedReturnsFilter: CheckIntermediarySavedReturnsFilter
 
   def auth: ActionBuilder[IdentifierRequest, AnyContent] =
@@ -92,7 +92,6 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
 
   def authAndRequireData(iossNumber: String): ActionBuilder[DataRequest, AnyContent] = {
     authAndGetOptionalData(iossNumber) andThen
-      checkIntermediarySavedReturnsFilter() andThen
       requireData andThen
       checkExcludedTrader() andThen
       checkCommencementDate()
