@@ -63,7 +63,7 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
 
   def checkPartOfVatGroupWithFixedEstablishments: CheckPartOfVatGroupWithFixedEstablishmentsFilter
 
-  def checkIntermediarySavedReturnsFilter: CheckIntermediarySavedReturnsFilter
+  def checkSavedReturnsFilter: CheckSavedReturnsFilter
 
   def auth: ActionBuilder[IdentifierRequest, AnyContent] =
     actionBuilder andThen identify
@@ -97,9 +97,9 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
       checkCommencementDate()
   }
 
-  def authAndRequireDataAndCheckIntermediarySavedReturns(iossNumber: String): ActionBuilder[DataRequest, AnyContent] = {
+  def authAndRequireDataAndCheckSavedReturns(iossNumber: String): ActionBuilder[DataRequest, AnyContent] = {
     authAndGetOptionalData(iossNumber) andThen
-      checkIntermediarySavedReturnsFilter() andThen
+      checkSavedReturnsFilter() andThen
       requireData andThen
       checkExcludedTrader() andThen
       checkCommencementDate()
@@ -147,5 +147,5 @@ case class DefaultAuthenticatedControllerComponents @Inject()(
                                                                intermediaryEnabled: IntermediaryEnabledFilter,
                                                                getRegistrationWithoutUrlIoss: GetRegistrationWithoutUrlIossAction,
                                                                checkPartOfVatGroupWithFixedEstablishments: CheckPartOfVatGroupWithFixedEstablishmentsFilter,
-                                                               checkIntermediarySavedReturnsFilter: CheckIntermediarySavedReturnsFilter
+                                                               checkSavedReturnsFilter: CheckSavedReturnsFilter
                                                              ) extends AuthenticatedControllerComponents

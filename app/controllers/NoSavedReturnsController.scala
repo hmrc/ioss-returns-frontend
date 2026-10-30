@@ -14,30 +14,36 @@
  * limitations under the License.
  */
 
-package controllers.intermediary
+package controllers
 
 import config.FrontendAppConfig
 import controllers.actions.*
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.NoSavedIntermediaryReturnsView
+import views.html.NoSavedReturnsView
 
 import javax.inject.Inject
 
-class NoSavedIntermediaryReturnsController @Inject()(
-                                                      override val messagesApi: MessagesApi,
-                                                      cc: AuthenticatedControllerComponents,
-                                                      frontendAppConfig: FrontendAppConfig,
-                                                      view: NoSavedIntermediaryReturnsView
-                                                    ) extends FrontendBaseController with I18nSupport {
-  
+class NoSavedReturnsController @Inject()(
+                                          override val messagesApi: MessagesApi,
+                                          cc: AuthenticatedControllerComponents,
+                                          frontendAppConfig: FrontendAppConfig,
+                                          view: NoSavedReturnsView
+                                        ) extends FrontendBaseController with I18nSupport {
+
   protected val controllerComponents: MessagesControllerComponents = cc
-  
+
   def onPageLoad: Action[AnyContent] = (cc.actionBuilder andThen cc.identify) {
     implicit request =>
 
-      val redirect: String = frontendAppConfig.intermediaryDashboardUrl
+      val hasIntermediaryEnrolment: Boolean = request.enrolments.getEnrolment(frontendAppConfig.intermediaryEnrolment).nonEmpty
+
+      val redirect: String = if (hasIntermediaryEnrolment) {
+        frontendAppConfig.intermediaryDashboardUrl
+      } else {
+        routes.IndexController.onPageLoad.url
+      }
 
       Ok(view(redirect))
   }

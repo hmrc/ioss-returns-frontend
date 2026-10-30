@@ -17,14 +17,13 @@
 package controllers.actions
 
 import base.SpecBase
-import config.FrontendAppConfig
 import connectors.SaveForLaterConnector
-import controllers.intermediary.routes
+import controllers.routes
 import models.requests.OptionalDataRequest
 import models.saveForLater.SavedUserAnswers
 import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito
-import org.mockito.Mockito.{times, verify, verifyNoInteractions, when}
+import org.mockito.Mockito.{times, verify, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject.bind
@@ -37,14 +36,13 @@ import utils.FutureSyntax.FutureOps
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class CheckIntermediarySavedReturnsFilterSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
+class CheckSavedReturnsFilterSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
 
-  private val mockConfig: FrontendAppConfig = mock[FrontendAppConfig]
   private val mockSaveForLaterConnector: SaveForLaterConnector = mock[SaveForLaterConnector]
 
   private val savedUserAnswers: SavedUserAnswers = arbitrarySavedUserAnswers.arbitrary.sample.value
 
-  class Harness extends CheckIntermediarySavedReturnsFilterImpl(mockConfig, mockSaveForLaterConnector) {
+  class Harness extends CheckSavedReturnsFilterImpl(mockSaveForLaterConnector) {
     def callFilter(request: OptionalDataRequest[_]): Future[Option[Result]] = filter(request)
   }
 
@@ -52,11 +50,9 @@ class CheckIntermediarySavedReturnsFilterSpec extends SpecBase with MockitoSugar
     Mockito.reset(mockSaveForLaterConnector)
   }
 
-  "CheckIntermediarySavedReturnsFilter" - {
+  "CheckSavedReturnsFilter" - {
 
-    "when isIntermediary" - {
-
-      when(mockConfig.intermediaryEnabled) thenReturn true
+    "when is an Intermediary" - {
 
       "must return None when a saved return is present" in {
 
@@ -77,7 +73,7 @@ class CheckIntermediarySavedReturnsFilterSpec extends SpecBase with MockitoSugar
         }
       }
 
-      "must redirect to No Saved Intermediary Returns when a saved return is not present" in {
+      "must redirect to No Saved Returns when a saved return is not present" in {
 
         when(mockSaveForLaterConnector.get(any())(any())) thenReturn Right(None).toFuture
 
@@ -91,24 +87,50 @@ class CheckIntermediarySavedReturnsFilterSpec extends SpecBase with MockitoSugar
 
           val result = controller.callFilter(request).futureValue
 
-          result `mustBe` Some(Redirect(routes.NoSavedIntermediaryReturnsController.onPageLoad()))
+          result `mustBe` Some(Redirect(routes.NoSavedReturnsController.onPageLoad()))
           verify(mockSaveForLaterConnector, times(1)).get(eqTo(iossNumber))(any())
         }
       }
     }
 
-    "must return None when not an intermediary" in {
+    "when not an Intermediary" - {
 
-      val application = applicationBuilder(None).build()
+      "must return None when a saved return is present" in {
 
-      running(application) {
-        val request = OptionalDataRequest(FakeRequest(), enrolments, testCredentials, Some(vrn), iossNumber, companyName, registrationWrapper, None, None)
-        val controller = new Harness()
+        when(mockSaveForLaterConnector.get(any())(any())) thenReturn Right(Some(savedUserAnswers)).toFuture
 
-        val result = controller.callFilter(request).futureValue
+        val application = applicationBuilder(None)
+          .overrides(bind[SaveForLaterConnector].toInstance(mockSaveForLaterConnector))
+          .build()
 
-        result must not be defined
-        verifyNoInteractions(mockSaveForLaterConnector)
+        running(application) {
+          val request = OptionalDataRequest(FakeRequest(), enrolments, testCredentials, Some(vrn), iossNumber, companyName, registrationWrapper, None, None)
+          val controller = new Harness()
+
+          val result = controller.callFilter(request).futureValue
+
+          result must not be defined
+          verify(mockSaveForLaterConnector, times(1)).get(eqTo(iossNumber))(any())
+        }
+      }
+
+      "must redirect to No Saved Returns when a saved return is not present" in {
+
+        when(mockSaveForLaterConnector.get(any())(any())) thenReturn Right(None).toFuture
+
+        val application = applicationBuilder(None)
+          .overrides(bind[SaveForLaterConnector].toInstance(mockSaveForLaterConnector))
+          .build()
+
+        running(application) {
+          val request = OptionalDataRequest(FakeRequest(), enrolments, testCredentials, Some(vrn), iossNumber, companyName, registrationWrapper, None, None)
+          val controller = new Harness()
+
+          val result = controller.callFilter(request).futureValue
+
+          result `mustBe` Some(Redirect(routes.NoSavedReturnsController.onPageLoad()))
+          verify(mockSaveForLaterConnector, times(1)).get(eqTo(iossNumber))(any())
+        }
       }
     }
   }

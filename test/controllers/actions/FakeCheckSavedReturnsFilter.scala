@@ -16,7 +16,6 @@
 
 package controllers.actions
 
-import config.FrontendAppConfig
 import connectors.SaveForLaterConnector
 import models.requests.OptionalDataRequest
 import org.scalatestplus.mockito.MockitoSugar.mock
@@ -26,22 +25,15 @@ import utils.FutureSyntax.FutureOps
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 
-class FakeCheckIntermediarySavedReturnsFilterImpl()
-  extends CheckIntermediarySavedReturnsFilterImpl(
-    mock[FrontendAppConfig],
-    mock[SaveForLaterConnector]
-  ) {
+class FakeCheckSavedReturnsFilterImpl()
+  extends CheckSavedReturnsFilterImpl(mock[SaveForLaterConnector]) {
 
   override protected def filter[A](request: OptionalDataRequest[A]): Future[Option[Result]] =
     None.toFuture
 }
 
-class FakeCheckIntermediarySavedReturnsFilter()
-  extends CheckIntermediarySavedReturnsFilter(
-    mock[FrontendAppConfig],
-    mock[SaveForLaterConnector]
-  )(ExecutionContext.Implicits.global) {
+class FakeCheckSavedReturnsFilter()
+  extends CheckSavedReturnsFilter(mock[SaveForLaterConnector])(ExecutionContext.Implicits.global) {
 
-  override def apply(): CheckIntermediarySavedReturnsFilterImpl = new FakeCheckIntermediarySavedReturnsFilterImpl()
-
+  override def apply(): CheckSavedReturnsFilterImpl = new FakeCheckSavedReturnsFilterImpl()
 }

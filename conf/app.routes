@@ -187,4 +187,4 @@ POST        /:iossNumber/csv-data-error                                         
 
 GET        /:iossNumber/review-registration                                                       controllers.InterceptReviewUpdateRegistrationController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, iossNumber: String)
 
-GET        /no-saved-intermediary-returns                                                         controllers.intermediary.NoSavedIntermediaryReturnsController.onPageLoad()
+GET        /no-saved-returns                                                                      controllers.NoSavedReturnsController.onPageLoad()

@@ -745,7 +745,7 @@ interceptReviewUpdateRegistration.p1 = You have not reviewed your IOSS registrat
 interceptReviewUpdateRegistration.reviewAndUpdateLink = <a class="govuk-link" id="back-to-your-account" href={0}>Review your registration details</a>
 interceptReviewUpdateRegistration.skip = <a class="govuk-button govuk-button--secondary" id="skip" href={0}>Skip for now</a>
 
-noSavedIntermediaryReturns.title = You do not have any returns in progress
-noSavedIntermediaryReturns.heading = You do not have any returns in progress
-noSavedIntermediaryReturns.returnToYourAccountLink = <a class="govuk-link govuk-link--no-visited-state" id="return-to-your-account" href={0}>Return to your account</a>
+noSavedReturns.title = You do not have any returns in progress
+noSavedReturns.heading = You do not have any returns in progress
+noSavedReturns.returnToYourAccountLink = <a class="govuk-link govuk-link--no-visited-state" id="return-to-your-account" href={0}>Return to your account</a>
 

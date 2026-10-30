@@ -36,7 +36,7 @@ class ContinueReturnController @Inject()(
   private val form = formProvider()
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(iossNumber: String, period: Period): Action[AnyContent] = cc.authAndRequireDataAndCheckIntermediarySavedReturns(iossNumber) {
+  def onPageLoad(iossNumber: String, period: Period): Action[AnyContent] = cc.authAndRequireDataAndCheckSavedReturns(iossNumber) {
       implicit request =>
         request.userAnswers.get(SavedProgressPage).map(
           _ => Ok(view(form, request.iossNumber, request.userAnswers.period, request.isIntermediary, request.companyName))
@@ -45,7 +45,7 @@ class ContinueReturnController @Inject()(
         )
     }
 
-  def onSubmit(iossNumber: String, period: Period): Action[AnyContent] = cc.authAndRequireDataAndCheckIntermediarySavedReturns(iossNumber) {
+  def onSubmit(iossNumber: String, period: Period): Action[AnyContent] = cc.authAndRequireDataAndCheckSavedReturns(iossNumber) {
       implicit request =>
         form.bindFromRequest().fold(
           formWithErrors =>

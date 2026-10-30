@@ -16,9 +16,8 @@
 
 package controllers.actions
 
-import config.FrontendAppConfig
 import connectors.SaveForLaterConnector
-import controllers.intermediary.routes
+import controllers.routes
 import models.requests.OptionalDataRequest
 import play.api.mvc.Results.Redirect
 import play.api.mvc.{ActionFilter, Result}
@@ -29,33 +28,27 @@ import utils.FutureSyntax.FutureOps
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class CheckIntermediarySavedReturnsFilterImpl(
-                                               frontendAppConfig: FrontendAppConfig,
-                                               saveForLaterConnector: SaveForLaterConnector
-                                             )(implicit val executionContext: ExecutionContext)
+class CheckSavedReturnsFilterImpl(
+                                   saveForLaterConnector: SaveForLaterConnector
+                                 )(implicit val executionContext: ExecutionContext)
   extends ActionFilter[OptionalDataRequest] {
 
   override protected def filter[A](request: OptionalDataRequest[A]): Future[Option[Result]] = {
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
 
-    if (frontendAppConfig.intermediaryEnabled && request.isIntermediary) {
-      saveForLaterConnector.get(request.iossNumber).flatMap {
-        case Right(Some(_)) => None.toFuture
+    saveForLaterConnector.get(request.iossNumber).flatMap {
+      case Right(Some(_)) => None.toFuture
 
-        case _ =>
-          Some(Redirect(routes.NoSavedIntermediaryReturnsController.onPageLoad())).toFuture
-      }
-    } else {
-      None.toFuture
+      case _ =>
+        Some(Redirect(routes.NoSavedReturnsController.onPageLoad())).toFuture
     }
   }
 }
 
-class CheckIntermediarySavedReturnsFilter @Inject()(
-                                                     frontendAppConfig: FrontendAppConfig,
-                                                     saveForLaterConnector: SaveForLaterConnector
-                                                   )(implicit ec: ExecutionContext) {
+class CheckSavedReturnsFilter @Inject()(
+                                         saveForLaterConnector: SaveForLaterConnector
+                                       )(implicit ec: ExecutionContext) {
 
-  def apply(): CheckIntermediarySavedReturnsFilterImpl =
-    new CheckIntermediarySavedReturnsFilterImpl(frontendAppConfig, saveForLaterConnector)
+  def apply(): CheckSavedReturnsFilterImpl =
+    new CheckSavedReturnsFilterImpl(saveForLaterConnector)
 }

@@ -20,9 +20,9 @@
 
 @(redirect: String)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = titleNoForm(messages("noSavedIntermediaryReturns.title"))) {
+@layout(pageTitle = titleNoForm(messages("noSavedReturns.title"))) {
 
-    <h1 class="govuk-heading-l">@messages("noSavedIntermediaryReturns.heading")</h1>
+    <h1 class="govuk-heading-l">@messages("noSavedReturns.heading")</h1>
 
-    <p class="govuk-body">@Html(messages("noSavedIntermediaryReturns.returnToYourAccountLink", redirect))</p>
+    <p class="govuk-body">@Html(messages("noSavedReturns.returnToYourAccountLink", redirect))</p>
 }
