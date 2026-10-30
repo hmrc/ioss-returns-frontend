@@ -25,7 +25,7 @@ import org.scalacheck.Gen
 import org.scalatest.EitherValues
 import play.api.Application
 import play.api.http.Status.*
-import play.api.libs.json.{JsArray, JsBoolean, JsObject, Json}
+import play.api.libs.json.{JsBoolean, JsObject, Json}
 import play.api.test.Helpers.running
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -191,85 +191,6 @@ class SaveForLaterConnectorSpec extends SpecBase
             Left(UnexpectedResponseStatus(123, s"Unexpected response, status 123 returned"))
         }
 
-      }
-    }
-
-    ".getForIntermediary" - {
-
-      val getUrl: String = "/ioss-returns/intermediary-save-for-later"
-      val responseJson = Json.toJson(savedUserAnswers)
-
-      "must return Right(Seq(SavedUserAnswers)) when the server responds with OK" in {
-
-        server.stubFor(
-          get(urlEqualTo(getUrl))
-            .willReturn(aResponse()
-              .withStatus(OK)
-              .withBody(responseJson.toString)
-            )
-        )
-
-        val connector = application.injector.instanceOf[SaveForLaterConnector]
-
-        val result = connector.getForIntermediary().futureValue
-
-        result `mustBe` Right(savedUserAnswers)
-      }
-
-      "must return Right(Seq.empty) when the server responds with OK but there are no SavedUserAnswers" in {
-
-        server.stubFor(
-          get(urlEqualTo(getUrl))
-            .willReturn(aResponse()
-              .withStatus(OK)
-              .withBody(Json.arr().toString)
-            )
-        )
-
-        val connector = application.injector.instanceOf[SaveForLaterConnector]
-
-        val result = connector.getForIntermediary().futureValue
-
-        result `mustBe` Right(Seq.empty)
-      }
-
-      "must return Left(InvalidJson) when the payload cannot be parsed correctly" in {
-
-        val invalidJson: JsArray = Json.arr(Json.obj("invalid" -> "answers"))
-
-        server.stubFor(
-          get(urlEqualTo(getUrl))
-            .willReturn(aResponse()
-              .withStatus(OK)
-              .withBody(invalidJson.toString)
-            )
-        )
-
-        val connector = application.injector.instanceOf[SaveForLaterConnector]
-
-        val result = connector.getForIntermediary().futureValue
-
-        result `mustBe` Left(InvalidJson)
-      }
-
-      Seq(NOT_FOUND, CONFLICT, INTERNAL_SERVER_ERROR, 123).foreach { status =>
-        s"must return Left(UnexpectedResponseStatus($status)) when the server returns an error" in {
-
-          val errorMessage: String = s"Unexpected response from Intermediary saved User Answers with status $status."
-
-          server.stubFor(
-            get(urlEqualTo(getUrl))
-              .willReturn(aResponse()
-                .withStatus(status)
-              )
-          )
-
-          val connector = application.injector.instanceOf[SaveForLaterConnector]
-
-          val result = connector.getForIntermediary().futureValue
-
-          result `mustBe` Left(UnexpectedResponseStatus(status, errorMessage))
-        }
       }
     }
 
