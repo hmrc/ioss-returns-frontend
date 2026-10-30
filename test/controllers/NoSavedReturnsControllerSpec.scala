@@ -17,13 +17,14 @@
 package controllers
 
 import base.SpecBase
-import config.FrontendAppConfig
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import uk.gov.hmrc.auth.core.Enrolments
 import views.html.NoSavedReturnsView
 
 class NoSavedReturnsControllerSpec extends SpecBase {
+
+  private lazy val redirect: String = routes.IndexController.onPageLoad.url
 
   private val enrolmentsWithIntermediary = enrolments.copy(
     enrolments = enrolments.enrolments + enrolments.enrolments.head.copy(key = intermediaryEnrolmentKey)
@@ -39,8 +40,6 @@ class NoSavedReturnsControllerSpec extends SpecBase {
         val request = FakeRequest(GET, routes.NoSavedReturnsController.onPageLoad().url)
 
         val result = route(application, request).value
-
-        val redirect: String = routes.IndexController.onPageLoad.url
 
         val view = application.injector.instanceOf[NoSavedReturnsView]
 
@@ -60,10 +59,6 @@ class NoSavedReturnsControllerSpec extends SpecBase {
         val request = FakeRequest(GET, routes.NoSavedReturnsController.onPageLoad().url)
 
         val result = route(application, request).value
-
-        val config = application.injector.instanceOf[FrontendAppConfig]
-
-        val redirect: String = config.intermediaryDashboardUrl
 
         val view = application.injector.instanceOf[NoSavedReturnsView]
 

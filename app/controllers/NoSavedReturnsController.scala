@@ -16,7 +16,6 @@
 
 package controllers
 
-import config.FrontendAppConfig
 import controllers.actions.*
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -28,7 +27,6 @@ import javax.inject.Inject
 class NoSavedReturnsController @Inject()(
                                           override val messagesApi: MessagesApi,
                                           cc: AuthenticatedControllerComponents,
-                                          frontendAppConfig: FrontendAppConfig,
                                           view: NoSavedReturnsView
                                         ) extends FrontendBaseController with I18nSupport {
 
@@ -37,13 +35,7 @@ class NoSavedReturnsController @Inject()(
   def onPageLoad: Action[AnyContent] = (cc.actionBuilder andThen cc.identify) {
     implicit request =>
 
-      val hasIntermediaryEnrolment: Boolean = request.enrolments.getEnrolment(frontendAppConfig.intermediaryEnrolment).nonEmpty
-
-      val redirect: String = if (hasIntermediaryEnrolment) {
-        frontendAppConfig.intermediaryDashboardUrl
-      } else {
-        routes.IndexController.onPageLoad.url
-      }
+      val redirect: String = routes.IndexController.onPageLoad.url
 
       Ok(view(redirect))
   }
