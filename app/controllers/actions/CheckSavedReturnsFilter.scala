@@ -23,7 +23,6 @@ import play.api.mvc.Results.Redirect
 import play.api.mvc.{ActionFilter, Result}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
-import utils.FutureSyntax.FutureOps
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -36,11 +35,11 @@ class CheckSavedReturnsFilterImpl(
   override protected def filter[A](request: OptionalDataRequest[A]): Future[Option[Result]] = {
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
 
-    saveForLaterConnector.get(request.iossNumber).flatMap {
-      case Right(Some(_)) => None.toFuture
+    saveForLaterConnector.get(request.iossNumber).map {
+      case Right(Some(_)) => None
 
       case _ =>
-        Some(Redirect(routes.NoSavedReturnsController.onPageLoad())).toFuture
+        Some(Redirect(routes.NoSavedReturnsController.onPageLoad()))
     }
   }
 }
