@@ -19,21 +19,19 @@ package controllers
 import config.FrontendAppConfig
 import controllers.actions.*
 import pages.{StartReturnPage, Waypoints}
-
-import javax.inject.Inject
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.InterceptReviewUpdateRegistrationView
 
-import scala.concurrent.ExecutionContext
+import javax.inject.Inject
 
 class InterceptReviewUpdateRegistrationController @Inject()(
                                        override val messagesApi: MessagesApi,
                                        cc: AuthenticatedControllerComponents,
                                        frontendAppConfig: FrontendAppConfig,
                                        view: InterceptReviewUpdateRegistrationView
-                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                     ) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
   
@@ -45,6 +43,5 @@ class InterceptReviewUpdateRegistrationController @Inject()(
       val continueUrl = StartReturnPage(iossNumber, period, frontendAppConfig).navigate(waypoints, request.userAnswers, request.userAnswers).route.url
 
       Ok(view(waypoints, changeRegistrationUrl, continueUrl))
-
   }
 }

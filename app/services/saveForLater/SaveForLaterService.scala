@@ -19,7 +19,6 @@ package services.saveForLater
 import connectors.SaveForLaterConnector
 import logging.Logging
 import models.Period
-import models.saveForLater.SavedUserAnswers
 import uk.gov.hmrc.http.HeaderCarrier
 import utils.FutureSyntax.FutureOps
 
@@ -29,25 +28,6 @@ import scala.concurrent.{ExecutionContext, Future}
 class SaveForLaterService @Inject()(
                                      saveForLaterConnector: SaveForLaterConnector,
                                    )(implicit ec: ExecutionContext) extends Logging {
-  
-  private def getAllClientSavedAnswers()(implicit hc: HeaderCarrier): Future[Seq[SavedUserAnswers]] = {
-
-    saveForLaterConnector.getForIntermediary().flatMap {
-      case Right(savedUserAnswers) => savedUserAnswers.toFuture
-
-      case Left(error) =>
-        val errorMessage: String = s"An error occurred retrieving saved user answers: ${error.body}"
-        val exception = new Exception(errorMessage)
-        logger.error(errorMessage, error)
-        throw exception
-    }
-  }
-  
-  def getSavedReturnsForClient(iossNumber: String)(implicit hc: HeaderCarrier): Future[Seq[SavedUserAnswers]] = {
-    getAllClientSavedAnswers().flatMap { savedUserAnswers =>
-      savedUserAnswers.filter(_.iossNumber == iossNumber).toFuture
-    }
-  }
 
   def deleteSavedUserAnswers(iossNumber: String, period: Period)(implicit hc: HeaderCarrier): Future[Boolean] = {
     saveForLaterConnector.delete(iossNumber, period).flatMap {

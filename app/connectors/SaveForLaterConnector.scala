@@ -38,7 +38,6 @@ class SaveForLaterConnector @Inject()(
   private val baseUrl = config.get[Service]("microservice.services.ioss-returns")
 
   private val url: URL = url"$baseUrl/save-for-later"
-  private val intermediaryUrl: URL = url"$baseUrl/intermediary-save-for-later"
 
   def submit(s4lRequest: SaveForLaterRequest)(implicit hc: HeaderCarrier): Future[SaveForLaterResponse] = {
     httpClientV2.post(url"$url/${s4lRequest.iossNumber}").withBody(Json.toJson(s4lRequest)).execute[SaveForLaterResponse]
@@ -46,10 +45,6 @@ class SaveForLaterConnector @Inject()(
 
   def get(iossNumber: String)(implicit hc: HeaderCarrier): Future[SaveForLaterResponse] = {
     httpClientV2.get(url"$url/$iossNumber").execute[SaveForLaterResponse]
-  }
-
-  def getForIntermediary()(implicit hc: HeaderCarrier): Future[IntermediarySaveForLaterResponse] = {
-    httpClientV2.get(intermediaryUrl).execute[IntermediarySaveForLaterResponse]
   }
 
   def delete(iossNumber: String, period: Period)(implicit hc: HeaderCarrier): Future[DeleteSaveForLaterResponse] = {

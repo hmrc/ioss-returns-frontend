@@ -170,8 +170,6 @@ GET         /iv/failed-identity-verification                                    
 
 GET         /:iossNumber/no-longer-able-to-view-return                                            controllers.NoLongerAbleToViewReturnController.onPageLoad(iossNumber: String)
 
-GET         /start-intermediary-save-for-later-return/:iossNumber/:period                         controllers.intermediary.StartIntermediarySaveForLaterReturnController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, iossNumber: String, period: Period)
-
 GET         /:iossNumber/want-to-upload-file                                                      controllers.fileUpload.WantToUploadFileController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, iossNumber: String)
 POST        /:iossNumber/want-to-upload-file                                                      controllers.fileUpload.WantToUploadFileController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, iossNumber: String)
 
@@ -188,3 +186,5 @@ GET         /:iossNumber/csv-data-error                                         
 POST        /:iossNumber/csv-data-error                                                           controllers.fileUpload.DataErrorController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints, iossNumber: String)
 
 GET        /:iossNumber/review-registration                                                       controllers.InterceptReviewUpdateRegistrationController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints, iossNumber: String)
+
+GET        /no-saved-returns                                                                      controllers.NoSavedReturnsController.onPageLoad()

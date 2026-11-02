@@ -63,6 +63,8 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
 
   def checkPartOfVatGroupWithFixedEstablishments: CheckPartOfVatGroupWithFixedEstablishmentsFilter
 
+  def checkSavedReturnsFilter: CheckSavedReturnsFilter
+
   def auth: ActionBuilder[IdentifierRequest, AnyContent] =
     actionBuilder andThen identify
 
@@ -89,7 +91,18 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
   }
 
   def authAndRequireData(iossNumber: String): ActionBuilder[DataRequest, AnyContent] = {
-    authAndGetOptionalData(iossNumber) andThen requireData andThen checkExcludedTrader() andThen checkCommencementDate()
+    authAndGetOptionalData(iossNumber) andThen
+      requireData andThen
+      checkExcludedTrader() andThen
+      checkCommencementDate()
+  }
+
+  def authAndRequireDataAndCheckSavedReturns(iossNumber: String): ActionBuilder[DataRequest, AnyContent] = {
+    authAndGetOptionalData(iossNumber) andThen
+      checkSavedReturnsFilter() andThen
+      requireData andThen
+      checkExcludedTrader() andThen
+      checkCommencementDate()
   }
 
   def authAndGetDataAndCorrectionEligible(iossNumber: String): ActionBuilder[DataRequest, AnyContent] = {
@@ -133,5 +146,6 @@ case class DefaultAuthenticatedControllerComponents @Inject()(
                                                                intermediaryRequired: IntermediaryRequiredFilter,
                                                                intermediaryEnabled: IntermediaryEnabledFilter,
                                                                getRegistrationWithoutUrlIoss: GetRegistrationWithoutUrlIossAction,
-                                                               checkPartOfVatGroupWithFixedEstablishments: CheckPartOfVatGroupWithFixedEstablishmentsFilter
+                                                               checkPartOfVatGroupWithFixedEstablishments: CheckPartOfVatGroupWithFixedEstablishmentsFilter,
+                                                               checkSavedReturnsFilter: CheckSavedReturnsFilter
                                                              ) extends AuthenticatedControllerComponents

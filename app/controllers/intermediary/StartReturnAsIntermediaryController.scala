@@ -20,8 +20,8 @@ import config.FrontendAppConfig
 import connectors.SaveForLaterConnector
 import controllers.actions.AuthenticatedControllerComponents
 import controllers.routes
-import models.{IntermediarySelectedIossNumber, UserAnswers}
 import models.requests.OptionalDataRequest
+import models.{IntermediarySelectedIossNumber, UserAnswers}
 import pages.{EmptyWaypoints, Waypoints}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}

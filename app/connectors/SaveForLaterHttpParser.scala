@@ -28,7 +28,6 @@ object SaveForLaterHttpParser extends Logging {
 
   type SaveForLaterResponse = Either[ErrorResponse, Option[SavedUserAnswers]]
   type DeleteSaveForLaterResponse = Either[ErrorResponse, Boolean]
-  type IntermediarySaveForLaterResponse = Either[ErrorResponse, Seq[SavedUserAnswers]]
 
   implicit object SaveForLaterReads extends HttpReads[SaveForLaterResponse] {
     override def read(method: String, url: String, response: HttpResponse): SaveForLaterResponse = {
@@ -76,27 +75,6 @@ object SaveForLaterHttpParser extends Logging {
         case status =>
           logger.warn("Received unexpected error from saved user answers")
           Left(UnexpectedResponseStatus(response.status, s"Unexpected response, status $status returned"))
-      }
-    }
-  }
-
-  implicit object IntermediarySaveForLaterReads extends HttpReads[IntermediarySaveForLaterResponse] {
-
-    override def read(method: String, url: String, response: HttpResponse): IntermediarySaveForLaterResponse = {
-      response.status match {
-        case OK =>
-          response.json.validate[Seq[SavedUserAnswers]] match {
-            case JsSuccess(savedUserAnswers, _) => Right(savedUserAnswers)
-            case JsError(errors) =>
-              logger.warn(s"Failed trying to parse Intermediary saved user answers JSON $errors with " +
-                s"response Json: ${response.json} and errors: $errors", errors)
-              Left(InvalidJson)
-          }
-
-        case status =>
-          logger.warn("Received unexpected error from Intermediary saved user answers")
-          Left(UnexpectedResponseStatus(response.status, s"Unexpected response from Intermediary saved User Answers " +
-            s"with status $status."))
       }
     }
   }
