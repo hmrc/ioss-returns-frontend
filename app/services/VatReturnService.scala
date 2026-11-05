@@ -17,7 +17,6 @@
 package services
 
 import cats.implicits.{catsSyntaxValidatedIdBinCompat0, toTraverseOps}
-import config.FrontendAppConfig
 import connectors.ReturnStatusConnector
 import logging.Logging
 import models.domain.{VatRate as DomainVatRate, VatRateType as DomainVatRateType}
@@ -33,8 +32,7 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class VatReturnService @Inject()(
-                                  returnStatusConnector: ReturnStatusConnector,
-                                  frontendAppConfig: FrontendAppConfig
+                                  returnStatusConnector: ReturnStatusConnector
                                 )(implicit ec: ExecutionContext) extends Logging {
 
   def fromUserAnswers(answers: UserAnswers, vrn: Option[Vrn], period: Period): ValidationResult[VatReturnRequest] = {
@@ -59,13 +57,13 @@ class VatReturnService @Inject()(
   }
 
   private def getSales(answers: UserAnswers): ValidationResult[List[SalesToCountry]] =
-    answers.get(SoldGoodsPage(answers.iossNumber, frontendAppConfig)) match {
+    answers.get(SoldGoodsPage(answers.iossNumber)) match {
       case Some(true) =>
         processSales(answers)
       case Some(false) =>
         List.empty[SalesToCountry].validNec
       case None =>
-        DataMissingError(SoldGoodsPage(answers.iossNumber, frontendAppConfig)).invalidNec
+        DataMissingError(SoldGoodsPage(answers.iossNumber)).invalidNec
     }
 
   private def processSales(answers: UserAnswers): ValidationResult[List[SalesToCountry]] = {

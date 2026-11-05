@@ -309,7 +309,7 @@ class RedirectServiceSpec extends SpecBase with BeforeAndAfterEach {
       "must return None when any other data is missing" in {
 
         val updatedUserAnswers: UserAnswers = completeUserAnswers
-          .remove(SoldGoodsPage(iossNumber, mockAppConfig)).success.value
+          .remove(SoldGoodsPage(iossNumber)).success.value
 
         val application = applicationBuilder(userAnswers = Some(updatedUserAnswers))
           .build()
@@ -320,7 +320,7 @@ class RedirectServiceSpec extends SpecBase with BeforeAndAfterEach {
 
           val service = new RedirectService(cc, mockCorrectionService, mockVatReturnService)
 
-          val validationError = DataMissingError(SoldGoodsPage(iossNumber, mockAppConfig))
+          val validationError = DataMissingError(SoldGoodsPage(iossNumber))
 
           val result = service.getRedirect(waypoints, List(validationError)).headOption
 

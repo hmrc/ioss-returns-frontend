@@ -23,6 +23,7 @@ import org.scalacheck.Gen
 import org.scalatest.freespec.AnyFreeSpec
 import pages.*
 import pages.corrections.CorrectPreviousReturnPage
+import pages.fileUpload.WantToUploadFilePage
 import queries.SalesByCountryQuery
 
 class EligibleSalesJourneySpec extends AnyFreeSpec with JourneyHelpers with SpecBase with Generators {
@@ -41,7 +42,8 @@ class EligibleSalesJourneySpec extends AnyFreeSpec with JourneyHelpers with Spec
   private val initialAnswers = UserAnswers(userAnswersId, iossNumber, period)
 
   private val initialise = journeyOf(
-    submitAnswer(SoldGoodsPage(iossNumber, mockAppConfig), true),
+    submitAnswer(SoldGoodsPage(iossNumber), true),
+    submitAnswer(WantToUploadFilePage(iossNumber), false),
     submitAnswer(SoldToCountryPage(iossNumber, countryIndex1), country),
     submitAnswer(VatRatesFromCountryPage(iossNumber, countryIndex1, vatRateIndex), List(vatRateFromCountry1, vatRateFromCountry2)),
     submitAnswer(SalesToCountryPage(iossNumber, countryIndex1, vatRateIndex), salesValue),
@@ -54,9 +56,9 @@ class EligibleSalesJourneySpec extends AnyFreeSpec with JourneyHelpers with Spec
   )
 
   "must go directly to Check your answers if no eligible sales were made" in {
-    startingFrom(SoldGoodsPage(iossNumber, mockAppConfig), answers = initialAnswers)
+    startingFrom(SoldGoodsPage(iossNumber), answers = initialAnswers)
       .run(
-        submitAnswer(SoldGoodsPage(iossNumber, mockAppConfig), false),
+        submitAnswer(SoldGoodsPage(iossNumber), false),
         pageMustBe(CorrectPreviousReturnPage(iossNumber, 0))
       )
   }
@@ -79,23 +81,26 @@ class EligibleSalesJourneySpec extends AnyFreeSpec with JourneyHelpers with Spec
       }
     }
 
-    startingFrom(SoldGoodsPage(iossNumber, mockAppConfig), answers = initialAnswers)
+    startingFrom(SoldGoodsPage(iossNumber), answers = initialAnswers)
       .run(
-        submitAnswer(SoldGoodsPage(iossNumber, mockAppConfig), true) +:
+        Seq(
+          submitAnswer(SoldGoodsPage(iossNumber), true),
+          submitAnswer(WantToUploadFilePage(iossNumber), false)
+        ) ++
           generateSales :+
           pageMustBe(CorrectPreviousReturnPage(iossNumber, 0)): _*
       )
   }
 
   "must allow the user to add a sale" in {
-    startingFrom(SoldGoodsPage(iossNumber, mockAppConfig), answers = initialAnswers)
+    startingFrom(SoldGoodsPage(iossNumber), answers = initialAnswers)
       .run(
         initialise
       )
   }
 
   "must allow the user to add more than one sale" in {
-    startingFrom(SoldGoodsPage(iossNumber, mockAppConfig), answers = initialAnswers)
+    startingFrom(SoldGoodsPage(iossNumber), answers = initialAnswers)
       .run(
         initialise,
         submitAnswer(SoldToCountryListPage(iossNumber), true),
@@ -116,18 +121,18 @@ class EligibleSalesJourneySpec extends AnyFreeSpec with JourneyHelpers with Spec
   "must be able to remove them" - {
 
     "when there is only one" in {
-      startingFrom(SoldGoodsPage(iossNumber, mockAppConfig), answers = initialAnswers)
+      startingFrom(SoldGoodsPage(iossNumber), answers = initialAnswers)
         .run(
           initialise,
-          goTo(DeleteSoldToCountryPage(iossNumber, countryIndex1, mockAppConfig)),
+          goTo(DeleteSoldToCountryPage(iossNumber, countryIndex1)),
           removeAddToListItem(SalesByCountryQuery(countryIndex1)),
-          pageMustBe(SoldGoodsPage(iossNumber, mockAppConfig)),
+          pageMustBe(SoldGoodsPage(iossNumber)),
           answersMustNotContain(SalesByCountryQuery(countryIndex1))
         )
     }
 
     "when there are multiple" in {
-      startingFrom(SoldGoodsPage(iossNumber, mockAppConfig), answers = initialAnswers)
+      startingFrom(SoldGoodsPage(iossNumber), answers = initialAnswers)
         .run(
           initialise,
           submitAnswer(SoldToCountryListPage(iossNumber), true),
@@ -139,7 +144,7 @@ class EligibleSalesJourneySpec extends AnyFreeSpec with JourneyHelpers with Spec
           submitAnswer(VatOnSalesPage(iossNumber, countryIndex2, vatRateIndex. +(1)), arbitraryVatOnSales.arbitrary.sample.value),
           submitAnswer(CheckSalesPage(iossNumber, countryIndex2), false),
           pageMustBe(SoldToCountryListPage(iossNumber)),
-          goTo(DeleteSoldToCountryPage(iossNumber, countryIndex2, mockAppConfig)),
+          goTo(DeleteSoldToCountryPage(iossNumber, countryIndex2)),
           removeAddToListItem(SalesByCountryQuery(countryIndex2)),
           pageMustBe(SoldToCountryListPage(iossNumber)),
           answersMustNotContain(SalesByCountryQuery(countryIndex2))
@@ -153,7 +158,7 @@ class EligibleSalesJourneySpec extends AnyFreeSpec with JourneyHelpers with Spec
 
       val changedSalesValue: BigDecimal = Gen.chooseNum(minSalesValue, maxSalesValue).sample.value.toDouble
 
-      startingFrom(SoldGoodsPage(iossNumber, mockAppConfig), answers = initialAnswers)
+      startingFrom(SoldGoodsPage(iossNumber), answers = initialAnswers)
         .run(
           initialise,
           pageMustBe(SoldToCountryListPage(iossNumber)),
@@ -173,7 +178,7 @@ class EligibleSalesJourneySpec extends AnyFreeSpec with JourneyHelpers with Spec
 
       val changedSalesValue: BigDecimal = Gen.chooseNum(minSalesValue, maxSalesValue).sample.value.toDouble
 
-      startingFrom(SoldGoodsPage(iossNumber, mockAppConfig), answers = initialAnswers)
+      startingFrom(SoldGoodsPage(iossNumber), answers = initialAnswers)
         .run(
           initialise,
           submitAnswer(SoldToCountryListPage(iossNumber), true),

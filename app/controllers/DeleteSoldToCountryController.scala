@@ -16,7 +16,6 @@
 
 package controllers
 
-import config.FrontendAppConfig
 import controllers.actions.*
 import forms.DeleteSoldToCountryFormProvider
 import models.Index
@@ -36,8 +35,7 @@ class DeleteSoldToCountryController @Inject()(
                                                override val messagesApi: MessagesApi,
                                                cc: AuthenticatedControllerComponents,
                                                formProvider: DeleteSoldToCountryFormProvider,
-                                               view: DeleteSoldToCountryView,
-                                               frontendAppConfig: FrontendAppConfig
+                                               view: DeleteSoldToCountryView
                                              )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with AnswerExtractor {
 
   protected val controllerComponents: MessagesControllerComponents = cc
@@ -69,9 +67,9 @@ class DeleteSoldToCountryController @Inject()(
                 for {
                   updatedAnswers <- Future.fromTry(request.userAnswers.remove(SalesByCountryQuery(countryIndex)))
                   _ <- cc.sessionRepository.set(updatedAnswers)
-                } yield Redirect(DeleteSoldToCountryPage(request.iossNumber, countryIndex, frontendAppConfig).navigate(waypoints, request.userAnswers, updatedAnswers).route)
+                } yield Redirect(DeleteSoldToCountryPage(request.iossNumber, countryIndex).navigate(waypoints, request.userAnswers, updatedAnswers).route)
               } else {
-                Redirect(DeleteSoldToCountryPage(request.iossNumber, countryIndex, frontendAppConfig).navigate(waypoints, request.userAnswers, request.userAnswers).route).toFuture
+                Redirect(DeleteSoldToCountryPage(request.iossNumber, countryIndex).navigate(waypoints, request.userAnswers, request.userAnswers).route).toFuture
               }
           )
       }

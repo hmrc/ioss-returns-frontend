@@ -16,7 +16,6 @@
 
 package viewmodels.checkAnswers
 
-import config.FrontendAppConfig
 import models.UserAnswers
 import pages.{CheckAnswersPage, SoldGoodsPage, Waypoints}
 import play.api.i18n.Messages
@@ -26,8 +25,8 @@ import viewmodels.implicits.*
 
 object SoldGoodsSummary  {
 
-  def row(answers: UserAnswers, waypoints: Waypoints, sourcePage: CheckAnswersPage, frontendAppConfig: FrontendAppConfig)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(SoldGoodsPage(answers.iossNumber, frontendAppConfig)).map {
+  def row(answers: UserAnswers, waypoints: Waypoints, sourcePage: CheckAnswersPage)(implicit messages: Messages): Option[SummaryListRow] =
+    answers.get(SoldGoodsPage(answers.iossNumber)).map {
       answer =>
 
         val value = if (answer) "site.yes" else "site.no"
@@ -36,7 +35,7 @@ object SoldGoodsSummary  {
           key     = "checkYourAnswers.label.salesMade",
           value   = ValueViewModel(value).withCssClass("govuk-table__cell--numeric").withCssClass("govuk-!-padding-right-9"),
           actions = Seq(
-            ActionItemViewModel("site.change", SoldGoodsPage(answers.iossNumber, frontendAppConfig).changeLink(waypoints, sourcePage).url)
+            ActionItemViewModel("site.change", SoldGoodsPage(answers.iossNumber).changeLink(waypoints, sourcePage).url)
               .withVisuallyHiddenText(messages("checkYourAnswers.salesMade.hidden"))
           )
         )

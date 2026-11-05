@@ -90,12 +90,11 @@ trait SpecBase
   val arbitraryDate: LocalDate = datesBetween(LocalDate.of(2023, 3, 1), LocalDate.of(2025, 12, 31)).sample.value
   val arbitraryInstant: Instant = arbitraryDate.atStartOfDay(ZoneId.systemDefault).toInstant
   val stubClockAtArbitraryDate: Clock = Clock.fixed(arbitraryInstant, ZoneId.systemDefault)
-  val mockAppConfig: FrontendAppConfig = mock[FrontendAppConfig]
 
   def emptyUserAnswers: UserAnswers = UserAnswers(userAnswersId, iossNumber, period, lastUpdated = arbitraryInstant)
 
   def completeUserAnswers: UserAnswers = emptyUserAnswers
-    .set(SoldGoodsPage(iossNumber, mockAppConfig), true).success.value
+    .set(SoldGoodsPage(iossNumber), true).success.value
     .set(CorrectPreviousReturnPage(iossNumber, 0), false).success.value
     .set(SoldToCountryPage(iossNumber, index), Country("HR", "Croatia")).success.value
     .set(VatRatesFromCountryPage(iossNumber, index, index), vatRates).success.value

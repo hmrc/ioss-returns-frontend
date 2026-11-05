@@ -53,7 +53,7 @@ class CheckSalesControllerSpec extends SpecBase with MockitoSugar with SummaryLi
   private val vatOnSalesValue: VatOnSales = arbitraryVatOnSales.arbitrary.sample.value
 
   private val baseAnswers: UserAnswers = emptyUserAnswers
-    .set(SoldGoodsPage(iossNumber, mockAppConfig), true).success.value
+    .set(SoldGoodsPage(iossNumber), true).success.value
     .set(SoldToCountryPage(iossNumber, index), country).success.value
     .set(VatRatesFromCountryPage(iossNumber, index, index), vatRatesFromCountry).success.value
     .set(SalesToCountryPage(iossNumber, index, index), salesValue).success.value
@@ -63,7 +63,7 @@ class CheckSalesControllerSpec extends SpecBase with MockitoSugar with SummaryLi
   private val  remainingVatRateForCountry = List(arbitrary[VatRateFromCountry].sample.value)
 
   private val completeAnswers: UserAnswers = emptyUserAnswers
-    .set(SoldGoodsPage(iossNumber, mockAppConfig), true).success.value
+    .set(SoldGoodsPage(iossNumber), true).success.value
     .set(SoldToCountryPage(iossNumber, index), country).success.value
     .set(VatRatesFromCountryPage(iossNumber, index, index), vatRateFromCountry).success.value
     .set(SalesToCountryPage(iossNumber, index, index), salesValue).success.value
@@ -111,7 +111,7 @@ class CheckSalesControllerSpec extends SpecBase with MockitoSugar with SummaryLi
       val salesValue: BigDecimal = Gen.chooseNum(minCurrencyAmount, maxCurrencyAmount).sample.value
 
       val answers: UserAnswers = emptyUserAnswers
-        .set(SoldGoodsPage(iossNumber, mockAppConfig), true).success.value
+        .set(SoldGoodsPage(iossNumber), true).success.value
         .set(SoldToCountryPage(iossNumber, index), country).success.value
         .set(VatRatesFromCountryPage(iossNumber, index, index), vatRatesFromCountry).success.value
         .set(SalesToCountryPage(iossNumber, index, index), salesValue).success.value

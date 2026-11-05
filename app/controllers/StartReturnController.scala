@@ -159,7 +159,7 @@ class StartReturnController @Inject()(
               } else {
                 Future.successful(())
               }
-              updatedAnswers <- Future.fromTry(answers.set(StartReturnPage(request.iossNumber, period, frontendAppConfig), value))
+              updatedAnswers <- Future.fromTry(answers.set(StartReturnPage(request.iossNumber, period), value))
               _ <- cc.sessionRepository.set(updatedAnswers)
               isClientOfIntermediary <- request.intermediaryNumber.fold(Future.successful(false)) { intermediaryNumber =>
                 checkIsClientOfIntermediary(intermediaryNumber, request.iossNumber)
@@ -171,7 +171,7 @@ class StartReturnController @Inject()(
               if (showRegistrationReviewIntercept) {
                 Redirect(routes.InterceptReviewUpdateRegistrationController.onPageLoad(waypoints, iossNumber))
               } else {
-                Redirect(StartReturnPage(request.iossNumber, period, frontendAppConfig).navigate(waypoints, answers, updatedAnswers).route)
+                Redirect(StartReturnPage(request.iossNumber, period).navigate(waypoints, answers, updatedAnswers).route)
               }
             }
           }

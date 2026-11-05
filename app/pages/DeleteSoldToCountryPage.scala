@@ -16,13 +16,12 @@
 
 package pages
 
-import config.FrontendAppConfig
 import controllers.routes
 import models.{Index, UserAnswers}
 import play.api.mvc.Call
 import queries.DeriveNumberOfSales
 
-case class DeleteSoldToCountryPage(iossNumber: String, index: Index, frontendAppConfig: FrontendAppConfig) extends Page {
+case class DeleteSoldToCountryPage(iossNumber: String, index: Index) extends Page {
 
   override def route(waypoints: Waypoints): Call =
     routes.DeleteSoldToCountryController.onPageLoad(waypoints, iossNumber, index)
@@ -32,6 +31,6 @@ case class DeleteSoldToCountryPage(iossNumber: String, index: Index, frontendApp
       case Some(n) if n > 0 =>
         SoldToCountryListPage(answers.iossNumber)
       case _ =>
-        SoldGoodsPage(answers.iossNumber, frontendAppConfig)
+        SoldGoodsPage(answers.iossNumber)
     }
 }

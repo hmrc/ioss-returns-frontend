@@ -44,7 +44,7 @@ class InterceptReviewUpdateRegistrationControllerSpec extends SpecBase {
         val view = application.injector.instanceOf[InterceptReviewUpdateRegistrationView]
         val appConfig = application.injector.instanceOf[FrontendAppConfig]
         val changeRegistrationUrl = appConfig.amendRegistrationUrl
-        val continueUrl = StartReturnPage(iossNumber, period, appConfig).navigate(waypoints, emptyUserAnswers, emptyUserAnswers).route.url
+        val continueUrl = StartReturnPage(iossNumber, period).navigate(waypoints, emptyUserAnswers, emptyUserAnswers).route.url
 
         status(result) mustEqual OK
         contentAsString(result) mustEqual view(waypoints, changeRegistrationUrl, continueUrl)(request, messages(application)).toString

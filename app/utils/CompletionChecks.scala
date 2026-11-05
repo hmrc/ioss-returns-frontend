@@ -16,7 +16,6 @@
 
 package utils
 
-import config.FrontendAppConfig
 import controllers.routes
 import models.corrections.CorrectionToCountry
 import models.requests.DataRequest
@@ -96,8 +95,8 @@ trait CompletionChecks {
   }
 
 
-  def soldGoodsAnswered(frontendAppConfig: FrontendAppConfig)(implicit request: DataRequest[AnyContent]): Boolean = {
-    request.userAnswers.get(SoldGoodsPage(request.iossNumber, frontendAppConfig)).isDefined
+  def soldGoodsAnswered()(implicit request: DataRequest[AnyContent]): Boolean = {
+    request.userAnswers.get(SoldGoodsPage(request.iossNumber)).isDefined
   }
 
   def correctPreviousReturnAnswered(
@@ -114,10 +113,9 @@ trait CompletionChecks {
 
   def incompleteReturnsJourneyRedirect(
                                         waypoints: Waypoints,
-                                        numberOfFulfilledObligations: Int,
-                                        frontendAppConfig: FrontendAppConfig
+                                        numberOfFulfilledObligations: Int
                                       )(implicit request: DataRequest[AnyContent]): Option[Result] = {
-    if (!soldGoodsAnswered(frontendAppConfig)) {
+    if (!soldGoodsAnswered()) {
       Some(Redirect(routes.SoldGoodsController.onPageLoad(waypoints, request.iossNumber)))
     } else if (correctPreviousReturnAnswered(numberOfFulfilledObligations).contains(false)) {
       Some(Redirect(controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(waypoints, request.iossNumber)))

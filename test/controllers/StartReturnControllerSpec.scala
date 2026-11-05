@@ -688,7 +688,7 @@ class StartReturnControllerSpec
             val result = route(application, request).value
 
             status(result) `mustBe` SEE_OTHER
-            redirectLocation(result).value `mustBe` SoldGoodsPage(iossNumber, mockAppConfig).route(waypoints).url
+            redirectLocation(result).value `mustBe` SoldGoodsPage(iossNumber).route(waypoints).url
           }
         }
       }
@@ -726,7 +726,7 @@ class StartReturnControllerSpec
             val result = route(application, request).value
 
             status(result) `mustBe` SEE_OTHER
-            redirectLocation(result).value `mustBe` SoldGoodsPage(iossNumber,mockAppConfig).route(waypoints).url
+            redirectLocation(result).value `mustBe` SoldGoodsPage(iossNumber).route(waypoints).url
           }
         }
       }
@@ -986,7 +986,7 @@ class StartReturnControllerSpec
 
           status(result) `mustBe` SEE_OTHER
 
-          redirectLocation(result).value `mustBe`  SoldGoodsPage(iossNumber, mockAppConfig).route(waypoints).url
+          redirectLocation(result).value `mustBe`  SoldGoodsPage(iossNumber).route(waypoints).url
           verify(mockIntermediaryRegistrationConnector).get(ArgumentMatchers.eq(intermediaryNumber))(any())
         }
       }

@@ -16,7 +16,6 @@
 
 package controllers
 
-import config.FrontendAppConfig
 import controllers.actions.*
 import forms.SoldToCountryListFormProvider
 import models.{Country, Index}
@@ -39,8 +38,7 @@ class SoldToCountryListController @Inject()(
                                              override val messagesApi: MessagesApi,
                                              cc: AuthenticatedControllerComponents,
                                              formProvider: SoldToCountryListFormProvider,
-                                             view: SoldToCountryListView,
-                                             frontendAppConfig: FrontendAppConfig
+                                             view: SoldToCountryListView
                                            )(implicit ec: ExecutionContext) extends FrontendBaseController with CompletionChecks with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
@@ -57,7 +55,7 @@ class SoldToCountryListController @Inject()(
 
           val canAddSales = number < Country.euCountriesWithNI.size
           val salesSummary = SoldToCountryListSummary
-            .addToListRows(request.userAnswers, waypoints, SoldToCountryListPage(request.iossNumber), frontendAppConfig)
+            .addToListRows(request.userAnswers, waypoints, SoldToCountryListPage(request.iossNumber))
 
           withCompleteDataAsync[Country](
             data = getCountriesWithIncompleteSales _,
@@ -97,7 +95,7 @@ class SoldToCountryListController @Inject()(
 
           val canAddSales = number < Country.euCountriesWithNI.size
           val salesSummary = SoldToCountryListSummary
-            .addToListRows(request.userAnswers, waypoints, SoldToCountryListPage(request.iossNumber), frontendAppConfig)
+            .addToListRows(request.userAnswers, waypoints, SoldToCountryListPage(request.iossNumber))
 
           form.bindFromRequest().fold(
             formWithErrors =>
