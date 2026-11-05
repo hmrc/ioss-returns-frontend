@@ -95,7 +95,7 @@ trait CompletionChecks {
   }
 
 
-  def soldGoodsAnswered(implicit request: DataRequest[AnyContent]): Boolean = {
+  def soldGoodsAnswered()(implicit request: DataRequest[AnyContent]): Boolean = {
     request.userAnswers.get(SoldGoodsPage(request.iossNumber)).isDefined
   }
 
@@ -115,7 +115,7 @@ trait CompletionChecks {
                                         waypoints: Waypoints,
                                         numberOfFulfilledObligations: Int
                                       )(implicit request: DataRequest[AnyContent]): Option[Result] = {
-    if (!soldGoodsAnswered) {
+    if (!soldGoodsAnswered()) {
       Some(Redirect(routes.SoldGoodsController.onPageLoad(waypoints, request.iossNumber)))
     } else if (correctPreviousReturnAnswered(numberOfFulfilledObligations).contains(false)) {
       Some(Redirect(controllers.corrections.routes.CorrectPreviousReturnController.onPageLoad(waypoints, request.iossNumber)))

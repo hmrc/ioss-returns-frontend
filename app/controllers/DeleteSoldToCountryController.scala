@@ -16,7 +16,7 @@
 
 package controllers
 
-import controllers.actions._
+import controllers.actions.*
 import forms.DeleteSoldToCountryFormProvider
 import models.Index
 import pages.{DeleteSoldToCountryPage, Waypoints}

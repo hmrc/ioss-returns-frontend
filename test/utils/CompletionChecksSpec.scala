@@ -415,7 +415,7 @@ class CompletionChecksSpec extends SpecBase with MockitoSugar {
         running(application) {
           implicit val request: DataRequest[AnyContent] = dataRequest(userAnswers)
 
-          val result = TestCompletionChecks.soldGoodsAnswered
+          val result = TestCompletionChecks.soldGoodsAnswered()
 
           result `mustBe` true
         }
@@ -430,7 +430,7 @@ class CompletionChecksSpec extends SpecBase with MockitoSugar {
         running(application) {
           implicit val request: DataRequest[AnyContent] = dataRequest(userAnswers)
 
-          val result = TestCompletionChecks.soldGoodsAnswered
+          val result = TestCompletionChecks.soldGoodsAnswered()
 
           result `mustBe` false
         }

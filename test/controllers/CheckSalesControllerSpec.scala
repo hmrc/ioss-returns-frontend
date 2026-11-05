@@ -20,7 +20,7 @@ import base.SpecBase
 import config.Constants.{maxCurrencyAmount, minCurrencyAmount}
 import forms.CheckSalesFormProvider
 import models.{Country, UserAnswers, VatOnSales, VatRateFromCountry}
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.{reset, times, verify, when}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Gen
@@ -31,7 +31,7 @@ import play.api.data.Form
 import play.api.i18n.Messages
 import play.api.inject.bind
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import queries.RemainingVatRatesFromCountryQuery
 import repositories.SessionRepository
 import services.VatRateService

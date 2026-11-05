@@ -23,6 +23,7 @@ import org.scalacheck.Gen
 import org.scalatest.freespec.AnyFreeSpec
 import pages.*
 import pages.corrections.CorrectPreviousReturnPage
+import pages.fileUpload.WantToUploadFilePage
 import queries.SalesByCountryQuery
 
 class EligibleSalesJourneySpec extends AnyFreeSpec with JourneyHelpers with SpecBase with Generators {
@@ -42,6 +43,7 @@ class EligibleSalesJourneySpec extends AnyFreeSpec with JourneyHelpers with Spec
 
   private val initialise = journeyOf(
     submitAnswer(SoldGoodsPage(iossNumber), true),
+    submitAnswer(WantToUploadFilePage(iossNumber), false),
     submitAnswer(SoldToCountryPage(iossNumber, countryIndex1), country),
     submitAnswer(VatRatesFromCountryPage(iossNumber, countryIndex1, vatRateIndex), List(vatRateFromCountry1, vatRateFromCountry2)),
     submitAnswer(SalesToCountryPage(iossNumber, countryIndex1, vatRateIndex), salesValue),
@@ -81,7 +83,10 @@ class EligibleSalesJourneySpec extends AnyFreeSpec with JourneyHelpers with Spec
 
     startingFrom(SoldGoodsPage(iossNumber), answers = initialAnswers)
       .run(
-        submitAnswer(SoldGoodsPage(iossNumber), true) +:
+        Seq(
+          submitAnswer(SoldGoodsPage(iossNumber), true),
+          submitAnswer(WantToUploadFilePage(iossNumber), false)
+        ) ++
           generateSales :+
           pageMustBe(CorrectPreviousReturnPage(iossNumber, 0)): _*
       )

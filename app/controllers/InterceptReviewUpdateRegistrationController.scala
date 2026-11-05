@@ -40,7 +40,7 @@ class InterceptReviewUpdateRegistrationController @Inject()(
 
       val period = request.userAnswers.period
       val changeRegistrationUrl = frontendAppConfig.amendRegistrationUrl
-      val continueUrl = StartReturnPage(iossNumber, period, frontendAppConfig).navigate(waypoints, request.userAnswers, request.userAnswers).route.url
+      val continueUrl = StartReturnPage(iossNumber, period).navigate(waypoints, request.userAnswers, request.userAnswers).route.url
 
       Ok(view(waypoints, changeRegistrationUrl, continueUrl))
   }

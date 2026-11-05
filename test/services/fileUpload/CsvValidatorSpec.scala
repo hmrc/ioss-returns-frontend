@@ -175,6 +175,22 @@ class CsvValidatorSpec extends SpecBase with MockitoSugar with Matchers with Bef
       |""".stripMargin
   }
 
+  private val invalidZeroAmount: String = {
+    """"HM Revenue and Customs logo","","",""
+      |"Import One Stop Shop VAT return","","",""
+      |"Country","VAT % rate","Total eligible sales","Total VAT due"
+      |"Germany","19%","£1200","0"
+      |""".stripMargin
+  }
+
+  private val invalidZeroAmounts: String = {
+    """"HM Revenue and Customs logo","","",""
+      |"Import One Stop Shop VAT return","","",""
+      |"Country","VAT % rate","Total eligible sales","Total VAT due"
+      |"Germany","19%","0","0"
+      |""".stripMargin
+  }
+
   override def beforeEach(): Unit = {
     reset(mockVatRateService)
     super.beforeEach()
@@ -354,6 +370,30 @@ class CsvValidatorSpec extends SpecBase with MockitoSugar with Matchers with Bef
           val errors = ex.asInstanceOf[CsvValidationException].errors
 
           errors.map(_.cellRef) must contain allOf ("B4", "D5")
+        }
+      }
+
+      "fail with ZeroAmount for when cell contains a zero amount" in {
+
+        val validatorError = rowsAndValidateAndThrow(invalidZeroAmount)
+
+        whenReady(validatorError.failed) { ex =>
+          ex mustBe a[CsvValidationException]
+          val errors = ex.asInstanceOf[CsvValidationException].errors
+
+          errors.collect { case e: CsvError.ZeroAmount => e.cellRef } must contain("D4")
+        }
+      }
+
+      "fail with ZeroAmount for when multiple cells contain a zero amount" in {
+
+        val validatorError = rowsAndValidateAndThrow(invalidZeroAmounts)
+
+        whenReady(validatorError.failed) { ex =>
+          ex mustBe a[CsvValidationException]
+          val errors = ex.asInstanceOf[CsvValidationException].errors
+
+          errors.map(_.cellRef) must contain allOf("C4", "D4")
         }
       }
     }

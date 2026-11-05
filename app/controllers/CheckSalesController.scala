@@ -39,7 +39,7 @@ class CheckSalesController @Inject()(
                                       cc: AuthenticatedControllerComponents,
                                       formProvider: CheckSalesFormProvider,
                                       vatRateService: VatRateService,
-                                      view: CheckSalesView
+                                      view: CheckSalesView,
                                     )(implicit ec: ExecutionContext)
   extends FrontendBaseController with CompletionChecks with I18nSupport with GetCountry with GetVatRates {
 

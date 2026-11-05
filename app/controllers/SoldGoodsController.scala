@@ -16,7 +16,7 @@
 
 package controllers
 
-import controllers.actions._
+import controllers.actions.*
 import forms.SoldGoodsFormProvider
 import pages.{SoldGoodsPage, Waypoints}
 import play.api.data.Form
@@ -45,7 +45,6 @@ class SoldGoodsController @Inject()(
 
       val form: Form[Boolean] = formProvider(request.isIntermediary)
       val period = request.userAnswers.period
-
       val preparedForm = request.userAnswers.get(SoldGoodsPage(request.iossNumber)) match {
         case None => form
         case Some(value) => form.fill(value)

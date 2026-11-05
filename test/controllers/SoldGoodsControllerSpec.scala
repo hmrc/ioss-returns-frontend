@@ -32,6 +32,7 @@ import views.html.SoldGoodsView
 
 class SoldGoodsControllerSpec extends SpecBase with MockitoSugar {
 
+
   val formProvider = new SoldGoodsFormProvider()
   val form: Form[Boolean] = formProvider()
 
@@ -94,7 +95,7 @@ class SoldGoodsControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) `mustBe` SEE_OTHER
-        redirectLocation(result).value `mustBe` routes.SoldToCountryController.onPageLoad(waypoints, iossNumber, index).url
+        redirectLocation(result).value `mustBe` controllers.fileUpload.routes.WantToUploadFileController.onPageLoad(waypoints, iossNumber).url
       }
     }
 
