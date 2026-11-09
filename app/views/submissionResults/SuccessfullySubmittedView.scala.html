@@ -76,10 +76,6 @@
 
             <p class="govuk-body"> @messages("successfullySubmitted.howToPay")</p>
 
-            <a id="pay-now" href="@paymentRoutes.PaymentController.makePayment(EmptyWaypoints, iossNumber, period)" class="govuk-button" rel="external" title="This will open in a new tab or window">
-               @messages("successfullySubmitted.payNow")
-            </a>
-
             <p class="govuk-body">
                 @{messages("successfullySubmitted.payDeadline", period.paymentDeadline.format(DateTimeFormatter.ofPattern("d MMMM u")))}
             </p>
@@ -87,6 +83,10 @@
             <p class="govuk-body">
                 @messages("successfullySubmitted.euLatePaymentWarning")
             </p>
+
+            <a id="pay-now" href="@paymentRoutes.PaymentController.makePayment(EmptyWaypoints, iossNumber, period)" class="govuk-button" rel="external" title="This will open in a new tab or window">
+                @messages("successfullySubmitted.payNow")
+            </a>
         }
 
         <p class="govuk-body">
