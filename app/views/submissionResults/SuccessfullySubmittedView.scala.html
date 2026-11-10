@@ -65,20 +65,16 @@
             <h2 class="govuk-heading-m govuk-!-margin-top-6" id="how-pay">@messages("successfullySubmitted.payVatOwed")</h2>
             @if(isIntermediary) {
                 <p class="govuk-body">
-                    @Html(messages("successfullySubmitted.intermediary.payPeriodAmount", period.lastDay.format(DateTimeFormatter.ofPattern("d MMMM u")), currencyFormat(owedAmount)))
+                    @Html(messages("successfullySubmitted.intermediary.payPeriodAmount", period.lastDay.format(DateTimeFormatter.ofPattern("MMMM u")), currencyFormat(owedAmount)))
                 </p>
             } else {
                 <p class="govuk-body">
-                    @Html(messages("successfullySubmitted.payPeriodAmount", period.lastDay.format(DateTimeFormatter.ofPattern("d MMMM u")), currencyFormat(owedAmount)))
+                    @Html(messages("successfullySubmitted.payPeriodAmount", period.lastDay.format(DateTimeFormatter.ofPattern("MMMM u")), currencyFormat(owedAmount)))
                 </p>
             }
 
 
             <p class="govuk-body"> @messages("successfullySubmitted.howToPay")</p>
-
-            <a id="pay-now" href="@paymentRoutes.PaymentController.makePayment(EmptyWaypoints, iossNumber, period)" class="govuk-button" rel="external" title="This will open in a new tab or window">
-               @messages("successfullySubmitted.payNow")
-            </a>
 
             <p class="govuk-body">
                 @{messages("successfullySubmitted.payDeadline", period.paymentDeadline.format(DateTimeFormatter.ofPattern("d MMMM u")))}
@@ -87,6 +83,10 @@
             <p class="govuk-body">
                 @messages("successfullySubmitted.euLatePaymentWarning")
             </p>
+
+            <a id="pay-now" href="@paymentRoutes.PaymentController.makePayment(EmptyWaypoints, iossNumber, period)" class="govuk-button" rel="external" title="This will open in a new tab or window">
+                @messages("successfullySubmitted.payNow")
+            </a>
         }
 
         <p class="govuk-body">

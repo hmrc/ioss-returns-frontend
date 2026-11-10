@@ -530,6 +530,8 @@ noMoreWelsh.submit = Yn eich blaen
 submittedReturnsHistory.title = Submitted returns
 submittedReturnsHistory.heading = Submitted returns
 submittedReturnsHistory.p1 = You cannot view returns that are over 6 years old.
+submittedReturnsHistory.p2 = To make a correction to a previous return, you can do this on your next one.
+submittedReturnsHistory.intermediary.p2 = You can make any corrections to your client''s previous returns when you complete a new one.
 submittedReturnsHistory.noReturns = You have not submitted any returns.
 submittedReturnsHistory.returnPeriod = Return month
 submittedReturnsHistory.amountLeftToPay = Amount left to pay
@@ -639,6 +641,7 @@ wantToUploadFile.no = No, enter them myself
 wantToUploadFile.checkYourAnswersLabel = Want to upload a file
 wantToUploadFile.error.required = Select yes if want to upload a file
 wantToUploadFile.change.hidden = WantToUploadFile
+wantToUploadFile.hint = You can download a template file on the next page.
 
 fileUpload.title = Upload the {0} return
 fileUpload.heading = Upload the {0} return

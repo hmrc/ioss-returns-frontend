@@ -34,6 +34,12 @@
 
   <p class="govuk-body">@messages("submittedReturnsHistory.p1")</p>
 
+    @if(isIntermediary) {
+        <p class="govuk-body">@messages("submittedReturnsHistory.intermediary.p2")</p>
+    } else {
+        <p class="govuk-body">@messages("submittedReturnsHistory.p2")</p>
+    }
+
   @if(periodsWithFinancialData.isEmpty) {
     <br/>
     <p class="govuk-body-m govuk-!-margin-bottom-9">@messages("submittedReturnsHistory.noReturns")</p>
