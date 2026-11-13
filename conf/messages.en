@@ -484,7 +484,8 @@ submittedReturnForPeriod.heading = Submitted return for {0}
 submittedReturnForPeriod.summary = Summary
 submittedReturnForPeriod.details = Details
 submittedReturnForPeriod.payNow = Pay now
-submittedReturnForPeriod.otherCountryVatOwed = You must pay any outstanding VAT from this return directly to the countries where you made your sales.
+submittedReturnForPeriod.otherCountryVatOwed = You cannot use this service for payments over 3 years old. You must pay any outstanding VAT directly to the countries where you made your sales.
+submittedReturnForPeriod.intermediary.otherCountryVatOwed = You cannot use this service for payments over 3 years old. Any outstanding VAT must be paid directly to the countries where your client made their sales.
 
 submittedReturnForPeriod.summary.vatDeclared = Payable VAT declared
 submittedReturnForPeriod.summary.remainingAmount = Amount left to pay
@@ -556,7 +557,7 @@ viewReturnsMultipleReg.payNow = Pay now
 viewReturnsMultipleReg.returnToCurrentRegistration = Return to your current registration
 viewReturnsMultipleReg.status.paid = Paid
 viewReturnsMultipleReg.status.nilreturn = No payment due
-viewReturnsMultipleReg.status.excluded = You must pay this to the countries where you made your sales
+viewReturnsMultipleReg.status.excluded = Cannot pay on this service
 
 returnRegistrationSelection.title = Which registration do you want to view?
 returnRegistrationSelection.heading = Which registration do you want to view?
