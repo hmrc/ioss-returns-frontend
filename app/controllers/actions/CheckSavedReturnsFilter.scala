@@ -36,8 +36,10 @@ class CheckSavedReturnsFilterImpl(
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
 
     saveForLaterConnector.get(request.iossNumber).map {
-      case Right(Some(_)) => None
-
+      case Right(Some(_)) =>
+        None
+      case _ if request.userAnswers.nonEmpty =>
+        None
       case _ =>
         Some(Redirect(routes.NoSavedReturnsController.onPageLoad()))
     }
