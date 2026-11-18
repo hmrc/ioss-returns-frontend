@@ -94,6 +94,12 @@ class SubmittedReturnForPeriodController @Inject()(
 
         val mainSummaryList = SummaryListViewModel(rows = getMainSummaryList(etmpVatReturn, determinedPeriod, outstandingAmount))
 
+        val isOwnIOSSRegistration = request.enrolments.enrolments.exists { enrolment =>
+          enrolment.key == "HMRC-IOSS-ORG" && enrolment.identifiers.exists(_.value == request.iossNumber)
+        }
+
+        val isActingAsIntermediary = request.isIntermediary && !isOwnIOSSRegistration
+        
         Ok(view(
           waypoints = waypoints,
           iossNumber = request.iossNumber,
@@ -107,7 +113,7 @@ class SubmittedReturnForPeriodController @Inject()(
           vatDeclared = vatDeclared,
           displayPayNow = displayPayNow,
           returnIsExcludedAndOutstandingAmount = returnIsExcludedAndOutstandingAmount,
-          isIntermediary = request.isIntermediary,
+          isIntermediary = isActingAsIntermediary,
           companyName = request.companyName
         )).toFuture
 
