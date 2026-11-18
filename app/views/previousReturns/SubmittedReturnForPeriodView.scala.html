@@ -19,9 +19,10 @@
 @import viewmodels.previousReturns.PreviousReturnsCorrectionsSummary.CorrectionRow
 
 @this(
-        govukButton: GovukButton,
-layout: templates.Layout,
-        govukSummaryList: GovukSummaryList
+    govukButton: GovukButton,
+    layout: templates.Layout,
+    govukSummaryList: GovukSummaryList,
+    govukWarningText: GovukWarningText
 )
 
 @(
@@ -70,9 +71,14 @@ layout: templates.Layout,
         }
 
        @if(returnIsExcludedAndOutstandingAmount) {
-        <p class="govuk-body govuk-!-margin-bottom-5">
-            @messages("submittedReturnForPeriod.otherCountryVatOwed")
-        </p>
+            @govukWarningText(WarningText(
+                iconFallbackText = Option(messages("site.warning")),
+                content = Text(if(isIntermediary) {
+                    messages("submittedReturnForPeriod.intermediary.otherCountryVatOwed")
+                } else {
+                    messages("submittedReturnForPeriod.otherCountryVatOwed")
+                })
+            ))
        }
 
         @if(salesToEuAndNiSummaryList.rows) {
