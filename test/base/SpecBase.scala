@@ -17,7 +17,6 @@
 package base
 
 import config.Constants.ukCountryCodeAreaPrefix
-import config.FrontendAppConfig
 import controllers.actions.*
 import generators.{Generators, UserAnswersGenerator}
 import models.*
@@ -29,7 +28,6 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.{OptionValues, TryValues}
-import org.scalatestplus.mockito.MockitoSugar.mock
 import pages.corrections.{CorrectPreviousReturnPage, CorrectionCountryPage, CorrectionReturnPeriodPage, CorrectionReturnYearPage}
 import pages.{EmptyWaypoints, SalesToCountryPage, SoldGoodsPage, SoldToCountryPage, VatOnSalesPage, VatRatesFromCountryPage, Waypoints}
 import play.api.Application
