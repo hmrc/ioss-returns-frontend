@@ -15,8 +15,8 @@
  *@
 
 @import controllers.payments.{routes => paymentRoutes}
+@import controllers.previousReturns.{routes => previousReturnsRoutes}
 @import pages.EmptyWaypoints
-
 @import java.time.format.DateTimeFormatter
 
 @this(
@@ -54,6 +54,12 @@
             title = Text(titleText),
             content = HtmlContent(messages("successfullySubmitted.heading", returnReference))
         ))
+
+        <p class="govuk-body">
+            <a class="govuk-link govuk-link--no-visited-state hmrc-!-js-visible" id="view-printable-summary" href="@previousReturnsRoutes.SubmittedReturnForPeriodController.onPageLoad(EmptyWaypoints, iossNumber, period)">
+                @messages("successfullySubmitted.viewPrintSummary")
+            </a>
+        </p>
 
         @if(nilReturn) {
             @if(isIntermediary) {

@@ -17,12 +17,14 @@
 @import controllers.payments.{routes => paymentRoutes}
 @import controllers.previousReturns.{routes => prevRoutes}
 @import viewmodels.previousReturns.PreviousReturnsCorrectionsSummary.CorrectionRow
+@import views.html.components.PrintPage
 
 @this(
     govukButton: GovukButton,
     layout: templates.Layout,
     govukSummaryList: GovukSummaryList,
-    govukWarningText: GovukWarningText
+    govukWarningText: GovukWarningText,
+    printPage: PrintPage
 )
 
 @(
@@ -46,7 +48,6 @@
 
     @if(isIntermediary){<p class="govuk-caption-l hmrc-caption-l">@companyName</p>}
 
-
     @period match {
             case period: PartialReturnPeriod => {
                 <h1 class="govuk-heading-l">@messages("submittedReturnForPeriod.heading", period.displayToAndFromText)</h1>
@@ -55,6 +56,8 @@
                 <h1 class="govuk-heading-l">@messages("submittedReturnForPeriod.heading", period.displayText)</h1>
             }
         }
+
+        @printPage(Some("submittedReturnForPeriod.print"))
 
         <h2 class="govuk-heading-m">@messages("submittedReturnForPeriod.summary")</h2>
 

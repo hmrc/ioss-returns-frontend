@@ -14,7 +14,7 @@
  * limitations under the License.
  *@
 
-@import components.ButtonGroupProcessing
+@import components.{ButtonGroupProcessing, PrintPage}
 @import models.etmp.EtmpExclusion
 
 @this(
@@ -23,7 +23,8 @@
         govukSummaryList: GovukSummaryList,
         button: ButtonGroupProcessing,
         govukButton: GovukButton,
-        govukWarningText: GovukWarningText
+        govukWarningText: GovukWarningText,
+        printPage: PrintPage
 )
 
 @(
@@ -44,6 +45,8 @@
     @layout(pageTitle = titleNoForm(messages("checkYourAnswers.title")), maybeIossNumber = Some(iossNumber)) {
 
         <h1 class="govuk-heading-l">@messages("checkYourAnswers.heading")</h1>
+
+        @printPage()
 
             @if(missingData.nonEmpty) {
                 @govukWarningText(WarningText(

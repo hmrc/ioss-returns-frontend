@@ -14,6 +14,7 @@ site.to = to
 site.submit = Submit
 site.warning = Warning
 site.processing = We are processing your return.
+site.print = Print this page
 
 date.day = Day
 date.month = Month
@@ -461,6 +462,7 @@ vatPeriodCorrectionsList.error.required = Select yes if you want to add correcti
 successfullySubmitted.title = Return submitted
 successfullySubmitted.intermediary.title = Return submitted for {0}
 successfullySubmitted.heading = Your return reference is <strong style="word-break:break-word">{0}</strong>
+successfullySubmitted.viewPrintSummary = View a summary of this return that you can print
 successfullySubmitted.noVatOwed = You do not owe any VAT for {0}.
 successfullySubmitted.intermediary.noVatOwed = You do not need to pay any VAT for this return.
 successfullySubmitted.payVatOwed = Pay VAT owed
@@ -481,6 +483,7 @@ returnSubmissionFailure.next.info.returnToAccount = Back to your account
 
 submittedReturnForPeriod.title = Submitted return for {0}
 submittedReturnForPeriod.heading = Submitted return for {0}
+submittedReturnForPeriod.print = Print or download a PDF copy of this page
 submittedReturnForPeriod.summary = Summary
 submittedReturnForPeriod.details = Details
 submittedReturnForPeriod.payNow = Pay now
